@@ -1,24 +1,23 @@
 # ─── Base ────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS base
+RUN npm install -g pnpm
 
 # ─── Stage 1: Install all deps + build ───────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY pnpm-lock.yaml package.json ./
+RUN pnpm ci
 
 COPY . .
-# Generate Prisma client (uses @prisma/adapter-pg, no native binary needed)
-RUN npx prisma generate
-RUN npm run build 2>&1 && test -f dist/main.js
+RUN pnpm build 2>&1 && test -f dist/main.js
 
 # ─── Stage 2: Production deps only ───────────────────────────────────────────
 FROM base AS prod-deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+COPY pnpm-lock.yaml package.json ./
+RUN pnpm ci --frozen-lockfile --prod
 
 # ─── Stage 3: Runtime ────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -31,8 +30,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 COPY --from=builder  --chown=nestjs:nodejs /app/dist                    ./dist
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules           ./node_modules
-COPY --from=builder  --chown=nestjs:nodejs /app/prisma          ./prisma
-COPY --from=builder  --chown=nestjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder  --chown=nestjs:nodejs /app/src/mikro-orm.config.ts ./dist/src/mikro-orm.config.js
+COPY --from=builder  --chown=nestjs:nodejs /app/mikro-orm.config.ts     ./mikro-orm.config.js
 COPY --chown=nestjs:nodejs package.json ./
 
 USER nestjs

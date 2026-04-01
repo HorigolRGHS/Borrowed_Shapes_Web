@@ -3,16 +3,21 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Prisma } from '../lib/prisma/client';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { init } from '@paralleldrive/cuid2';
-import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { User } from '../entities/user.entity';
+import { UserSession } from '../entities/user-session.entity';
+import { AuditLog } from '../entities/audit-log.entity';
+import { GameProfile } from '../entities/game-profile.entity';
+import { Role, SessionStatus, AuditActionType } from '../entities/enums';
 
 const createId = init({ length: 24 });
 
@@ -26,7 +31,7 @@ function hashToken(token: string): string {
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    private em: EntityManager,
     private redis: RedisService,
     private config: ConfigService,
     private jwt: JwtService,
@@ -37,29 +42,37 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, rounds);
 
     try {
-      const user = await this.prisma.$transaction(async (tx: any) => {
-        const created = await tx.user.create({
-          data: { email: dto.email, passwordHash, displayName: dto.displayName ?? null, role: 'USER' },
+      const user = await this.em.transactional(async (em) => {
+        const created = em.create(User, {
+          email: dto.email,
+          passwordHash,
+          displayName: dto.displayName ?? null,
+          role: Role.USER,
         });
-        await tx.gameProfile.create({ data: { userId: created.id } });
-        await tx.auditLog.create({
-          data: {
-            userId: created.id,
-            actionType: 'CREATE',
-            entityName: 'User',
-            entityId: created.id,
-            newValue: { email: created.email, role: created.role },
-            ipAddress,
-          },
+        const gameProfile = em.create(GameProfile, { user: created });
+        const auditLog = em.create(AuditLog, {
+          user: created,
+          actionType: AuditActionType.CREATE,
+          entityName: 'User',
+          entityId: created.id,
+          newValue: { email: created.email, role: created.role },
+          ipAddress,
         });
+        await em.flush();
+        // suppress unused variable warnings
+        void gameProfile;
+        void auditLog;
         return created;
       });
 
       return { userId: user.id, email: user.email, displayName: user.displayName, role: user.role };
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        const target = (err.meta?.target as string[] | undefined) ?? [];
-        if (target.includes('displayName')) throw new ConflictException('Display name already taken');
+      if (err instanceof UniqueConstraintViolationException) {
+        const constraint = (err.cause as any)?.constraint ?? '';
+        const message = err.message ?? '';
+        if (constraint.includes('display_name') || message.includes('display_name')) {
+          throw new ConflictException('Display name already taken');
+        }
         throw new ConflictException('Email already in use');
       }
       throw err;
@@ -67,7 +80,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ipAddress: string) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.em.findOne(User, { email: dto.email });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
@@ -81,10 +94,11 @@ export class AuthService {
     // Revoke any existing session for this platform (1 session per platform)
     const existing = await this.redis.hgetall(rtKey(user.id, dto.platform));
     if (existing?.sessionId) {
-      await this.prisma.userSession.updateMany({
-        where: { sessionId: existing.sessionId, status: 'ACTIVE' },
-        data: { status: 'REVOKED', logoutTime: new Date() },
-      });
+      await this.em.nativeUpdate(
+        UserSession,
+        { sessionId: existing.sessionId, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: new Date() },
+      );
     }
 
     // Generate tokens
@@ -104,14 +118,24 @@ export class AuthService {
       { cmd: 'zadd', args: ['online_users_by_last_active', Date.now(), sessionId] },
     ]);
 
-    await Promise.all([
-      this.prisma.userSession.create({
-        data: { userId: user.id, sessionId, platform: dto.platform, ipAddress, deviceInfo: dto.deviceInfo, status: 'ACTIVE' },
-      }),
-      this.prisma.auditLog.create({
-        data: { userId: user.id, actionType: 'LOGIN', entityName: 'UserSession', entityId: sessionId, ipAddress },
-      }),
-    ]);
+    const session = this.em.create(UserSession, {
+      user,
+      sessionId,
+      platform: dto.platform,
+      ipAddress,
+      deviceInfo: dto.deviceInfo,
+      status: SessionStatus.ACTIVE,
+    });
+    const auditLog = this.em.create(AuditLog, {
+      user,
+      actionType: AuditActionType.LOGIN,
+      entityName: 'UserSession',
+      entityId: sessionId,
+      ipAddress,
+    });
+    await this.em.flush();
+    void session;
+    void auditLog;
 
     return {
       accessToken,
@@ -144,7 +168,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    const user = await this.em.findOne(User, { id: userId }, { fields: ['role'] });
     if (!user) throw new UnauthorizedException();
 
     const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
@@ -167,10 +191,11 @@ export class AuthService {
     ]);
 
     // Update DB session record
-    await this.prisma.userSession.updateMany({
-      where: { sessionId: stored.sessionId, status: 'ACTIVE' },
-      data: { sessionId: newSessionId },
-    });
+    await this.em.nativeUpdate(
+      UserSession,
+      { sessionId: stored.sessionId, status: SessionStatus.ACTIVE },
+      { sessionId: newSessionId },
+    );
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresIn: accessTtl };
   }
@@ -184,14 +209,21 @@ export class AuthService {
     }
 
     if (stored?.sessionId) {
-      await this.prisma.userSession.updateMany({
-        where: { sessionId: stored.sessionId, status: 'ACTIVE' },
-        data: { status: 'LOGGED_OUT', logoutTime: new Date() },
-      });
+      await this.em.nativeUpdate(
+        UserSession,
+        { sessionId: stored.sessionId, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.LOGGED_OUT, logoutTime: new Date() },
+      );
     }
 
-    await this.prisma.auditLog.create({
-      data: { userId, actionType: 'LOGOUT', entityName: 'UserSession', entityId: userId, ipAddress },
+    const auditLog = this.em.create(AuditLog, {
+      user: this.em.getReference(User, userId),
+      actionType: AuditActionType.LOGOUT,
+      entityName: 'UserSession',
+      entityId: userId,
+      ipAddress,
     });
+    await this.em.flush();
+    void auditLog;
   }
 }

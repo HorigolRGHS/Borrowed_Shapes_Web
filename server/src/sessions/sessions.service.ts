@@ -3,9 +3,13 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
+import { UserSession } from '../entities/user-session.entity';
+import { AuditLog } from '../entities/audit-log.entity';
+import { User } from '../entities/user.entity';
+import { SessionStatus, AuditActionType } from '../entities/enums';
 
 const PLATFORMS = ['game', 'forum'] as const;
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
@@ -13,7 +17,7 @@ const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 @Injectable()
 export class SessionsService {
   constructor(
-    private prisma: PrismaService,
+    private em: EntityManager,
     private redis: RedisService,
     private config: ConfigService,
   ) {}
@@ -46,10 +50,11 @@ export class SessionsService {
       if (liveResults[i]?.sessionId) activeSessionIds.add(liveResults[i]!.sessionId);
     });
 
-    const dbSessions = await this.prisma.userSession.findMany({
-      where: { userId },
-      orderBy: { loginTime: 'desc' },
-    });
+    const dbSessions = await this.em.find(
+      UserSession,
+      { user: userId },
+      { orderBy: { loginTime: 'desc' } },
+    );
 
     return dbSessions.map((s) => {
       const isActive = activeSessionIds.has(s.sessionId);
@@ -76,16 +81,16 @@ export class SessionsService {
     requestUserRole: string,
     ipAddress: string,
   ): Promise<void> {
-    const session = await this.prisma.userSession.findUnique({ where: { id: dbSessionId } });
+    const session = await this.em.findOne(UserSession, { id: dbSessionId });
     if (!session) throw new NotFoundException('Session not found');
 
-    if (session.userId !== requestUserId && requestUserRole !== 'ADMIN') {
+    if (session.user.id !== requestUserId && requestUserRole !== 'ADMIN') {
       throw new ForbiddenException();
     }
 
     // Find which platform slot currently holds this session and remove it
     if (session.platform) {
-      const key = rtKey(session.userId, session.platform);
+      const key = rtKey(session.user.id, session.platform);
       const stored = await this.redis.hgetall(key);
       if (stored?.sessionId === session.sessionId) {
         await this.redis.del(key);
@@ -93,19 +98,20 @@ export class SessionsService {
       }
     }
 
-    await this.prisma.userSession.updateMany({
-      where: { id: dbSessionId },
-      data: { status: 'REVOKED', logoutTime: new Date() },
-    });
+    await this.em.nativeUpdate(
+      UserSession,
+      { id: dbSessionId },
+      { status: SessionStatus.REVOKED, logoutTime: new Date() },
+    );
 
-    await this.prisma.auditLog.create({
-      data: {
-        userId: requestUserId,
-        actionType: 'REVOKE_SESSION',
-        entityName: 'UserSession',
-        entityId: dbSessionId,
-        ipAddress,
-      },
+    const auditLog = this.em.create(AuditLog, {
+      user: this.em.getReference(User, requestUserId),
+      actionType: AuditActionType.REVOKE_SESSION,
+      entityName: 'UserSession',
+      entityId: dbSessionId,
+      ipAddress,
     });
+    await this.em.flush();
+    void auditLog;
   }
 }

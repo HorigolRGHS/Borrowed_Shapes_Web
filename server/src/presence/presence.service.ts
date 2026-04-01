@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { RedisService } from '../redis/redis.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { UserSession } from '../entities/user-session.entity';
+import { UserOnlineStatus } from '../entities/user-online-status.entity';
+import { User } from '../entities/user.entity';
+import { SessionStatus } from '../entities/enums';
 
 @Injectable()
 export class PresenceService {
@@ -9,7 +13,7 @@ export class PresenceService {
 
   constructor(
     private redis: RedisService,
-    private prisma: PrismaService,
+    private em: EntityManager,
     private config: ConfigService,
   ) {}
 
@@ -29,10 +33,11 @@ export class PresenceService {
 
       if (details?.userId) {
         await this.redis.del(`session:${details.userId}:${sessionId}`);
-        await this.prisma.userSession.updateMany({
-          where: { sessionId, status: 'ACTIVE' },
-          data: { status: 'EXPIRED', logoutTime: new Date() },
-        });
+        await this.em.nativeUpdate(
+          UserSession,
+          { sessionId, status: SessionStatus.ACTIVE },
+          { status: SessionStatus.EXPIRED, logoutTime: new Date() },
+        );
       }
     }
   }
@@ -56,26 +61,19 @@ export class PresenceService {
     }
 
     for (const [userId, { platforms, lastActive }] of userMap) {
-      await this.prisma.userOnlineStatus.upsert({
-        where: { userId },
-        update: {
-          isOnline: true,
-          lastOnline: new Date(lastActive),
-          onlinePlatforms: Array.from(platforms),
-        },
-        create: {
-          userId,
-          isOnline: true,
-          lastOnline: new Date(lastActive),
-          onlinePlatforms: Array.from(platforms),
-        },
+      await this.em.upsert(UserOnlineStatus, {
+        user: this.em.getReference(User, userId),
+        isOnline: true,
+        lastOnline: new Date(lastActive),
+        onlinePlatforms: Array.from(platforms),
       });
     }
 
     const onlineIds = Array.from(userMap.keys());
-    await this.prisma.userOnlineStatus.updateMany({
-      where: { userId: { notIn: onlineIds }, isOnline: true },
-      data: { isOnline: false },
-    });
+    await this.em.nativeUpdate(
+      UserOnlineStatus,
+      { user: { $nin: onlineIds }, isOnline: true },
+      { isOnline: false },
+    );
   }
 }

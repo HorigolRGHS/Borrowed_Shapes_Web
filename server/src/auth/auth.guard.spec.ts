@@ -2,18 +2,16 @@ import { AuthGuard } from './auth.guard';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 
-const mockRedis = {
-  hgetall: jest.fn(),
-  exists: jest.fn(),
-  del: jest.fn(),
-};
-
-const mockPrisma = {
-  userSession: { updateMany: jest.fn() },
-};
-
 const mockReflector = {
   getAllAndOverride: jest.fn(),
+};
+
+const mockJwt = {
+  verifyAsync: jest.fn(),
+};
+
+const mockConfig = {
+  get: jest.fn().mockReturnValue('test-secret'),
 };
 
 function makeContext(authHeader?: string): ExecutionContext {
@@ -35,10 +33,11 @@ describe('AuthGuard', () => {
   beforeEach(() => {
     guard = new AuthGuard(
       mockReflector as any,
-      mockRedis as any,
-      mockPrisma as any,
+      mockJwt as any,
+      mockConfig as any,
     );
     jest.clearAllMocks();
+    mockConfig.get.mockReturnValue('test-secret');
   });
 
   it('allows @Public() routes without a token', async () => {
@@ -52,56 +51,23 @@ describe('AuthGuard', () => {
     await expect(guard.canActivate(makeContext())).rejects.toThrow(UnauthorizedException);
   });
 
-  it('throws 401 when user_session_details key is missing in Redis', async () => {
+  it('throws 401 when JWT verification fails', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    mockRedis.hgetall.mockResolvedValue(null);
-    await expect(guard.canActivate(makeContext('Bearer sess_123'))).rejects.toThrow(UnauthorizedException);
+    mockJwt.verifyAsync.mockRejectedValue(new Error('invalid token'));
+    await expect(guard.canActivate(makeContext('Bearer bad-token'))).rejects.toThrow(UnauthorizedException);
   });
 
-  it('throws 401 when session:{userId}:{sessionId} does not exist in Redis', async () => {
+  it('attaches req.user and returns true for a valid JWT', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    mockRedis.hgetall
-      .mockResolvedValueOnce({
-        userId: 'user_1',
-        role: 'USER',
-        platform: 'forum',
-        expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-      })
-      .mockResolvedValueOnce(null); // session:{userId}:{sessionId} missing
-    await expect(guard.canActivate(makeContext('Bearer sess_123'))).rejects.toThrow(UnauthorizedException);
-  });
+    mockJwt.verifyAsync.mockResolvedValue({ sub: 'user_1', role: 'USER', platform: 'forum' });
 
-  it('throws 401 and marks session EXPIRED when expiresAt is in the past', async () => {
-    mockReflector.getAllAndOverride.mockReturnValue(false);
-    const expired = new Date(Date.now() - 1000).toISOString();
-    mockRedis.hgetall
-      .mockResolvedValueOnce({ userId: 'user_1', role: 'USER', platform: 'forum', expiresAt: expired })
-      .mockResolvedValueOnce({ userId: 'user_1', expiresAt: expired });
-    mockRedis.del.mockResolvedValue(undefined);
-    mockPrisma.userSession.updateMany.mockResolvedValue({ count: 1 });
-    await expect(guard.canActivate(makeContext('Bearer sess_123'))).rejects.toThrow(UnauthorizedException);
-    expect(mockRedis.del).toHaveBeenCalledWith(
-      'user_session_details:sess_123',
-      'session:user_1:sess_123',
-    );
-    expect(mockPrisma.userSession.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: 'EXPIRED' }) }),
-    );
-  });
-
-  it('attaches req.user and returns true for a valid session', async () => {
-    mockReflector.getAllAndOverride.mockReturnValue(false);
-    const expiresAt = new Date(Date.now() + 3_600_000).toISOString();
-    mockRedis.hgetall
-      .mockResolvedValueOnce({ userId: 'user_1', role: 'USER', platform: 'forum', expiresAt })
-      .mockResolvedValueOnce({ userId: 'user_1', sessionId: 'sess_123', role: 'USER', expiresAt });
-    const ctx = makeContext('Bearer sess_123');
+    const ctx = makeContext('Bearer valid-token');
     const result = await guard.canActivate(ctx);
+
     expect(result).toBe(true);
     expect(ctx.switchToHttp().getRequest().user).toMatchObject({
       userId: 'user_1',
       role: 'USER',
-      sessionId: 'sess_123',
       platform: 'forum',
     });
   });

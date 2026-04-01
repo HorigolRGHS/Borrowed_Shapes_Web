@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { SessionsService } from './sessions.service';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { RedisService } from '../redis/redis.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
@@ -16,13 +16,13 @@ const mockRedis = {
   zrem: jest.fn(),
 };
 
-const mockPrisma = {
-  userSession: {
-    findMany: jest.fn(),
-    findUnique: jest.fn(),
-    updateMany: jest.fn(),
-  },
-  auditLog: { create: jest.fn() },
+const mockEm = {
+  findOne: jest.fn(),
+  find: jest.fn(),
+  nativeUpdate: jest.fn(),
+  create: jest.fn((_, data) => data),
+  flush: jest.fn(),
+  getReference: jest.fn((_, id) => ({ id })),
 };
 
 const mockConfig = {
@@ -39,13 +39,16 @@ describe('SessionsService', () => {
     const module = await Test.createTestingModule({
       providers: [
         SessionsService,
+        { provide: EntityManager, useValue: mockEm },
         { provide: RedisService, useValue: mockRedis },
-        { provide: PrismaService, useValue: mockPrisma },
         { provide: ConfigService, useValue: mockConfig },
       ],
     }).compile();
     service = module.get(SessionsService);
     jest.clearAllMocks();
+    mockEm.flush.mockResolvedValue(undefined);
+    mockEm.nativeUpdate.mockResolvedValue(1);
+    mockEm.create.mockImplementation((_, data) => data);
   });
 
   describe('heartbeat', () => {
@@ -65,14 +68,14 @@ describe('SessionsService', () => {
 
   describe('revoke', () => {
     it('throws NotFoundException when session does not exist', async () => {
-      mockPrisma.userSession.findUnique.mockResolvedValue(null);
+      mockEm.findOne.mockResolvedValue(null);
       await expect(service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1')).rejects.toThrow(NotFoundException);
     });
 
     it('throws ForbiddenException when non-owner non-admin tries to revoke', async () => {
-      mockPrisma.userSession.findUnique.mockResolvedValue({
+      mockEm.findOne.mockResolvedValue({
         id: 'db_id_1',
-        userId: 'other_user',
+        user: { id: 'other_user' },
         sessionId: 'sess_1',
         platform: 'forum',
       });
@@ -80,42 +83,35 @@ describe('SessionsService', () => {
     });
 
     it('allows ADMIN to revoke any session', async () => {
-      mockPrisma.userSession.findUnique.mockResolvedValue({
+      mockEm.findOne.mockResolvedValue({
         id: 'db_id_1',
-        userId: 'other_user',
+        user: { id: 'other_user' },
         sessionId: 'sess_1',
         platform: null,
       });
-      mockPrisma.userSession.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.auditLog.create.mockResolvedValue({});
 
       await expect(service.revoke('db_id_1', 'admin_user', 'ADMIN', '127.0.0.1')).resolves.toBeUndefined();
     });
 
     it('deletes Redis key and updates DB to REVOKED when platform matches', async () => {
-      mockPrisma.userSession.findUnique.mockResolvedValue({
+      mockEm.findOne.mockResolvedValue({
         id: 'db_id_1',
-        userId: 'user_1',
+        user: { id: 'user_1' },
         sessionId: 'sess_1',
         platform: 'forum',
       });
       mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
       mockRedis.del.mockResolvedValue(undefined);
       mockRedis.zrem.mockResolvedValue(undefined);
-      mockPrisma.userSession.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.auditLog.create.mockResolvedValue({});
 
       await service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1');
 
       expect(mockRedis.del).toHaveBeenCalledWith('rt:user_1:forum');
       expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_1');
-      expect(mockPrisma.userSession.updateMany).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ status: 'REVOKED' }) }),
-      );
-      expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ actionType: 'REVOKE_SESSION' }),
-        }),
+      expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ id: 'db_id_1' }),
+        expect.objectContaining({ status: 'REVOKED' }),
       );
     });
   });

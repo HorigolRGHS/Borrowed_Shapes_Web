@@ -1,12 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/lib/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// ─── Enums ───────────────────────────────────────────────
+// ─── Auth Enums ───────────────────────────────────────────
 
 enum Role {
   USER
@@ -29,6 +30,23 @@ enum AuditActionType {
   REVOKE_SESSION
 }
 
+// ─── Game Enums ───────────────────────────────────────────
+
+enum SessionResult {
+  WIN
+  LOSE
+  ABANDONED
+}
+
+enum GameSessionStatus {
+  WAITING
+  IN_PROGRESS
+  FINISHED
+  ABANDONED
+}
+
+// ─── Web Enums ────────────────────────────────────────────
+
 enum ForumThreadStatus {
   OPEN
   CLOSED
@@ -50,7 +68,7 @@ enum ForumFlair {
   PATCH_NOTE
 }
 
-// ─── Core ────────────────────────────────────────────────
+// ─── Auth: Core ───────────────────────────────────────────
 
 model User {
   id           String   @id @default(cuid())
@@ -73,16 +91,72 @@ model User {
   onlineStatus  UserOnlineStatus?
 }
 
-model GameProfile {
-  id               String @id @default(cuid())
-  userId           String @unique
-  level            Int    @default(1)
-  experiencePoints Int    @default(0)
-  virtualCurrency  Int    @default(0)
+model UserSession {
+  id         String        @id @default(cuid())
+  userId     String
+  sessionId  String        @unique
+  platform   String?
+  loginTime  DateTime      @default(now())
+  logoutTime DateTime?
+  deviceInfo String?
+  ipAddress  String
+  status     SessionStatus @default(ACTIVE)
 
-  user         User              @relation(fields: [userId], references: [id])
-  achievements UserAchievement[]
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([loginTime])
 }
+
+model AuditLog {
+  id         String          @id @default(cuid())
+  userId     String?
+  actionType AuditActionType
+  entityName String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  timestamp  DateTime        @default(now())
+  ipAddress  String?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityName])
+  @@index([entityId])
+  @@index([timestamp])
+}
+
+// ─── Game: Level ──────────────────────────────────────────
+
+model Level {
+  id          String        @id
+  displayName String
+  order       Int           @unique
+
+  gameSessions GameSession[]
+}
+
+// ─── Game: GameProfile ────────────────────────────────────
+
+model GameProfile {
+  id              String @id @default(cuid())
+  userId          String @unique
+  totalPlayTime   Int    @default(0)
+  totalSessions   Int    @default(0)
+  totalWins       Int    @default(0)
+  totalLosses     Int    @default(0)
+  totalAbandoned  Int    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id])
+  achievements     UserAchievement[]
+  gameRunPlayers   GameRunPlayer[]
+  gameSessionPlayers GameSessionPlayer[]
+}
+
+// ─── Game: Achievement ────────────────────────────────────
 
 model Achievement {
   id            String @id @default(cuid())
@@ -94,7 +168,6 @@ model Achievement {
   userAchievements UserAchievement[]
 }
 
-// Links GameProfile ↔ Achievement (not User directly)
 model UserAchievement {
   gameProfileId String
   achievementId String
@@ -106,7 +179,89 @@ model UserAchievement {
   @@id([gameProfileId, achievementId])
 }
 
-// ─── Forum ───────────────────────────────────────────────
+// ─── Game: GameRun ────────────────────────────────────────
+
+model GameRun {
+  id            String    @id @default(cuid())
+  totalLevels   Int
+  isCompleted   Boolean   @default(false)
+  totalTimeSec  Int?
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  lobbyId       String?
+
+  players  GameRunPlayer[]
+  sessions GameSession[]
+
+  @@index([isCompleted, totalTimeSec])
+  @@index([lobbyId])
+}
+
+model GameRunPlayer {
+  runId         String
+  gameProfileId String
+  isHost        Boolean @default(false)
+
+  run         GameRun    @relation(fields: [runId], references: [id])
+  gameProfile GameProfile @relation(fields: [gameProfileId], references: [id])
+
+  @@id([runId, gameProfileId])
+  @@index([gameProfileId])
+}
+
+// ─── Game: GameSession ────────────────────────────────────
+
+model GameSession {
+  id                 String              @id @default(cuid())
+  runId              String
+  levelId            String
+  status             GameSessionStatus   @default(WAITING)
+  startedAt          DateTime            @default(now())
+  endedAt            DateTime?
+  minPlayers         Int                 @default(2)
+  maxPlayers         Int                 @default(5)
+  result             SessionResult?
+  completionTimeSec  Int?
+
+  run     GameRun @relation(fields: [runId], references: [id])
+  level   Level   @relation(fields: [levelId], references: [id])
+  players GameSessionPlayer[]
+
+  @@index([runId])
+  @@index([levelId])
+  @@index([status])
+}
+
+model GameSessionPlayer {
+  id            String    @id @default(cuid())
+  sessionId     String
+  gameProfileId String
+  isAbsent      Boolean   @default(false)
+  leftAt        DateTime?
+
+  session     GameSession @relation(fields: [sessionId], references: [id])
+  gameProfile GameProfile @relation(fields: [gameProfileId], references: [id])
+
+  @@unique([sessionId, gameProfileId])
+  @@index([gameProfileId])
+  @@index([sessionId])
+}
+
+// ─── Game: Presence ───────────────────────────────────────
+
+model UserOnlineStatus {
+  userId          String    @id @unique
+  isOnline        Boolean   @default(false)
+  lastOnline      DateTime?
+  onlinePlatforms Json?
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([lastOnline])
+}
+
+// ─── Web: Forum ───────────────────────────────────────────
 
 model ForumCategory {
   id           String  @id @default(cuid())
@@ -174,7 +329,6 @@ model ForumComment {
 model ForumThreadVote {
   userId   String
   threadId String
-  // +1 or -1 only — validated at service layer
   value    Int
 
   user   User        @relation(fields: [userId], references: [id])
@@ -187,7 +341,6 @@ model ForumThreadVote {
 model ForumCommentVote {
   userId    String
   commentId String
-  // +1 or -1 only — validated at service layer
   value     Int
 
   user    User         @relation(fields: [userId], references: [id])
@@ -197,15 +350,13 @@ model ForumCommentVote {
   @@index([commentId])
 }
 
-// ─── Wiki ────────────────────────────────────────────────
+// ─── Web: Wiki ────────────────────────────────────────────
 
 model WikiPage {
   id               String  @id @default(cuid())
   slug             String  @unique
   title            String
   metadataJson     Json?
-  // Intentionally denormalized — no @relation to avoid circular dep.
-  // Updated atomically with WikiRevision.create() in application code.
   latestRevisionId String?
 
   revisions WikiRevision[]
@@ -227,45 +378,7 @@ model WikiRevision {
   @@index([authorId])
 }
 
-// ─── Sessions & Audit ────────────────────────────────────
-
-model UserSession {
-  id         String        @id @default(cuid())
-  userId     String
-  sessionId  String        @unique
-  platform   String?
-  loginTime  DateTime      @default(now())
-  logoutTime DateTime?
-  deviceInfo String?
-  ipAddress  String
-  status     SessionStatus @default(ACTIVE)
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([loginTime])
-}
-
-model AuditLog {
-  id         String          @id @default(cuid())
-  userId     String?
-  actionType AuditActionType
-  entityName String
-  entityId   String
-  oldValue   Json?
-  newValue   Json?
-  timestamp  DateTime        @default(now())
-  ipAddress  String?
-
-  user User? @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([entityName])
-  @@index([entityId])
-  @@index([timestamp])
-}
-
-// ─── Downloads ───────────────────────────────────────────
+// ─── Web: Downloads ───────────────────────────────────────
 
 model FileAsset {
   id          String   @id @default(cuid())
@@ -283,7 +396,6 @@ model FileAsset {
 model DownloadLog {
   id           String   @id @default(cuid())
   userId       String?
-  // Denormalized snapshot — no FK to FileAsset (preserves version at download time)
   fileVersion  String
   bytesSent    BigInt
   clientIp     String
@@ -306,18 +418,4 @@ model DownloadStats {
 
   @@unique([fileAssetId, date])
   @@index([fileAssetId])
-}
-
-// ─── Presence ────────────────────────────────────────────
-
-model UserOnlineStatus {
-  userId          String    @id @unique
-  isOnline        Boolean   @default(false)
-  lastOnline      DateTime?
-  onlinePlatforms Json?
-  updatedAt       DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([lastOnline])
 }

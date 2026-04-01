@@ -19,7 +19,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @UseGuards(AuthRateLimitGuard)
+  // @UseGuards(AuthRateLimitGuard)
   @Post('register')
   register(@Body() dto: RegisterDto, @Req() req: Request) {
     return this.authService.register(dto, req.ip ?? '');

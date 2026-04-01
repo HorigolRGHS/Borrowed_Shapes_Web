@@ -31,7 +31,6 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 COPY --from=builder  --chown=nestjs:nodejs /app/dist                    ./dist
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules           ./node_modules
-COPY --from=builder  --chown=nestjs:nodejs /app/node_modules/.prisma    ./node_modules/.prisma
 COPY --from=builder  --chown=nestjs:nodejs /app/prisma          ./prisma
 COPY --from=builder  --chown=nestjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --chown=nestjs:nodejs package.json ./

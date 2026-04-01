@@ -12,6 +12,11 @@ import type { Request, Response } from 'express';
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger('ExceptionFilter');
 
+  private isInvalidJsonPayload(message: string | string[]): boolean {
+    const text = Array.isArray(message) ? message.join(' ') : message;
+    return /JSON|Unexpected token|Expected ',' or '}'/i.test(text);
+  }
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -19,6 +24,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = 'Internal server error';
+    let error: any = undefined;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -26,7 +32,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (typeof res === 'string') {
         message = res;
       } else if (typeof res === 'object' && res !== null) {
-        message = (res as any).message ?? message;
+        const resObj = res as any;
+        message = resObj.message ?? message;
+        // Preserve validation errors array structure
+        if (Array.isArray(resObj.message)) {
+          error = resObj.message;
+        }
+      }
+
+      // Body parser throws BadRequestException for malformed JSON before DTO validation runs.
+      if (status === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(message)) {
+        message = 'Invalid JSON payload';
+        error = undefined;
       }
     } else {
       // Unexpected error — log full stack, never expose internals to client
@@ -41,6 +58,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     response.status(status).json({
       statusCode: status,
       message,
+      ...(error && { error }),
       timestamp: new Date().toISOString(),
       path: request.url,
     });

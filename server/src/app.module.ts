@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './prisma/prisma.module';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { PresenceModule } from './presence/presence.module';
+import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    PrismaModule,
+    MikroOrmModule.forRoot(mikroOrmConfig),
     RedisModule,
     AuthModule,
     SessionsModule,

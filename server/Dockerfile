@@ -34,6 +34,9 @@ COPY --from=builder  --chown=nestjs:nodejs /app/src/mikro-orm.config.ts ./dist/s
 COPY --from=builder  --chown=nestjs:nodejs /app/mikro-orm.config.ts     ./mikro-orm.config.js
 COPY --chown=nestjs:nodejs package.json ./
 
+# Allow nestjs user to run migration + database operations
+RUN chown -R nestjs:nodejs /app
+
 USER nestjs
 EXPOSE 3001
 

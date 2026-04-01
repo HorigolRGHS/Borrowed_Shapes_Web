@@ -7,7 +7,7 @@ FROM base AS builder
 WORKDIR /app
 
 COPY pnpm-lock.yaml package.json ./
-RUN pnpm ci
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm build 2>&1 && test -f dist/main.js
@@ -17,7 +17,7 @@ FROM base AS prod-deps
 WORKDIR /app
 
 COPY pnpm-lock.yaml package.json ./
-RUN pnpm ci --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --production
 
 # ─── Stage 3: Runtime ────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner

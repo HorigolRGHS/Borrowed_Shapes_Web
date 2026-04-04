@@ -14,9 +14,10 @@ export class SessionsController {
   }
 
   @Put('me')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async heartbeat(@CurrentUser() user: RequestUser): Promise<void> {
+  @HttpCode(HttpStatus.OK)
+  async heartbeat(@CurrentUser() user: RequestUser): Promise<null> {
     await this.sessionsService.heartbeat(user.userId, user.platform);
+    return null;
   }
 
   @Get()
@@ -25,12 +26,13 @@ export class SessionsController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async revoke(
     @Param('id') id: string,
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
-  ): Promise<void> {
+  ): Promise<null> {
     await this.sessionsService.revoke(id, user.userId, user.role, req.ip ?? '');
+    return null;
   }
 }

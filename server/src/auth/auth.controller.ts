@@ -41,8 +41,9 @@ export class AuthController {
   }
 
   @Delete('logout')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@CurrentUser() user: RequestUser, @Req() req: Request): Promise<void> {
+  @HttpCode(HttpStatus.OK)
+  async logout(@CurrentUser() user: RequestUser, @Req() req: Request): Promise<null> {
     await this.authService.logout(user.userId, user.platform, req.ip ?? '');
+    return null;
   }
 }

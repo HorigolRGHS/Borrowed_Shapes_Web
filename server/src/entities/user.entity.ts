@@ -31,8 +31,14 @@ export class User {
   @Property({ unique: true })
   email!: string;
 
-  @Property()
-  passwordHash!: string;
+  @Property({nullable: true})
+  passwordHash?: string;
+
+  @Property({ unique: true, nullable: true })
+  googleId?: string & Opt | null;
+
+  @Property({ nullable: true })
+  imgURL?: string & Opt | null;
 
   @Property({ unique: true, nullable: true })
   displayName?: string & Opt | null;

@@ -57,10 +57,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       statusCode: status,
+      success: false,
       message,
-      ...(error && { error }),
+      data: null,
       timestamp: new Date().toISOString(),
       path: request.url,
+      ...(error && { error }),
     });
   }
 }

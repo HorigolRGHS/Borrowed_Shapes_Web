@@ -58,7 +58,7 @@ services:
       bs_redis:
         condition: service_healthy
     # Chạy MikroORM schema:fresh trước khi khởi động server (code-first approach)
-    command: sh -c "node ./node_modules/.bin/mikro-orm --config ./mikro-orm.config.ts schema:fresh --run && node dist/main.js"
+    command: sh -c "npx mikro-orm schema:fresh --run && node dist/main.js"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api || exit 1"]
       interval: 30s

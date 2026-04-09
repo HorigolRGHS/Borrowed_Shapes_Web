@@ -13,11 +13,13 @@ import { init } from '@paralleldrive/cuid2';
 import { RedisService } from '../redis/redis.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { User } from '../entities/user.entity';
-import { UserSession } from '../entities/user-session.entity';
-import { AuditLog } from '../entities/audit-log.entity';
-import { GameProfile } from '../entities/game-profile.entity';
-import { Role, SessionStatus, AuditActionType } from '../entities/enums';
+import { User } from '../entities/User';
+import { UserSession } from '../entities/UserSession';
+import { AuditLog } from '../entities/AuditLog';
+import { GameProfile } from '../entities/GameProfile';
+import { Role } from '../entities/Role';
+import { SessionStatus } from '../entities/SessionStatus';
+import { AuditActionType } from '../entities/AuditActionType';
 
 const createId = init({ length: 24 });
 
@@ -49,9 +51,9 @@ export class AuthService {
           displayName: dto.displayName ?? null,
           role: Role.USER,
         });
-        const gameProfile = em.create(GameProfile, { user: created });
+        const gameProfile = em.create(GameProfile, { userId: created });
         const auditLog = em.create(AuditLog, {
-          user: created,
+          userId: created,
           actionType: AuditActionType.CREATE,
           entityName: 'User',
           entityId: created.id,
@@ -65,7 +67,12 @@ export class AuthService {
         return created;
       });
 
-      return { userId: user.id, email: user.email, displayName: user.displayName, role: user.role };
+      return {
+        userId: user.id,
+        email: String(user.email),
+        displayName: user.displayName ? String(user.displayName) : null,
+        role: user.role,
+      };
     } catch (err) {
       if (err instanceof UniqueConstraintViolationException) {
         const constraint = (err.cause as any)?.constraint ?? '';
@@ -83,7 +90,9 @@ export class AuthService {
     const user = await this.em.findOne(User, { email: dto.email });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
-    const valid = await bcrypt.compare(dto.password, user.passwordHash);
+    const valid = user.passwordHash
+      ? await bcrypt.compare(dto.password, user.passwordHash)
+      : false;
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
     const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
@@ -119,7 +128,7 @@ export class AuthService {
     ]);
 
     const session = this.em.create(UserSession, {
-      user,
+      userId: user,
       sessionId,
       platform: dto.platform,
       ipAddress,
@@ -127,7 +136,7 @@ export class AuthService {
       status: SessionStatus.ACTIVE,
     });
     const auditLog = this.em.create(AuditLog, {
-      user,
+      userId: user,
       actionType: AuditActionType.LOGIN,
       entityName: 'UserSession',
       entityId: sessionId,
@@ -144,7 +153,7 @@ export class AuthService {
       expiresAt,
       user: {
         id: user.id,
-        displayName: user.displayName,
+        displayName: user.displayName ? String(user.displayName) : null,
         role: user.role,
       },
     };
@@ -217,7 +226,7 @@ export class AuthService {
     }
 
     const auditLog = this.em.create(AuditLog, {
-      user: this.em.getReference(User, userId),
+      userId: this.em.getReference(User, userId),
       actionType: AuditActionType.LOGOUT,
       entityName: 'UserSession',
       entityId: userId,

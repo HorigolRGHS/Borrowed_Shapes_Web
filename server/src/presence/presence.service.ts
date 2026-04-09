@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { RedisService } from '../redis/redis.service';
-import { UserSession } from '../entities/user-session.entity';
-import { UserOnlineStatus } from '../entities/user-online-status.entity';
-import { User } from '../entities/user.entity';
-import { SessionStatus } from '../entities/enums';
+import { UserSession } from '../entities/UserSession';
+import { UserOnlineStatus } from '../entities/UserOnlineStatus';
+import { User } from '../entities/User';
+import { SessionStatus } from '../entities/SessionStatus';
 
 @Injectable()
 export class PresenceService {
@@ -62,7 +62,7 @@ export class PresenceService {
 
     for (const [userId, { platforms, lastActive }] of userMap) {
       await this.em.upsert(UserOnlineStatus, {
-        user: this.em.getReference(User, userId),
+        userId: this.em.getReference(User, userId),
         isOnline: true,
         lastOnline: new Date(lastActive),
         onlinePlatforms: Array.from(platforms),
@@ -72,7 +72,7 @@ export class PresenceService {
     const onlineIds = Array.from(userMap.keys());
     await this.em.nativeUpdate(
       UserOnlineStatus,
-      { user: { $nin: onlineIds }, isOnline: true },
+      { userId: { $nin: onlineIds }, isOnline: true },
       { isOnline: false },
     );
   }

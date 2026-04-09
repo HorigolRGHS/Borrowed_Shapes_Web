@@ -6,10 +6,11 @@ import {
 import { EntityManager } from '@mikro-orm/postgresql';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
-import { UserSession } from '../entities/user-session.entity';
-import { AuditLog } from '../entities/audit-log.entity';
-import { User } from '../entities/user.entity';
-import { SessionStatus, AuditActionType } from '../entities/enums';
+import { UserSession } from '../entities/UserSession';
+import { AuditLog } from '../entities/AuditLog';
+import { User } from '../entities/User';
+import { SessionStatus } from '../entities/SessionStatus';
+import { AuditActionType } from '../entities/AuditActionType';
 
 const PLATFORMS = ['game', 'forum'] as const;
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
@@ -52,7 +53,7 @@ export class SessionsService {
 
     const dbSessions = await this.em.find(
       UserSession,
-      { user: userId },
+      { userId },
       { orderBy: { loginTime: 'desc' } },
     );
 
@@ -84,13 +85,13 @@ export class SessionsService {
     const session = await this.em.findOne(UserSession, { id: dbSessionId });
     if (!session) throw new NotFoundException('Session not found');
 
-    if (session.user.id !== requestUserId && requestUserRole !== 'ADMIN') {
+    if (session.userId.id !== requestUserId && requestUserRole !== 'ADMIN') {
       throw new ForbiddenException();
     }
 
     // Find which platform slot currently holds this session and remove it
     if (session.platform) {
-      const key = rtKey(session.user.id, session.platform);
+      const key = rtKey(session.userId.id, session.platform);
       const stored = await this.redis.hgetall(key);
       if (stored?.sessionId === session.sessionId) {
         await this.redis.del(key);
@@ -105,7 +106,7 @@ export class SessionsService {
     );
 
     const auditLog = this.em.create(AuditLog, {
-      user: this.em.getReference(User, requestUserId),
+      userId: this.em.getReference(User, requestUserId),
       actionType: AuditActionType.REVOKE_SESSION,
       entityName: 'UserSession',
       entityId: dbSessionId,

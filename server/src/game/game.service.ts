@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { okResponse } from '../common/dto/api-response.dto';
-import { GameRun } from '../entities/game-run.entity';
-import { GameRunPlayer } from '../entities/game-run-player.entity';
-import { GameSession } from '../entities/game-session.entity';
-import { GameSessionPlayer } from '../entities/game-session-player.entity';
-import { GameProfile } from '../entities/game-profile.entity';
-import { Level } from '../entities/level.entity';
-import { GameSessionStatus, SessionResult } from '../entities/enums';
+import { GameRun } from '../entities/GameRun';
+import { GameRunPlayer } from '../entities/GameRunPlayer';
+import { GameSession } from '../entities/GameSession';
+import { GameSessionPlayer } from '../entities/GameSessionPlayer';
+import { GameProfile } from '../entities/GameProfile';
+import { Level } from '../entities/Level';
+import { GameSessionStatus } from '../entities/GameSessionStatus';
+import { SessionResult } from '../entities/SessionResult';
 import { InitGameRunDto } from './dto/init-game-run.dto';
 import { JoinLobbyDto } from './dto/join-lobby.dto';
 import { StartSessionDto } from './dto/start-session.dto';
@@ -41,14 +42,14 @@ export class GameService {
       });
 
       em.create(GameRunPlayer, {
-        run,
-        gameProfile,
+        runId: run,
+        gameProfileId: gameProfile,
         isHost: true,
       });
 
       const lobbySession = em.create(GameSession, {
-        run,
-        level: lobbyLevel,
+        runId: run,
+        levelId: lobbyLevel,
         status: GameSessionStatus.WAITING,
         startedAt: new Date(),
         minPlayers: dto.minPlayers,
@@ -56,8 +57,8 @@ export class GameService {
       });
 
       em.create(GameSessionPlayer, {
-        session: lobbySession,
-        gameProfile,
+        sessionId: lobbySession,
+        gameProfileId: gameProfile,
         isAbsent: false,
       });
 
@@ -89,21 +90,21 @@ export class GameService {
       }
 
       const existing = await em.findOne(GameRunPlayer, {
-        run: run.id,
-        gameProfile: gameProfile.id,
+        runId: run.id,
+        gameProfileId: gameProfile.id,
       });
 
       if (!existing) {
         em.create(GameRunPlayer, {
-          run,
-          gameProfile,
+          runId: run,
+          gameProfileId: gameProfile,
           isHost: false,
         });
       }
 
       const lobbySession = await em.findOne(GameSession, {
-        run: run.id,
-        level: 'lobby',
+        runId: run.id,
+        levelId: 'lobby',
       });
 
       if (!lobbySession) {
@@ -111,19 +112,19 @@ export class GameService {
       }
 
       const sessionPlayer = await em.findOne(GameSessionPlayer, {
-        session: lobbySession.id,
-        gameProfile: gameProfile.id,
+        sessionId: lobbySession.id,
+        gameProfileId: gameProfile.id,
       });
 
       if (!sessionPlayer) {
         em.create(GameSessionPlayer, {
-          session: lobbySession,
-          gameProfile,
+          sessionId: lobbySession,
+          gameProfileId: gameProfile,
           isAbsent: false,
         });
       } else {
         sessionPlayer.isAbsent = false;
-        sessionPlayer.leftAt = null;
+        sessionPlayer.leftAt = undefined;
       }
 
       await em.flush();
@@ -155,21 +156,20 @@ export class GameService {
 
       let session = await em.findOne(
         GameSession,
-        { run: run.id, level: level.id },
-        { populate: ['run', 'level', 'players.gameProfile'] },
+        { runId: run.id, levelId: level.id },
       );
 
       if (!session) {
         const lobbySession = await em.findOne(GameSession, {
-          run: run.id,
-          level: 'lobby',
+          runId: run.id,
+          levelId: 'lobby',
         });
         const minPlayers = lobbySession?.minPlayers ?? 2;
         const maxPlayers = lobbySession?.maxPlayers ?? 5;
 
         session = em.create(GameSession, {
-          run,
-          level,
+          runId: run,
+          levelId: level,
           status: GameSessionStatus.WAITING,
           startedAt: new Date(),
           minPlayers,
@@ -177,22 +177,22 @@ export class GameService {
         });
       }
 
-      const runPlayers = await em.find(GameRunPlayer, { run: run.id });
+      const runPlayers = await em.find(GameRunPlayer, { runId: run.id });
       for (const runPlayer of runPlayers) {
         const sessionPlayer = await em.findOne(GameSessionPlayer, {
-          session: session.id,
-          gameProfile: runPlayer.gameProfile,
+          sessionId: session,
+          gameProfileId: runPlayer.gameProfileId,
         });
 
         if (!sessionPlayer) {
           em.create(GameSessionPlayer, {
-            session,
-            gameProfile: runPlayer.gameProfile,
+            sessionId: session,
+            gameProfileId: runPlayer.gameProfileId,
             isAbsent: false,
           });
         } else {
           sessionPlayer.isAbsent = false;
-          sessionPlayer.leftAt = null;
+          sessionPlayer.leftAt = undefined;
         }
       }
 
@@ -217,11 +217,7 @@ export class GameService {
     this.logger.log(`GameService.endSession body=${JSON.stringify(dto)}`);
 
     await this.em.transactional(async (em) => {
-      const session = await em.findOne(
-        GameSession,
-        { id: dto.sessionId },
-        { populate: ['run', 'level', 'players.gameProfile'] },
-      );
+      const session = await em.findOne(GameSession, { id: dto.sessionId });
       if (!session) {
         throw new NotFoundException('Session not found');
       }
@@ -232,11 +228,17 @@ export class GameService {
       session.completionTimeSec = dto.completionTimeSec;
       session.endedAt = new Date();
 
-      const isLobbySession = session.level.id === 'lobby';
+      const isLobbySession = session.levelId.id === 'lobby';
 
       if (!isLobbySession) {
-        for (const sessionPlayer of session.players) {
-          const profile = sessionPlayer.gameProfile as GameProfile;
+        const sessionPlayers = await em.find(
+          GameSessionPlayer,
+          { sessionId: session.id },
+          { populate: ['gameProfileId'] },
+        );
+
+        for (const sessionPlayer of sessionPlayers) {
+          const profile = sessionPlayer.gameProfileId as GameProfile;
           profile.totalSessions += 1;
           profile.totalPlayTime += dto.completionTimeSec;
 
@@ -251,13 +253,13 @@ export class GameService {
       }
 
       if (status === GameSessionStatus.FINISHED) {
-        const run = await em.findOne(GameRun, { id: session.run.id });
+        const run = await em.findOne(GameRun, { id: session.runId.id });
         if (!run) {
           throw new NotFoundException('Game run not found');
         }
 
         const finishedCount = await em.count(GameSession, {
-          run: run.id,
+          runId: run.id,
           status: GameSessionStatus.FINISHED,
         });
 
@@ -300,8 +302,8 @@ export class GameService {
       }
 
       const lobbySession = await em.findOne(GameSession, {
-        run: run.id,
-        level: 'lobby',
+        runId: run.id,
+        levelId: 'lobby',
       });
 
       if (!lobbySession) {
@@ -310,8 +312,8 @@ export class GameService {
       }
 
       const sessionPlayer = await em.findOne(GameSessionPlayer, {
-        session: lobbySession.id,
-        gameProfile: gameProfile.id,
+        sessionId: lobbySession.id,
+        gameProfileId: gameProfile.id,
       });
 
       if (!sessionPlayer) {
@@ -353,7 +355,7 @@ export class GameService {
   }
 
   private async findGameProfileOrFail(em: EntityManager, userId: string): Promise<GameProfile> {
-    const gameProfile = await em.findOne(GameProfile, { user: userId });
+    const gameProfile = await em.findOne(GameProfile, { userId });
     if (!gameProfile) {
       throw new NotFoundException('Game profile not found');
     }

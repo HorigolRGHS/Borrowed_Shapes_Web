@@ -1,0 +1,1 @@
+export { ForumPostType as Web$46ForumPostType } from './ForumPostType';

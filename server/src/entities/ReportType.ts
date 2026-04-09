@@ -1,0 +1,6 @@
+export enum ReportType {
+  CHEATING = 'CHEATING',
+  TOXIC_BEHAVIOR = 'TOXIC_BEHAVIOR',
+  EXPLOIT = 'EXPLOIT',
+  OTHER = 'OTHER',
+}

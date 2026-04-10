@@ -1,80 +1,63 @@
-import { Body, Controller, Logger, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
 import { GameService } from './game.service';
-import { InitGameRunDto } from './dto/init-game-run.dto';
-import { JoinLobbyDto } from './dto/join-lobby.dto';
-import { StartSessionDto } from './dto/start-session.dto';
-import { EndSessionDto } from './dto/end-session.dto';
+import { InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
+import { JoinLobbyRequestDto } from './dto/join-lobby.dto';
+import { StartSessionRequestDto, SessionIdResponseDto } from './dto/start-session.dto';
+import { EndSessionRequestDto } from './dto/end-session.dto';
+import { LeaveLobbyParamsRequestDto } from './dto/leave-lobby.dto';
 import { ApiResponseDto } from '../common/dto/api-response.dto';
-import { RunIdResponseDto, SessionIdResponseDto } from './dto/game-response.dto';
 
 @Controller('game')
 export class GameController {
-  private readonly logger = new Logger(GameController.name);
-
   constructor(private readonly gameService: GameService) {}
 
   @Post('run/init')
   async initRun(
     @CurrentUser() user: RequestUser,
-    @Body() dto: InitGameRunDto,
+    @Body() dto: InitGameRunRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<RunIdResponseDto>> {
     const path = `${req.method} ${req.path}`;
-    this.logger.log(`POST /api/game/run/init body=${JSON.stringify(dto)}`);
-    const response = await this.gameService.initRun(user.userId, dto, path);
-    this.logger.log(`POST /api/game/run/init runId=${response.data.runId}`);
-    return response;
+    return this.gameService.initRun(user.userId, dto, path);
   }
 
   @Post('lobby/join')
   async joinLobby(
     @CurrentUser() user: RequestUser,
-    @Body() dto: JoinLobbyDto,
+    @Body() dto: JoinLobbyRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<RunIdResponseDto>> {
     const path = `${req.method} ${req.path}`;
-    this.logger.log(`POST /api/game/lobby/join body=${JSON.stringify(dto)}`);
-    const response = await this.gameService.joinLobby(user.userId, dto, path);
-    this.logger.log(`POST /api/game/lobby/join runId=${response.data.runId}`);
-    return response;
+    return this.gameService.joinLobby(user.userId, dto, path);
   }
 
   @Post('session/start')
   async startSession(
-    @Body() dto: StartSessionDto,
+    @Body() dto: StartSessionRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<SessionIdResponseDto>> {
     const path = `${req.method} ${req.path}`;
-    this.logger.log(`POST /api/game/session/start body=${JSON.stringify(dto)}`);
-    const response = await this.gameService.startSession(dto, path);
-    this.logger.log(`POST /api/game/session/start sessionId=${response.data.sessionId}`);
-    return response;
+    return this.gameService.startSession(dto, path);
   }
 
   @Post('session/end')
   async endSession(
-    @Body() dto: EndSessionDto,
+    @Body() dto: EndSessionRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;
-    this.logger.log(`POST /api/game/session/end body=${JSON.stringify(dto)}`);
-    const response = await this.gameService.endSession(dto, path);
-    this.logger.log(`POST /api/game/session/end completed`);
-    return response;
+    return this.gameService.endSession(dto, path);
   }
 
   @Post('lobby/:lobbyId/leave')
   async leaveLobby(
     @CurrentUser() user: RequestUser,
-    @Param('lobbyId') lobbyId: string,
+    @Param() params: LeaveLobbyParamsRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;
-    this.logger.log(`POST /api/game/lobby/${lobbyId}/leave body={}`);
-    const response = await this.gameService.leaveLobby(user.userId, lobbyId, path);
-    this.logger.log(`POST /api/game/lobby/${lobbyId}/leave completed`);
-    return response;
+    return this.gameService.leaveLobby(user.userId, params.lobbyId, path);
   }
 }

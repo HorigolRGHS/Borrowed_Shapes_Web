@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { okResponse } from '../common/dto/api-response.dto';
 import { GameRun } from '../entities/GameRun';
@@ -9,23 +9,19 @@ import { GameProfile } from '../entities/GameProfile';
 import { Level } from '../entities/Level';
 import { GameSessionStatus } from '../entities/GameSessionStatus';
 import { SessionResult } from '../entities/SessionResult';
-import { InitGameRunDto } from './dto/init-game-run.dto';
-import { JoinLobbyDto } from './dto/join-lobby.dto';
-import { StartSessionDto } from './dto/start-session.dto';
-import { EndSessionDto, EndSessionStatus } from './dto/end-session.dto';
-import { RunIdResponseDto, SessionIdResponseDto } from './dto/game-response.dto';
+import { InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
+import { JoinLobbyRequestDto } from './dto/join-lobby.dto';
+import { StartSessionRequestDto, SessionIdResponseDto } from './dto/start-session.dto';
+import {
+  EndSessionRequestDto,
+  EndSessionStatus,
+} from './dto/end-session.dto';
 
 @Injectable()
 export class GameService {
-  private readonly logger = new Logger(GameService.name);
-
   constructor(private readonly em: EntityManager) {}
 
-  async initRun(userId: string, dto: InitGameRunDto, path: string) {
-    this.logger.log(
-      `GameService.initRun userId=${userId} body=${JSON.stringify(dto)}`,
-    );
-
+  async initRun(userId: string, dto: InitGameRunRequestDto, path: string) {
     const runId = await this.em.transactional(async (em) => {
       const gameProfile = await this.findGameProfileOrFail(em, userId);
       const lobbyLevel = await em.findOne(Level, { id: 'lobby' });
@@ -66,8 +62,6 @@ export class GameService {
       return run.id;
     });
 
-    this.logger.log(`GameService.initRun completed runId=${runId}`);
-
     return okResponse<RunIdResponseDto>(
       'Game run initialized successfully',
       { runId },
@@ -75,9 +69,7 @@ export class GameService {
     );
   }
 
-  async joinLobby(userId: string, dto: JoinLobbyDto, path: string) {
-    this.logger.log(`GameService.joinLobby userId=${userId} body=${JSON.stringify(dto)}`);
-
+  async joinLobby(userId: string, dto: JoinLobbyRequestDto, path: string) {
     const runId = await this.em.transactional(async (em) => {
       const gameProfile = await this.findGameProfileOrFail(em, userId);
       const run = await em.findOne(
@@ -128,7 +120,6 @@ export class GameService {
       }
 
       await em.flush();
-      this.logger.log(`GameService.joinLobby synced player userId=${userId} runId=${run.id}`);
 
       return run.id;
     });
@@ -140,9 +131,7 @@ export class GameService {
     );
   }
 
-  async startSession(dto: StartSessionDto, path: string) {
-    this.logger.log(`GameService.startSession body=${JSON.stringify(dto)}`);
-
+  async startSession(dto: StartSessionRequestDto, path: string) {
     const sessionId = await this.em.transactional(async (em) => {
       const run = await em.findOne(GameRun, { id: dto.runId });
       if (!run) {
@@ -200,9 +189,6 @@ export class GameService {
       session.startedAt = new Date();
 
       await em.flush();
-      this.logger.log(
-        `GameService.startSession started sessionId=${session.id} runId=${run.id} levelId=${level.id}`,
-      );
       return session.id;
     });
 
@@ -213,9 +199,7 @@ export class GameService {
     );
   }
 
-  async endSession(dto: EndSessionDto, path: string) {
-    this.logger.log(`GameService.endSession body=${JSON.stringify(dto)}`);
-
+  async endSession(dto: EndSessionRequestDto, path: string) {
     await this.em.transactional(async (em) => {
       const session = await em.findOne(GameSession, { id: dto.sessionId });
       if (!session) {
@@ -270,12 +254,10 @@ export class GameService {
             0,
             Math.floor((run.completedAt.getTime() - run.startedAt.getTime()) / 1000),
           );
-          this.logger.log(`GameService.endSession marked run completed runId=${run.id}`);
         }
       }
 
       await em.flush();
-      this.logger.log(`GameService.endSession completed sessionId=${session.id} status=${session.status}`);
     });
 
     return okResponse<null>(
@@ -286,8 +268,6 @@ export class GameService {
   }
 
   async leaveLobby(userId: string, lobbyId: string, path: string) {
-    this.logger.log(`GameService.leaveLobby userId=${userId} lobbyId=${lobbyId}`);
-
     await this.em.transactional(async (em) => {
       const gameProfile = await this.findGameProfileOrFail(em, userId);
 
@@ -297,7 +277,6 @@ export class GameService {
         { orderBy: { startedAt: 'desc' } },
       );
       if (!run) {
-        this.logger.warn(`GameService.leaveLobby no active run found for lobbyId=${lobbyId}`);
         return;
       }
 
@@ -307,7 +286,6 @@ export class GameService {
       });
 
       if (!lobbySession) {
-        this.logger.warn(`GameService.leaveLobby no lobby session found for runId=${run.id}`);
         return;
       }
 
@@ -317,9 +295,6 @@ export class GameService {
       });
 
       if (!sessionPlayer) {
-        this.logger.warn(
-          `GameService.leaveLobby session player not found userId=${userId} sessionId=${lobbySession.id}`,
-        );
         return;
       }
 
@@ -327,9 +302,6 @@ export class GameService {
       sessionPlayer.leftAt = new Date();
 
       await em.flush();
-      this.logger.log(
-        `GameService.leaveLobby marked absent userId=${userId} sessionId=${lobbySession.id}`,
-      );
     });
 
     return okResponse<null>(

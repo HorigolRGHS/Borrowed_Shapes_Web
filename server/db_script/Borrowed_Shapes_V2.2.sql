@@ -223,7 +223,6 @@ CREATE TABLE game."GameRunPlayer" (
   "gameProfileId" TEXT        NOT NULL,
   "isHost"        BOOLEAN     NOT NULL DEFAULT FALSE,
   "joinedAt"      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
   PRIMARY KEY ("runId", "gameProfileId"),
   CONSTRAINT "GameRunPlayer_runId_fkey"
     FOREIGN KEY ("runId") REFERENCES game."GameRun"("id") ON DELETE CASCADE,
@@ -271,13 +270,12 @@ CREATE INDEX "GameSession_status_idx"  ON game."GameSession"("status");
 
 -- ─── GameSessionPlayer ───────────────────────────────────
 CREATE TABLE game."GameSessionPlayer" (
-  "id"            TEXT        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "sessionId"     TEXT        NOT NULL,
   "gameProfileId" TEXT        NOT NULL,
   "isAbsent"      BOOLEAN     NOT NULL DEFAULT FALSE,
   "leftAt"        TIMESTAMPTZ,
 
-  UNIQUE ("sessionId", "gameProfileId"),
+  PRIMARY KEY ("sessionId", "gameProfileId"),
   CONSTRAINT "GameSessionPlayer_sessionId_fkey"
     FOREIGN KEY ("sessionId") REFERENCES game."GameSession"("id") ON DELETE CASCADE,
   CONSTRAINT "GameSessionPlayer_gameProfileId_fkey"
@@ -527,23 +525,22 @@ ALTER TABLE web."WikiPage"
 -- ─── Announcement ────────────────────────────────────────
 CREATE TABLE web."Announcement" (
   "id"          TEXT                   NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "authorId"    TEXT                   NOT NULL,
   "slug"        TEXT                   NOT NULL UNIQUE,
   "title"       TEXT                   NOT NULL,
   "summary"     TEXT,
   "content"     TEXT                   NOT NULL,
-  "authorId"    TEXT                   NOT NULL,
   "type"        web."AnnouncementType" NOT NULL DEFAULT 'NEWS',
   "isPinned"    BOOLEAN                NOT NULL DEFAULT FALSE,
   "isPublished" BOOLEAN                NOT NULL DEFAULT FALSE,
   "publishedAt" TIMESTAMPTZ,
   "createdAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
   "updatedAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
-
+  
   CONSTRAINT "Announcement_authorId_fkey"
-    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE CASCADE
+    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE SET NULL
 );
 
-CREATE INDEX "Announcement_authorId_idx" ON web."Announcement"("authorId");
 CREATE INDEX "Announcement_isPublished_publishedAt_idx"
   ON web."Announcement"("isPublished", "publishedAt" DESC);
 CREATE INDEX "Announcement_type_idx" ON web."Announcement"("type");

@@ -3,11 +3,14 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
+import { User } from '../entities/User';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -15,6 +18,7 @@ export class AuthGuard implements CanActivate {
     private reflector: Reflector,
     private jwt: JwtService,
     private config: ConfigService,
+    private em: EntityManager,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,12 +37,43 @@ export class AuthGuard implements CanActivate {
         secret: this.config.get<string>('JWT_SECRET', 'change-me-in-production'),
       });
 
+      const userId = payload.sub as string | undefined;
+      if (!userId) {
+        throw new UnauthorizedException();
+      }
+
+      const user = await this.em.findOne(
+        User,
+        { id: userId },
+        { fields: ['id', 'role', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
+      );
+
+      if (!user || user.deletedAt) {
+        throw new UnauthorizedException();
+      }
+
+      const now = new Date();
+      if (user.isBanned) {
+        if (user.banExpiresAt && user.banExpiresAt <= now) {
+          user.isBanned = false;
+          user.bannedAt = undefined;
+          user.banReason = undefined;
+          user.banExpiresAt = undefined;
+          await this.em.flush();
+        } else {
+          throw new ForbiddenException(user.banReason ?? 'Account is banned');
+        }
+      }
+
       request.user = {
-        userId: payload.sub,
-        role: payload.role,
+        userId: user.id,
+        role: user.role,
         platform: payload.platform,
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new UnauthorizedException();
     }
 

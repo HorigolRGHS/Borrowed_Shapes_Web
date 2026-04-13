@@ -531,14 +531,19 @@ CREATE TABLE web."Announcement" (
   "title"       TEXT                   NOT NULL,
   "summary"     TEXT,
   "content"     TEXT                   NOT NULL,
+  "authorId"    TEXT                   NOT NULL,
   "type"        web."AnnouncementType" NOT NULL DEFAULT 'NEWS',
   "isPinned"    BOOLEAN                NOT NULL DEFAULT FALSE,
   "isPublished" BOOLEAN                NOT NULL DEFAULT FALSE,
   "publishedAt" TIMESTAMPTZ,
   "createdAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
-  "updatedAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW()
+  "updatedAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
+
+  CONSTRAINT "Announcement_authorId_fkey"
+    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE CASCADE
 );
 
+CREATE INDEX "Announcement_authorId_idx" ON web."Announcement"("authorId");
 CREATE INDEX "Announcement_isPublished_publishedAt_idx"
   ON web."Announcement"("isPublished", "publishedAt" DESC);
 CREATE INDEX "Announcement_type_idx" ON web."Announcement"("type");

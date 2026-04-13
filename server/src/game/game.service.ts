@@ -30,6 +30,7 @@ export class GameService {
         throw new BadRequestException('Lobby level is not configured');
       }
 
+      // Create a new game run (table: game.GameRun)
       const run = em.create(GameRun, {
         lobbyId: dto.lobbyId,
         totalLevels: dto.totalLevels,
@@ -37,12 +38,14 @@ export class GameService {
         startedAt: new Date(),
       });
 
+      // Add host player into the run (table: game.GameRunPlayer)
       em.create(GameRunPlayer, {
         runId: run,
         gameProfileId: gameProfile,
         isHost: true,
       });
 
+      // Create the initial lobby session for this run (table: game.GameSession)
       const lobbySession = em.create(GameSession, {
         runId: run,
         levelId: lobbyLevel,
@@ -52,6 +55,7 @@ export class GameService {
         maxPlayers: dto.maxPlayers,
       });
 
+      // Link host player to lobby session (table: game.GameSessionPlayer)
       em.create(GameSessionPlayer, {
         sessionId: lobbySession,
         gameProfileId: gameProfile,
@@ -87,6 +91,7 @@ export class GameService {
       });
 
       if (!existing) {
+        // Add joining player into run roster (table: game.GameRunPlayer)
         em.create(GameRunPlayer, {
           runId: run,
           gameProfileId: gameProfile,
@@ -109,6 +114,7 @@ export class GameService {
       });
 
       if (!sessionPlayer) {
+        // Add joining player into lobby session participants (table: game.GameSessionPlayer)
         em.create(GameSessionPlayer, {
           sessionId: lobbySession,
           gameProfileId: gameProfile,
@@ -156,6 +162,7 @@ export class GameService {
         const minPlayers = lobbySession?.minPlayers ?? 2;
         const maxPlayers = lobbySession?.maxPlayers ?? 5;
 
+        // Create level session on first start request for this map (table: game.GameSession)
         session = em.create(GameSession, {
           runId: run,
           levelId: level,
@@ -174,6 +181,7 @@ export class GameService {
         });
 
         if (!sessionPlayer) {
+          // Ensure each run player has a row in this session (table: game.GameSessionPlayer)
           em.create(GameSessionPlayer, {
             sessionId: session,
             gameProfileId: runPlayer.gameProfileId,

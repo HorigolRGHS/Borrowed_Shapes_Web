@@ -7,6 +7,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { ApiResponseDto } from '../dto/api-response.dto';
+import { safeStringify } from '../utils/json.util';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -22,28 +24,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message: string | string[] = 'Internal server error';
-    let error: any = undefined;
+    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    let rawMessage: string | string[] = 'Internal server error';
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus();
+      statusCode = exception.getStatus();
       const res = exception.getResponse();
       if (typeof res === 'string') {
-        message = res;
+        rawMessage = res;
       } else if (typeof res === 'object' && res !== null) {
         const resObj = res as any;
-        message = resObj.message ?? message;
-        // Preserve validation errors array structure
-        if (Array.isArray(resObj.message)) {
-          error = resObj.message;
-        }
+        rawMessage = resObj.message ?? rawMessage;
       }
 
       // Body parser throws BadRequestException for malformed JSON before DTO validation runs.
-      if (status === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(message)) {
-        message = 'Invalid JSON payload';
-        error = undefined;
+      if (statusCode === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(rawMessage)) {
+        rawMessage = 'Invalid JSON payload';
       }
     } else {
       // Unexpected error — log full stack, never expose internals to client
@@ -55,14 +51,25 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       );
     }
 
-    response.status(status).json({
-      statusCode: status,
-      success: false,
+    // const message = Array.isArray(rawMessage) ? rawMessage.join('; ') : rawMessage;
+    const message = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage;
+    const payload = new ApiResponseDto<null>(
+      statusCode,
+      false,
       message,
-      data: null,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      ...(error && { error }),
-    });
+      null,
+      request.url,
+      new Date().toISOString(),
+    );
+
+    response.status(statusCode).json(payload);
+
+    this.logger.warn(
+      [
+        `${request.method} ${request.url}`,
+        `request:\n${safeStringify(request.body, true)}`,
+        `response:\n${safeStringify(payload, true)}`,
+      ].join('\n'),
+    );
   }
 }

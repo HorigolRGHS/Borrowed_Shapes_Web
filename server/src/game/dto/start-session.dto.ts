@@ -1,11 +1,15 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class StartSessionDto {
-	@IsString()
-	@IsNotEmpty()
-	runId!: string;
+export class StartSessionRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  runId!: string;
 
-	@IsString()
-	@IsNotEmpty()
-	levelId!: string;
+  @IsString()
+  @IsNotEmpty()
+  levelId!: string;
+}
+
+export class SessionIdResponseDto {
+  sessionId!: string;
 }

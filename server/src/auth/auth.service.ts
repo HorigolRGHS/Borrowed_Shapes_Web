@@ -1,6 +1,8 @@
 import {
   Injectable,
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
@@ -11,8 +13,15 @@ import { createHash } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { init } from '@paralleldrive/cuid2';
 import { RedisService } from '../redis/redis.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
+import {
+  RefreshRequestDto,
+  RefreshResponseDto,
+} from './dto/refresh.dto';
+import {
+  RegisterRequestDto,
+  RegisterResponseDto,
+} from './dto/register.dto';
 import { User } from '../entities/User';
 import { UserSession } from '../entities/UserSession';
 import { AuditLog } from '../entities/AuditLog';
@@ -39,18 +48,30 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async register(dto: Pick<RegisterDto, 'email' | 'password' | 'displayName'> & { deviceInfo?: string }, ipAddress: string) {
+  async register(
+    dto: Pick<RegisterRequestDto, 'email' | 'password' | 'displayName'> & { deviceInfo?: string },
+    ipAddress: string,
+  ): Promise<RegisterResponseDto> {
+    if (!dto.email || !dto.password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
+    const email = dto.email;
+    const password = dto.password;
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
-    const passwordHash = await bcrypt.hash(dto.password, rounds);
+    const passwordHash = await bcrypt.hash(password, rounds);
 
     try {
       const user = await this.em.transactional(async (em) => {
         const created = em.create(User, {
-          email: dto.email,
+          email,
           passwordHash,
           displayName: dto.displayName ?? null,
           role: Role.USER,
         });
+
+        await em.flush();
+
         const gameProfile = em.create(GameProfile, { userId: created });
         const auditLog = em.create(AuditLog, {
           userId: created,
@@ -86,22 +107,43 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto, ipAddress: string) {
-    const user = await this.em.findOne(User, { email: dto.email });
+  async login(dto: LoginRequestDto, ipAddress: string): Promise<LoginResponseDto> {
+    if (!dto.email || !dto.password || !dto.platform) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const email = dto.email;
+    const password = dto.password;
+    const platform = dto.platform;
+
+    const user = await this.em.findOne(User, { email });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
+    const currentTime = new Date();
+    if (user.isBanned) {
+      if (user.banExpiresAt && user.banExpiresAt <= currentTime) {
+        user.isBanned = false;
+        user.bannedAt = undefined;
+        user.banReason = undefined;
+        user.banExpiresAt = undefined;
+        await this.em.flush();
+      } else {
+        throw new ForbiddenException(user.banReason ?? 'Account is banned');
+      }
+    }
+
     const valid = user.passwordHash
-      ? await bcrypt.compare(dto.password, user.passwordHash)
+      ? await bcrypt.compare(password, user.passwordHash)
       : false;
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
     const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
     const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
-    const now = new Date().toISOString();
+  const loginTime = currentTime.toISOString();
     const expiresAt = new Date(Date.now() + sessionTtl * 1000).toISOString();
 
     // Revoke any existing session for this platform (1 session per platform)
-    const existing = await this.redis.hgetall(rtKey(user.id, dto.platform));
+    const existing = await this.redis.hgetall(rtKey(user.id, platform));
     if (existing?.sessionId) {
       await this.em.nativeUpdate(
         UserSession,
@@ -113,24 +155,24 @@ export class AuthService {
     // Generate tokens
     const sessionId = createId();
     // Refresh token encodes userId + platform so the server can look up the Redis key without extra params
-    const refreshToken = `${user.id}:${dto.platform}:${sessionId}`;
+    const refreshToken = `${user.id}:${platform}:${sessionId}`;
     const tokenHash = hashToken(refreshToken);
     const accessToken = this.jwt.sign(
-      { sub: user.id, role: user.role, platform: dto.platform },
+      { sub: user.id, role: user.role, platform },
       { expiresIn: accessTtl },
     );
 
     // Store refresh token hash in Redis — one key per user per platform (replaces old session)
     await this.redis.pipeline([
-      { cmd: 'hset', args: [rtKey(user.id, dto.platform), { tokenHash, sessionId, expiresAt, deviceInfo: dto.deviceInfo ?? '', ipAddress, loginTime: now, lastActive: now }] },
-      { cmd: 'expire', args: [rtKey(user.id, dto.platform), sessionTtl] },
+      { cmd: 'hset', args: [rtKey(user.id, platform), { tokenHash, sessionId, expiresAt, deviceInfo: dto.deviceInfo ?? '', ipAddress, loginTime, lastActive: loginTime }] },
+      { cmd: 'expire', args: [rtKey(user.id, platform), sessionTtl] },
       { cmd: 'zadd', args: ['online_users_by_last_active', Date.now(), sessionId] },
     ]);
 
     const session = this.em.create(UserSession, {
       userId: user,
       sessionId,
-      platform: dto.platform,
+      platform,
       ipAddress,
       deviceInfo: dto.deviceInfo,
       status: SessionStatus.ACTIVE,
@@ -153,13 +195,19 @@ export class AuthService {
       expiresAt,
       user: {
         id: user.id,
+        email: String(user.email),
         displayName: user.displayName ? String(user.displayName) : null,
+        imgUrl: user.imgUrl ?? null,
         role: user.role,
+        isBanned: user.isBanned,
+        bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
+        banReason: user.banReason ?? null,
+        banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
       },
     };
   }
 
-  async refresh(incomingRefreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  async refresh(incomingRefreshToken: string): Promise<RefreshResponseDto> {
     // Parse: {userId}:{platform}:{sessionId}
     const firstColon = incomingRefreshToken.indexOf(':');
     const secondColon = incomingRefreshToken.indexOf(':', firstColon + 1);

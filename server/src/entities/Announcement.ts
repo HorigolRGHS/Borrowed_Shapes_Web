@@ -1,7 +1,9 @@
-import { Entity, Enum, Index, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
+import { User } from './User';
 import { Web$46AnnouncementType } from './Web$46AnnouncementType';
 
 @Entity({ schema: 'web' })
+@Index({ name: 'Announcement_authorId_idx', expression: 'CREATE INDEX "Announcement_authorId_idx" ON web."Announcement" USING btree ("authorId")', properties: ['authorId'] })
 @Index({ name: 'Announcement_isPublished_publishedAt_idx', expression: 'CREATE INDEX "Announcement_isPublished_publishedAt_idx" ON web."Announcement" USING btree ("isPublished", "publishedAt" DESC)', properties: ['isPublished', 'publishedAt'] })
 export class Announcement {
 
@@ -19,6 +21,9 @@ export class Announcement {
 
   @Property({ type: 'text' })
   content!: string;
+
+  @ManyToOne({ entity: () => User, fieldName: 'authorId', deleteRule: 'cascade' })
+  authorId!: Rel<User>;
 
   @Enum({ items: () => Web$46AnnouncementType, nativeEnumName: 'web.AnnouncementType', index: 'Announcement_type_idx' })
   type: Web$46AnnouncementType & Opt = Web$46AnnouncementType.NEWS;

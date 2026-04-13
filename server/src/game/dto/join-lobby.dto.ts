@@ -1,3 +1,3 @@
-import { LobbyIdDto } from './lobby-id.dto';
+import { LobbyIdRequestDto } from './lobby.dto';
 
-export class JoinLobbyDto extends LobbyIdDto {}
+export class JoinLobbyRequestDto extends LobbyIdRequestDto {}

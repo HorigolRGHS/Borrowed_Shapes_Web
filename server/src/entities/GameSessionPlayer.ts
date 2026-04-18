@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, type Opt, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
 import { GameProfile } from './GameProfile';
 import { GameSession } from './GameSession';
 
@@ -9,11 +9,11 @@ export class GameSessionPlayer {
   [PrimaryKeyProp]?: ['sessionId', 'gameProfileId'];
 
   @Index({ name: 'GameSessionPlayer_sessionId_idx', expression: 'CREATE INDEX "GameSessionPlayer_sessionId_idx" ON game."GameSessionPlayer" USING btree ("sessionId")' })
-  @ManyToOne({ entity: () => GameSession, fieldName: 'sessionId', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => GameSession, fieldName: 'sessionId', deleteRule: 'cascade', primary: true })
   sessionId!: GameSession;
 
   @Index({ name: 'GameSessionPlayer_gameProfileId_idx', expression: 'CREATE INDEX "GameSessionPlayer_gameProfileId_idx" ON game."GameSessionPlayer" USING btree ("gameProfileId")' })
-  @ManyToOne({ entity: () => GameProfile, fieldName: 'gameProfileId', deleteRule: 'cascade' })
+  @ManyToOne({ entity: () => GameProfile, fieldName: 'gameProfileId', deleteRule: 'cascade', primary: true })
   gameProfileId!: GameProfile;
 
   @Property({ type: 'boolean' })

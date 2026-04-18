@@ -96,12 +96,27 @@ export class AuthService {
       };
     } catch (err) {
       if (err instanceof UniqueConstraintViolationException) {
-        const constraint = (err.cause as any)?.constraint ?? '';
-        const message = err.message ?? '';
-        if (constraint.includes('display_name') || message.includes('display_name')) {
+        const e = err as UniqueConstraintViolationException & {
+          constraint?: unknown;
+          cause?: { constraint?: unknown; cause?: { constraint?: unknown }; message?: string };
+        };
+
+        const constraint = String(
+          e.constraint
+            ?? e.cause?.constraint
+            ?? e.cause?.cause?.constraint
+            ?? '',
+        );
+        const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
+
+        if (details.includes('display_name') || details.includes('displayname')) {
           throw new ConflictException('Display name already taken');
         }
-        throw new ConflictException('Email already in use');
+        if (details.includes('email')) {
+          throw new ConflictException('Email already in use');
+        }
+
+        throw new ConflictException('Unique field already in use');
       }
       throw err;
     }

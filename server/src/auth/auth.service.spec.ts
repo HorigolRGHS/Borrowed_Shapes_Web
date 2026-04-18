@@ -77,24 +77,35 @@ describe('AuthService', () => {
 
     it('throws ConflictException on unique constraint violation (email)', async () => {
       const err = new UniqueConstraintViolationException(
-        Object.assign(new Error('duplicate key'), { constraint: 'user_email_unique' }),
+        Object.assign(new Error('duplicate key'), { constraint: 'User_email_key' }),
       );
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
         service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1'),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow('Email already in use');
     });
 
     it('throws ConflictException for duplicate displayName', async () => {
       const err = new UniqueConstraintViolationException(
-        Object.assign(new Error('duplicate key'), { constraint: 'user_display_name_unique' }),
+        Object.assign(new Error('duplicate key'), { constraint: 'User_displayName_key' }),
       );
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
         service.register({ email: 'a@b.com', password: 'password123', displayName: 'taken' }, '127.0.0.1'),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow('Display name already taken');
+    });
+
+    it('throws generic conflict for unknown unique constraint', async () => {
+      const err = new UniqueConstraintViolationException(
+        Object.assign(new Error('duplicate key'), { constraint: 'Some_other_unique_key' }),
+      );
+      mockEm.transactional.mockRejectedValue(err);
+
+      await expect(
+        service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1'),
+      ).rejects.toThrow('Unique field already in use');
     });
   });
 

@@ -1,86 +1,28 @@
-# Docker Compose cho full stack local development
-# Build images và chạy tất cả services (PostgreSQL, Redis, Backend, Frontend)
+version: '3.8'
 
 services:
-
-  # ─── PostgreSQL ─────────────────────────────────────────────────────────────
-  bs_postgres:
+  # --- PostgreSQL Service với pgvector ---
+  postgres:
+    # Thay đổi image ở đây
     image: postgres:16-alpine
-    restart: unless-stopped
+    container_name: my_postgres
+    restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-borrowed_shapes}
-      POSTGRES_USER: ${POSTGRES_USER:-bws}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bws} -d ${POSTGRES_DB:-borrowed_shapes}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ─── Redis ──────────────────────────────────────────────────────────────────
-  bs_redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ─── Backend (NestJS) ────────────────────────────────────────────────────────
-  bs_be:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    restart: unless-stopped
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: maihoangan
+      POSTGRES_DB: Borrowed_Shapes
     ports:
-      - "${BACKEND_PORT:-3001}:3001"
-    environment:
-      NODE_ENV: production
-      PORT: 3001
-      DATABASE_URL: postgres://${POSTGRES_USER:-bws}:${POSTGRES_PASSWORD:-password}@bs_postgres:5432/${POSTGRES_DB:-borrowed_shapes}?connection_limit=10&pool_timeout=20
-      REDIS_URL: ${REDIS_URL:-redis://bs_redis:6379}
-      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
-      SESSION_TTL_SEC: ${SESSION_TTL_SEC:-604800}
-      HEARTBEAT_TIMEOUT_SEC: ${HEARTBEAT_TIMEOUT_SEC:-120}
-      HEARTBEAT_TIMEOUT_MS: ${HEARTBEAT_TIMEOUT_MS:-120000}
-      REDIS_CLEANUP_INTERVAL_MS: ${REDIS_CLEANUP_INTERVAL_MS:-60000}
-      DB_SYNC_INTERVAL_MS: ${DB_SYNC_INTERVAL_MS:-60000}
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-me}
-      ACCESS_TOKEN_TTL_SEC: ${ACCESS_TOKEN_TTL_SEC:-900}
-    depends_on:
-      bs_postgres:
-        condition: service_healthy
-      bs_redis:
-        condition: service_healthy
-    # Chạy MikroORM schema:fresh trước khi khởi động server (code-first approach)
-    command: sh -c "node ./node_modules/.bin/mikro-orm --config ./mikro-orm.config.ts schema:fresh --run && node dist/main.js"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 45s
+      - "5433:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
 
-  # ─── Frontend (Next.js) ──────────────────────────────────────────────────────
-  bs_fe:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
+  # --- Redis Stack giữ nguyên ---
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: my_redis_stack
+    restart: always
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      NODE_ENV: production
-      NESTJS_URL: ${NESTJS_URL:-http://bs_be:3001}
-    depends_on:
-      bs_be:
-        condition: service_healthy
-
-volumes:
-  postgres_data:
-  redis_data:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - ./redis_data:/data

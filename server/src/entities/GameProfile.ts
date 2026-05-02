@@ -5,7 +5,7 @@ import { User } from './User';
 @Entity({ schema: 'game' })
 export class GameProfile {
 
-  @PrimaryKey({ type: 'text', defaultRaw: `(gen_random_uuid())::text` })
+  @PrimaryKey({ type: 'text', defaultRaw: `('BS'::text || lpad((nextval('game.gameprofile_id_seq'::regclass))::text, 8, '0'::text))` })
   id!: string & Opt;
 
   @Unique({ name: 'GameProfile_userId_key', expression: 'CREATE UNIQUE INDEX "GameProfile_userId_key" ON game."GameProfile" USING btree ("userId")' })

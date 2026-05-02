@@ -1,4 +1,4 @@
-import { Entity, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ schema: 'game' })
 export class Achievement {
@@ -18,4 +18,18 @@ export class Achievement {
   @Property({ type: 'text' })
   badgeImageUrl!: string;
 
+  @Enum({ items: () => AchievementType })
+  type: AchievementType & Opt = AchievementType.PERMANENT;
+
+  @Property({ type: 'date', nullable: true })
+  seasonMonth?: string;
+
+  @Property({ nullable: true })
+  expiresAt?: Date;
+
+}
+
+export enum AchievementType {
+  PERMANENT = 'PERMANENT',
+  SEASONAL = 'SEASONAL',
 }

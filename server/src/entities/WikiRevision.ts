@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { User } from './User';
 import { WikiPage } from './WikiPage';
 
@@ -10,11 +10,11 @@ export class WikiRevision {
   id!: string & Opt;
 
   @ManyToOne({ entity: () => WikiPage, fieldName: 'pageId', deleteRule: 'cascade' })
-  pageId!: Rel<WikiPage>;
+  pageId!: WikiPage;
 
   @Index({ name: 'WikiRevision_authorId_idx', expression: 'CREATE INDEX "WikiRevision_authorId_idx" ON web."WikiRevision" USING btree ("authorId")' })
   @ManyToOne({ entity: () => User, fieldName: 'authorId', deleteRule: 'set null' })
-  authorId!: Rel<User>;
+  authorId!: User;
 
   @Property({ type: 'text' })
   content!: string;

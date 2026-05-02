@@ -1,6 +1,6 @@
 import { Entity, Enum, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
-import { GameRun } from './GameRun';
-import { GameSession } from './GameSession';
+import { ForumComment } from './ForumComment';
+import { ForumThread } from './ForumThread';
 import { User } from './User';
 import { Web$46ReportStatus } from './Web$46ReportStatus';
 import { Web$46ReportType } from './Web$46ReportType';
@@ -17,15 +17,16 @@ export class Report {
   reporterId!: User;
 
   @Index({ name: 'Report_reportedUserId_idx', expression: 'CREATE INDEX "Report_reportedUserId_idx" ON web."Report" USING btree ("reportedUserId")' })
-  @ManyToOne({ entity: () => User, fieldName: 'reportedUserId', deleteRule: 'cascade' })
-  reportedUserId!: User;
+  @ManyToOne({ entity: () => User, fieldName: 'reportedUserId', deleteRule: 'cascade', nullable: true })
+  reportedUserId?: User;
 
-  @Index({ name: 'Report_sessionId_idx', expression: 'CREATE INDEX "Report_sessionId_idx" ON web."Report" USING btree ("sessionId")' })
-  @ManyToOne({ entity: () => GameSession, fieldName: 'sessionId', deleteRule: 'set null', nullable: true })
-  sessionId?: GameSession;
+  @Index({ name: 'Report_threadId_idx', expression: 'CREATE INDEX "Report_threadId_idx" ON web."Report" USING btree ("threadId")' })
+  @ManyToOne({ entity: () => ForumThread, fieldName: 'threadId', deleteRule: 'cascade', nullable: true })
+  threadId?: ForumThread;
 
-  @ManyToOne({ entity: () => GameRun, fieldName: 'runId', deleteRule: 'set null', nullable: true })
-  runId?: GameRun;
+  @Index({ name: 'Report_commentId_idx', expression: 'CREATE INDEX "Report_commentId_idx" ON web."Report" USING btree ("commentId")' })
+  @ManyToOne({ entity: () => ForumComment, fieldName: 'commentId', deleteRule: 'cascade', nullable: true })
+  commentId?: ForumComment;
 
   @Enum({ items: () => Web$46ReportType, nativeEnumName: 'web.ReportType' })
   reportType: Web$46ReportType & Opt = Web$46ReportType.OTHER;

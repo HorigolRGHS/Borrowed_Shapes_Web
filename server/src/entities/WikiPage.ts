@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { WikiRevision } from './WikiRevision';
 
 @Entity({ schema: 'web' })
@@ -22,7 +22,7 @@ export class WikiPage {
   isPublished: boolean & Opt = false;
 
   @ManyToOne({ entity: () => WikiRevision, fieldName: 'latestRevisionId', deleteRule: 'set null', nullable: true })
-  latestRevisionId?: Rel<WikiRevision>;
+  latestRevisionId?: WikiRevision;
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;

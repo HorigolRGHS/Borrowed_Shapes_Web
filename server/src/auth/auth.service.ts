@@ -158,10 +158,10 @@ export class AuthService {
         );
         const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
 
-        if (details.includes('display_name') || details.includes('displayname')) {
+        if (details.includes('display_name') || details.includes('user_displayname_key')) {
           throw new ConflictException('Display name already taken');
         }
-        if (details.includes('email')) {
+        if (details.includes('user_email_key')) {
           throw new ConflictException('Email already in use');
         }
 

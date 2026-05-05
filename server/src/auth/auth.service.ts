@@ -9,10 +9,11 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { init } from '@paralleldrive/cuid2';
 import { RedisService } from '../redis/redis.service';
+import { EmailService } from '../email/email.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import {
   RefreshRequestDto,
@@ -22,6 +23,12 @@ import {
   RegisterRequestDto,
   RegisterResponseDto,
 } from './dto/register.dto';
+import {
+  VerifyEmailRequestDto,
+  ForgotPasswordRequestDto,
+  ResetPasswordRequestDto,
+  ChangePasswordRequestDto,
+} from './dto/password.dto';
 import { User } from '../entities/User';
 import { UserSession } from '../entities/UserSession';
 import { AuditLog } from '../entities/AuditLog';
@@ -35,8 +42,24 @@ const createId = init({ length: 24 });
 /** Redis key for a user's active session on a given platform. */
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
+/** Redis key for email verification token. */
+const emailVerifyTokenKey = (token: string) => `email_verify:${token}`;
+
+/** Redis key for forgot-password OTP by email. */
+const forgotOtpKey = (email: string) => `forgot_otp:${email.toLowerCase()}`;
+
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
+}
+
+function generateToken(): string {
+  return randomBytes(32).toString('hex');
+}
+
+function generateOtp(length = 6): string {
+  const min = Math.pow(10, length - 1);
+  const max = Math.pow(10, length) - 1;
+  return Math.floor(min + Math.random() * (max - min + 1)).toString();
 }
 
 @Injectable()
@@ -46,6 +69,7 @@ export class AuthService {
     private redis: RedisService,
     private config: ConfigService,
     private jwt: JwtService,
+    private email: EmailService,
   ) {}
 
   async register(
@@ -62,12 +86,15 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, rounds);
 
     try {
-      const user = await this.em.transactional(async (em) => {
+      const result = await this.em.transactional(async (em) => {
         const created = em.create(User, {
           email,
           passwordHash,
           displayName: dto.displayName ?? null,
           role: Role.USER,
+          isBanned: true, // Auto-ban until email is verified
+          bannedAt: new Date(),
+          banReason: 'Unverified email',
         });
 
         await em.flush();
@@ -82,17 +109,39 @@ export class AuthService {
           ipAddress,
         });
         await em.flush();
-        // suppress unused variable warnings
-        void gameProfile;
         void auditLog;
-        return created;
+        return {
+          user: created,
+          gameProfile,
+        };
       });
 
+      // Generate verification token and send email
+      const verifyToken = generateToken();
+      const verifyTtl = 24 * 60 * 60; // 24 hours
+      await this.redis.hset(emailVerifyTokenKey(verifyToken), { userId: result.user.id });
+      await this.redis.expire(emailVerifyTokenKey(verifyToken), verifyTtl);
+      const appUrl = this.config.get('WEB_URL', 'http://localhost:3000');
+      const verifyLink = `${appUrl}/auth/verify-email?token=${verifyToken}`;
+      const name = result.user.displayName ? String(result.user.displayName) : email.split('@')[0];
+      const verifyHtml = `
+      <h2>Verify Your Email - Borrowed Shapes</h2>
+      <p>Hello ${name},</p>
+      <p>Thank you for registering. Please verify your email to activate your account:</p>
+      <p><a href="${verifyLink}" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+      <p>Or copy this link: ${verifyLink}</p>
+      <p>This link expires in 24 hours.</p>
+      <p>If you didn't create this account, please ignore this email.</p>
+    `;
+
+      await this.email.sendMail(email, '[Borrowed Shapes] Verify Your Email', verifyHtml);
+
       return {
-        userId: user.id,
-        email: String(user.email),
-        displayName: user.displayName ? String(user.displayName) : null,
-        role: user.role,
+        userId: result.user.id,
+        gameProfileId: result.gameProfile.id,
+        email: String(result.user.email),
+        displayName: result.user.displayName ? String(result.user.displayName) : null,
+        role: result.user.role,
       };
     } catch (err) {
       if (err instanceof UniqueConstraintViolationException) {
@@ -134,6 +183,9 @@ export class AuthService {
     const user = await this.em.findOne(User, { email });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
+    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id });
+    if (!gameProfile) throw new UnauthorizedException('Game profile not found');
+
     const currentTime = new Date();
     if (user.isBanned) {
       if (user.banExpiresAt && user.banExpiresAt <= currentTime) {
@@ -173,7 +225,7 @@ export class AuthService {
     const refreshToken = `${user.id}:${platform}:${sessionId}`;
     const tokenHash = hashToken(refreshToken);
     const accessToken = this.jwt.sign(
-      { sub: user.id, role: user.role, platform },
+      { sub: user.id, sid: sessionId, role: user.role, pf: platform, gp: gameProfile.id },
       { expiresIn: accessTtl },
     );
 
@@ -210,6 +262,7 @@ export class AuthService {
       expiresAt,
       user: {
         id: user.id,
+        gameProfileId: gameProfile.id,
         email: String(user.email),
         displayName: user.displayName ? String(user.displayName) : null,
         imgUrl: user.imgUrl ?? null,
@@ -251,8 +304,12 @@ export class AuthService {
     const newSessionId = createId();
     const newRefreshToken = `${userId}:${platform}:${newSessionId}`;
     const newTokenHash = hashToken(newRefreshToken);
+    // Fetch gameProfile id for embedding in token
+    const gpRecord = await this.em.findOne(GameProfile, { userId }, { fields: ['id'] });
+    const gpId = gpRecord ? gpRecord.id : null;
+
     const newAccessToken = this.jwt.sign(
-      { sub: userId, role: user.role, platform },
+      { sub: userId, sid: newSessionId, role: user.role, pf: platform, gp: gpId },
       { expiresIn: accessTtl },
     );
 
@@ -297,5 +354,154 @@ export class AuthService {
     });
     await this.em.flush();
     void auditLog;
+  }
+
+  async verifyEmail(dto: VerifyEmailRequestDto): Promise<void> {
+    const verificationRecord = await this.redis.hgetall(emailVerifyTokenKey(dto.token));
+    const userId = verificationRecord?.userId;
+    if (!userId) {
+      throw new BadRequestException('Verification link expired or invalid');
+    }
+
+    const user = await this.em.findOne(User, { id: userId });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Unban user
+    user.isBanned = false;
+    user.bannedAt = undefined;
+    user.banReason = undefined;
+    user.banExpiresAt = undefined;
+    await this.em.flush();
+
+    // Clean up token
+    await this.redis.del(emailVerifyTokenKey(dto.token));
+  }
+
+  async forgotPassword(dto: ForgotPasswordRequestDto): Promise<void> {
+    const user = await this.em.findOne(User, { email: dto.email });
+    if (!user) {
+      // Don't leak that email exists or doesn't exist
+      return;
+    }
+
+    // Generate OTP and store hashed value in Redis
+    const otp = generateOtp(6);
+    const otpHash = hashToken(otp);
+    const otpTtl = parseInt(this.config.get('FORGOT_PASSWORD_OTP_TTL_SEC', '600'), 10);
+    const key = forgotOtpKey(String(user.email));
+
+    await this.redis.hset(key, { userId: user.id, otpHash });
+    await this.redis.expire(key, otpTtl);
+
+    // Send OTP email (compose template here; EmailService only sends)
+    const name = user.displayName ? String(user.displayName) : String(user.email).split('@')[0];
+    const otpHtml = `
+      <h2>Forgot Password OTP - Borrowed Shapes</h2>
+      <p>Hello ${name},</p>
+      <p>We received a request to reset your password.</p>
+      <p>Your OTP code is:</p>
+      <p style="font-size: 28px; letter-spacing: 6px; font-weight: 700; color: #0f172a;">${otp}</p>
+      <p>This OTP expires in ${Math.ceil(otpTtl / 60)} minutes.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+    `;
+
+    await this.email.sendMail(String(user.email), '[Borrowed Shapes] Forgot Password OTP', otpHtml);
+  }
+
+  async resetPassword(dto: ResetPasswordRequestDto): Promise<void> {
+    const key = forgotOtpKey(dto.email);
+    const otpRecord = await this.redis.hgetall(key);
+    if (!otpRecord?.userId || !otpRecord?.otpHash) {
+      throw new UnauthorizedException('OTP expired or invalid');
+    }
+
+    if (hashToken(dto.otp) !== otpRecord.otpHash) {
+      throw new UnauthorizedException('OTP expired or invalid');
+    }
+
+    const user = await this.em.findOne(User, { id: otpRecord.userId });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
+    user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
+    await this.em.flush();
+
+    // Clean up OTP
+    await this.redis.del(key);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordRequestDto): Promise<void> {
+    const user = await this.em.findOne(User, { id: userId });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('This account does not have a password');
+    }
+
+    const valid = await bcrypt.compare(dto.oldPassword, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
+    user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
+    await this.em.flush();
+  }
+
+  /**
+   * Return authenticated user's minimal profile and optional includes.
+   * includeCsv: comma-separated list, e.g. 'achievements'
+   */
+  async me(userId: string, platform: string, includeCsv?: string) {
+    const user = await this.em.findOne(User, { id: userId });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id });
+
+    const base = {
+      id: user.id,
+      gameProfileId: gameProfile ? gameProfile.id : null,
+      email: String(user.email),
+      displayName: user.displayName ? String(user.displayName) : null,
+      imgUrl: user.imgUrl ?? null,
+      role: user.role,
+      isBanned: user.isBanned,
+      bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
+      banReason: user.banReason ?? null,
+      banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
+    };
+
+    const result: any = { ...base };
+
+    const includes = (includeCsv ?? '').split(',').map(s => s.trim()).filter(Boolean);
+       if (includes.includes('gameProfile') && gameProfile) {
+         result.gameProfile = {
+           id: gameProfile.id,
+           totalPlayTime: gameProfile.totalPlayTime,
+           totalSessions: gameProfile.totalSessions,
+           totalWins: gameProfile.totalWins,
+           totalLosses: gameProfile.totalLosses,
+           totalAbandoned: gameProfile.totalAbandoned
+         };
+       }
+    if (includes.includes('achievements') && gameProfile) {
+      // load user's achievements (lightweight)
+      const rows = await this.em.getConnection().execute(
+        `select ua.achievement_id as id, a.name, a.badge_image_url as "badgeImageUrl", ua.achieved_at as "achievedAt"
+         from game.user_achievement ua
+         join game.achievement a on a.id = ua.achievement_id
+         where ua.game_profile_id = $1`, [gameProfile.id],
+      );
+
+      result.achievements = (rows || []).map((r: any) => ({ id: r.id, name: r.name, badgeImageUrl: r.badgeImageUrl, achievedAt: r.achievedAt }));
+    }
+
+    return result;
   }
 }

@@ -1,5 +1,6 @@
 export class AuthUserResponseDto {
   id!: string;
+  gameProfileId!: string;
   email!: string;
   displayName!: string | null;
   imgUrl!: string | null;

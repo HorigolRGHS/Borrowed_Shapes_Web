@@ -9,8 +9,11 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import { User } from '../entities/User';
+
+const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,6 +22,7 @@ export class AuthGuard implements CanActivate {
     private jwt: JwtService,
     private config: ConfigService,
     private em: EntityManager,
+    private redis: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,14 +42,24 @@ export class AuthGuard implements CanActivate {
       });
 
       const userId = payload.sub as string | undefined;
-      if (!userId) {
+      const platform = (payload.pf ?? payload.platform) as string | undefined;
+      const sessionId = payload.sid as string | undefined;
+      const role = payload.role as string | undefined;
+      if (!userId || !platform || !role) {
         throw new UnauthorizedException();
+      }
+
+      if (sessionId) {
+        const stored = await this.redis.hgetall(rtKey(userId, platform));
+        if (stored?.sessionId !== sessionId) {
+          throw new UnauthorizedException();
+        }
       }
 
       const user = await this.em.findOne(
         User,
         { id: userId },
-        { fields: ['id', 'role', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
+        { fields: ['id', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
       );
 
       if (!user || user.deletedAt) {
@@ -67,8 +81,10 @@ export class AuthGuard implements CanActivate {
 
       request.user = {
         userId: user.id,
-        role: user.role,
-        platform: payload.platform,
+        role,
+        platform,
+        sessionId,
+        gameProfileId: payload.gp ?? null,
       };
     } catch (error) {
       if (error instanceof ForbiddenException) {

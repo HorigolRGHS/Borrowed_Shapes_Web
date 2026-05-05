@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { RedisService } from '../redis/redis.service';
+import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
@@ -18,10 +19,17 @@ const mockEm = {
 };
 
 const mockRedis = {
+  hset: jest.fn(),
+  hget: jest.fn(),
   hgetall: jest.fn(),
+  expire: jest.fn(),
   pipeline: jest.fn().mockResolvedValue(undefined),
   del: jest.fn(),
   zrem: jest.fn(),
+};
+
+const mockEmail = {
+  sendMail: jest.fn(),
 };
 
 const mockConfig = {
@@ -48,6 +56,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: EntityManager, useValue: mockEm },
         { provide: RedisService, useValue: mockRedis },
+        { provide: EmailService, useValue: mockEmail },
         { provide: ConfigService, useValue: mockConfig },
         { provide: JwtService, useValue: mockJwt },
       ],
@@ -58,6 +67,9 @@ describe('AuthService', () => {
     mockEm.flush.mockResolvedValue(undefined);
     mockEm.nativeUpdate.mockResolvedValue(1);
     mockEm.create.mockImplementation((_, data) => data);
+    mockRedis.hset.mockResolvedValue(undefined);
+    mockRedis.expire.mockResolvedValue(undefined);
+    mockEmail.sendMail.mockResolvedValue(undefined);
   });
 
   describe('register', () => {

@@ -1,11 +1,12 @@
 {
   "name": "borrowed-shapes-wiki",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev --turbopack\" \"cd server && npm run start:dev\"",
+    "dev:clean": "kill-port 3000 3001",
+    "dev": "npm run dev:clean && concurrently -k -n web,api \"next dev --turbopack\" \"npm --prefix server run start:dev\"",
     "build": "next build",
-    "start": "concurrently \"next start\" \"cd server && npm run start:prod\"",
+    "start": "concurrently -k -n web,api \"next start\" \"npm --prefix server run start:prod\"",
     "lint": "eslint"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "kill-port": "^2.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

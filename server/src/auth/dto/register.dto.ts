@@ -1,9 +1,12 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterRequestDto {
+  @ApiProperty({ example: 'player@example.com' })
   @IsEmail()
   email: string | undefined;
 
+  @ApiProperty({ example: 'P@ssw0rd123!' })
   @IsString()
   @MinLength(8)
   @MaxLength(72)
@@ -13,6 +16,7 @@ export class RegisterRequestDto {
   })
   password: string | undefined;
 
+  @ApiPropertyOptional({ example: 'BorrowedPlayer' })
   @IsOptional()
   @IsNotEmpty()
   @IsString()
@@ -23,6 +27,7 @@ export class RegisterRequestDto {
   })
   displayName?: string;
 
+  @ApiPropertyOptional({ example: 'Windows 11 / Chrome 124' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -30,16 +35,28 @@ export class RegisterRequestDto {
 }
 
 export class RegisterResponseDto {
+  @ApiProperty({ example: 'user_123' })
   userId!: string;
+
+  @ApiProperty({ example: 'BS00000001' })
+  gameProfileId!: string;
+
+  @ApiProperty({ example: 'player@example.com' })
   email!: string;
+
+  @ApiProperty({ example: 'BorrowedPlayer', nullable: true })
   displayName!: string | null;
+
+  @ApiProperty({ example: 'USER' })
   role!: string;
 }
 
 export class RegisterDto {
+  @ApiProperty({ example: 'player@example.com' })
   @IsEmail()
   email: string | undefined;
 
+  @ApiProperty({ example: 'P@ssw0rd123!' })
   @IsString()
   @MinLength(8)
   @MaxLength(72)
@@ -50,6 +67,7 @@ export class RegisterDto {
   })
   password: string | undefined;
 
+  @ApiPropertyOptional({ example: 'BorrowedPlayer' })
   @IsOptional()
   @IsNotEmpty()
   @IsString()
@@ -60,6 +78,7 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
+  @ApiPropertyOptional({ example: 'Windows 11 / Chrome 124' })
   @MaxLength(500)
   deviceInfo?: string;
 }

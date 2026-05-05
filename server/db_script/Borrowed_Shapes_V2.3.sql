@@ -1,17 +1,22 @@
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════
 --  Database Schema - Game Unity + Web Wiki/Forum
---  Version: 2.2
--- ═══════════════════════════════════════════════════════════════
+--  Version: 2.3
+-- ═══════════════════════════════════════
 
 SET TIMEZONE = 'Asia/Ho_Chi_Minh';
 
 CREATE SCHEMA IF NOT EXISTS public;
 -- Extension cho case-insensitive text (email, displayName)
 CREATE EXTENSION IF NOT EXISTS citext SCHEMA public;
+-- Extension for cron job 
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+--SELECT name, default_version, installed_version 
+--FROM pg_available_extensions 
+--WHERE name = 'pg_cron';
 
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════
 --  SCHEMA: auth
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════
 
 CREATE SCHEMA IF NOT EXISTS auth;
 
@@ -55,6 +60,7 @@ CREATE INDEX "User_deletedAt_idx"
   ON auth."User"("deletedAt")
   WHERE "deletedAt" IS NULL;
 
+
 -- ─── UserSession ─────────────────────────────────────────
 CREATE TABLE auth."UserSession" (
   "id"         TEXT                 NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -97,8 +103,6 @@ CREATE INDEX "AuditLog_entityName_idx" ON auth."AuditLog"("entityName");
 CREATE INDEX "AuditLog_entityId_idx"   ON auth."AuditLog"("entityId");
 CREATE INDEX "AuditLog_timestamp_idx"  ON auth."AuditLog"("timestamp" DESC);
 
-
-
 CREATE TABLE auth."UserOnlineStatus" (
   "userId"          TEXT        NOT NULL PRIMARY KEY,
   "isOnline"        BOOLEAN     NOT NULL DEFAULT FALSE,
@@ -117,11 +121,9 @@ CREATE INDEX "UserOnlineStatus_isOnline_idx"
   ON auth."UserOnlineStatus"("isOnline")
   WHERE "isOnline" = TRUE;
 
-
-
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════
 --  SCHEMA: game
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════
 
 CREATE SCHEMA IF NOT EXISTS game;
 
@@ -145,9 +147,14 @@ INSERT INTO game."Level" ("id", "displayName", "order") VALUES
   ('map_05', 'Living Room', 5)
 ON CONFLICT ("id") DO NOTHING;
 
+
+CREATE SEQUENCE game.gameprofile_id_seq START 1;
+
+
 -- ─── GameProfile ─────────────────────────────────────────
 CREATE TABLE game."GameProfile" (
-  "id"             TEXT        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "id" TEXT NOT NULL PRIMARY KEY 
+       DEFAULT 'BS' || lpad(nextval('game.gameprofile_id_seq')::text, 8, '0'),
   "userId"         TEXT        NOT NULL UNIQUE,
   "totalPlayTime"  INT         NOT NULL DEFAULT 0,
   "totalSessions"  INT         NOT NULL DEFAULT 0,
@@ -167,8 +174,28 @@ CREATE TABLE game."Achievement" (
   "name"           TEXT NOT NULL UNIQUE,
   "description"    TEXT,
   "criteriaCode"   TEXT NOT NULL,
-  "badgeImageUrl"  TEXT NOT NULL
+  "badgeImageUrl"  TEXT NOT NULL,
+  "type"           TEXT NOT NULL DEFAULT 'PERMANENT' CHECK ("type" IN ('PERMANENT','SEASONAL')),
+  -- season lưu dạng DATE (luôn là ngày 1 của tháng)
+  -- ví dụ: '2026-04-01' = mùa tháng 4/2026
+  "seasonMonth"    DATE,  -- NULL nếu PERMANENT
+  "expiresAt"      TIMESTAMPTZ  -- NULL nếu PERMANENT, = cuối tháng nếu SEASONAL
 );
+
+/**
+ * INSERT INTO game."Achievement"(name, "criteriaCode", description, "badgeImageUrl", type, "seasonMonth", "expiresAt")
+VALUES
+('Top 1 - 04/2026','SEASON_TOP_1','Hạng 1 tháng 04/2026','/frames/top1.png','SEASONAL','2026-04-01'),
+('Top 2 - 04/2026','SEASON_TOP_2','Hạng 2 tháng 04/2026','/frames/top2.png','SEASONAL','2026-04-01'),
+('Top 3 - 04/2026','SEASON_TOP_3','Hạng 3 tháng 04/2026','/frames/top3.png','SEASONAL','2026-04-01'),
+('Top 4 - 04/2026','SEASON_TOP_4','Hạng 4 tháng 04/2026','/frames/top4.png','SEASONAL','2026-04-01'),
+('Top 5 - 04/2026','SEASON_TOP_5','Hạng 5 tháng 04/2026','/frames/top5.png','SEASONAL','2026-04-01')
+ON CONFLICT (name) DO NOTHING;
+ */
+-- Chạy ngày 1/4 cho tháng 4/2026
+
+
+
 
 -- ─── UserAchievement ─────────────────────────────────────
 CREATE TABLE game."UserAchievement" (
@@ -183,19 +210,84 @@ CREATE TABLE game."UserAchievement" (
     FOREIGN KEY ("achievementId") REFERENCES game."Achievement"("id") ON DELETE CASCADE
 );
 
+
+-- Team đăng ký theo tháng
+CREATE TABLE game."SeasonTeam" (
+  "id" TEXT NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "seasonMonth" DATE NOT NULL, -- luôn ngày 1, vd '2026-05-01'
+  "code" TEXT,
+  "name" TEXT,
+  "leaderId" TEXT NOT NULL,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE ("seasonMonth", "leaderId"),
+  CONSTRAINT "SeasonTeam_leader_fkey" 
+    FOREIGN KEY ("leaderId") REFERENCES game."GameProfile"("id") ON DELETE CASCADE
+);
+
+CREATE OR REPLACE FUNCTION game.generate_team_code()
+RETURNS TRIGGER AS $$
+DECLARE
+  new_code TEXT;
+BEGIN
+  LOOP
+    -- 6 ký tự: A-Z 0-9, loại bỏ ký tự dễ nhầm (0/O, 1/I)
+    new_code := upper(substring(md5(random()::text) from 1 for 6));
+    new_code := translate(new_code, '0O1I', 'ABCDEFGH');
+    
+    EXIT WHEN NOT EXISTS (
+      SELECT 1 FROM game."SeasonTeam" 
+      WHERE "seasonMonth" = NEW."seasonMonth" AND "code" = new_code
+    );
+  END LOOP;
+  
+  NEW."code" := new_code;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER "SeasonTeam_code_trigger"
+BEFORE INSERT ON game."SeasonTeam"
+FOR EACH ROW
+WHEN (NEW."code" IS NULL)
+EXECUTE FUNCTION game.generate_team_code();
+
+-- Đảm bảo code unique trong tháng
+CREATE UNIQUE INDEX "SeasonTeam_season_code_idx" 
+ON game."SeasonTeam"("seasonMonth", "code");
+
+
+
+-- Thành viên team — PK này khóa cứng 1 người chỉ được 1 team/tháng
+CREATE TABLE game."SeasonTeamMember" (
+  "seasonMonth" DATE NOT NULL,
+  "gameProfileId" TEXT NOT NULL,
+  "teamId" TEXT NOT NULL,
+  "joinedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY ("seasonMonth", "gameProfileId"),
+  CONSTRAINT "SeasonTeamMember_team_fkey" 
+    FOREIGN KEY ("teamId") REFERENCES game."SeasonTeam"("id") ON DELETE CASCADE,
+  CONSTRAINT "SeasonTeamMember_profile_fkey" 
+    FOREIGN KEY ("gameProfileId") REFERENCES game."GameProfile"("id") ON DELETE CASCADE
+);
+CREATE INDEX "SeasonTeamMember_team_idx" ON game."SeasonTeamMember"("teamId");
+
+
+
+/**
+ * Lưu danh sách team CHÍNH THỨC cho 1 lượt chơi (GameRun).
+KHÔNG insert khi ở lobby. Chỉ insert khi host Start và server tạo map_01.
+Lúc đó lấy toàn bộ người đang trong lobby (2-5 người) insert vào đây 1 lần duy nhất.
+Dùng để tính top tháng và trao achievement — dù giữa chừng có người out thì vẫn tính team gốc.
+ */
 -- ─── GameRun ─────────────────────────────────────────────
--- Một lần chơi xuyên suốt từ map đầu đến map cuối của một nhóm cố định.
--- Leaderboard: chỉ tính isCompleted=TRUE, sort theo totalTimeSec ASC.
 CREATE TABLE game."GameRun" (
   "id"           TEXT        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "lobbyId"      TEXT,                                       -- Unity Lobby Service ID
-  "lobbyCode"    TEXT,                                       -- Code join: ABC123
+  "lobbyId"      TEXT,
+  "lobbyCode"    TEXT,
   "lobbyName"    TEXT,
   "isPrivate"    BOOLEAN     NOT NULL DEFAULT FALSE,
   "totalLevels"  INT         NOT NULL,
   "isCompleted"  BOOLEAN     NOT NULL DEFAULT FALSE,
-  -- totalTimeSec là DERIVED từ SUM(GameSession.completionTimeSec).
-  -- Update bằng trigger khi GameSession chuyển sang FINISHED.
   "totalTimeSec" INT,
   "startedAt"    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "completedAt"  TIMESTAMPTZ,
@@ -208,11 +300,7 @@ CREATE TABLE game."GameRun" (
     )
 );
 
--- partial index tối ưu cho leaderboard
-CREATE INDEX "GameRun_leaderboard_idx"
-  ON game."GameRun"("totalTimeSec" ASC)
-  WHERE "isCompleted" = TRUE;
-
+CREATE INDEX "GameRun_leaderboard_idx" ON game."GameRun"("totalTimeSec" ASC) WHERE "isCompleted" = TRUE;
 CREATE INDEX "GameRun_lobbyId_idx"   ON game."GameRun"("lobbyId");
 CREATE INDEX "GameRun_isPrivate_idx" ON game."GameRun"("isPrivate") WHERE "isPrivate" = FALSE;
 CREATE INDEX "GameRun_lobbyCode_idx" ON game."GameRun"("lobbyCode") WHERE "lobbyCode" IS NOT NULL;
@@ -230,19 +318,9 @@ CREATE TABLE game."GameRunPlayer" (
     FOREIGN KEY ("gameProfileId") REFERENCES game."GameProfile"("id") ON DELETE CASCADE
 );
 
-CREATE INDEX "GameRunPlayer_gameProfileId_idx"
-  ON game."GameRunPlayer"("gameProfileId");
-
--- Một run chỉ có duy nhất 1 host
-/*
- * CREATE UNIQUE INDEX "GameRunPlayer_one_host_per_run_idx"
-  ON game."GameRunPlayer"("runId")
-  WHERE "isHost" = TRUE;
- * */
-
+CREATE INDEX "GameRunPlayer_gameProfileId_idx" ON game."GameRunPlayer"("gameProfileId");
 
 -- ─── GameSession ─────────────────────────────────────────
--- Mỗi GameRun có tối đa N GameSession (1 per map).
 CREATE TABLE game."GameSession" (
   "id"                TEXT                     NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "runId"             TEXT                     NOT NULL,
@@ -259,7 +337,6 @@ CREATE TABLE game."GameSession" (
     FOREIGN KEY ("runId") REFERENCES game."GameRun"("id") ON DELETE CASCADE,
   CONSTRAINT "GameSession_levelId_fkey"
     FOREIGN KEY ("levelId") REFERENCES game."Level"("id"),
-
   CONSTRAINT "GameSession_player_count_check"
     CHECK ("minPlayers" >= 1 AND "maxPlayers" >= "minPlayers")
 );
@@ -274,7 +351,6 @@ CREATE TABLE game."GameSessionPlayer" (
   "gameProfileId" TEXT        NOT NULL,
   "isAbsent"      BOOLEAN     NOT NULL DEFAULT FALSE,
   "leftAt"        TIMESTAMPTZ,
-
   PRIMARY KEY ("sessionId", "gameProfileId"),
   CONSTRAINT "GameSessionPlayer_sessionId_fkey"
     FOREIGN KEY ("sessionId") REFERENCES game."GameSession"("id") ON DELETE CASCADE,
@@ -287,89 +363,18 @@ CREATE INDEX "GameSessionPlayer_sessionId_idx"     ON game."GameSessionPlayer"("
 
 -- ═══════════════════════════════════════════════════════════════
 --  SCHEMA: web
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════
 
 CREATE SCHEMA IF NOT EXISTS web;
 
 -- ─── Enums ───────────────────────────────────────────────
 CREATE TYPE web."ForumThreadStatus" AS ENUM ('OPEN', 'CLOSED', 'ARCHIVED');
-CREATE TYPE web."ForumPostType"     AS ENUM (
-  'GENERAL', 'BUG_REPORT', 'GUIDE', 'SUGGESTION', 'FAN_ART', 'LOOKING_FOR_PARTY'
-);
+CREATE TYPE web."ForumPostType"     AS ENUM ('GENERAL', 'BUG_REPORT', 'GUIDE', 'SUGGESTION', 'FAN_ART', 'LOOKING_FOR_PARTY');
 CREATE TYPE web."AnnouncementType"  AS ENUM ('NEWS', 'EVENT', 'MAINTENANCE', 'UPDATE', 'PATCH_NOTE');
 CREATE TYPE web."ReportStatus"      AS ENUM ('PENDING', 'PROCESSING', 'RESOLVED', 'REJECTED');
-CREATE TYPE web."ReportType"        AS ENUM ('CHEATING', 'TOXIC_BEHAVIOR', 'EXPLOIT', 'OTHER');
+CREATE TYPE web."ReportType"        AS ENUM ('SPAM', 'HARASSMENT', 'HATE_SPEECH', 'NSFW', 'MISINFORMATION', 'OTHER');
 CREATE TYPE web."MediaType"         AS ENUM ('IMAGE', 'VIDEO');
 CREATE TYPE web."ReportAction"      AS ENUM ('WARNING', 'NO_ACTION', 'BAN_PERMANENT', 'BAN_CUSTOM');
-
--- ─── Report ──────────────────────────────────────────────
-CREATE TABLE web."Report" (
-  "id"             TEXT               NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "reporterId"     TEXT               NOT NULL,
-  "reportedUserId" TEXT               NOT NULL,
-  "sessionId"      TEXT,
-  "runId"          TEXT,
-  "reportType"     web."ReportType"   NOT NULL DEFAULT 'OTHER',
-  "reason"         TEXT               NOT NULL,
-  "status"         web."ReportStatus" NOT NULL DEFAULT 'PENDING',
-  "handledBy"      TEXT,
-  "handledAt"      TIMESTAMPTZ,
-  "createdAt"      TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
-  "updatedAt"      TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT "Report_no_self_report_check"
-    CHECK ("reporterId" <> "reportedUserId"),
-
-  CONSTRAINT "Report_reporterId_fkey"
-    FOREIGN KEY ("reporterId") REFERENCES auth."User"("id") ON DELETE CASCADE,
-  CONSTRAINT "Report_reportedUserId_fkey"
-    FOREIGN KEY ("reportedUserId") REFERENCES auth."User"("id") ON DELETE CASCADE,
-  CONSTRAINT "Report_sessionId_fkey"
-    FOREIGN KEY ("sessionId") REFERENCES game."GameSession"("id") ON DELETE SET NULL,
-  CONSTRAINT "Report_runId_fkey"
-    FOREIGN KEY ("runId") REFERENCES game."GameRun"("id") ON DELETE SET NULL,
-  CONSTRAINT "Report_handledBy_fkey"
-    FOREIGN KEY ("handledBy") REFERENCES auth."User"("id") ON DELETE SET NULL
-);
-
-CREATE INDEX "Report_status_createdAt_idx" ON web."Report"("status", "createdAt" DESC);
-CREATE INDEX "Report_reporterId_idx"       ON web."Report"("reporterId");
-CREATE INDEX "Report_reportedUserId_idx"   ON web."Report"("reportedUserId");
-CREATE INDEX "Report_sessionId_idx"        ON web."Report"("sessionId");
-CREATE INDEX "Report_pending_idx"          ON web."Report"("createdAt" DESC)
-  WHERE "status" = 'PENDING';
-
--- ─── ReportMedia ─────────────────────────────────────────
-CREATE TABLE web."ReportMedia" (
-  "id"         TEXT            NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "reportId"   TEXT            NOT NULL,
-  "mediaUrl"   TEXT            NOT NULL,
-  "mediaType"  web."MediaType" NOT NULL,
-  "fileSize"   BIGINT,
-  "duration"   INT,
-  "uploadedAt" TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT "ReportMedia_reportId_fkey"
-    FOREIGN KEY ("reportId") REFERENCES web."Report"("id") ON DELETE CASCADE
-);
-
-CREATE INDEX "ReportMedia_reportId_idx" ON web."ReportMedia"("reportId");
-
--- ─── ReportResponse ──────────────────────────────────────
-CREATE TABLE web."ReportResponse" (
-  "id"                  TEXT               NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "reportId"            TEXT               NOT NULL UNIQUE,
-  "adminId"             TEXT               NOT NULL,
-  "message"             TEXT               NOT NULL,
-  "actionTaken"         web."ReportAction",
-  "isVisibleToReporter" BOOLEAN            NOT NULL DEFAULT TRUE,
-  "createdAt"           TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT "ReportResponse_reportId_fkey"
-    FOREIGN KEY ("reportId") REFERENCES web."Report"("id") ON DELETE CASCADE,
-  CONSTRAINT "ReportResponse_adminId_fkey"
-    FOREIGN KEY ("adminId") REFERENCES auth."User"("id") ON DELETE SET NULL
-);
 
 -- ─── ForumCategory ───────────────────────────────────────
 CREATE TABLE web."ForumCategory" (
@@ -386,7 +391,7 @@ CREATE TABLE web."ForumCategory" (
 CREATE TABLE web."ForumThread" (
   "id"           TEXT                    NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "title"        TEXT                    NOT NULL,
-  "slug"         TEXT                    NOT NULL,           
+  "slug"         TEXT                    NOT NULL,
   "categoryId"   TEXT                    NOT NULL,
   "authorId"     TEXT                    NOT NULL,
   "content"      TEXT                    NOT NULL,
@@ -400,23 +405,15 @@ CREATE TABLE web."ForumThread" (
   "status"       web."ForumThreadStatus" NOT NULL DEFAULT 'OPEN',
   "createdAt"    TIMESTAMPTZ             NOT NULL DEFAULT NOW(),
   "updatedAt"    TIMESTAMPTZ             NOT NULL DEFAULT NOW(),
-
   UNIQUE ("categoryId", "slug"),
-
-  CONSTRAINT "ForumThread_categoryId_fkey"
-    FOREIGN KEY ("categoryId") REFERENCES web."ForumCategory"("id"),
-  CONSTRAINT "ForumThread_authorId_fkey"
-    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE CASCADE
+  CONSTRAINT "ForumThread_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES web."ForumCategory"("id"),
+  CONSTRAINT "ForumThread_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE CASCADE
 );
 
 CREATE INDEX "ForumThread_categoryId_createdAt_idx" ON web."ForumThread"("categoryId", "createdAt" DESC);
 CREATE INDEX "ForumThread_categoryId_score_idx"     ON web."ForumThread"("categoryId", "score" DESC);
 CREATE INDEX "ForumThread_authorId_createdAt_idx"   ON web."ForumThread"("authorId", "createdAt" DESC);
-
---  Full-text search
-CREATE INDEX "ForumThread_fts_idx"
-  ON web."ForumThread"
-  USING GIN (to_tsvector('simple', "title" || ' ' || "content"));
+CREATE INDEX "ForumThread_fts_idx" ON web."ForumThread" USING GIN (to_tsvector('simple', "title" || ' ' || "content"));
 
 -- ─── ForumComment ────────────────────────────────────────
 CREATE TABLE web."ForumComment" (
@@ -429,13 +426,9 @@ CREATE TABLE web."ForumComment" (
   "isDeleted" BOOLEAN     NOT NULL DEFAULT FALSE,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT "ForumComment_threadId_fkey"
-    FOREIGN KEY ("threadId") REFERENCES web."ForumThread"("id") ON DELETE CASCADE,
-  CONSTRAINT "ForumComment_authorId_fkey"
-    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE CASCADE,
-  CONSTRAINT "ForumComment_parentId_fkey"
-    FOREIGN KEY ("parentId") REFERENCES web."ForumComment"("id") ON DELETE CASCADE
+  CONSTRAINT "ForumComment_threadId_fkey" FOREIGN KEY ("threadId") REFERENCES web."ForumThread"("id") ON DELETE CASCADE,
+  CONSTRAINT "ForumComment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE CASCADE,
+  CONSTRAINT "ForumComment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES web."ForumComment"("id") ON DELETE CASCADE
 );
 
 CREATE INDEX "ForumComment_threadId_createdAt_idx" ON web."ForumComment"("threadId", "createdAt");
@@ -446,14 +439,10 @@ CREATE TABLE web."ForumThreadVote" (
   "userId"   TEXT NOT NULL,
   "threadId" TEXT NOT NULL,
   "value"    INT  NOT NULL CHECK ("value" IN (-1, 1)),
-
   PRIMARY KEY ("userId", "threadId"),
-  CONSTRAINT "ForumThreadVote_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES auth."User"("id") ON DELETE CASCADE,
-  CONSTRAINT "ForumThreadVote_threadId_fkey"
-    FOREIGN KEY ("threadId") REFERENCES web."ForumThread"("id") ON DELETE CASCADE
+  CONSTRAINT "ForumThreadVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES auth."User"("id") ON DELETE CASCADE,
+  CONSTRAINT "ForumThreadVote_threadId_fkey" FOREIGN KEY ("threadId") REFERENCES web."ForumThread"("id") ON DELETE CASCADE
 );
-
 CREATE INDEX "ForumThreadVote_threadId_idx" ON web."ForumThreadVote"("threadId");
 
 -- ─── ForumCommentVote ────────────────────────────────────
@@ -461,15 +450,65 @@ CREATE TABLE web."ForumCommentVote" (
   "userId"    TEXT NOT NULL,
   "commentId" TEXT NOT NULL,
   "value"     INT  NOT NULL CHECK ("value" IN (-1, 1)),
-
   PRIMARY KEY ("userId", "commentId"),
-  CONSTRAINT "ForumCommentVote_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES auth."User"("id") ON DELETE CASCADE,
-  CONSTRAINT "ForumCommentVote_commentId_fkey"
-    FOREIGN KEY ("commentId") REFERENCES web."ForumComment"("id") ON DELETE CASCADE
+  CONSTRAINT "ForumCommentVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES auth."User"("id") ON DELETE CASCADE,
+  CONSTRAINT "ForumCommentVote_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES web."ForumComment"("id") ON DELETE CASCADE
+);
+CREATE INDEX "ForumCommentVote_commentId_idx" ON web."ForumCommentVote"("commentId");
+
+-- ─── Report ──────────────────────────────────────────────
+CREATE TABLE web."Report" (
+  "id"             TEXT               NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "reporterId"     TEXT               NOT NULL,
+  "reportedUserId" TEXT,
+  "threadId"       TEXT,
+  "commentId"      TEXT,
+  "reportType"     web."ReportType"   NOT NULL DEFAULT 'OTHER',
+  "reason"         TEXT               NOT NULL,
+  "status"         web."ReportStatus" NOT NULL DEFAULT 'PENDING',
+  "handledBy"      TEXT,
+  "handledAt"      TIMESTAMPTZ,
+  "createdAt"      TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
+  "updatedAt"      TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
+  CONSTRAINT "Report_reporterId_fkey" FOREIGN KEY ("reporterId") REFERENCES auth."User"("id") ON DELETE CASCADE,
+  CONSTRAINT "Report_reportedUserId_fkey" FOREIGN KEY ("reportedUserId") REFERENCES auth."User"("id") ON DELETE CASCADE,
+  CONSTRAINT "Report_threadId_fkey" FOREIGN KEY ("threadId") REFERENCES web."ForumThread"("id") ON DELETE CASCADE,
+  CONSTRAINT "Report_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES web."ForumComment"("id") ON DELETE CASCADE,
+  CONSTRAINT "Report_handledBy_fkey" FOREIGN KEY ("handledBy") REFERENCES auth."User"("id") ON DELETE SET NULL
 );
 
-CREATE INDEX "ForumCommentVote_commentId_idx" ON web."ForumCommentVote"("commentId");
+CREATE INDEX "Report_status_createdAt_idx" ON web."Report"("status", "createdAt" DESC);
+CREATE INDEX "Report_reporterId_idx"       ON web."Report"("reporterId");
+CREATE INDEX "Report_reportedUserId_idx"   ON web."Report"("reportedUserId");
+CREATE INDEX "Report_threadId_idx"         ON web."Report"("threadId");
+CREATE INDEX "Report_commentId_idx"        ON web."Report"("commentId");
+CREATE INDEX "Report_pending_idx"          ON web."Report"("createdAt" DESC) WHERE "status" = 'PENDING';
+
+-- ─── ReportMedia ─────────────────────────────────────────
+CREATE TABLE web."ReportMedia" (
+  "id"         TEXT            NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "reportId"   TEXT            NOT NULL,
+  "mediaUrl"   TEXT            NOT NULL,
+  "mediaType"  web."MediaType" NOT NULL,
+  "fileSize"   BIGINT,
+  "duration"   INT,
+  "uploadedAt" TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+  CONSTRAINT "ReportMedia_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES web."Report"("id") ON DELETE CASCADE
+);
+CREATE INDEX "ReportMedia_reportId_idx" ON web."ReportMedia"("reportId");
+
+-- ─── ReportResponse ──────────────────────────────────────
+CREATE TABLE web."ReportResponse" (
+  "id"                  TEXT               NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "reportId"            TEXT               NOT NULL UNIQUE,
+  "adminId"             TEXT               NOT NULL,
+  "message"             TEXT               NOT NULL,
+  "actionTaken"         web."ReportAction",
+  "isVisibleToReporter" BOOLEAN            NOT NULL DEFAULT TRUE,
+  "createdAt"           TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
+  CONSTRAINT "ReportResponse_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES web."Report"("id") ON DELETE CASCADE,
+  CONSTRAINT "ReportResponse_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES auth."User"("id") ON DELETE SET NULL
+);
 
 -- ─── WikiPage ────────────────────────────────────────────
 CREATE TABLE web."WikiPage" (
@@ -482,23 +521,9 @@ CREATE TABLE web."WikiPage" (
   "createdAt"        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt"        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX "WikiPage_title_idx"        ON web."WikiPage"("title");
-CREATE INDEX "WikiPage_isPublished_idx"  ON web."WikiPage"("isPublished") WHERE "isPublished" = TRUE;
+CREATE INDEX "WikiPage_title_idx" ON web."WikiPage"("title");
+CREATE INDEX "WikiPage_isPublished_idx" ON web."WikiPage"("isPublished") WHERE "isPublished" = TRUE;
 CREATE INDEX "WikiPage_metadata_gin_idx" ON web."WikiPage" USING GIN ("metadataJson");
-
-/*
-metadataJson structure (dùng cho infobox, filter, search; KHÔNG phải nội dung bài):
-{
-  "category": "Character" | "Item" | "Map" | "Mechanic" | "Boss" | "Other",
-  "tags": ["kitchen", "boss", "tutorial"],
-  "infoboxImage": "https://r2.../image.png",
-  "stats": { "stamina": 1, "weight": 2, "speed": 5 },
-  "location": "map_01",
-  "relatedPages": ["map_01", "Jack"]
-}
-Query mẫu: WHERE metadataJson->'tags' ? 'boss'
-*/
 
 -- ─── WikiRevision ────────────────────────────────────────
 CREATE TABLE web."WikiRevision" (
@@ -508,19 +533,17 @@ CREATE TABLE web."WikiRevision" (
   "content"   TEXT        NOT NULL,
   "summary"   TEXT,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT "WikiRevision_pageId_fkey"
-    FOREIGN KEY ("pageId") REFERENCES web."WikiPage"("id") ON DELETE CASCADE,
-  CONSTRAINT "WikiRevision_authorId_fkey"
-    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE SET NULL
+  CONSTRAINT "WikiRevision_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES web."WikiPage"("id") ON DELETE CASCADE,
+  CONSTRAINT "WikiRevision_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE SET NULL
 );
-
 CREATE INDEX "WikiRevision_pageId_createdAt_idx" ON web."WikiRevision"("pageId", "createdAt" DESC);
-CREATE INDEX "WikiRevision_authorId_idx"         ON web."WikiRevision"("authorId");
+CREATE INDEX "WikiRevision_authorId_idx" ON web."WikiRevision"("authorId");
+
 
 ALTER TABLE web."WikiPage"
   ADD CONSTRAINT "WikiPage_latestRevisionId_fkey"
   FOREIGN KEY ("latestRevisionId") REFERENCES web."WikiRevision"("id") ON DELETE SET NULL;
+
 
 -- ─── Announcement ────────────────────────────────────────
 CREATE TABLE web."Announcement" (
@@ -607,13 +630,11 @@ CREATE INDEX "RateLimitLog_user_action_idx"
   ON web."RateLimitLog"("userId", "actionType", "createdAt" DESC);
 CREATE INDEX "RateLimitLog_ip_action_idx"
   ON web."RateLimitLog"("ipAddress", "actionType", "createdAt" DESC);
--- Cron job xóa rows cũ hơn 24h
+
 
 -- ═══════════════════════════════════════════════════════════════
 --  FUNCTIONS & TRIGGERS
--- ═══════════════════════════════════════════════════════════════
-
-CREATE SCHEMA IF NOT EXISTS public;
+-- ═══════════════════════════════
 
 -- ─── Trigger: auto updatedAt ─────────────────────────────
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -642,6 +663,23 @@ BEGIN
     );
   END LOOP;
 END $$;
+
+-- ─── Trigger: tự động ban user mới chờ xác nhận ─────────────────────────────
+--CREATE OR REPLACE FUNCTION auth.set_pending_verification()
+--RETURNS TRIGGER AS $$
+--BEGIN
+--  NEW."isBanned" := TRUE;
+--  NEW."bannedAt" := NOW();
+--  NEW."banReason" := 'chưa xác nhận đăng ký';
+--  RETURN NEW;
+--END;
+--$$ LANGUAGE plpgsql;
+--
+
+--CREATE TRIGGER "User_pending_verification_trigger"
+--  BEFORE INSERT ON auth."User"
+--  FOR EACH ROW
+--  EXECUTE FUNCTION auth.set_pending_verification();
 
 -- ─── Trigger maintain ForumThread.commentCount ───
 CREATE OR REPLACE FUNCTION web.update_thread_comment_count()
@@ -750,6 +788,7 @@ CREATE TRIGGER "WikiRevision_update_page_trigger"
   EXECUTE FUNCTION web.update_wiki_page_on_revision();
 
 
+
 -- ─── Trigger update GameRun.totalTimeSec từ GameSession ──
 /*
  * CREATE OR REPLACE FUNCTION game.update_run_total_time()
@@ -795,9 +834,104 @@ CREATE TRIGGER "GameSession_update_run_trigger"
   ON game."GameSession"
   FOR EACH ROW
   EXECUTE FUNCTION game.update_run_total_time();
+  
+  --- Trigger tự điền ngày hết hạn achievement mùa 
+  CREATE OR REPLACE FUNCTION game.set_achievement_expiry()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.type = 'SEASONAL' AND NEW."seasonMonth" IS NOT NULL AND NEW."expiresAt" IS NULL THEN
+    -- cuối tháng theo giờ VN: 23:59:59 ngày cuối
+    NEW."expiresAt" := date_trunc('month', NEW."seasonMonth") 
+                       + interval '1 month' 
+                       - interval '1 second';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_achievement_expiry ON game."Achievement";
+CREATE TRIGGER trg_achievement_expiry
+BEFORE INSERT OR UPDATE OF "seasonMonth", type
+ON game."Achievement"
+FOR EACH ROW EXECUTE FUNCTION game.set_achievement_expiry();
+
+
+  
+-------------  Job phát thưởng
+CREATE OR REPLACE FUNCTION game.award_monthly_top(p_month DATE DEFAULT NULL)
+RETURNS TABLE(rank INT, "runId" TEXT, members TEXT[]) AS $$
+DECLARE
+  v_month DATE := COALESCE(p_month, date_trunc('month', NOW() - interval '1 month')::date);
+  used_members TEXT[] := '{}';
+  r RECORD;
+  ach_id TEXT;
+  i INT;
+BEGIN
+  FOR i IN 1..5 LOOP
+    -- Tìm run nhanh nhất chưa dùng member nào
+    SELECT r.id, r."totalTimeSec", 
+           array_agg(p."gameProfileId" ORDER BY p."gameProfileId") AS team
+    INTO r
+    FROM game."GameRun" r
+    JOIN game."GameRunPlayer" p ON p."runId" = r.id
+    WHERE r."isCompleted"
+      AND date_trunc('month', r."completedAt") = v_month
+      AND NOT EXISTS (
+        SELECT 1 FROM game."GameRunPlayer" p2 
+        WHERE p2."runId" = r.id AND p2."gameProfileId" = ANY(used_members)
+      )
+    GROUP BY r.id, r."totalTimeSec"
+    HAVING EXISTS (
+      SELECT 1 FROM game."SeasonTeamMember" stm
+      WHERE stm."seasonMonth" = v_month 
+        AND stm."gameProfileId" = ANY(array_agg(p."gameProfileId"))
+      GROUP BY stm."teamId" 
+      HAVING COUNT(*) = COUNT(p."gameProfileId")
+    )
+    ORDER BY r."totalTimeSec"
+    LIMIT 1;
+
+    EXIT WHEN r.id IS NULL;
+
+    -- Lấy achievement
+    SELECT id INTO ach_id FROM game."Achievement"
+    WHERE "seasonMonth" = v_month AND "criteriaCode" = 'SEASON_TOP_' || i;
+
+    IF ach_id IS NULL THEN
+      RAISE EXCEPTION 'Chưa tạo achievement cho tháng % rank %', v_month, i;
+    END IF;
+
+    -- Phát
+    INSERT INTO game."UserAchievement"("gameProfileId","achievementId")
+    SELECT unnest(r.team), ach_id
+    ON CONFLICT DO NOTHING;
+
+    used_members := used_members || r.team;
+    
+    rank := i; "runId" := r.id; members := r.team;
+    RETURN NEXT;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- đặt job chạy 00:05 ngày 1 hàng tháng, giờ VN
+SELECT cron.schedule(
+  'award-top-monthly',           -- tên job
+  '5 0 1 * *',                   -- cron: phút giờ ngày tháng thứ
+  $$SELECT game.award_monthly_top();$$
+);
+
+
+SELECT jobid, schedule, command, active, jobname
+FROM cron.job;
+
  * */
 
 
--- ═══════════════════════════════════════════════════════════════
+
+
+
+-- ═══════════════════════════════
 --  END OF SCHEMA
--- ═══════════════════════════════════════════════════════════════
+-- ═══════════════════════════════

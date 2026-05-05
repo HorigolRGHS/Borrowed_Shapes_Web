@@ -41,7 +41,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RegisterResponseDto>> {
     const data = await this.authService.register(dto, req.ip ?? '');
-    return okResponse('Registered successfully', data, `${req.method} ${req.path}`);
+    return okResponse('Registered successfully, please check your email for verification', data, `${req.method} ${req.path}`);
   }
 
   @Public()

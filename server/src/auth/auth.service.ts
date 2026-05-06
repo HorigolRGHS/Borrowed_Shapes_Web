@@ -16,6 +16,12 @@ import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import {
+  GoogleExchangeRequestDto,
+  GoogleExchangeResponseDto,
+  GoogleCompleteRequestDto,
+  GoogleCompleteResponseDto,
+} from './dto/google.dto';
+import {
   RefreshRequestDto,
   RefreshResponseDto,
 } from './dto/refresh.dto';
@@ -48,6 +54,30 @@ const emailVerifyTokenKey = (token: string) => `email_verify:${token}`;
 /** Redis key for forgot-password OTP by email. */
 const forgotOtpKey = (email: string) => `forgot_otp:${email.toLowerCase()}`;
 
+/** Redis key for one-time google login codes. */
+const googleLoginCodeKey = (loginCode: string) => `google_login_code:${loginCode}`;
+
+function parseDurationSeconds(input: string | undefined, fallbackSeconds: number): number {
+  if (!input) return fallbackSeconds;
+  const raw = String(input).trim();
+  if (!raw) return fallbackSeconds;
+
+  if (/^\d+$/.test(raw)) {
+    const v = parseInt(raw, 10);
+    return Number.isFinite(v) && v > 0 ? v : fallbackSeconds;
+  }
+
+  const m = raw.match(/^(\d+)\s*([mhd])$/i);
+  if (!m) return fallbackSeconds;
+  const value = parseInt(m[1], 10);
+  if (!Number.isFinite(value) || value <= 0) return fallbackSeconds;
+  const unit = m[2].toLowerCase();
+  if (unit === 'm') return value * 60;
+  if (unit === 'h') return value * 60 * 60;
+  if (unit === 'd') return value * 24 * 60 * 60;
+  return fallbackSeconds;
+}
+
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
@@ -71,6 +101,175 @@ export class AuthService {
     private jwt: JwtService,
     private email: EmailService,
   ) {}
+
+  private async fetchGoogleUserInfo(code: string, codeVerifier: string, redirectUri: string) {
+    const clientId = this.config.get<string>('GOOGLE_CLIENT_ID');
+    const clientSecret = this.config.get<string>('GOOGLE_CLIENT_SECRET');
+    if (!clientId || !clientSecret) {
+      throw new BadRequestException('Google login is not configured');
+    }
+
+    const tokenBody = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      code_verifier: codeVerifier,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri,
+    });
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: tokenBody.toString(),
+    });
+
+    const tokenJson: {
+      access_token?: string;
+      error?: string;
+      error_description?: string;
+    } = await tokenRes.json().catch(() => ({}));
+
+    if (!tokenRes.ok || !tokenJson.access_token) {
+      throw new UnauthorizedException(tokenJson.error_description ?? 'Google exchange failed');
+    }
+
+    const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+    });
+
+    const infoJson: {
+      sub?: string;
+      email?: string;
+      email_verified?: boolean;
+      name?: string;
+      picture?: string;
+    } = await infoRes.json().catch(() => ({}));
+
+    if (!infoRes.ok || !infoJson.sub || !infoJson.email) {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+
+    return infoJson;
+  }
+
+  private async ensureNotBanned(user: User): Promise<void> {
+    const currentTime = new Date();
+    if (!user.isBanned) return;
+
+    if (user.banExpiresAt && user.banExpiresAt <= currentTime) {
+      user.isBanned = false;
+      user.bannedAt = undefined;
+      user.banReason = undefined;
+      user.banExpiresAt = undefined;
+      await this.em.flush();
+      return;
+    }
+
+    throw new ForbiddenException(user.banReason ?? 'Account is banned');
+  }
+
+  private async getOrCreateGameProfile(user: User): Promise<GameProfile> {
+    const existing = await this.em.findOne(GameProfile, { userId: user.id });
+    if (existing) return existing;
+
+    const created = this.em.create(GameProfile, { userId: user });
+    await this.em.flush();
+    return created;
+  }
+
+  private toAuthUserResponse(user: User, gameProfile: GameProfile) {
+    return {
+      id: user.id,
+      gameProfileId: gameProfile.id,
+      email: String(user.email),
+      displayName: user.displayName ? String(user.displayName) : null,
+      imgUrl: user.imgUrl ?? null,
+      role: user.role,
+      isBanned: user.isBanned,
+      bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
+      banReason: user.banReason ?? null,
+      banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
+    };
+  }
+
+  private async issueLoginTokens(
+    user: User,
+    gameProfile: GameProfile,
+    platform: string,
+    deviceInfo: string | undefined,
+    ipAddress: string,
+  ): Promise<LoginResponseDto> {
+    const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
+    const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
+    const loginTime = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + sessionTtl * 1000).toISOString();
+
+    // Revoke any existing session for this platform (1 session per platform)
+    const existing = await this.redis.hgetall(rtKey(user.id, platform));
+    if (existing?.sessionId) {
+      await this.em.nativeUpdate(
+        UserSession,
+        { sessionId: existing.sessionId, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: new Date() },
+      );
+    }
+
+    const sessionId = createId();
+    const refreshToken = `${user.id}:${platform}:${sessionId}`;
+    const tokenHash = hashToken(refreshToken);
+    const accessToken = this.jwt.sign(
+      { sub: user.id, sid: sessionId, role: user.role, pf: platform, gp: gameProfile.id },
+      { expiresIn: accessTtl },
+    );
+
+    await this.redis.pipeline([
+      {
+        cmd: 'hset',
+        args: [
+          rtKey(user.id, platform),
+          {
+            tokenHash,
+            sessionId,
+            expiresAt,
+            deviceInfo: deviceInfo ?? '',
+            ipAddress,
+            loginTime,
+            lastActive: loginTime,
+          },
+        ],
+      },
+      { cmd: 'expire', args: [rtKey(user.id, platform), sessionTtl] },
+      { cmd: 'zadd', args: ['online_users_by_last_active', Date.now(), sessionId] },
+    ]);
+
+    const session = this.em.create(UserSession, {
+      userId: user,
+      sessionId,
+      platform,
+      ipAddress,
+      deviceInfo,
+      status: SessionStatus.ACTIVE,
+    });
+    const auditLog = this.em.create(AuditLog, {
+      userId: user,
+      actionType: AuditActionType.LOGIN,
+      entityName: 'UserSession',
+      entityId: sessionId,
+      ipAddress,
+    });
+    await this.em.flush();
+    void session;
+    void auditLog;
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn: accessTtl,
+      expiresAt,
+      user: this.toAuthUserResponse(user, gameProfile),
+    };
+  }
 
   async register(
     dto: Pick<RegisterRequestDto, 'email' | 'password' | 'displayName'> & { deviceInfo?: string },
@@ -158,9 +357,6 @@ export class AuthService {
         );
         const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
 
-        if (details.includes('display_name') || details.includes('user_displayname_key')) {
-          throw new ConflictException('Display name already taken');
-        }
         if (details.includes('user_email_key')) {
           throw new ConflictException('Email already in use');
         }
@@ -183,96 +379,168 @@ export class AuthService {
     const user = await this.em.findOne(User, { email });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
-    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id });
-    if (!gameProfile) throw new UnauthorizedException('Game profile not found');
-
-    const currentTime = new Date();
-    if (user.isBanned) {
-      if (user.banExpiresAt && user.banExpiresAt <= currentTime) {
-        user.isBanned = false;
-        user.bannedAt = undefined;
-        user.banReason = undefined;
-        user.banExpiresAt = undefined;
-        await this.em.flush();
-      } else {
-        throw new ForbiddenException(user.banReason ?? 'Account is banned');
-      }
-    }
+    const gameProfile = await this.getOrCreateGameProfile(user);
+    await this.ensureNotBanned(user);
 
     const valid = user.passwordHash
       ? await bcrypt.compare(password, user.passwordHash)
       : false;
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
-    const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
-  const loginTime = currentTime.toISOString();
-    const expiresAt = new Date(Date.now() + sessionTtl * 1000).toISOString();
+    return this.issueLoginTokens(user, gameProfile, platform, dto.deviceInfo, ipAddress);
+  }
 
-    // Revoke any existing session for this platform (1 session per platform)
-    const existing = await this.redis.hgetall(rtKey(user.id, platform));
-    if (existing?.sessionId) {
-      await this.em.nativeUpdate(
-        UserSession,
-        { sessionId: existing.sessionId, status: SessionStatus.ACTIVE },
-        { status: SessionStatus.REVOKED, logoutTime: new Date() },
-      );
+  async googleExchange(
+    dto: GoogleExchangeRequestDto,
+    ipAddress: string,
+  ): Promise<GoogleExchangeResponseDto> {
+    const expectedRedirectUri = this.config.get<string>('GOOGLE_REDIRECT_URI');
+    if (!expectedRedirectUri) {
+      throw new BadRequestException('Google login is not configured');
     }
 
-    // Generate tokens
-    const sessionId = createId();
-    // Refresh token encodes userId + platform so the server can look up the Redis key without extra params
-    const refreshToken = `${user.id}:${platform}:${sessionId}`;
-    const tokenHash = hashToken(refreshToken);
-    const accessToken = this.jwt.sign(
-      { sub: user.id, sid: sessionId, role: user.role, pf: platform, gp: gameProfile.id },
-      { expiresIn: accessTtl },
+    if (dto.redirectUri !== expectedRedirectUri) {
+      throw new BadRequestException('Invalid redirectUri');
+    }
+
+    const payload = await this.fetchGoogleUserInfo(dto.code, dto.codeVerifier, dto.redirectUri);
+
+    const { user, gameProfile } = await this.em.transactional(async (em) => {
+      const googleId = String(payload.sub);
+      const email = String(payload.email);
+      const emailVerified = Boolean(payload.email_verified);
+      const picture = payload.picture ? String(payload.picture) : null;
+      const name = payload.name ? String(payload.name) : null;
+
+      let found = await em.findOne(User, { googleId });
+      if (!found) {
+        found = await em.findOne(User, { email });
+        if (found?.googleId && String(found.googleId) !== googleId) {
+          throw new ConflictException('Email is already linked to another Google account');
+        }
+        if (found && !found.googleId) {
+          found.googleId = googleId;
+        }
+      }
+
+      const created = !found;
+      const user = found
+        ?? em.create(User, {
+          email,
+          googleId,
+          imgUrl: picture,
+          displayName: null,
+          role: Role.USER,
+          isBanned: false,
+        });
+
+      // Sync basic profile fields
+      if (!user.email || String(user.email) !== email) {
+        user.email = email as any;
+      }
+      if (picture && user.imgUrl !== picture) {
+        user.imgUrl = picture;
+      }
+
+      if (!user.displayName && name) {
+        // Best-effort unique displayName
+        const base = name
+          .trim()
+          .replace(/\s+/g, ' ')
+          .slice(0, 24);
+
+        const candidates = [base, `${base}${Math.floor(Math.random() * 10000)}`];
+        for (const candidate of candidates) {
+          if (!candidate) continue;
+          const exists = await em.findOne(User, { displayName: candidate });
+          if (!exists) {
+            user.displayName = candidate as any;
+            break;
+          }
+        }
+      }
+
+      // If account was created via Google and email is verified, keep it unbanned
+      if (created) {
+        if (!emailVerified) {
+          // If Google did not verify email, be conservative
+          user.isBanned = true as any;
+          user.bannedAt = new Date();
+          user.banReason = 'Unverified email';
+        } else {
+          user.isBanned = false as any;
+          user.bannedAt = undefined;
+          user.banReason = undefined;
+          user.banExpiresAt = undefined;
+        }
+      }
+
+      await em.flush();
+
+      let gameProfile = await em.findOne(GameProfile, { userId: user.id });
+      if (!gameProfile) {
+        gameProfile = em.create(GameProfile, { userId: user });
+        await em.flush();
+      }
+
+      if (created) {
+        const auditLog = em.create(AuditLog, {
+          userId: user,
+          actionType: AuditActionType.CREATE,
+          entityName: 'User',
+          entityId: user.id,
+          newValue: { email: user.email, role: user.role, googleId: user.googleId },
+          ipAddress,
+        });
+        await em.flush();
+        void auditLog;
+      }
+
+      return { user, gameProfile };
+    });
+
+    const ttl = parseDurationSeconds(
+      this.config.get<string>('GOOGLE_LOGIN_CODE_TTL_SEC', '300'),
+      300,
     );
-
-    // Store refresh token hash in Redis — one key per user per platform (replaces old session)
-    await this.redis.pipeline([
-      { cmd: 'hset', args: [rtKey(user.id, platform), { tokenHash, sessionId, expiresAt, deviceInfo: dto.deviceInfo ?? '', ipAddress, loginTime, lastActive: loginTime }] },
-      { cmd: 'expire', args: [rtKey(user.id, platform), sessionTtl] },
-      { cmd: 'zadd', args: ['online_users_by_last_active', Date.now(), sessionId] },
-    ]);
-
-    const session = this.em.create(UserSession, {
-      userId: user,
-      sessionId,
-      platform,
-      ipAddress,
-      deviceInfo: dto.deviceInfo,
-      status: SessionStatus.ACTIVE,
+    const loginCode = createId();
+    await this.redis.hset(googleLoginCodeKey(loginCode), {
+      userId: user.id,
+      issuedAt: new Date().toISOString(),
     });
-    const auditLog = this.em.create(AuditLog, {
-      userId: user,
-      actionType: AuditActionType.LOGIN,
-      entityName: 'UserSession',
-      entityId: sessionId,
-      ipAddress,
-    });
-    await this.em.flush();
-    void session;
-    void auditLog;
+    await this.redis.expire(googleLoginCodeKey(loginCode), ttl);
 
     return {
-      accessToken,
-      refreshToken,
-      expiresIn: accessTtl,
-      expiresAt,
-      user: {
-        id: user.id,
-        gameProfileId: gameProfile.id,
-        email: String(user.email),
-        displayName: user.displayName ? String(user.displayName) : null,
-        imgUrl: user.imgUrl ?? null,
-        role: user.role,
-        isBanned: user.isBanned,
-        bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
-        banReason: user.banReason ?? null,
-        banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
-      },
+      loginCode,
+      user: this.toAuthUserResponse(user, gameProfile),
     };
+  }
+
+  async googleComplete(
+    dto: GoogleCompleteRequestDto,
+    ipAddress: string,
+  ): Promise<GoogleCompleteResponseDto> {
+    const record = await this.redis.hgetall(googleLoginCodeKey(dto.loginCode));
+    if (!record?.userId) {
+      throw new UnauthorizedException('Login code expired or invalid');
+    }
+
+    // One-time usage
+    await this.redis.del(googleLoginCodeKey(dto.loginCode));
+
+    const user = await this.em.findOne(User, { id: record.userId });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const gameProfile = await this.getOrCreateGameProfile(user);
+    await this.ensureNotBanned(user);
+
+    return this.issueLoginTokens(
+      user,
+      gameProfile,
+      dto.platform,
+      dto.deviceInfo,
+      ipAddress,
+    );
   }
 
   async refresh(incomingRefreshToken: string): Promise<RefreshResponseDto> {

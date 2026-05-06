@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════
 --  Database Schema - Game Unity + Web Wiki/Forum
---  Version: 2.3
+--  Version: 2.3.1
 -- ═══════════════════════════════════════
 
 SET TIMEZONE = 'Asia/Ho_Chi_Minh';
@@ -36,7 +36,7 @@ CREATE TABLE auth."User" (
   "passwordHash" TEXT,
   "googleId"     TEXT          UNIQUE,                       
   "imgUrl"       TEXT,
-  "displayName"  CITEXT        UNIQUE,                       
+  "displayName"  TEXT          not null ,                       
   "role"         auth."Role"   NOT NULL DEFAULT 'USER',
   "isBanned"     BOOLEAN       NOT NULL DEFAULT FALSE,
   "bannedAt"     TIMESTAMPTZ,
@@ -46,6 +46,7 @@ CREATE TABLE auth."User" (
   "createdAt"    TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   "updatedAt"    TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
 
+  
   -- Nếu có passwordHash thì email phải tồn tại (luôn đúng vì NOT NULL)
   -- Nếu không có passwordHash thì phải có googleId
   CONSTRAINT "User_auth_method_check"

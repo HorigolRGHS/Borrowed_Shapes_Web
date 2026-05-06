@@ -17,15 +17,14 @@ export class RegisterRequestDto {
   password: string | undefined;
 
   @ApiPropertyOptional({ example: 'BorrowedPlayer' })
-  @IsOptional()
   @IsNotEmpty()
   @IsString()
   @MinLength(3)
-  @MaxLength(30)
-  @Matches(/^[a-zA-Z0-9_-]+$/, {
-    message: 'Display name may only contain letters, numbers, underscores, and hyphens',
+  @MaxLength(20)
+  @Matches(/^[a-zA-Z0-9 _-]+$/, {
+    message: 'Display name may only contain letters, numbers, spaces, underscores, and hyphens',
   })
-  displayName?: string;
+  displayName: string | undefined;
 
   @ApiPropertyOptional({ example: 'Windows 11 / Chrome 124' })
   @IsOptional()
@@ -72,8 +71,8 @@ export class RegisterDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(3)
-  @MaxLength(30)
-  @Matches(/^[a-zA-Z0-9_-]+$/, { message: 'Display name may only contain letters, numbers, underscores, and hyphens' })
+  @MaxLength(20)
+  @Matches(/^[a-zA-Z0-9 _-]+$/, { message: 'Display name may only contain letters, numbers, spaces, underscores, and hyphens' })
   displayName?: string;
 
   @IsOptional()

@@ -4,6 +4,12 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import {
+  GoogleExchangeRequestDto,
+  GoogleExchangeResponseDto,
+  GoogleCompleteRequestDto,
+  GoogleCompleteResponseDto,
+} from './dto/google.dto';
+import {
   RefreshRequestDto,
   RefreshResponseDto,
 } from './dto/refresh.dto';
@@ -13,13 +19,9 @@ import {
 } from './dto/register.dto';
 import {
   VerifyEmailRequestDto,
-  VerifyEmailResponseDto,
   ForgotPasswordRequestDto,
-  ForgotPasswordResponseDto,
   ResetPasswordRequestDto,
-  ResetPasswordResponseDto,
-  ChangePasswordRequestDto,
-  ChangePasswordResponseDto,
+  ChangePasswordRequestDto
 } from './dto/password.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -54,6 +56,32 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
     const data = await this.authService.login(dto, req.ip ?? '');
+    return okResponse('Logged in successfully', data, `${req.method} ${req.path}`);
+  }
+
+  @Public()
+  @UseGuards(AuthRateLimitGuard)
+  @Post('google/exchange')
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: GoogleExchangeRequestDto })
+  async googleExchange(
+    @Body() dto: GoogleExchangeRequestDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<GoogleExchangeResponseDto>> {
+    const data = await this.authService.googleExchange(dto, req.ip ?? '');
+    return okResponse('Google exchange successful', data, `${req.method} ${req.path}`);
+  }
+
+  @Public()
+  @UseGuards(AuthRateLimitGuard)
+  @Post('google/complete')
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: GoogleCompleteRequestDto })
+  async googleComplete(
+    @Body() dto: GoogleCompleteRequestDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<GoogleCompleteResponseDto>> {
+    const data = await this.authService.googleComplete(dto, req.ip ?? '');
     return okResponse('Logged in successfully', data, `${req.method} ${req.path}`);
   }
 
@@ -103,11 +131,11 @@ export class AuthController {
   async verifyEmail(
     @Query('token') token: string,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<VerifyEmailResponseDto>> {
+  ): Promise<ApiResponseDto<null>> {
     await this.authService.verifyEmail({ token });
     return okResponse(
       'Email verified successfully',
-      { success: true, message: 'Email verified' },
+      null,
       `${req.method} ${req.path}`,
     );
   }
@@ -119,11 +147,11 @@ export class AuthController {
   async forgotPassword(
     @Body() dto: ForgotPasswordRequestDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<ForgotPasswordResponseDto>> {
+  ): Promise<ApiResponseDto<null>> {
     await this.authService.forgotPassword(dto);
     return okResponse(
       'Password reset link sent to email',
-      { success: true, message: 'Reset link sent' },
+       null,
       `${req.method} ${req.path}`,
     );
   }
@@ -135,11 +163,11 @@ export class AuthController {
   async resetPassword(
     @Body() dto: ResetPasswordRequestDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<ResetPasswordResponseDto>> {
+  ): Promise<ApiResponseDto<null>> {
     await this.authService.resetPassword(dto);
     return okResponse(
       'Password reset successfully',
-      { success: true, message: 'Password reset' },
+      null,
       `${req.method} ${req.path}`,
     );
   }
@@ -151,11 +179,11 @@ export class AuthController {
     @CurrentUser() user: RequestUser,
     @Body() dto: ChangePasswordRequestDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<ChangePasswordResponseDto>> {
+  ): Promise<ApiResponseDto<null>> {
     await this.authService.changePassword(user.userId, dto);
     return okResponse(
       'Password changed successfully',
-      { success: true, message: 'Password changed' },
+      null,
       `${req.method} ${req.path}`,
     );
   }

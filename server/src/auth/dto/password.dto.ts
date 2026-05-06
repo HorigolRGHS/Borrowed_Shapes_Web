@@ -8,23 +8,11 @@ export class VerifyEmailRequestDto {
   @MaxLength(500)
   token!: string;
 }
-
-export class VerifyEmailResponseDto {
-  success!: boolean;
-  message!: string;
-}
-
 export class ForgotPasswordRequestDto {
   @ApiProperty({ example: 'player@example.com' })
   @IsEmail()
   email!: string;
 }
-
-export class ForgotPasswordResponseDto {
-  success!: boolean;
-  message!: string;
-}
-
 export class ResetPasswordRequestDto {
   @ApiProperty({ example: 'player@example.com' })
   @IsEmail()
@@ -46,12 +34,6 @@ export class ResetPasswordRequestDto {
   })
   newPassword!: string;
 }
-
-export class ResetPasswordResponseDto {
-  success!: boolean;
-  message!: string;
-}
-
 export class ChangePasswordRequestDto {
   @ApiProperty({ example: 'OldP@ssw0rd!' })
   @IsString()
@@ -69,7 +51,3 @@ export class ChangePasswordRequestDto {
   newPassword!: string;
 }
 
-export class ChangePasswordResponseDto {
-  success!: boolean;
-  message!: string;
-}

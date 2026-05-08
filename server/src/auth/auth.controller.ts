@@ -28,6 +28,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import type { RequestUser } from './decorators/current-user.decorator';
 import { AuthRateLimitGuard } from '../common/guards/auth-rate-limit.guard';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
+import { Roles } from './decorators/roles.decorator';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -43,7 +44,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RegisterResponseDto>> {
     const data = await this.authService.register(dto, req.ip ?? '');
-    return okResponse('Registered successfully, please check your email for verification', data, `${req.method} ${req.path}`);
+    return okResponse('AUTH.REGISTER_SUCCESS', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -56,7 +57,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
     const data = await this.authService.login(dto, req.ip ?? '');
-    return okResponse('Logged in successfully', data, `${req.method} ${req.path}`);
+    return okResponse('AUTH.LOGIN_SUCCESS', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -69,7 +70,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleExchangeResponseDto>> {
     const data = await this.authService.googleExchange(dto, req.ip ?? '');
-    return okResponse('Google exchange successful', data, `${req.method} ${req.path}`);
+    return okResponse('AUTH.GOOGLE_EXCHANGE_SUCCESS', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -82,7 +83,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleCompleteResponseDto>> {
     const data = await this.authService.googleComplete(dto, req.ip ?? '');
-    return okResponse('Logged in successfully', data, `${req.method} ${req.path}`);
+    return okResponse('AUTH.LOGIN_SUCCESS', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -102,7 +103,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RefreshResponseDto>> {
     const data = await this.authService.refresh(dto.refreshToken);
-    return okResponse('Token refreshed successfully', data, `${req.method} ${req.path}`);
+    return okResponse('AUTH.TOKEN_REFRESHED', data, `${req.method} ${req.path}`);
   }
 
   @Delete('logout')
@@ -112,7 +113,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.authService.logout(user.userId, user.platform, req.ip ?? '');
-    return okResponse('Logged out successfully', null, `${req.method} ${req.path}`);
+    return okResponse('AUTH.LOGOUT_SUCCESS', null, `${req.method} ${req.path}`);
   }
 
   @Post('logout')
@@ -122,7 +123,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.authService.logout(user.userId, user.platform, req.ip ?? '');
-    return okResponse('Logged out successfully', null, `${req.method} ${req.path}`);
+    return okResponse('AUTH.LOGOUT_SUCCESS', null, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -134,7 +135,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.verifyEmail({ token });
     return okResponse(
-      'Email verified successfully',
+      'AUTH.EMAIL_VERIFIED',
       null,
       `${req.method} ${req.path}`,
     );
@@ -150,7 +151,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.forgotPassword(dto);
     return okResponse(
-      'Password reset link sent to email',
+      'AUTH.PASSWORD_RESET_LINK_SENT',
        null,
       `${req.method} ${req.path}`,
     );
@@ -166,7 +167,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.resetPassword(dto);
     return okResponse(
-      'Password reset successfully',
+      'AUTH.PASSWORD_RESET_SUCCESS',
       null,
       `${req.method} ${req.path}`,
     );
@@ -182,7 +183,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.changePassword(user.userId, dto);
     return okResponse(
-      'Password changed successfully',
+      'AUTH.PASSWORD_CHANGED_SUCCESS',
       null,
       `${req.method} ${req.path}`,
     );
@@ -195,6 +196,6 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.authService.me(user.userId, user.platform, include);
-    return okResponse('Current user', data, `${req.method} ${req.path}`);
+    return okResponse('AUTH.CURRENT_USER', data, `${req.method} ${req.path}`);
   }
 }

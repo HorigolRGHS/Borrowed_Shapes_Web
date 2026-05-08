@@ -1,0 +1,50 @@
+{
+  "COMMON": {
+    "REQUEST_SUCCESSFUL": "Yêu cầu thành công",
+    "REQUEST_FAILED": "Yêu cầu thất bại",
+    "INTERNAL_SERVER_ERROR": "Lỗi máy chủ nội bộ",
+    "INVALID_JSON_PAYLOAD": "Dữ liệu JSON không hợp lệ",
+    "FORBIDDEN": "Bạn không có quyền truy cập vào tài nguyên này"
+  },
+  "AUTH": {
+    "GOOGLE_NOT_CONFIGURED": "Đăng nhập Google chưa được cấu hình",
+    "INVALID_REDIRECT_URI": "redirectUri không hợp lệ",
+    "EMAIL_ALREADY_LINKED": "Email đã được liên kết với một tài khoản Google khác",
+    "LOGIN_CODE_EXPIRED": "Mã đăng nhập đã hết hạn hoặc không hợp lệ",
+    "UNAUTHORIZED": "Truy cập không hợp lệ, vui lòng đăng nhập lại",
+    "UNVERIFIED_EMAIL": "Email chưa được xác thực",
+    "INVALID_CREDENTIALS": "Thông tin đăng nhập không hợp lệ",
+    "EMAIL_PASSWORD_REQUIRED": "Yêu cầu email và mật khẩu",
+    "EMAIL_IN_USE": "Email đã được sử dụng",
+    "UNIQUE_FIELD_IN_USE": "Trường dữ liệu duy nhất đã được sử dụng",
+    "USER_NOT_FOUND": "Không tìm thấy người dùng",
+    "ACCOUNT_BANNED": "Tài khoản đã bị khóa",
+    "GOOGLE_EXCHANGE_FAILED": "Trao đổi mã Google thất bại",
+    "INVALID_GOOGLE_TOKEN": "Token Google không hợp lệ",
+    "EMAIL_VERIFY_SUBJECT": "[Borrowed Shapes] Xác thực Email của bạn",
+    "REGISTER_SUCCESS": "Đăng ký thành công, vui lòng kiểm tra email để xác thực",
+    "LOGIN_SUCCESS": "Đăng nhập thành công",
+    "GOOGLE_EXCHANGE_SUCCESS": "Trao đổi Google thành công",
+    "TOKEN_REFRESHED": "Làm mới token thành công",
+    "LOGOUT_SUCCESS": "Đăng xuất thành công",
+    "EMAIL_VERIFIED": "Xác thực email thành công",
+    "PASSWORD_RESET_LINK_SENT": "Liên kết đặt lại mật khẩu đã được gửi vào email",
+    "PASSWORD_RESET_SUCCESS": "Đặt lại mật khẩu thành công",
+    "PASSWORD_CHANGED_SUCCESS": "Thay đổi mật khẩu thành công",
+    "CURRENT_USER": "Người dùng hiện tại"
+  },
+  "GAME": {
+    "RUN_INITIALIZED": "Khởi tạo lượt chơi thành công",
+    "JOINED_SUCCESS": "Tham gia lượt chơi thành công",
+    "SESSION_STARTED": "Màn chơi đã bắt đầu",
+    "SESSION_ENDED": "Màn chơi kết thúc thành công",
+    "LEFT_LOBBY": "Đã rời phòng chờ",
+    "LOBBY_LEVEL_NOT_CONFIGURED": "Cấp độ phòng chờ chưa được cấu hình",
+    "RUN_NOT_FOUND_FOR_LOBBY": "Không tìm thấy lượt chơi cho phòng chờ này",
+    "LOBBY_SESSION_NOT_FOUND": "Không tìm thấy phiên phòng chờ",
+    "RUN_NOT_FOUND": "Không tìm thấy lượt chơi",
+    "LEVEL_NOT_FOUND": "Không tìm thấy cấp độ",
+    "SESSION_NOT_FOUND": "Không tìm thấy phiên chơi",
+    "PROFILE_NOT_FOUND": "Không tìm thấy hồ sơ game"
+  }
+}

@@ -276,7 +276,7 @@ export class AuthService {
     ipAddress: string,
   ): Promise<RegisterResponseDto> {
     if (!dto.email || !dto.password) {
-      throw new BadRequestException('Email and password are required');
+      throw new BadRequestException('AUTH.EMAIL_PASSWORD_REQUIRED');
     }
 
     const email = dto.email;
@@ -358,10 +358,10 @@ export class AuthService {
         const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
 
         if (details.includes('user_email_key')) {
-          throw new ConflictException('Email already in use');
+          throw new ConflictException('AUTH.EMAIL_IN_USE');
         }
 
-        throw new ConflictException('Unique field already in use');
+        throw new ConflictException('AUTH.UNIQUE_FIELD_IN_USE');
       }
       throw err;
     }
@@ -369,7 +369,7 @@ export class AuthService {
 
   async login(dto: LoginRequestDto, ipAddress: string): Promise<LoginResponseDto> {
     if (!dto.email || !dto.password || !dto.platform) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('AUTH.INVALID_CREDENTIALS');
     }
 
     const email = dto.email;
@@ -377,7 +377,7 @@ export class AuthService {
     const platform = dto.platform;
 
     const user = await this.em.findOne(User, { email });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new UnauthorizedException('AUTH.INVALID_CREDENTIALS');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
     await this.ensureNotBanned(user);
@@ -385,7 +385,7 @@ export class AuthService {
     const valid = user.passwordHash
       ? await bcrypt.compare(password, user.passwordHash)
       : false;
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    if (!valid) throw new UnauthorizedException('AUTH.INVALID_CREDENTIALS');
 
     return this.issueLoginTokens(user, gameProfile, platform, dto.deviceInfo, ipAddress);
   }
@@ -396,11 +396,11 @@ export class AuthService {
   ): Promise<GoogleExchangeResponseDto> {
     const expectedRedirectUri = this.config.get<string>('GOOGLE_REDIRECT_URI');
     if (!expectedRedirectUri) {
-      throw new BadRequestException('Google login is not configured');
+      throw new BadRequestException('AUTH.GOOGLE_NOT_CONFIGURED');
     }
 
     if (dto.redirectUri !== expectedRedirectUri) {
-      throw new BadRequestException('Invalid redirectUri');
+      throw new BadRequestException('AUTH.INVALID_REDIRECT_URI');
     }
 
     const payload = await this.fetchGoogleUserInfo(dto.code, dto.codeVerifier, dto.redirectUri);
@@ -416,7 +416,7 @@ export class AuthService {
       if (!found) {
         found = await em.findOne(User, { email });
         if (found?.googleId && String(found.googleId) !== googleId) {
-          throw new ConflictException('Email is already linked to another Google account');
+          throw new ConflictException('AUTH.EMAIL_ALREADY_LINKED');
         }
         if (found && !found.googleId) {
           found.googleId = googleId;
@@ -512,7 +512,7 @@ export class AuthService {
   ): Promise<GoogleCompleteResponseDto> {
     const record = await this.redis.hgetall(googleLoginCodeKey(dto.loginCode));
     if (!record?.userId) {
-      throw new UnauthorizedException('Login code expired or invalid');
+      throw new UnauthorizedException('AUTH.LOGIN_CODE_EXPIRED');
     }
 
     // One-time usage

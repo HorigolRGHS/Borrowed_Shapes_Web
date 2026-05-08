@@ -11,7 +11,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
+import { ROLES_KEY } from './decorators/roles.decorator';
 import { User } from '../entities/User';
+import { Role } from '../entities/Role';
 
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
@@ -34,7 +36,7 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    if (!token) throw new UnauthorizedException();
+    if (!token) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
 
     try {
       const payload = await this.jwt.verifyAsync(token, {
@@ -46,13 +48,13 @@ export class AuthGuard implements CanActivate {
       const sessionId = payload.sid as string | undefined;
       const role = payload.role as string | undefined;
       if (!userId || !platform || !role) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('AUTH.UNAUTHORIZED');
       }
 
       if (sessionId) {
         const stored = await this.redis.hgetall(rtKey(userId, platform));
         if (stored?.sessionId !== sessionId) {
-          throw new UnauthorizedException();
+          throw new UnauthorizedException('AUTH.UNAUTHORIZED');
         }
       }
 
@@ -63,7 +65,7 @@ export class AuthGuard implements CanActivate {
       );
 
       if (!user || user.deletedAt) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('AUTH.UNAUTHORIZED');
       }
 
       const now = new Date();
@@ -86,11 +88,22 @@ export class AuthGuard implements CanActivate {
         sessionId,
         gameProfileId: payload.gp ?? null,
       };
+
+      // Check roles if specified
+      const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+      if (requiredRoles && requiredRoles.length > 0) {
+        if (!requiredRoles.includes(role as Role)) {
+          throw new ForbiddenException('COMMON.FORBIDDEN');
+        }
+      }
     } catch (error) {
       if (error instanceof ForbiddenException) {
         throw error;
       }
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('AUTH.UNAUTHORIZED');
     }
 
     return true;

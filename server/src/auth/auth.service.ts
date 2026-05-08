@@ -424,39 +424,29 @@ export class AuthService {
       }
 
       const created = !found;
+        
+      const finalDisplayName = (name ? name.trim().replace(/\s+/g, ' ') : 'User').slice(0, 24);
+
       const user = found
         ?? em.create(User, {
           email,
           googleId,
           imgUrl: picture,
-          displayName: null,
+          displayName: finalDisplayName,
           role: Role.USER,
           isBanned: false,
         });
 
       // Sync basic profile fields
-      if (!user.email || String(user.email) !== email) {
-        user.email = email as any;
-      }
-      if (picture && user.imgUrl !== picture) {
-        user.imgUrl = picture;
-      }
-
-      if (!user.displayName && name) {
-        // Best-effort unique displayName
-        const base = name
-          .trim()
-          .replace(/\s+/g, ' ')
-          .slice(0, 24);
-
-        const candidates = [base, `${base}${Math.floor(Math.random() * 10000)}`];
-        for (const candidate of candidates) {
-          if (!candidate) continue;
-          const exists = await em.findOne(User, { displayName: candidate });
-          if (!exists) {
-            user.displayName = candidate as any;
-            break;
-          }
+      if (!created) {
+        if (!user.email || String(user.email) !== email) {
+          user.email = email as any;
+        }
+        if (picture && user.imgUrl !== picture) {
+          user.imgUrl = picture;
+        }
+        if (!user.displayName && name) {
+          user.displayName = name as any;
         }
       }
 

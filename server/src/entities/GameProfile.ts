@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, OneToOne, type Opt, PrimaryKey, Property, Unique, ManyToOne } from '@mikro-orm/core';
 import { Achievement } from './Achievement';
 import { User } from './User';
 
@@ -26,6 +26,9 @@ export class GameProfile {
 
   @Property({ type: 'integer' })
   totalAbandoned: number & Opt = 0;
+
+  @ManyToOne({ entity: () => Achievement, fieldName: 'equippedAchievementId', nullable: true })
+  equippedAchievement?: Achievement;
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;

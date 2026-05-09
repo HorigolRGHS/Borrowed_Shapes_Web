@@ -9,8 +9,13 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
+import { ROLES_KEY } from './decorators/roles.decorator';
 import { User } from '../entities/User';
+import { Role } from '../entities/Role';
+
+const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,6 +24,7 @@ export class AuthGuard implements CanActivate {
     private jwt: JwtService,
     private config: ConfigService,
     private em: EntityManager,
+    private redis: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,7 +36,7 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    if (!token) throw new UnauthorizedException();
+    if (!token) throw new UnauthorizedException('auth.unauthorized');
 
     try {
       const payload = await this.jwt.verifyAsync(token, {
@@ -38,18 +44,28 @@ export class AuthGuard implements CanActivate {
       });
 
       const userId = payload.sub as string | undefined;
-      if (!userId) {
-        throw new UnauthorizedException();
+      const platform = (payload.pf ?? payload.platform) as string | undefined;
+      const sessionId = payload.sid as string | undefined;
+      const role = payload.role as string | undefined;
+      if (!userId || !platform || !role) {
+        throw new UnauthorizedException('auth.unauthorized');
+      }
+
+      if (sessionId) {
+        const stored = await this.redis.hgetall(rtKey(userId, platform));
+        if (stored?.sessionId !== sessionId) {
+          throw new UnauthorizedException('auth.unauthorized');
+        }
       }
 
       const user = await this.em.findOne(
         User,
         { id: userId },
-        { fields: ['id', 'role', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
+        { fields: ['id', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
       );
 
       if (!user || user.deletedAt) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('auth.unauthorized');
       }
 
       const now = new Date();
@@ -61,20 +77,33 @@ export class AuthGuard implements CanActivate {
           user.banExpiresAt = undefined;
           await this.em.flush();
         } else {
-          throw new ForbiddenException(user.banReason ?? 'Account is banned');
+          throw new ForbiddenException(user.banReason ?? 'auth.account_banned');
         }
       }
 
       request.user = {
         userId: user.id,
-        role: user.role,
-        platform: payload.platform,
+        role,
+        platform,
+        sessionId,
+        gameProfileId: payload.gp ?? null,
       };
+
+      // Check roles if specified
+      const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+      if (requiredRoles && requiredRoles.length > 0) {
+        if (!requiredRoles.includes(role as Role)) {
+          throw new ForbiddenException('common.forbidden');
+        }
+      }
     } catch (error) {
       if (error instanceof ForbiddenException) {
         throw error;
       }
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('auth.unauthorized');
     }
 
     return true;

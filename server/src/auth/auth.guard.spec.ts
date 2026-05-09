@@ -1,6 +1,7 @@
 import { AuthGuard } from './auth.guard';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/postgresql';
 
 const mockReflector = {
   getAllAndOverride: jest.fn(),
@@ -8,6 +9,15 @@ const mockReflector = {
 
 const mockJwt = {
   verifyAsync: jest.fn(),
+};
+
+const mockRedis = {
+  hgetall: jest.fn(),
+};
+
+const mockEm = {
+  findOne: jest.fn(),
+  flush: jest.fn(),
 };
 
 const mockConfig = {
@@ -35,9 +45,12 @@ describe('AuthGuard', () => {
       mockReflector as any,
       mockJwt as any,
       mockConfig as any,
+      mockEm as any,
+      mockRedis as any,
     );
     jest.clearAllMocks();
     mockConfig.get.mockReturnValue('test-secret');
+    mockEm.findOne.mockResolvedValue({ id: 'user_1', role: 'USER', isBanned: false, deletedAt: null });
   });
 
   it('allows @Public() routes without a token', async () => {
@@ -59,7 +72,8 @@ describe('AuthGuard', () => {
 
   it('attaches req.user and returns true for a valid JWT', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    mockJwt.verifyAsync.mockResolvedValue({ sub: 'user_1', role: 'USER', platform: 'forum' });
+    mockJwt.verifyAsync.mockResolvedValue({ sub: 'user_1', sid: 'sess_1', platform: 'web', role: 'USER' });
+    mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
 
     const ctx = makeContext('Bearer valid-token');
     const result = await guard.canActivate(ctx);
@@ -68,7 +82,8 @@ describe('AuthGuard', () => {
     expect(ctx.switchToHttp().getRequest().user).toMatchObject({
       userId: 'user_1',
       role: 'USER',
-      platform: 'forum',
+      platform: 'web',
+      sessionId: 'sess_1',
     });
   });
 });

@@ -20,8 +20,7 @@ export class User {
   @Property({ type: 'text', nullable: true })
   imgUrl?: string;
 
-  @Unique({ name: 'User_displayName_key', expression: 'CREATE UNIQUE INDEX "User_displayName_key" ON auth."User" USING btree ("displayName")' })
-  @Property({ columnType: 'citext', nullable: true })
+  @Property({ type: 'text', nullable: true })
   displayName?: unknown;
 
   @Enum({ items: () => Auth$46Role, nativeEnumName: 'auth.Role' })

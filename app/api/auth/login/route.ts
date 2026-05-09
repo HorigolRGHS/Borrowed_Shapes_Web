@@ -1,44 +1,64 @@
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "@/lib/api/api-client";
+import { ApiResponse } from "@/models/dtos/api-response.dto";
+import { LoginRequest, LoginResponse } from "@/models/dtos/auth.dto";
 
-const NESTJS_URL = process.env.NESTJS_URL ?? 'http://localhost:3001';
+export async function POST(request: NextRequest) {
+  try {
+    const payload: LoginRequest = await request.json();
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
+    // 1. Tự động lấy Device Info từ User-Agent
+    const userAgent = request.headers.get("user-agent") || "Web Browser";
+    if (!payload.deviceInfo) {
+      payload.deviceInfo = userAgent;
+    }
 
-  const res = await fetch(`${NESTJS_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, platform: 'forum' }),
-  });
+    // 2. Mặc định platform là 'web'
+    payload.platform = 'web';
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Login failed' }));
-    return NextResponse.json(error, { status: res.status });
+    const res: ApiResponse<LoginResponse> = await api.post("/auth/login", payload);
+
+    if (!res) throw new Error("Empty response from server");
+
+    if (!res.success) {
+      throw new Error(res.message || "Login failed");
+    }
+
+    const data = res.data;
+    const token = data?.accessToken ?? null;
+    const refreshToken = data?.refreshToken ?? null;
+
+    if (!token) throw new Error("Missing access token");
+
+    const response = NextResponse.json(res);
+
+    response.cookies.set("accessToken", token, {
+      path: "/",
+      maxAge: 60 * 15, // 15 mins
+      httpOnly: false,
+      sameSite: "lax",
+    });
+
+    if (refreshToken) {
+      response.cookies.set("refreshToken", refreshToken, {
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
+
+    return response;
+
+  } catch (err: any) {
+    const errorRes: ApiResponse<null> = {
+      statusCode: err?.response?.status || 400,
+      success: false,
+      message: err?.response?.data?.message ?? err?.message ?? "Login failed",
+      data: null,
+      path: "/api/auth/login",
+      timestamp: new Date().toISOString()
+    };
+    return NextResponse.json(errorRes, { status: errorRes.statusCode });
   }
-
-  const data = await res.json();
-  const cookieStore = await cookies();
-  const isProd = process.env.NODE_ENV === 'production';
-
-  // Access token — short-lived (15 min), used for API calls
-  cookieStore.set('at', data.accessToken, {
-    httpOnly: true,
-    sameSite: 'strict',
-    path: '/',
-    maxAge: data.expiresIn,
-    secure: isProd,
-  });
-
-  // Refresh token — long-lived (7 days), used to obtain new access tokens
-  cookieStore.set('rt', data.refreshToken, {
-    httpOnly: true,
-    sameSite: 'strict',
-    path: '/api/auth/refresh',
-    maxAge: 60 * 60 * 24 * 7,
-    secure: isProd,
-  });
-
-  const { accessToken: _at, refreshToken: _rt, ...safeData } = data;
-  return NextResponse.json(safeData, { status: 200 });
 }

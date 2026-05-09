@@ -1,16 +1,22 @@
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AuthUserResponseDto } from './auth-user.dto';
 
 export class LoginRequestDto {
-  @IsEmail()
+  @ApiProperty({ example: 'player@example.com' })
+  @IsEmail({}, { message: 'validation.invalid_email' })
   email: string | undefined;
 
+  @ApiProperty({ example: 'P@ssw0rd123!' })
   @IsString()
+  @IsNotEmpty({ message: 'validation.password_required' })
   password: string | undefined;
 
-  @IsIn(['game', 'forum'])
-  platform: 'game' | 'forum' | undefined;
+  @ApiProperty({ example: 'game', enum: ['game', 'web'] })
+  @IsIn(['game', 'web'])
+  platform: 'game' | 'web' | undefined;
 
+  @ApiPropertyOptional({ example: 'Windows 11 / Chrome 124' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -18,9 +24,18 @@ export class LoginRequestDto {
 }
 
 export class LoginResponseDto {
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIs...' })
   accessToken!: string;
+
+  @ApiProperty({ example: 'user-id:game:session-id' })
   refreshToken!: string;
+
+  @ApiProperty({ example: 900 })
   expiresIn!: number;
+
+  @ApiProperty({ example: '2026-05-05T13:24:11.000Z' })
   expiresAt!: string;
+
+  @ApiProperty({ type: AuthUserResponseDto })
   user!: AuthUserResponseDto;
 }

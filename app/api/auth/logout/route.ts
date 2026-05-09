@@ -1,22 +1,34 @@
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "@/lib/api/api-client";
+import { ApiResponse } from "@/models/dtos/api-response.dto";
 
-const NESTJS_URL = process.env.NESTJS_URL ?? 'http://localhost:3001';
+export async function POST(request: NextRequest) {
+  const accessToken = request.cookies.get("accessToken")?.value;
+  let apiRes: ApiResponse<null>;
 
-export async function DELETE() {
-  const cookieStore = await cookies();
-  const at = cookieStore.get('at')?.value;
+  try {
+    if (!accessToken) throw new Error("No active session");
 
-  if (at) {
-    // Best-effort: always clear cookies even if NestJS call fails
-    await fetch(`${NESTJS_URL}/api/auth/logout`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${at}` },
-    }).catch(() => {});
+    const res: ApiResponse<null> = await api.post("/auth/logout", {}, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    if (!res || !res.success) throw new Error(res?.message || "Logout failed");
+    apiRes = res;
+  } catch (err: any) {
+    apiRes = {
+      statusCode: 200,
+      success: true,
+      message: err?.response?.data?.message ?? err?.message ?? "Logged out",
+      data: null,
+      path: "/api/auth/logout",
+      timestamp: new Date().toISOString()
+    };
   }
 
-  cookieStore.delete('at');
-  cookieStore.delete('rt');
+  const response = NextResponse.json(apiRes);
+  response.cookies.delete("accessToken");
+  response.cookies.delete("refreshToken");
 
-  return new NextResponse(null, { status: 204 });
+  return response;
 }

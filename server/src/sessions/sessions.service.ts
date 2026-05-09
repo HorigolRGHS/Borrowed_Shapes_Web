@@ -12,7 +12,7 @@ import { User } from '../entities/User';
 import { SessionStatus } from '../entities/SessionStatus';
 import { AuditActionType } from '../entities/AuditActionType';
 
-const PLATFORMS = ['game', 'forum'] as const;
+const PLATFORMS = ['game', 'web'] as const;
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
 @Injectable()
@@ -83,10 +83,10 @@ export class SessionsService {
     ipAddress: string,
   ): Promise<void> {
     const session = await this.em.findOne(UserSession, { id: dbSessionId });
-    if (!session) throw new NotFoundException('Session not found');
+    if (!session) throw new NotFoundException('auth.session_not_found');
 
     if (session.userId.id !== requestUserId && requestUserRole !== 'ADMIN') {
-      throw new ForbiddenException();
+      throw new ForbiddenException('common.forbidden');
     }
 
     // Find which platform slot currently holds this session and remove it

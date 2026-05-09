@@ -11,9 +11,9 @@ export class LoginRequestDto {
   @IsString()
   password: string | undefined;
 
-  @ApiProperty({ example: 'game', enum: ['game', 'forum'] })
-  @IsIn(['game', 'forum'])
-  platform: 'game' | 'forum' | undefined;
+  @ApiProperty({ example: 'game', enum: ['game', 'web'] })
+  @IsIn(['game', 'web'])
+  platform: 'game' | 'web' | undefined;
 
   @ApiPropertyOptional({ example: 'Windows 11 / Chrome 124' })
   @IsOptional()

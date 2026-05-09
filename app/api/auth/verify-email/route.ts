@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const NESTJS_URL = process.env.NESTJS_URL ?? 'http://localhost:3001';
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
 export async function POST(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token');
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Missing token' }, { status: 400 });
   }
 
-  const res = await fetch(`${NESTJS_URL}/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
+  const res = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
     method: 'POST',
   });
 

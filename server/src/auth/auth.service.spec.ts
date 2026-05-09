@@ -125,14 +125,14 @@ describe('AuthService', () => {
     it('throws UnauthorizedException for unknown email', async () => {
       mockEm.findOne.mockResolvedValue(null);
       await expect(
-        service.login({ email: 'nope@b.com', password: 'pass', platform: 'forum' }, '127.0.0.1'),
+        service.login({ email: 'nope@b.com', password: 'pass', platform: 'web' }, '127.0.0.1'),
       ).rejects.toThrow(UnauthorizedException);
     });
 
     it('throws UnauthorizedException for wrong password', async () => {
       mockEm.findOne.mockResolvedValue({ id: 'u1', passwordHash: '$2b$04$invalidhash', role: 'USER' });
       await expect(
-        service.login({ email: 'a@b.com', password: 'wrongpass', platform: 'forum' }, '127.0.0.1'),
+        service.login({ email: 'a@b.com', password: 'wrongpass', platform: 'web' }, '127.0.0.1'),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -142,7 +142,7 @@ describe('AuthService', () => {
       mockRedis.hgetall.mockResolvedValue(null);
       mockRedis.pipeline.mockResolvedValue(undefined);
 
-      const result = await service.login({ email: 'a@b.com', password: 'password123', platform: 'forum' }, '127.0.0.1');
+      const result = await service.login({ email: 'a@b.com', password: 'password123', platform: 'web' }, '127.0.0.1');
 
       expect(mockRedis.pipeline).toHaveBeenCalledTimes(1);
       expect(mockEm.create).toHaveBeenCalled();
@@ -157,9 +157,9 @@ describe('AuthService', () => {
       mockRedis.del.mockResolvedValue(undefined);
       mockRedis.zrem.mockResolvedValue(undefined);
 
-      await service.logout('u1', 'forum', '127.0.0.1');
+      await service.logout('u1', 'web', '127.0.0.1');
 
-      expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:forum');
+      expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:web');
       expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_1');
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
         expect.anything(),

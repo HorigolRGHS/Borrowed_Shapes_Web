@@ -23,9 +23,9 @@ export class GoogleExchangeRequestDto {
   @IsString()
   redirectUri!: string;
 
-  @ApiProperty({ example: 'game', enum: ['game', 'forum'] })
-  @IsIn(['game', 'forum'])
-  platform!: 'game' | 'forum';
+  @ApiProperty({ example: 'game', enum: ['game', 'web'] })
+  @IsIn(['game', 'web'])
+  platform!: 'game' | 'web';
 
   @ApiPropertyOptional({ example: 'Unity 6 / Windows 11' })
   @IsOptional()
@@ -50,9 +50,9 @@ export class GoogleCompleteRequestDto {
   @IsString()
   loginCode!: string;
 
-  @ApiProperty({ example: 'game', enum: ['game', 'forum'] })
-  @IsIn(['game', 'forum'])
-  platform!: 'game' | 'forum';
+  @ApiProperty({ example: 'game', enum: ['game', 'web'] })
+  @IsIn(['game', 'web'])
+  platform!: 'game' | 'web';
 
   @ApiPropertyOptional({ example: 'Unity 6 / Windows 11' })
   @IsOptional()

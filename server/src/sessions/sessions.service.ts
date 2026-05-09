@@ -12,7 +12,7 @@ import { User } from '../entities/User';
 import { SessionStatus } from '../entities/SessionStatus';
 import { AuditActionType } from '../entities/AuditActionType';
 
-const PLATFORMS = ['game', 'forum'] as const;
+const PLATFORMS = ['game', 'web'] as const;
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
 @Injectable()

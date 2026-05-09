@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const NESTJS_URL = process.env.NESTJS_URL ?? 'http://localhost:3001';
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
 function parseState(state: string): { platform?: string; returnTo?: string } {
   try {
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
   const returnTo = stateJson.returnTo ?? '';
 
   try {
-    const res = await fetch(`${NESTJS_URL}/api/auth/google/exchange`, {
+    const res = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/auth/google/exchange`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

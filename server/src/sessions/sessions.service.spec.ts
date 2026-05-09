@@ -55,12 +55,12 @@ describe('SessionsService', () => {
     it('updates lastActive in Redis and resets TTL via pipeline', async () => {
       mockRedis.pipeline.mockResolvedValue(undefined);
 
-      await service.heartbeat('user_1', 'forum');
+      await service.heartbeat('user_1', 'web');
 
       expect(mockRedis.pipeline).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ cmd: 'hset', args: expect.arrayContaining(['rt:user_1:forum']) }),
-          expect.objectContaining({ cmd: 'expire', args: ['rt:user_1:forum', 604800] }),
+          expect.objectContaining({ cmd: 'hset', args: expect.arrayContaining(['rt:user_1:web']) }),
+          expect.objectContaining({ cmd: 'expire', args: ['rt:user_1:web', 604800] }),
         ]),
       );
     });
@@ -77,7 +77,7 @@ describe('SessionsService', () => {
         id: 'db_id_1',
         user: { id: 'other_user' },
         sessionId: 'sess_1',
-        platform: 'forum',
+        platform: 'web',
       });
       await expect(service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1')).rejects.toThrow(ForbiddenException);
     });
@@ -98,7 +98,7 @@ describe('SessionsService', () => {
         id: 'db_id_1',
         user: { id: 'user_1' },
         sessionId: 'sess_1',
-        platform: 'forum',
+        platform: 'web',
       });
       mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
       mockRedis.del.mockResolvedValue(undefined);
@@ -106,7 +106,7 @@ describe('SessionsService', () => {
 
       await service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1');
 
-      expect(mockRedis.del).toHaveBeenCalledWith('rt:user_1:forum');
+      expect(mockRedis.del).toHaveBeenCalledWith('rt:user_1:web');
       expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_1');
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
         expect.anything(),

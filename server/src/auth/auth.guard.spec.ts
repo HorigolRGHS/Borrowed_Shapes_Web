@@ -72,7 +72,7 @@ describe('AuthGuard', () => {
 
   it('attaches req.user and returns true for a valid JWT', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    mockJwt.verifyAsync.mockResolvedValue({ sub: 'user_1', sid: 'sess_1', platform: 'forum', role: 'USER' });
+    mockJwt.verifyAsync.mockResolvedValue({ sub: 'user_1', sid: 'sess_1', platform: 'web', role: 'USER' });
     mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
 
     const ctx = makeContext('Bearer valid-token');
@@ -82,7 +82,7 @@ describe('AuthGuard', () => {
     expect(ctx.switchToHttp().getRequest().user).toMatchObject({
       userId: 'user_1',
       role: 'USER',
-      platform: 'forum',
+      platform: 'web',
       sessionId: 'sess_1',
     });
   });

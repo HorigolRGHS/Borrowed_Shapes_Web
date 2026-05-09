@@ -2,7 +2,6 @@
 # Build images và chạy tất cả services (PostgreSQL, Redis, Backend, Frontend)
 
 services:
-
   # ─── PostgreSQL ─────────────────────────────────────────────────────────────
   bs_postgres:
     image: postgres:16-alpine
@@ -14,7 +13,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bws} -d ${POSTGRES_DB:-borrowed_shapes}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-bws} -d ${POSTGRES_DB:-borrowed_shapes}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -76,7 +79,7 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      NESTJS_URL: ${NESTJS_URL:-http://bs_be:3001}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://bs_be:3001}
     depends_on:
       bs_be:
         condition: service_healthy

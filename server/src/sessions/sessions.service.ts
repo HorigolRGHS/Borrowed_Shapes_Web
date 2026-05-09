@@ -83,10 +83,10 @@ export class SessionsService {
     ipAddress: string,
   ): Promise<void> {
     const session = await this.em.findOne(UserSession, { id: dbSessionId });
-    if (!session) throw new NotFoundException('Session not found');
+    if (!session) throw new NotFoundException('AUTH.SESSION_NOT_FOUND');
 
     if (session.userId.id !== requestUserId && requestUserRole !== 'ADMIN') {
-      throw new ForbiddenException();
+      throw new ForbiddenException('COMMON.FORBIDDEN');
     }
 
     // Find which platform slot currently holds this session and remove it

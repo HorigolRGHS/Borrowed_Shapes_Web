@@ -1,0 +1,26 @@
+{
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "signing_in": "Signing in...",
+    "login_success": "Login successful!",
+    "login_failed": "Login failed",
+    "welcome_back": "Welcome back!",
+    "login_subtitle": "Sign in to continue your adventure",
+    "forgot_password": "Forgot password?",
+    "no_account": "Don't have an account?",
+    "register": "Sign up"
+  },
+  "common": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "switch_lang": "Tiếng Việt"
+  },
+  "validation": {
+    "invalid_email": "Invalid email address",
+    "password_required": "Password is required",
+    "password_min_6": "Password must be at least 6 characters"
+  }
+}

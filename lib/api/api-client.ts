@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api",
   timeout: 30000,
   withCredentials: true,
   headers: {
@@ -105,8 +105,8 @@ export const handleLogout = () => {
   document.cookie = "refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
   localStorage.removeItem("user_profile");
   window.dispatchEvent(new CustomEvent("api:logout"));
-  if (window.location.pathname !== "/login") {
-    window.location.href = "/login";
+  if (window.location.pathname !== "/auth/login") {
+    window.location.href = "/auth/login";
   }
 };
 

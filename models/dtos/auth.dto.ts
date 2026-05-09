@@ -1,3 +1,17 @@
+import * as z from "zod";
+
+export const loginSchema = z.object({
+  email: z.string().email("validation.invalid_email"),
+  password: z.string().min(1, "validation.password_required"),
+});
+
+export type LoginFormValues = z.infer<typeof loginSchema>;
+
+export const loginRequestSchema = loginSchema.extend({
+  platform: z.literal("web").default("web"),
+  deviceInfo: z.string().optional(),
+});
+
 export interface LoginRequest {
   email: string;
   password: string;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { decodeJwt, normalizeJwt } from "@/lib/utils";
+import { decodeJwt, normalizeJwt } from "@/lib/utils/jwt";
 
 // ======== ROUTE CONFIG ========
 

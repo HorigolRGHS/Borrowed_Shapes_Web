@@ -106,7 +106,7 @@ export class AuthService {
     const clientId = this.config.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = this.config.get<string>('GOOGLE_CLIENT_SECRET');
     if (!clientId || !clientSecret) {
-      throw new BadRequestException('Google login is not configured');
+      throw new BadRequestException('AUTH.GOOGLE_NOT_CONFIGURED');
     }
 
     const tokenBody = new URLSearchParams({
@@ -131,7 +131,7 @@ export class AuthService {
     } = await tokenRes.json().catch(() => ({}));
 
     if (!tokenRes.ok || !tokenJson.access_token) {
-      throw new UnauthorizedException(tokenJson.error_description ?? 'Google exchange failed');
+      throw new UnauthorizedException(tokenJson.error_description ?? 'AUTH.GOOGLE_EXCHANGE_FAILED');
     }
 
     const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -147,7 +147,7 @@ export class AuthService {
     } = await infoRes.json().catch(() => ({}));
 
     if (!infoRes.ok || !infoJson.sub || !infoJson.email) {
-      throw new UnauthorizedException('Invalid Google token');
+      throw new UnauthorizedException('AUTH.INVALID_GOOGLE_TOKEN');
     }
 
     return infoJson;
@@ -166,7 +166,7 @@ export class AuthService {
       return;
     }
 
-    throw new ForbiddenException(user.banReason ?? 'Account is banned');
+    throw new ForbiddenException(user.banReason ?? 'AUTH.ACCOUNT_BANNED');
   }
 
   private async getOrCreateGameProfile(user: User): Promise<GameProfile> {
@@ -456,7 +456,7 @@ export class AuthService {
           // If Google did not verify email, be conservative
           user.isBanned = true as any;
           user.bannedAt = new Date();
-          user.banReason = 'Unverified email';
+          user.banReason = 'AUTH.UNVERIFIED_EMAIL';
         } else {
           user.isBanned = false as any;
           user.bannedAt = undefined;
@@ -519,7 +519,7 @@ export class AuthService {
     await this.redis.del(googleLoginCodeKey(dto.loginCode));
 
     const user = await this.em.findOne(User, { id: record.userId });
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
     await this.ensureNotBanned(user);
@@ -537,22 +537,22 @@ export class AuthService {
     // Parse: {userId}:{platform}:{sessionId}
     const firstColon = incomingRefreshToken.indexOf(':');
     const secondColon = incomingRefreshToken.indexOf(':', firstColon + 1);
-    if (firstColon === -1 || secondColon === -1) throw new UnauthorizedException();
+    if (firstColon === -1 || secondColon === -1) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
 
     const userId = incomingRefreshToken.slice(0, firstColon);
     const platform = incomingRefreshToken.slice(firstColon + 1, secondColon);
 
     const stored = await this.redis.hgetall(rtKey(userId, platform));
-    if (!stored) throw new UnauthorizedException();
+    if (!stored) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
 
-    if (stored.tokenHash !== hashToken(incomingRefreshToken)) throw new UnauthorizedException();
+    if (stored.tokenHash !== hashToken(incomingRefreshToken)) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
     if (new Date(stored.expiresAt) <= new Date()) {
       await this.redis.del(rtKey(userId, platform));
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('AUTH.UNAUTHORIZED');
     }
 
     const user = await this.em.findOne(User, { id: userId }, { fields: ['role'] });
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
 
     const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
     const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
@@ -618,12 +618,12 @@ export class AuthService {
     const verificationRecord = await this.redis.hgetall(emailVerifyTokenKey(dto.token));
     const userId = verificationRecord?.userId;
     if (!userId) {
-      throw new BadRequestException('Verification link expired or invalid');
+      throw new BadRequestException('AUTH.VERIFICATION_LINK_EXPIRED');
     }
 
     const user = await this.em.findOne(User, { id: userId });
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException('AUTH.USER_NOT_FOUND');
     }
 
     // Unban user
@@ -672,16 +672,16 @@ export class AuthService {
     const key = forgotOtpKey(dto.email);
     const otpRecord = await this.redis.hgetall(key);
     if (!otpRecord?.userId || !otpRecord?.otpHash) {
-      throw new UnauthorizedException('OTP expired or invalid');
+      throw new UnauthorizedException('AUTH.OTP_EXPIRED');
     }
 
     if (hashToken(dto.otp) !== otpRecord.otpHash) {
-      throw new UnauthorizedException('OTP expired or invalid');
+      throw new UnauthorizedException('AUTH.OTP_EXPIRED');
     }
 
     const user = await this.em.findOne(User, { id: otpRecord.userId });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
     }
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
@@ -695,16 +695,16 @@ export class AuthService {
   async changePassword(userId: string, dto: ChangePasswordRequestDto): Promise<void> {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
     }
 
     if (!user.passwordHash) {
-      throw new BadRequestException('This account does not have a password');
+      throw new BadRequestException('AUTH.PASSWORD_NOT_SET');
     }
 
     const valid = await bcrypt.compare(dto.oldPassword, user.passwordHash);
     if (!valid) {
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new UnauthorizedException('AUTH.CURRENT_PASSWORD_INCORRECT');
     }
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
@@ -718,7 +718,7 @@ export class AuthService {
    */
   async me(userId: string, platform: string, includeCsv?: string) {
     const user = await this.em.findOne(User, { id: userId });
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
 
     const gameProfile = await this.em.findOne(GameProfile, { userId: user.id }, { populate: ['equippedAchievement'] });
 

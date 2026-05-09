@@ -1,0 +1,26 @@
+{
+  "auth": {
+    "login": "Đăng nhập",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "signing_in": "Đang đăng nhập...",
+    "login_success": "Đăng nhập thành công!",
+    "login_failed": "Đăng nhập thất bại",
+    "welcome_back": "Chào mừng trở lại!",
+    "login_subtitle": "Đăng nhập để tiếp tục cuộc phiêu lưu của bạn",
+    "forgot_password": "Quên mật khẩu?",
+    "no_account": "Chưa có tài khoản?",
+    "register": "Đăng ký ngay"
+  },
+  "common": {
+    "home": "Trang chủ",
+    "dashboard": "Bảng điều khiển",
+    "logout": "Đăng xuất",
+    "switch_lang": "English"
+  },
+  "validation": {
+    "invalid_email": "Địa chỉ email không hợp lệ",
+    "password_required": "Vui lòng nhập mật khẩu",
+    "password_min_6": "Mật khẩu phải có ít nhất 6 ký tự"
+  }
+}

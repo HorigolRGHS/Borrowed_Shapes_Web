@@ -77,7 +77,7 @@ export class AuthGuard implements CanActivate {
           user.banExpiresAt = undefined;
           await this.em.flush();
         } else {
-          throw new ForbiddenException(user.banReason ?? 'Account is banned');
+          throw new ForbiddenException(user.banReason ?? 'AUTH.ACCOUNT_BANNED');
         }
       }
 

@@ -31,7 +31,12 @@
     "PASSWORD_RESET_LINK_SENT": "Liên kết đặt lại mật khẩu đã được gửi vào email",
     "PASSWORD_RESET_SUCCESS": "Đặt lại mật khẩu thành công",
     "PASSWORD_CHANGED_SUCCESS": "Thay đổi mật khẩu thành công",
-    "CURRENT_USER": "Người dùng hiện tại"
+    "CURRENT_USER": "Người dùng hiện tại",
+    "VERIFICATION_LINK_EXPIRED": "Liên kết xác thực đã hết hạn hoặc không hợp lệ",
+    "OTP_EXPIRED": "Mã OTP đã hết hạn hoặc không hợp lệ",
+    "PASSWORD_NOT_SET": "Tài khoản này chưa thiết lập mật khẩu",
+    "CURRENT_PASSWORD_INCORRECT": "Mật khẩu hiện tại không chính xác",
+    "SESSION_NOT_FOUND": "Không tìm thấy phiên làm việc"
   },
   "GAME": {
     "RUN_INITIALIZED": "Khởi tạo lượt chơi thành công",

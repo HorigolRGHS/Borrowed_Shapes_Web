@@ -31,7 +31,12 @@
     "PASSWORD_RESET_LINK_SENT": "Password reset link sent to email",
     "PASSWORD_RESET_SUCCESS": "Password reset successfully",
     "PASSWORD_CHANGED_SUCCESS": "Password changed successfully",
-    "CURRENT_USER": "Current user"
+    "CURRENT_USER": "Current user",
+    "VERIFICATION_LINK_EXPIRED": "Verification link expired or invalid",
+    "OTP_EXPIRED": "OTP expired or invalid",
+    "PASSWORD_NOT_SET": "This account does not have a password",
+    "CURRENT_PASSWORD_INCORRECT": "Current password is incorrect",
+    "SESSION_NOT_FOUND": "Session not found"
   },
   "GAME": {
     "RUN_INITIALIZED": "Game run initialized successfully",

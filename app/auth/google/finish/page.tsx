@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18/i18n-context";
 
 function GoogleFinishContent() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
-  const loginCode = useMemo(
-    () => searchParams.get("loginCode") ?? "",
-    [searchParams],
-  );
+  const loginCode = searchParams.get("loginCode") ?? "";
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -24,12 +23,12 @@ function GoogleFinishContent() {
     <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
       <section className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-lg">
         <h1 className="text-2xl font-semibold text-zinc-900">
-          Google Login Complete
+          {t("auth.google_complete_title")}
         </h1>
         <p className="mt-3 text-zinc-700">
           {loginCode
-            ? "Đã nhận loginCode. Copy mã này sang Unity để hoàn tất đăng nhập."
-            : "Thiếu loginCode trên URL."}
+            ? t("auth.google_code_received")
+            : t("auth.google_code_missing")}
         </p>
 
         {loginCode && (
@@ -40,7 +39,7 @@ function GoogleFinishContent() {
 
         <div className="mt-4 flex items-center gap-3 text-sm">
           <span className={copied ? "text-emerald-600" : "text-zinc-500"}>
-            {copied ? "Đã copy vào clipboard" : "Đang chờ copy..."}
+            {copied ? t("auth.copied_to_clipboard") : t("auth.waiting_for_copy")}
           </span>
         </div>
 
@@ -49,7 +48,7 @@ function GoogleFinishContent() {
             href="/"
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
           >
-            Back to Home
+            {t("common.back_to_home")}
           </Link>
         </div>
       </section>
@@ -58,11 +57,12 @@ function GoogleFinishContent() {
 }
 
 export default function GoogleFinishPage() {
+  const { t } = useI18n();
   return (
     <Suspense
       fallback={
         <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
-          <p className="text-zinc-600">Loading...</p>
+          <p className="text-zinc-600">{t("common.loading")}</p>
         </main>
       }
     >

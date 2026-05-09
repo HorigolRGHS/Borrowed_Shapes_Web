@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { ApiResponse } from '@/models/dtos/api-response.dto';
+import { api } from '@/lib/api/api-client';
 
-const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api';
 
 function parseState(state: string): { platform?: string; returnTo?: string } {
   try {
@@ -35,26 +37,64 @@ export async function GET(req: Request) {
   const returnTo = stateJson.returnTo ?? '';
 
   try {
-    const res = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/auth/google/exchange`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code,
-        codeVerifier,
-        redirectUri: process.env.GOOGLE_REDIRECT_URI,
-        platform,
-      }),
+    // 1. Exchange code for loginCode
+    const exchangeRes: ApiResponse<any> = await api.post("/auth/google/exchange", {
+      code,
+      codeVerifier,
+      redirectUri: process.env.GOOGLE_REDIRECT_URI,
+      platform,
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Exchange failed' }));
-      return NextResponse.json(err, { status: res.status });
+    if (!exchangeRes || !exchangeRes.success) {
+      return NextResponse.json(
+        { message: exchangeRes?.message || 'Exchange failed' },
+        { status: exchangeRes?.statusCode || 400 }
+      );
     }
 
-    const data = await res.json();
-    const loginCode = data?.data?.loginCode ?? data?.loginCode ?? null;
+    const loginCode = exchangeRes.data?.loginCode ?? null;
     if (!loginCode) {
       return NextResponse.json({ message: 'No login code returned' }, { status: 500 });
+    }
+
+    // --- Xử lý cho Web ---
+    if (platform === 'web') {
+      try {
+        const completeRes = await api.post<ApiResponse<any>>("/auth/google/complete", {
+          loginCode,
+          platform: 'web',
+          deviceInfo: req.headers.get('user-agent') || 'Web Browser',
+        });
+
+        const authData = completeRes.data;
+        const response = NextResponse.redirect(new URL('/', req.url));
+        
+        if (authData.accessToken) {
+          response.cookies.set("accessToken", authData.accessToken, {
+            path: "/",
+            maxAge: 60 * 15,
+            httpOnly: false,
+            sameSite: "lax",
+          });
+        }
+        if (authData.refreshToken) {
+          response.cookies.set("refreshToken", authData.refreshToken, {
+            path: "/",
+            maxAge: 7 * 24 * 60 * 60,
+            httpOnly: true,
+            sameSite: "lax",
+          });
+        }
+        return response;
+      } catch (err: any) {
+        const backendMessage = err.response?.data?.message || err.message;
+        console.error('Google complete failed:', backendMessage);
+        
+        // Chuyển hướng về login kèm lỗi để người dùng biết (ví dụ: Unverified email)
+        const loginUrl = new URL('/auth/login', req.url);
+        loginUrl.searchParams.set('error', backendMessage);
+        return NextResponse.redirect(loginUrl);
+      }
     }
 
     if (returnTo) {

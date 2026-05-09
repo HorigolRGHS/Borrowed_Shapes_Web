@@ -7,6 +7,30 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
+export const registerSchema = z.object({
+  email: z.string().email("validation.invalid_email"),
+  password: z
+    .string()
+    .min(8, "validation.password_min_8")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, "validation.password_complex"),
+  confirmPassword: z.string().min(1, "validation.password_required"),
+  displayName: z
+    .string()
+    .min(3, "validation.display_name_min_3")
+    .max(20, "validation.display_name_max_20")
+    .regex(/^[a-zA-Z0-9 _-]+$/, "validation.display_name_invalid"),
+}).superRefine(({ confirmPassword, password }, ctx) => {
+  if (confirmPassword !== password) {
+    ctx.addIssue({
+      code: "custom",
+      message: "validation.passwords_do_not_match",
+      path: ["confirmPassword"],
+    });
+  }
+});
+
+export type RegisterFormValues = z.infer<typeof registerSchema>;
+
 export const loginRequestSchema = loginSchema.extend({
   platform: z.literal("web").default("web"),
   deviceInfo: z.string().optional(),
@@ -32,7 +56,6 @@ export interface RegisterRequest {
   password: string;
   displayName: string;
   deviceInfo?: string;
-  platform: 'web';
 }
 
 export interface RegisterResponse {

@@ -10,17 +10,42 @@
     "login_subtitle": "Đăng nhập để tiếp tục cuộc phiêu lưu của bạn",
     "forgot_password": "Quên mật khẩu?",
     "no_account": "Chưa có tài khoản?",
-    "register": "Đăng ký ngay"
+    "register": "Đăng ký ngay",
+    "register_success": "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.",
+    "register_failed": "Đăng ký thất bại",
+    "create_account": "Tạo tài khoản",
+    "register_subtitle": "Tham gia cộng đồng của chúng tôi ngay hôm nay",
+    "display_name": "Tên hiển thị",
+    "confirm_password": "Xác nhận mật khẩu",
+    "signing_up": "Đang tạo tài khoản...",
+    "already_have_account": "Đã có tài khoản?",
+    "or_continue_with": "Hoặc tiếp tục với",
+    "login_google": "Đăng nhập bằng Google",
+    "google_complete_title": "Hoàn tất đăng nhập Google",
+    "google_code_received": "Đã nhận được Mã đăng nhập. Copy mã này vào Unity để hoàn tất đăng nhập.",
+    "google_code_missing": "Thiếu Mã đăng nhập trên URL.",
+    "copied_to_clipboard": "Đã copy vào clipboard",
+    "waiting_for_copy": "Đang chờ copy..."
   },
   "common": {
     "home": "Trang chủ",
     "dashboard": "Bảng điều khiển",
     "logout": "Đăng xuất",
-    "switch_lang": "English"
+    "switch_lang": "Tiếng Việt",
+    "back_to_home": "Quay lại Trang chủ",
+    "loading": "Đang tải..."
   },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",
     "password_required": "Vui lòng nhập mật khẩu",
-    "password_min_6": "Mật khẩu phải có ít nhất 6 ký tự"
+    "password_min_6": "Mật khẩu phải có ít nhất 6 ký tự",
+    "password_min_8": "Mật khẩu phải có ít nhất 8 ký tự",
+    "password_complex": "Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt",
+    "passwords_do_not_match": "Mật khẩu xác nhận không khớp",
+    "display_name_min_3": "Tên hiển thị phải có ít nhất 3 ký tự",
+    "display_name_max_20": "Tên hiển thị không được quá 20 ký tự",
+    "display_name_invalid": "Chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối",
+    "Unverified email": "Email của bạn chưa được xác thực. Vui lòng kiểm tra hộp thư.",
+    "AUTH.UNVERIFIED_EMAIL": "Email của bạn chưa được xác thực. Vui lòng kiểm tra hộp thư."
   }
 }

@@ -10,6 +10,15 @@ export default function Home() {
 
   useEffect(() => {
     setUser(getUserProfile());
+
+    const handleProfileUpdate = (event: any) => {
+      setUser(event.detail);
+    };
+
+    window.addEventListener("api:profile-updated" as any, handleProfileUpdate);
+    return () => {
+      window.removeEventListener("api:profile-updated" as any, handleProfileUpdate);
+    };
   }, []);
 
   const toggleLang = () => {

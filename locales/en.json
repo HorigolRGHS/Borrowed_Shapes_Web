@@ -10,17 +10,42 @@
     "login_subtitle": "Sign in to continue your adventure",
     "forgot_password": "Forgot password?",
     "no_account": "Don't have an account?",
-    "register": "Sign up"
+    "register": "Sign up",
+    "register_success": "Registration successful! Please check your email to verify your account.",
+    "register_failed": "Registration failed",
+    "create_account": "Create Account",
+    "register_subtitle": "Join our community today",
+    "display_name": "Display Name",
+    "confirm_password": "Confirm Password",
+    "signing_up": "Creating account...",
+    "already_have_account": "Already have an account?",
+    "or_continue_with": "Or continue with",
+    "login_google": "Sign in with Google",
+    "google_complete_title": "Google Login Complete",
+    "google_code_received": "Login Code received. Copy this code to Unity to complete login.",
+    "google_code_missing": "Missing Login Code in URL.",
+    "copied_to_clipboard": "Copied to clipboard",
+    "waiting_for_copy": "Waiting to copy..."
   },
   "common": {
     "home": "Home",
     "dashboard": "Dashboard",
     "logout": "Logout",
-    "switch_lang": "Tiếng Việt"
+    "switch_lang": "English",
+    "back_to_home": "Back to Home",
+    "loading": "Loading..."
   },
   "validation": {
     "invalid_email": "Invalid email address",
     "password_required": "Password is required",
-    "password_min_6": "Password must be at least 6 characters"
+    "password_min_6": "Password must be at least 6 characters",
+    "password_min_8": "Password must be at least 8 characters",
+    "password_complex": "Password must contain uppercase, lowercase, number and special character",
+    "passwords_do_not_match": "Passwords do not match",
+    "display_name_min_3": "Display name must be at least 3 characters",
+    "display_name_max_20": "Display name must not exceed 20 characters",
+    "display_name_invalid": "Only letters, numbers, spaces, underscores, and hyphens allowed",
+    "Unverified email": "Your email is not verified yet. Please check your inbox.",
+    "AUTH.UNVERIFIED_EMAIL": "Your email is not verified yet. Please check your inbox."
   }
 }

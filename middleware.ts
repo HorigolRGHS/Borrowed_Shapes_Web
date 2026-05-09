@@ -7,6 +7,7 @@ const protectedRoutes = [
   { path: "/dashboard", roles: ["ADMIN"] },
   { path: "/profile", roles: ["ADMIN", "USER"] },
   { path: "/admin", roles: ["ADMIN"] },
+  { path: "/auth/change-password", roles: ["ADMIN", "USER"] },
 ];
 
 const guestOnlyRoutes = [
@@ -67,13 +68,22 @@ export function middleware(req: NextRequest) {
 
   // Protected routes (login required)
   const matchedProtected = getMatchedProtectedRoute(pathname);
-  if (matchedProtected) {
+  // Thêm các API cần bảo vệ vào đây
+  const isProtectedApi = pathname.startsWith("/api/auth/change-password") || pathname.startsWith("/api/auth/me");
+
+  if (matchedProtected || isProtectedApi) {
     if (!isAuthenticated) {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
       return redirectTo("/auth/login", req);
     }
 
-    // Role-based check
-    if (!matchedProtected.roles.includes(role)) {
+    // Role-based check (chỉ áp dụng cho trang giao diện có cấu hình roles)
+    if (matchedProtected && !matchedProtected.roles.includes(role)) {
       return redirectTo("/", req);
     }
   }
@@ -85,6 +95,6 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

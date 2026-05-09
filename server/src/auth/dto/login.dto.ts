@@ -1,14 +1,15 @@
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AuthUserResponseDto } from './auth-user.dto';
 
 export class LoginRequestDto {
   @ApiProperty({ example: 'player@example.com' })
-  @IsEmail()
+  @IsEmail({}, { message: 'validation.invalid_email' })
   email: string | undefined;
 
   @ApiProperty({ example: 'P@ssw0rd123!' })
   @IsString()
+  @IsNotEmpty({ message: 'validation.password_required' })
   password: string | undefined;
 
   @ApiProperty({ example: 'game', enum: ['game', 'web'] })

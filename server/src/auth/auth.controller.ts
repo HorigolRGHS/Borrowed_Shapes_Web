@@ -44,7 +44,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RegisterResponseDto>> {
     const data = await this.authService.register(dto, req.ip ?? '');
-    return okResponse('AUTH.REGISTER_SUCCESS', data, `${req.method} ${req.path}`);
+    return okResponse('auth.register_success', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -57,7 +57,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
     const data = await this.authService.login(dto, req.ip ?? '');
-    return okResponse('AUTH.LOGIN_SUCCESS', data, `${req.method} ${req.path}`);
+    return okResponse('auth.login_success', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -70,7 +70,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleExchangeResponseDto>> {
     const data = await this.authService.googleExchange(dto, req.ip ?? '');
-    return okResponse('AUTH.GOOGLE_EXCHANGE_SUCCESS', data, `${req.method} ${req.path}`);
+    return okResponse('auth.google_exchange_success', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -83,7 +83,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleCompleteResponseDto>> {
     const data = await this.authService.googleComplete(dto, req.ip ?? '');
-    return okResponse('AUTH.LOGIN_SUCCESS', data, `${req.method} ${req.path}`);
+    return okResponse('auth.login_success', data, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -103,7 +103,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RefreshResponseDto>> {
     const data = await this.authService.refresh(dto.refreshToken);
-    return okResponse('AUTH.TOKEN_REFRESHED', data, `${req.method} ${req.path}`);
+    return okResponse('auth.token_refreshed', data, `${req.method} ${req.path}`);
   }
 
   @Delete('logout')
@@ -113,7 +113,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.authService.logout(user.userId, user.platform, req.ip ?? '');
-    return okResponse('AUTH.LOGOUT_SUCCESS', null, `${req.method} ${req.path}`);
+    return okResponse('auth.logout_success', null, `${req.method} ${req.path}`);
   }
 
   @Post('logout')
@@ -123,7 +123,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.authService.logout(user.userId, user.platform, req.ip ?? '');
-    return okResponse('AUTH.LOGOUT_SUCCESS', null, `${req.method} ${req.path}`);
+    return okResponse('auth.logout_success', null, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -135,7 +135,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.verifyEmail({ token });
     return okResponse(
-      'AUTH.EMAIL_VERIFIED',
+      'auth.email_verified',
       null,
       `${req.method} ${req.path}`,
     );
@@ -151,7 +151,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.forgotPassword(dto);
     return okResponse(
-      'AUTH.PASSWORD_RESET_LINK_SENT',
+      'auth.password_reset_link_sent',
        null,
       `${req.method} ${req.path}`,
     );
@@ -167,7 +167,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.resetPassword(dto);
     return okResponse(
-      'AUTH.PASSWORD_RESET_SUCCESS',
+      'auth.password_reset_success',
       null,
       `${req.method} ${req.path}`,
     );
@@ -183,7 +183,7 @@ export class AuthController {
   ): Promise<ApiResponseDto<null>> {
     await this.authService.changePassword(user.userId, dto);
     return okResponse(
-      'AUTH.PASSWORD_CHANGED_SUCCESS',
+      'auth.password_changed_success',
       null,
       `${req.method} ${req.path}`,
     );
@@ -196,6 +196,19 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.authService.me(user.userId, user.platform, include);
-    return okResponse('AUTH.CURRENT_USER', data, `${req.method} ${req.path}`);
+    return okResponse('auth.current_user', data, `${req.method} ${req.path}`);
+  }
+
+
+  /// Tesst check role
+   @Get('me-admin')
+   @Roles('ADMIN')
+  async meAdmin(
+    @CurrentUser() user: RequestUser,
+    @Query('include') include: string,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    const data = await this.authService.me(user.userId, user.platform, include);
+    return okResponse('auth.current_user', data, `${req.method} ${req.path}`);
   }
 }

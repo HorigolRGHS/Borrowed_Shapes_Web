@@ -11,12 +11,14 @@ import axios from "axios";
 import { setUserProfile } from "@/lib/api/api-client";
 import { ApiResponse } from "@/models/dtos/api-response.dto";
 import { LoginResponse, loginSchema, LoginFormValues } from "@/models/dtos/auth.dto";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   React.useEffect(() => {
     const error = searchParams.get("error");
@@ -85,7 +87,7 @@ export default function LoginPage() {
                 {...register("email")}
                 type="email"
                 autoComplete="email"
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-slate-700"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-slate-900"
                 placeholder="name@example.com"
               />
               {errors.email && (
@@ -104,13 +106,26 @@ export default function LoginPage() {
                    {t("auth.forgot_password") || "Forgot password?"}
                 </a>
               </div>
-              <input
-                {...register("password")}
-                type="password"
-                autoComplete="current-password"
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-slate-700"
-                placeholder="••••••••"
-              />
+              <div className="relative group">
+                <input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-slate-900"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-xs text-red-500 font-medium ml-1">
                   {t(errors.password.message as string)}

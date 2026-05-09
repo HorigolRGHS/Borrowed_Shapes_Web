@@ -29,7 +29,34 @@ export const registerSchema = z.object({
   }
 });
 
-export type RegisterFormValues = z.infer<typeof registerSchema>;
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, "validation.password_required"),
+    newPassword: z
+      .string()
+      .min(8, "validation.password_min_8")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/,
+        "validation.password_complex"
+      ),
+    confirmPassword: z.string().min(1, "validation.password_required"),
+  })
+  .superRefine(({ confirmPassword, newPassword }, ctx) => {
+    if (confirmPassword !== newPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "validation.passwords_do_not_match",
+        path: ["confirmPassword"],
+      });
+    }
+  });
+
+export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export const loginRequestSchema = loginSchema.extend({
   platform: z.literal("web").default("web"),
@@ -97,10 +124,6 @@ export interface UserMeResponse {
   equippedAchievement: EquippedAchievement | null;
 }
 
-export interface ChangePasswordRequest {
-  oldPassword?: string;
-  newPassword: string;
-}
 
 export interface ForgotPasswordRequest {
   email: string;
@@ -129,3 +152,34 @@ export interface GoogleCompleteRequest {
   platform: 'web';
   deviceInfo?: string;
 }
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("validation.invalid_email"),
+});
+
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    email: z.string().email("validation.invalid_email"),
+    otp: z.string().min(1, "validation.otp_required"),
+    newPassword: z
+      .string()
+      .min(8, "validation.password_min_8")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/,
+        "validation.password_complex"
+      ),
+    confirmPassword: z.string().min(1, "validation.password_required"),
+  })
+  .superRefine(({ confirmPassword, newPassword }, ctx) => {
+    if (confirmPassword !== newPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "validation.passwords_do_not_match",
+        path: ["confirmPassword"],
+      });
+    }
+  });
+
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;

@@ -27,7 +27,7 @@ export class GameService {
       const lobbyLevel = await em.findOne(Level, { id: 'lobby' });
 
       if (!lobbyLevel) {
-        throw new BadRequestException('GAME.LOBBY_LEVEL_NOT_CONFIGURED');
+        throw new BadRequestException('game.lobby_level_not_configured');
       }
 
       // Create a new game run (table: game.GameRun)
@@ -67,7 +67,7 @@ export class GameService {
     });
 
     return okResponse<RunIdResponseDto>(
-      'GAME.RUN_INITIALIZED',
+      'game.run_initialized',
       { runId },
       path,
     );
@@ -82,7 +82,7 @@ export class GameService {
         { orderBy: { startedAt: 'desc' } },
       );
       if (!run) {
-        throw new NotFoundException('GAME.RUN_NOT_FOUND_FOR_LOBBY');
+        throw new NotFoundException('game.run_not_found_for_lobby');
       }
 
       const existing = await em.findOne(GameRunPlayer, {
@@ -105,7 +105,7 @@ export class GameService {
       });
 
       if (!lobbySession) {
-        throw new NotFoundException('GAME.LOBBY_SESSION_NOT_FOUND');
+        throw new NotFoundException('game.lobby_session_not_found');
       }
 
       const sessionPlayer = await em.findOne(GameSessionPlayer, {
@@ -131,7 +131,7 @@ export class GameService {
     });
 
     return okResponse<RunIdResponseDto>(
-      'GAME.JOINED_SUCCESS',
+      'game.joined_success',
       { runId },
       path,
     );
@@ -141,12 +141,12 @@ export class GameService {
     const sessionId = await this.em.transactional(async (em) => {
       const run = await em.findOne(GameRun, { id: dto.runId });
       if (!run) {
-        throw new NotFoundException('GAME.RUN_NOT_FOUND');
+        throw new NotFoundException('game.run_not_found');
       }
 
       const level = await em.findOne(Level, { id: dto.levelId });
       if (!level) {
-        throw new NotFoundException('GAME.LEVEL_NOT_FOUND');
+        throw new NotFoundException('game.level_not_found');
       }
 
       let session = await em.findOne(
@@ -201,7 +201,7 @@ export class GameService {
     });
 
     return okResponse<SessionIdResponseDto>(
-      'GAME.SESSION_STARTED',
+      'game.session_started',
       { sessionId },
       path,
     );
@@ -211,7 +211,7 @@ export class GameService {
     await this.em.transactional(async (em) => {
       const session = await em.findOne(GameSession, { id: dto.sessionId });
       if (!session) {
-        throw new NotFoundException('GAME.SESSION_NOT_FOUND');
+        throw new NotFoundException('game.session_not_found');
       }
 
       const { status, result } = this.mapEndStatus(dto.status);
@@ -247,7 +247,7 @@ export class GameService {
       if (status === GameSessionStatus.FINISHED) {
         const run = await em.findOne(GameRun, { id: session.runId.id });
         if (!run) {
-          throw new NotFoundException('GAME.RUN_NOT_FOUND');
+          throw new NotFoundException('game.run_not_found');
         }
 
         const finishedCount = await em.count(GameSession, {
@@ -269,7 +269,7 @@ export class GameService {
     });
 
     return okResponse<null>(
-      'GAME.SESSION_ENDED',
+      'game.session_ended',
       null,
       path,
     );
@@ -313,7 +313,7 @@ export class GameService {
     });
 
     return okResponse<null>(
-      'GAME.LEFT_LOBBY',
+      'game.left_lobby',
       null,
       path,
     );
@@ -337,7 +337,7 @@ export class GameService {
   private async findGameProfileOrFail(em: EntityManager, userId: string): Promise<GameProfile> {
     const gameProfile = await em.findOne(GameProfile, { userId });
     if (!gameProfile) {
-      throw new NotFoundException('GAME.PROFILE_NOT_FOUND');
+      throw new NotFoundException('game.profile_not_found');
     }
     return gameProfile;
   }

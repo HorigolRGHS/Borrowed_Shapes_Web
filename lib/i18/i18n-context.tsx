@@ -16,21 +16,18 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // Ưu tiên lấy từ cookie, nếu không có thì lấy ngôn ngữ hệ thống hoặc mặc định 'en'
-  const [locale, setLocaleState] = useState<Language>("en");
-
-  useEffect(() => {
-    const savedLocale = Cookies.get("NEXT_LOCALE") as Language;
-    if (savedLocale && (savedLocale === "en" || savedLocale === "vi")) {
-      setLocaleState(savedLocale);
-    }
-  }, []);
+export function I18nProvider({ 
+  children, 
+  initialLocale = "en" 
+}: { 
+  children: React.ReactNode;
+  initialLocale?: Language;
+}) {
+  const [locale, setLocaleState] = useState<Language>(initialLocale);
 
   const setLocale = (lang: Language) => {
     setLocaleState(lang);
     Cookies.set("NEXT_LOCALE", lang, { expires: 365 });
-    // Tải lại trang để áp dụng ngôn ngữ mới (tùy chọn, nhưng sạch sẽ cho middleware/api)
     window.location.reload();
   };
 

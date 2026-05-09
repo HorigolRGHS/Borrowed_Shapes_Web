@@ -4,49 +4,45 @@ import { ApiProperty } from '@nestjs/swagger';
 export class VerifyEmailRequestDto {
   @ApiProperty({ example: 'verification-token-abc123' })
   @IsString()
-  @MinLength(1)
-  @MaxLength(500)
+  @IsNotEmpty({ message: 'validation.token_required' })
   token!: string;
 }
 export class ForgotPasswordRequestDto {
   @ApiProperty({ example: 'player@example.com' })
-  @IsEmail()
+  @IsEmail({}, { message: 'validation.invalid_email' })
   email!: string;
 }
 export class ResetPasswordRequestDto {
   @ApiProperty({ example: 'player@example.com' })
-  @IsEmail()
+  @IsEmail({}, { message: 'validation.invalid_email' })
   email!: string;
 
   @ApiProperty({ example: '123456' })
   @IsString()
-  @MinLength(4)
-  @MaxLength(8)
+  @IsNotEmpty({ message: 'validation.otp_required' })
   otp!: string;
 
   @ApiProperty({ example: 'N3wP@ssw0rd!' })
   @IsString()
-  @MinLength(8)
-  @MaxLength(72)
+  @MinLength(8, { message: 'validation.password_min_8' })
+  @MaxLength(72, { message: 'validation.password_max_length' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    message: 'validation.password_complex',
   })
   newPassword!: string;
 }
 export class ChangePasswordRequestDto {
   @ApiProperty({ example: 'OldP@ssw0rd!' })
   @IsString()
-  @MinLength(1)
+  @IsNotEmpty({ message: 'validation.password_required' })
   oldPassword!: string;
 
   @ApiProperty({ example: 'N3wP@ssw0rd!' })
   @IsString()
-  @MinLength(8)
-  @MaxLength(72)
+  @MinLength(8, { message: 'validation.password_min_8' })
+  @MaxLength(72, { message: 'validation.password_max_length' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    message: 'validation.password_complex',
   })
   newPassword!: string;
 }

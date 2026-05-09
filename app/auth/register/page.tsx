@@ -13,11 +13,14 @@ import {
   registerSchema,
   RegisterFormValues,
 } from "@/models/dtos/auth.dto";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -82,7 +85,7 @@ export default function RegisterPage() {
               <input
                 {...register("displayName")}
                 type="text"
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-700"
+                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-900"
                 placeholder="John Doe"
               />
               {errors.displayName && (
@@ -100,7 +103,7 @@ export default function RegisterPage() {
               <input
                 {...register("email")}
                 type="email"
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-700"
+                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-900"
                 placeholder="name@example.com"
               />
               {errors.email && (
@@ -115,12 +118,25 @@ export default function RegisterPage() {
               <label className="text-sm font-semibold text-slate-700 ml-1">
                 {t("auth.password")}
               </label>
-              <input
-                {...register("password")}
-                type="password"
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-700"
-                placeholder="••••••••"
-              />
+              <div className="relative group">
+                <input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-900"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-xs text-red-500 font-medium ml-1">
                   {t(errors.password.message as string)}
@@ -133,12 +149,25 @@ export default function RegisterPage() {
               <label className="text-sm font-semibold text-slate-700 ml-1">
                 {t("auth.confirm_password") || "Confirm Password"}
               </label>
-              <input
-                {...register("confirmPassword")}
-                type="password"
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-700"
-                placeholder="••••••••"
-              />
+              <div className="relative group">
+                <input
+                  {...register("confirmPassword")}
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-100 focus:bg-white focus:border-green-500 outline-none transition-all placeholder:text-slate-400 text-slate-900"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {errors.confirmPassword && (
                 <p className="text-xs text-red-500 font-medium ml-1">
                   {t(errors.confirmPassword.message as string)}

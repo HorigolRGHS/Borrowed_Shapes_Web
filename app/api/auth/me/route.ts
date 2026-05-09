@@ -5,12 +5,10 @@ import { UserMeResponse } from "@/models/dtos/auth.dto";
 
 export async function GET(request: NextRequest) {
   try {
-    const accessToken = request.cookies.get("accessToken")?.value;
-    if (!accessToken) throw new Error("Unauthorized");
+    const include = request.nextUrl.searchParams.get("include") || "";
 
-    // Gọi thẳng sang Backend /auth/me không lấy param
     const res: ApiResponse<UserMeResponse> = await api.get("/auth/me", {
-      headers: { Authorization: `Bearer ${accessToken}` }
+      params: { include }
     });
 
     if (!res || !res.success) throw new Error(res?.message || "Failed to fetch user profile");

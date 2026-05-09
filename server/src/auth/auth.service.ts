@@ -106,7 +106,7 @@ export class AuthService {
     const clientId = this.config.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = this.config.get<string>('GOOGLE_CLIENT_SECRET');
     if (!clientId || !clientSecret) {
-      throw new BadRequestException('AUTH.GOOGLE_NOT_CONFIGURED');
+      throw new BadRequestException('auth.google_not_configured');
     }
 
     const tokenBody = new URLSearchParams({
@@ -131,7 +131,7 @@ export class AuthService {
     } = await tokenRes.json().catch(() => ({}));
 
     if (!tokenRes.ok || !tokenJson.access_token) {
-      throw new UnauthorizedException(tokenJson.error_description ?? 'AUTH.GOOGLE_EXCHANGE_FAILED');
+      throw new UnauthorizedException(tokenJson.error_description ?? 'auth.google_exchange_failed');
     }
 
     const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -147,7 +147,7 @@ export class AuthService {
     } = await infoRes.json().catch(() => ({}));
 
     if (!infoRes.ok || !infoJson.sub || !infoJson.email) {
-      throw new UnauthorizedException('AUTH.INVALID_GOOGLE_TOKEN');
+      throw new UnauthorizedException('auth.invalid_google_token');
     }
 
     return infoJson;
@@ -166,7 +166,7 @@ export class AuthService {
       return;
     }
 
-    throw new ForbiddenException(user.banReason ?? 'AUTH.ACCOUNT_BANNED');
+    throw new ForbiddenException(user.banReason ?? 'auth.account_banned');
   }
 
   private async getOrCreateGameProfile(user: User): Promise<GameProfile> {
@@ -276,7 +276,7 @@ export class AuthService {
     ipAddress: string,
   ): Promise<RegisterResponseDto> {
     if (!dto.email || !dto.password) {
-      throw new BadRequestException('AUTH.EMAIL_PASSWORD_REQUIRED');
+      throw new BadRequestException('auth.email_password_required');
     }
 
     const email = dto.email;
@@ -358,10 +358,10 @@ export class AuthService {
         const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
 
         if (details.includes('user_email_key')) {
-          throw new ConflictException('AUTH.EMAIL_IN_USE');
+          throw new ConflictException('auth.email_in_use');
         }
 
-        throw new ConflictException('AUTH.UNIQUE_FIELD_IN_USE');
+        throw new ConflictException('auth.unique_field_in_use');
       }
       throw err;
     }
@@ -369,7 +369,7 @@ export class AuthService {
 
   async login(dto: LoginRequestDto, ipAddress: string): Promise<LoginResponseDto> {
     if (!dto.email || !dto.password || !dto.platform) {
-      throw new UnauthorizedException('AUTH.INVALID_CREDENTIALS');
+      throw new UnauthorizedException('auth.invalid_credentials');
     }
 
     const email = dto.email;
@@ -377,7 +377,7 @@ export class AuthService {
     const platform = dto.platform;
 
     const user = await this.em.findOne(User, { email });
-    if (!user) throw new UnauthorizedException('AUTH.INVALID_CREDENTIALS');
+    if (!user) throw new UnauthorizedException('auth.invalid_credentials');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
     await this.ensureNotBanned(user);
@@ -385,7 +385,7 @@ export class AuthService {
     const valid = user.passwordHash
       ? await bcrypt.compare(password, user.passwordHash)
       : false;
-    if (!valid) throw new UnauthorizedException('AUTH.INVALID_CREDENTIALS');
+    if (!valid) throw new UnauthorizedException('auth.invalid_credentials');
 
     return this.issueLoginTokens(user, gameProfile, platform, dto.deviceInfo, ipAddress);
   }
@@ -396,11 +396,11 @@ export class AuthService {
   ): Promise<GoogleExchangeResponseDto> {
     const expectedRedirectUri = this.config.get<string>('GOOGLE_REDIRECT_URI');
     if (!expectedRedirectUri) {
-      throw new BadRequestException('AUTH.GOOGLE_NOT_CONFIGURED');
+      throw new BadRequestException('auth.google_not_configured');
     }
 
     if (dto.redirectUri !== expectedRedirectUri) {
-      throw new BadRequestException('AUTH.INVALID_REDIRECT_URI');
+      throw new BadRequestException('auth.invalid_redirect_uri');
     }
 
     const payload = await this.fetchGoogleUserInfo(dto.code, dto.codeVerifier, dto.redirectUri);
@@ -416,7 +416,7 @@ export class AuthService {
       if (!found) {
         found = await em.findOne(User, { email });
         if (found?.googleId && String(found.googleId) !== googleId) {
-          throw new ConflictException('AUTH.EMAIL_ALREADY_LINKED');
+          throw new ConflictException('auth.email_already_linked');
         }
         if (found && !found.googleId) {
           found.googleId = googleId;
@@ -456,7 +456,7 @@ export class AuthService {
           // If Google did not verify email, be conservative
           user.isBanned = true as any;
           user.bannedAt = new Date();
-          user.banReason = 'AUTH.UNVERIFIED_EMAIL';
+          user.banReason = 'auth.unverified_email';
         } else {
           user.isBanned = false as any;
           user.bannedAt = undefined;
@@ -512,14 +512,14 @@ export class AuthService {
   ): Promise<GoogleCompleteResponseDto> {
     const record = await this.redis.hgetall(googleLoginCodeKey(dto.loginCode));
     if (!record?.userId) {
-      throw new UnauthorizedException('AUTH.LOGIN_CODE_EXPIRED');
+      throw new UnauthorizedException('auth.login_code_expired');
     }
 
     // One-time usage
     await this.redis.del(googleLoginCodeKey(dto.loginCode));
 
     const user = await this.em.findOne(User, { id: record.userId });
-    if (!user) throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
+    if (!user) throw new UnauthorizedException('auth.user_not_found');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
     await this.ensureNotBanned(user);
@@ -537,22 +537,22 @@ export class AuthService {
     // Parse: {userId}:{platform}:{sessionId}
     const firstColon = incomingRefreshToken.indexOf(':');
     const secondColon = incomingRefreshToken.indexOf(':', firstColon + 1);
-    if (firstColon === -1 || secondColon === -1) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+    if (firstColon === -1 || secondColon === -1) throw new UnauthorizedException('auth.unauthorized');
 
     const userId = incomingRefreshToken.slice(0, firstColon);
     const platform = incomingRefreshToken.slice(firstColon + 1, secondColon);
 
     const stored = await this.redis.hgetall(rtKey(userId, platform));
-    if (!stored) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+    if (!stored) throw new UnauthorizedException('auth.unauthorized');
 
-    if (stored.tokenHash !== hashToken(incomingRefreshToken)) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+    if (stored.tokenHash !== hashToken(incomingRefreshToken)) throw new UnauthorizedException('auth.unauthorized');
     if (new Date(stored.expiresAt) <= new Date()) {
       await this.redis.del(rtKey(userId, platform));
-      throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+      throw new UnauthorizedException('auth.unauthorized');
     }
 
     const user = await this.em.findOne(User, { id: userId }, { fields: ['role'] });
-    if (!user) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+    if (!user) throw new UnauthorizedException('auth.unauthorized');
 
     const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
     const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
@@ -618,12 +618,12 @@ export class AuthService {
     const verificationRecord = await this.redis.hgetall(emailVerifyTokenKey(dto.token));
     const userId = verificationRecord?.userId;
     if (!userId) {
-      throw new BadRequestException('AUTH.VERIFICATION_LINK_EXPIRED');
+      throw new BadRequestException('auth.verification_link_expired');
     }
 
     const user = await this.em.findOne(User, { id: userId });
     if (!user) {
-      throw new BadRequestException('AUTH.USER_NOT_FOUND');
+      throw new BadRequestException('auth.user_not_found');
     }
 
     // Unban user
@@ -672,16 +672,16 @@ export class AuthService {
     const key = forgotOtpKey(dto.email);
     const otpRecord = await this.redis.hgetall(key);
     if (!otpRecord?.userId || !otpRecord?.otpHash) {
-      throw new UnauthorizedException('AUTH.OTP_EXPIRED');
+      throw new UnauthorizedException('auth.otp_expired');
     }
 
     if (hashToken(dto.otp) !== otpRecord.otpHash) {
-      throw new UnauthorizedException('AUTH.OTP_EXPIRED');
+      throw new UnauthorizedException('auth.otp_expired');
     }
 
     const user = await this.em.findOne(User, { id: otpRecord.userId });
     if (!user) {
-      throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
+      throw new UnauthorizedException('auth.user_not_found');
     }
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
@@ -695,16 +695,16 @@ export class AuthService {
   async changePassword(userId: string, dto: ChangePasswordRequestDto): Promise<void> {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) {
-      throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
+      throw new UnauthorizedException('auth.user_not_found');
     }
 
     if (!user.passwordHash) {
-      throw new BadRequestException('AUTH.PASSWORD_NOT_SET');
+      throw new BadRequestException('auth.password_not_set');
     }
 
     const valid = await bcrypt.compare(dto.oldPassword, user.passwordHash);
     if (!valid) {
-      throw new UnauthorizedException('AUTH.CURRENT_PASSWORD_INCORRECT');
+      throw new UnauthorizedException('auth.current_password_incorrect');
     }
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
@@ -718,7 +718,7 @@ export class AuthService {
    */
   async me(userId: string, platform: string, includeCsv?: string) {
     const user = await this.em.findOne(User, { id: userId });
-    if (!user) throw new UnauthorizedException('AUTH.USER_NOT_FOUND');
+    if (!user) throw new UnauthorizedException('auth.user_not_found');
 
     const gameProfile = await this.em.findOne(GameProfile, { userId: user.id }, { populate: ['equippedAchievement'] });
 

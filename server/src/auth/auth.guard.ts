@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    if (!token) throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+    if (!token) throw new UnauthorizedException('auth.unauthorized');
 
     try {
       const payload = await this.jwt.verifyAsync(token, {
@@ -48,13 +48,13 @@ export class AuthGuard implements CanActivate {
       const sessionId = payload.sid as string | undefined;
       const role = payload.role as string | undefined;
       if (!userId || !platform || !role) {
-        throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+        throw new UnauthorizedException('auth.unauthorized');
       }
 
       if (sessionId) {
         const stored = await this.redis.hgetall(rtKey(userId, platform));
         if (stored?.sessionId !== sessionId) {
-          throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+          throw new UnauthorizedException('auth.unauthorized');
         }
       }
 
@@ -65,7 +65,7 @@ export class AuthGuard implements CanActivate {
       );
 
       if (!user || user.deletedAt) {
-        throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+        throw new UnauthorizedException('auth.unauthorized');
       }
 
       const now = new Date();
@@ -77,7 +77,7 @@ export class AuthGuard implements CanActivate {
           user.banExpiresAt = undefined;
           await this.em.flush();
         } else {
-          throw new ForbiddenException(user.banReason ?? 'AUTH.ACCOUNT_BANNED');
+          throw new ForbiddenException(user.banReason ?? 'auth.account_banned');
         }
       }
 
@@ -96,14 +96,14 @@ export class AuthGuard implements CanActivate {
       ]);
       if (requiredRoles && requiredRoles.length > 0) {
         if (!requiredRoles.includes(role as Role)) {
-          throw new ForbiddenException('COMMON.FORBIDDEN');
+          throw new ForbiddenException('common.forbidden');
         }
       }
     } catch (error) {
       if (error instanceof ForbiddenException) {
         throw error;
       }
-      throw new UnauthorizedException('AUTH.UNAUTHORIZED');
+      throw new UnauthorizedException('auth.unauthorized');
     }
 
     return true;

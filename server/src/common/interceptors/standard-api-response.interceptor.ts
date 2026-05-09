@@ -68,7 +68,7 @@ export class StandardApiResponseInterceptor<T>
         return new ApiResponseDto<T>(
           statusCode,
           success,
-          this.i18n.t(success ? 'COMMON.REQUEST_SUCCESSFUL' : 'COMMON.REQUEST_FAILED', lang),
+          this.i18n.t(success ? 'common.request_successful' : 'common.request_failed', lang),
           (data ?? null) as T,
           path,
           new Date().toISOString(),

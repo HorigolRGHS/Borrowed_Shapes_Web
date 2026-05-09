@@ -3,26 +3,25 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterRequestDto {
   @ApiProperty({ example: 'player@example.com' })
-  @IsEmail()
+  @IsEmail({}, { message: 'validation.invalid_email' })
   email: string | undefined;
 
   @ApiProperty({ example: 'P@ssw0rd123!' })
   @IsString()
-  @MinLength(8)
-  @MaxLength(72)
+  @MinLength(8, { message: 'validation.password_min_8' })
+  @MaxLength(72, { message: 'validation.password_max_length' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    message: 'validation.password_complex',
   })
   password: string | undefined;
 
   @ApiPropertyOptional({ example: 'BorrowedPlayer' })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'validation.display_name_required' })
   @IsString()
-  @MinLength(3)
-  @MaxLength(20)
+  @MinLength(3, { message: 'validation.display_name_min_3' })
+  @MaxLength(20, { message: 'validation.display_name_max_20' })
   @Matches(/^[a-zA-Z0-9 _-]+$/, {
-    message: 'Display name may only contain letters, numbers, spaces, underscores, and hyphens',
+    message: 'validation.display_name_invalid',
   })
   displayName: string | undefined;
 
@@ -52,27 +51,26 @@ export class RegisterResponseDto {
 
 export class RegisterDto {
   @ApiProperty({ example: 'player@example.com' })
-  @IsEmail()
+  @IsEmail({}, { message: 'validation.invalid_email' })
   email: string | undefined;
 
   @ApiProperty({ example: 'P@ssw0rd123!' })
   @IsString()
-  @MinLength(8)
-  @MaxLength(72)
+  @MinLength(8, { message: 'validation.password_min_8' })
+  @MaxLength(72, { message: 'validation.password_max_length' })
   // Must contain: 1 uppercase, 1 lowercase, 1 digit, 1 special character
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    message: 'validation.password_complex',
   })
   password: string | undefined;
 
   @ApiPropertyOptional({ example: 'BorrowedPlayer' })
   @IsOptional()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'validation.display_name_required' })
   @IsString()
-  @MinLength(3)
-  @MaxLength(20)
-  @Matches(/^[a-zA-Z0-9 _-]+$/, { message: 'Display name may only contain letters, numbers, spaces, underscores, and hyphens' })
+  @MinLength(3, { message: 'validation.display_name_min_3' })
+  @MaxLength(20, { message: 'validation.display_name_max_20' })
+  @Matches(/^[a-zA-Z0-9 _-]+$/, { message: 'validation.display_name_invalid' })
   displayName?: string;
 
   @IsOptional()

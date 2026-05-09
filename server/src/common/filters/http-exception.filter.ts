@@ -27,7 +27,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<any>();
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-    let rawMessage: string | string[] = 'COMMON.INTERNAL_SERVER_ERROR';
+    let rawMessage: string | string[] = 'common.internal_server_error';
     const lang = request.headers['accept-language'] as string;
 
     if (exception instanceof HttpException) {
@@ -42,7 +42,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       // Body parser throws BadRequestException for malformed JSON before DTO validation runs.
       if (statusCode === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(rawMessage)) {
-        rawMessage = 'COMMON.INVALID_JSON_PAYLOAD';
+        rawMessage = 'common.invalid_json_payload';
       }
     } else {
       // Unexpected error — log full stack, never expose internals to client

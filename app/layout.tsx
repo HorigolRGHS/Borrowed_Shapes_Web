@@ -13,15 +13,20 @@ export const metadata: Metadata = {
   description: "Wiki for Borrowed Shapes game",
 };
 
-export default function RootLayout({
+import { cookies } from "next/headers";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const locale = (cookieStore.get("NEXT_LOCALE")?.value as any) || "en";
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={inter.className}>
-        <I18nProvider>
+        <I18nProvider initialLocale={locale}>
           <AuthSessionHandler />
           <ToastProvider />
           {children}

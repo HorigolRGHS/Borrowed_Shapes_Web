@@ -24,15 +24,38 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    let token: string | null = null;
+
     if (typeof window !== "undefined") {
-      const token = getAccessToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      token = getAccessToken();
+    } else {
+      // Server-side: sử dụng next/headers
+      try {
+        const { cookies } = require("next/headers");
+        const cookieStore = await cookies();
+        token = cookieStore.get("accessToken")?.value || null;
+      } catch (e) {
+        // Có thể đang chạy ở nơi không có request context
       }
+    }
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    if (typeof window !== "undefined") {
       const lang = getCookie("NEXT_LOCALE") || "en";
       config.headers["Accept-Language"] = lang;
+    } else {
+      try {
+        const { cookies } = require("next/headers");
+        const cookieStore = await cookies();
+        const lang = cookieStore.get("NEXT_LOCALE")?.value || "en";
+        config.headers["Accept-Language"] = lang;
+      } catch (e) {}
     }
+
     return config;
   },
   (error) => Promise.reject(error)

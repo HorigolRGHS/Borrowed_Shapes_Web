@@ -19,8 +19,14 @@ export class WikiRevision {
   @Property({ type: 'text' })
   content!: string;
 
+  @Property({ type: 'text' })
+  content_vi!: string;
+
   @Property({ type: 'text', nullable: true })
   summary?: string;
+
+  @Property({ type: 'text', nullable: true })
+  summary_vi?: string;
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;

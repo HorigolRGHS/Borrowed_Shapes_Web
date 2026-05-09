@@ -720,7 +720,7 @@ export class AuthService {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) throw new UnauthorizedException('User not found');
 
-    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id });
+    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id }, { populate: ['equippedAchievement'] });
 
     const base = {
       id: user.id,
@@ -733,6 +733,11 @@ export class AuthService {
       bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
       banReason: user.banReason ?? null,
       banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
+      equippedAchievement: gameProfile?.equippedAchievement ? {
+        id: gameProfile.equippedAchievement.id,
+        name: gameProfile.equippedAchievement.name,
+        badgeImageUrl: gameProfile.equippedAchievement.badgeImageUrl,
+      } : null,
     };
 
     const result: any = { ...base };
@@ -750,11 +755,11 @@ export class AuthService {
        }
     if (includes.includes('achievements') && gameProfile) {
       // load user's achievements (lightweight)
-      const rows = await this.em.getConnection().execute(
-        `select ua.achievement_id as id, a.name, a.badge_image_url as "badgeImageUrl", ua.achieved_at as "achievedAt"
-         from game.user_achievement ua
-         join game.achievement a on a.id = ua.achievement_id
-         where ua.game_profile_id = $1`, [gameProfile.id],
+      const rows = await this.em.execute(
+        `select ua."achievementId" as id, a.name, a."badgeImageUrl" as "badgeImageUrl", ua."achievedAt" as "achievedAt"
+         from game."UserAchievement" ua
+         join game."Achievement" a on a.id = ua."achievementId"
+         where ua."gameProfileId" = ?`, [gameProfile.id],
       );
 
       result.achievements = (rows || []).map((r: any) => ({ id: r.id, name: r.name, badgeImageUrl: r.badgeImageUrl, achievedAt: r.achievedAt }));

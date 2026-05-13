@@ -65,5 +65,19 @@
     "display_name_min_3": "Display name must be at least 3 characters",
     "display_name_max_20": "Display name must not exceed 20 characters",
     "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens"
+  },
+  "achievements": {
+    "list_success": "Achievements retrieved successfully",
+    "search_success": "Achievements search completed successfully",
+    "detail_success": "Achievement details retrieved successfully",
+    "user_list_success": "User achievements retrieved successfully",
+    "create_success": "Achievement created successfully",
+    "update_success": "Achievement updated successfully",
+    "delete_success": "Achievement deleted successfully",
+    "not_found": "Achievement not found",
+    "invalid_id": "Invalid achievement ID",
+    "unauthorized": "You are not authorized to access achievements",
+    "forbidden": "You do not have permission to perform this action",
+    "user_no_profile": "User does not have a game profile"
   }
 }

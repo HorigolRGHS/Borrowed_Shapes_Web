@@ -66,5 +66,25 @@
     "display_name_invalid": "Only letters, numbers, spaces, underscores, and hyphens allowed",
     "Unverified email": "Your email is not verified yet. Please check your inbox.",
     "AUTH.UNVERIFIED_EMAIL": "Your email is not verified yet. Please check your inbox."
+  },
+    "achievements": {
+    "list_success": "Achievements retrieved successfully",
+    "search_success": "Achievements search completed successfully",
+    "detail_success": "Achievement details retrieved successfully",
+    "user_list_success": "User achievements retrieved successfully",
+    "create_success": "Achievement created successfully",
+    "update_success": "Achievement updated successfully",
+    "delete_success": "Achievement deleted successfully",
+    "not_found": "Achievement not found",
+    "invalid_id": "Invalid achievement ID",
+    "name_required": "Achievement name is required",
+    "description_required": "Achievement description is required",
+    "criteria_required": "Achievement criteria are required",
+    "badge_required": "Badge image is required",
+    "type_required": "Achievement type is required",
+    "unauthorized": "You are not authorized to access achievements",
+    "forbidden": "You do not have permission to perform this action",
+    "user_no_profile": "User does not have a game profile",
+    "empty_list": "No achievements found"
   }
 }

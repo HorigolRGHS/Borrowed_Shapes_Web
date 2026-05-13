@@ -66,5 +66,25 @@
     "display_name_invalid": "Chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối",
     "Unverified email": "Email của bạn chưa được xác thực. Vui lòng kiểm tra hộp thư.",
     "AUTH.UNVERIFIED_EMAIL": "Email của bạn chưa được xác thực. Vui lòng kiểm tra hộp thư."
+  },
+  "achievements": {
+    "list_success": "Lấy danh sách thành tựu thành công",
+    "search_success": "Tìm kiếm thành tựu thành công",
+    "detail_success": "Lấy chi tiết thành tựu thành công",
+    "user_list_success": "Lấy danh sách thành tựu của người dùng thành công",
+    "create_success": "Tạo thành tựu thành công",
+    "update_success": "Cập nhật thành tựu thành công",
+    "delete_success": "Xóa thành tựu thành công",
+    "not_found": "Không tìm thấy thành tựu",
+    "invalid_id": "ID thành tựu không hợp lệ",
+    "name_required": "Tên thành tựu là bắt buộc",
+    "description_required": "Mô tả thành tựu là bắt buộc",
+    "criteria_required": "Điều kiện thành tựu là bắt buộc",
+    "badge_required": "Hình ảnh huy hiệu là bắt buộc",
+    "type_required": "Loại thành tựu là bắt buộc",
+    "unauthorized": "Bạn chưa đăng nhập để truy cập thành tựu",
+    "forbidden": "Bạn không có quyền thực hiện hành động này",
+    "user_no_profile": "Người dùng chưa có hồ sơ game",
+    "empty_list": "Không có thành tựu nào"
   }
 }

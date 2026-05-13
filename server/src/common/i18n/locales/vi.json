@@ -65,5 +65,19 @@
     "display_name_min_3": "Tên hiển thị phải có ít nhất 3 ký tự",
     "display_name_max_20": "Tên hiển thị không được quá 20 ký tự",
     "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối"
+  },
+  "achievements": {
+    "list_success": "Lấy danh sách thành tựu thành công",
+    "search_success": "Tìm kiếm thành tựu thành công",
+    "detail_success": "Lấy chi tiết thành tựu thành công",
+    "user_list_success": "Lấy danh sách thành tựu của người dùng thành công",
+    "create_success": "Tạo thành tựu thành công",
+    "update_success": "Cập nhật thành tựu thành công",
+    "delete_success": "Xóa thành tựu thành công",
+    "not_found": "Không tìm thấy thành tựu",
+    "invalid_id": "ID thành tựu không hợp lệ",
+    "unauthorized": "Bạn chưa đăng nhập để truy cập thành tựu",
+    "forbidden": "Bạn không có quyền thực hiện hành động này",
+    "user_no_profile": "Người dùng chưa có hồ sơ game"
   }
 }

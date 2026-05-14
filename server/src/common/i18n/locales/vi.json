@@ -75,9 +75,6 @@
     "update_success": "Cập nhật thành tựu thành công",
     "delete_success": "Xóa thành tựu thành công",
     "not_found": "Không tìm thấy thành tựu",
-    "invalid_id": "ID thành tựu không hợp lệ",
-    "unauthorized": "Bạn chưa đăng nhập để truy cập thành tựu",
-    "forbidden": "Bạn không có quyền thực hiện hành động này",
-    "user_no_profile": "Người dùng chưa có hồ sơ game"
+    "already_exists": "Thành tựu với mã tiêu chí này đã tồn tại"
   }
 }

@@ -8,7 +8,12 @@ import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18/i18n-context";
 import axios from "axios";
-import { setUserProfile } from "@/lib/api/api-client";
+import { 
+  setUserProfile, 
+  setAccessToken, 
+  setRefreshToken, 
+  syncProfile 
+} from "@/lib/api/api-client";
 import { ApiResponse } from "@/models/dtos/api-response.dto";
 import { LoginResponse, loginSchema, LoginFormValues } from "@/models/dtos/auth.dto";
 import { Eye, EyeOff } from "lucide-react";
@@ -44,12 +49,24 @@ export default function LoginPage() {
       );
       const res = response.data;
 
-      if (res.success) {
+      if (res.success && res.data) {
         toast.success(t("auth.login_success"));
-        if (res.data.user) {
-          setUserProfile(res.data.user);
+        
+        const { accessToken, refreshToken, user } = res.data;
+        
+        // 1. Lưu token vào cookie
+        if (accessToken) setAccessToken(accessToken);
+        if (refreshToken) setRefreshToken(refreshToken);
+        
+        // 2. Lưu profile ban đầu từ response login
+        if (user) {
+          setUserProfile(user);
         }
-        router.push(res.data.user.role === "ADMIN" ? "/dashboard" : "/");
+        
+        // 3. Chạy đồng thời syncProfile để lấy thông tin mới nhất (về Achievement, v.v.)
+        void syncProfile(accessToken);
+        
+        router.push(user.role === "ADMIN" ? "/dashboard" : "/");
       } else {
         toast.error(res.message || t("auth.login_failed"));
       }
@@ -179,7 +196,7 @@ export default function LoginPage() {
                   fill="#FBBC05"
                 />
                 <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   fill="#EA4335"
                 />
               </svg>

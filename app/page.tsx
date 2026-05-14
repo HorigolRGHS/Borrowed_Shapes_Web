@@ -7,9 +7,11 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const { t, locale, setLocale } = useI18n();
   const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setUser(getUserProfile());
+    setMounted(true);
 
     const handleProfileUpdate = (event: any) => {
       setUser(event.detail);
@@ -24,6 +26,10 @@ export default function Home() {
   const toggleLang = () => {
     setLocale(locale === "en" ? "vi" : "en");
   };
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-white" />;
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-white text-gray-800">

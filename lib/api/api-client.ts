@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+import { decodeJwt } from "@/lib/utils/jwt";
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api",
@@ -11,6 +12,7 @@ const apiClient = axios.create({
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+const REFRESH_SKEW_MS = 60_000;
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -23,12 +25,92 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+const isTokenExpiringSoon = (token: string | null): boolean => {
+  if (!token) return false;
+  const decoded = decodeJwt(token);
+  const exp = decoded?.exp;
+  if (!exp) return false;
+  return exp * 1000 - Date.now() <= REFRESH_SKEW_MS;
+};
+
+/**
+ * Cập nhật user profile vào localStorage và thông báo cho toàn app
+ */
+export const syncProfile = async (accessToken?: string): Promise<any | null> => {
+  if (typeof window === "undefined") return null;
+  
+  const token = accessToken || getAccessToken();
+  if (!token) return null;
+
+  try {
+    // Sử dụng raw axios để tránh interceptor deadlock
+    const response = await axios.get(`${apiClient.defaults.baseURL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    const res = response.data;
+    const user = res?.data || res;
+    
+    if (user) {
+      setUserProfile(user);
+      window.dispatchEvent(new CustomEvent("api:profile-updated", { detail: user }));
+      return user;
+    }
+  } catch (err) {
+    console.error("[apiClient] Failed to sync profile:", err);
+  }
+  return null;
+};
+
+const refreshSession = async (): Promise<string | null> => {
+  if (isRefreshing) {
+    return new Promise<string | null>((resolve, reject) => {
+      failedQueue.push({ resolve, reject });
+    });
+  }
+
+  isRefreshing = true;
+
+  try {
+    const response = await axios.post("/api/auth/refresh", null, { withCredentials: true });
+    const data = response.data?.data ?? response.data;
+    const accessToken = data?.accessToken;
+
+    if (!accessToken) {
+      throw new Error("Missing access token from refresh");
+    }
+
+    // Luôn luôn gọi syncProfile để lấy thông tin mới nhất và cập nhật browser
+    await syncProfile(accessToken);
+    console.debug("[apiClient] Profile synced after refresh");
+
+    processQueue(null, accessToken);
+    return accessToken;
+  } catch (error) {
+    processQueue(error, null);
+    throw error;
+  } finally {
+    isRefreshing = false;
+  }
+};
+
 apiClient.interceptors.request.use(
   async (config) => {
     let token: string | null = null;
 
     if (typeof window !== "undefined") {
       token = getAccessToken();
+      // Chỉ tự động refresh nếu không phải là request tới login/refresh
+      const isAuthRequest = config.url?.includes("/auth/login") || config.url?.includes("/auth/refresh");
+      
+      if (token && isTokenExpiringSoon(token) && !isAuthRequest) {
+        try {
+          const refreshedToken = await refreshSession();
+          token = refreshedToken ?? getAccessToken();
+        } catch (e) {
+          console.warn("[apiClient] Token refresh failed in request interceptor", e);
+        }
+      }
     } else {
       // Server-side: sử dụng next/headers
       try {
@@ -67,39 +149,22 @@ apiClient.interceptors.response.use(
     const originalRequest: any = error.config;
 
     if (typeof window !== "undefined" && error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return apiClient(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
+      // Nếu là request tới login/refresh bị 401 thì không retry (tránh loop)
+      if (originalRequest.url?.includes("/auth/login") || originalRequest.url?.includes("/auth/refresh")) {
+        return Promise.reject(error);
       }
 
       originalRequest._retry = true;
-      isRefreshing = true;
 
       try {
-        // 1. Gọi về Route Handler nội bộ để refresh
-        const response = await axios.post("/api/auth/refresh");
-        const { accessToken, user } = response.data.data;
-        
-        // 2. CƠ CHẾ LƯU THÔNG TIN: Tự động cập nhật user profile nếu có trả về
-        if (user) {
-          localStorage.setItem("user_profile", JSON.stringify(user));
-          console.debug("[apiClient] Profile updated after refresh");
+        const accessToken = (await refreshSession()) ?? getAccessToken();
+        if (!accessToken) {
+          throw new Error("Missing refreshed access token");
         }
-
-        processQueue(null, accessToken);
-        isRefreshing = false;
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
-        isRefreshing = false;
         handleLogout();
         return Promise.reject(refreshError);
       }
@@ -108,6 +173,19 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const setAccessToken = (token: string) => {
+  if (typeof window === "undefined") return;
+  document.cookie = `accessToken=${token}; Path=/; Max-Age=${15 * 60}; SameSite=Lax`;
+};
+
+export const setRefreshToken = (token: string) => {
+  if (typeof window === "undefined") return;
+  // Lưu ý: Thường refreshToken nên là HttpOnly, nhưng nếu frontend nhận được thì có thể lưu tạm
+  // hoặc để backend lo việc set cookie HttpOnly. 
+  // Ở đây ta set để đồng bộ với state hiện tại của browser.
+  document.cookie = `refreshToken=${token}; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+};
 
 export const setUserProfile = (user: any) => {
   if (typeof window === "undefined") return;
@@ -151,5 +229,6 @@ export const api = {
   delete: <T = any>(url: string, config?: AxiosRequestConfig) => 
     apiClient.delete<T>(url, config).then(res => res.data),
 };
+
 
 export default apiClient;

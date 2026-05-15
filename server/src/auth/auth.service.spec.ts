@@ -8,9 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { createHash } from 'crypto';
 
 const mockEm = {
   findOne: jest.fn(),
+  find: jest.fn(),
   create: jest.fn(),
   flush: jest.fn(),
   nativeUpdate: jest.fn(),
@@ -27,6 +29,8 @@ const mockRedis = {
   del: jest.fn(),
   zrem: jest.fn(),
 };
+
+const sha256 = (value: string) => createHash('sha256').update(value).digest('hex');
 
 const mockEmail = {
   sendMail: jest.fn(),
@@ -66,6 +70,7 @@ describe('AuthService', () => {
     mockJwt.sign.mockReturnValue('signed-token');
     mockEm.flush.mockResolvedValue(undefined);
     mockEm.nativeUpdate.mockResolvedValue(1);
+    mockEm.find.mockResolvedValue([]);
     mockEm.create.mockImplementation((_, data) => data);
     mockRedis.hset.mockResolvedValue(undefined);
     mockRedis.expire.mockResolvedValue(undefined);
@@ -171,6 +176,69 @@ describe('AuthService', () => {
         expect.objectContaining({ sessionId: 'sess_1' }),
         expect.objectContaining({ status: 'LOGGED_OUT' }),
       );
+    });
+  });
+
+  describe('changePassword', () => {
+    it('keeps current platform session and revokes other active sessions', async () => {
+      const hash = await bcrypt.hash('oldPass123!', 4);
+      mockEm.findOne.mockResolvedValue({ id: 'u1', passwordHash: hash });
+      mockEm.find.mockResolvedValue([
+        { id: 's1', sessionId: 'sess_web', platform: 'web' },
+        { id: 's2', sessionId: 'sess_game', platform: 'game' },
+      ]);
+      mockRedis.hgetall.mockImplementation(async (key: string) => {
+        if (key === 'rt:u1:web') return { sessionId: 'sess_web' };
+        if (key === 'rt:u1:game') return { sessionId: 'sess_game' };
+        return null;
+      });
+      mockRedis.del.mockResolvedValue(undefined);
+      mockRedis.zrem.mockResolvedValue(undefined);
+
+      await service.changePassword('u1', { oldPassword: 'oldPass123!', newPassword: 'NewPass123!' } as any, 'web');
+
+      expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:game');
+      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_game');
+      expect(mockRedis.del).not.toHaveBeenCalledWith('rt:u1:web');
+      expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ id: 's2', status: 'ACTIVE' }),
+        expect.objectContaining({ status: 'REVOKED' }),
+      );
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('revokes all active sessions after reset', async () => {
+      const otp = '123456';
+      const otpHash = sha256(otp);
+      mockRedis.hgetall.mockImplementation(async (key: string) => {
+        if (key === 'forgot_otp:player@example.com') {
+          return { userId: 'u1', otpHash };
+        }
+        if (key === 'rt:u1:web') return { sessionId: 'sess_web' };
+        if (key === 'rt:u1:game') return { sessionId: 'sess_game' };
+        return null;
+      });
+      mockEm.findOne.mockResolvedValue({ id: 'u1' });
+      mockEm.find.mockResolvedValue([
+        { id: 's1', sessionId: 'sess_web', platform: 'web' },
+        { id: 's2', sessionId: 'sess_game', platform: 'game' },
+      ]);
+      mockRedis.del.mockResolvedValue(undefined);
+      mockRedis.zrem.mockResolvedValue(undefined);
+
+      await service.resetPassword({
+        email: 'player@example.com',
+        otp,
+        newPassword: 'NewPass123!',
+      } as any);
+
+      expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:web');
+      expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:game');
+      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_web');
+      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_game');
+      expect(mockRedis.del).toHaveBeenCalledWith('forgot_otp:player@example.com');
     });
   });
 });

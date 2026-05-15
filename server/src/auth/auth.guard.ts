@@ -14,6 +14,8 @@ import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import { ROLES_KEY } from './decorators/roles.decorator';
 import { User } from '../entities/User';
 import { Role } from '../entities/Role';
+import { UserSession } from '../entities/UserSession';
+import { SessionStatus } from '../entities/SessionStatus';
 
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
@@ -54,6 +56,15 @@ export class AuthGuard implements CanActivate {
       if (sessionId) {
         const stored = await this.redis.hgetall(rtKey(userId, platform));
         if (stored?.sessionId !== sessionId) {
+          throw new UnauthorizedException('auth.unauthorized');
+        }
+
+        const dbSession = await this.em.findOne(
+          UserSession,
+          { sessionId, status: SessionStatus.ACTIVE },
+          { fields: ['id'] },
+        );
+        if (!dbSession) {
           throw new UnauthorizedException('auth.unauthorized');
         }
       }

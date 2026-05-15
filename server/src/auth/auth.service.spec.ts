@@ -155,12 +155,17 @@ describe('AuthService', () => {
     it('cleans up Redis keys and updates DB', async () => {
       mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
       mockRedis.del.mockResolvedValue(undefined);
-      mockRedis.zrem.mockResolvedValue(undefined);
+      mockRedis.pipeline.mockResolvedValue(undefined);
 
       await service.logout('u1', 'web', '127.0.0.1');
 
       expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:web');
-      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_1');
+      expect(mockRedis.pipeline).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ cmd: 'zrem', args: ['online_users_by_last_active', 'sess_1'] }),
+          expect.objectContaining({ cmd: 'del', args: ['user_session_details:sess_1'] }),
+        ]),
+      );
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ sessionId: 'sess_1' }),

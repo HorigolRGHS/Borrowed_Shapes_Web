@@ -42,21 +42,78 @@ function redirectTo(path: string, req: NextRequest): NextResponse {
   return NextResponse.redirect(url);
 }
 
+function isTokenExpired(decoded: any): boolean {
+  const exp = decoded?.exp;
+  if (!exp || typeof exp !== "number") return true;
+  return exp * 1000 <= Date.now();
+}
+
+async function tryRefreshInMiddleware(req: NextRequest) {
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+  if (!refreshToken) return null;
+
+  try {
+    const refreshRes = await fetch(`${req.nextUrl.origin}/api/auth/refresh`, {
+      method: "POST",
+      headers: {
+        Cookie: req.headers.get("cookie") ?? "",
+      },
+      cache: "no-store",
+    });
+
+    if (!refreshRes.ok) return null;
+
+    const payload = await refreshRes.json().catch(() => null);
+    const data = payload?.data ?? null;
+    const accessToken = data?.accessToken ?? null;
+    const newRefreshToken = data?.refreshToken ?? null;
+    if (!accessToken) return null;
+
+    const decoded = decodeJwt(accessToken);
+    const normalized = decoded ? normalizeJwt(decoded) : null;
+    if (!normalized) return null;
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+      role: normalized.role ?? "",
+      normalized,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ======== MAIN MIDDLEWARE ========
 
 export function middleware(req: NextRequest) {
+  return handleMiddleware(req);
+}
+
+async function handleMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isStaticAsset(pathname)) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get("accessToken")?.value || null;
-  const decoded = token ? decodeJwt(token) : null;
-  const normalized = decoded ? normalizeJwt(decoded) : null;
-  const role = normalized?.role ?? "";
+  const accessToken = req.cookies.get("accessToken")?.value || null;
+  let decoded = accessToken ? decodeJwt(accessToken) : null;
+  let normalized = decoded ? normalizeJwt(decoded) : null;
+  let role = normalized?.role ?? "";
 
-  const isAuthenticated = !!normalized;
+  const shouldRefresh = !normalized || isTokenExpired(decoded);
+  let refreshed: Awaited<ReturnType<typeof tryRefreshInMiddleware>> = null;
+  if (shouldRefresh) {
+    refreshed = await tryRefreshInMiddleware(req);
+    if (refreshed) {
+      decoded = refreshed.normalized;
+      normalized = refreshed.normalized;
+      role = refreshed.role;
+    }
+  }
+
+  const isAuthenticated = !!normalized && !isTokenExpired(decoded);
 
   // Guest-only pages (cannot access if already logged in)
   if (isGuestOnlyRoute(pathname)) {
@@ -88,7 +145,25 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (refreshed?.accessToken) {
+    response.cookies.set("accessToken", refreshed.accessToken, {
+      path: "/",
+      maxAge: 60 * 15,
+      httpOnly: false,
+      sameSite: "lax",
+    });
+    if (refreshed.refreshToken) {
+      response.cookies.set("refreshToken", refreshed.refreshToken, {
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
+  }
+
+  return response;
 }
 
 // ======== CONFIG ========

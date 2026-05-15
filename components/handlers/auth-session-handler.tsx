@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  getAccessToken,
-  getUserProfile,
-  syncProfile,
-  api,
-} from "@/lib/api/api-client";
+import { getAccessToken, syncProfile, api } from "@/lib/api/api-client";
 
 export default function AuthSessionHandler() {
   useEffect(() => {

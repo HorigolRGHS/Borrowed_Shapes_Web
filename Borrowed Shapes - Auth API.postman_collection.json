@@ -1,0 +1,584 @@
+{
+  "info": {
+    "_postman_id": "ba87835f-8703-4bc5-b75c-ce9b1b41ae2e",
+    "name": "Borrowed Shapes - Auth API",
+    "description": "Auth flows for register, verify email, login, refresh, logout, forgot password, reset password, and change password.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "37681780"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"sodoshinochi@gmail.com\",\n  \"password\": \"Password123!\",\n  \"displayName\": \"UserOne\",\n  \"deviceInfo\": \"Postman\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify Email (OTL)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/verify-email?token={{verifyToken}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "verify-email"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{verifyToken}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();\r",
+              "pm.environment.set(\"accessToken\", json.data.accessToken);\r",
+              "pm.environment.set(\"refreshToken\", json.data.refreshToken); "
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "vi ",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"redstonegolem11@gmail.com\",\n  \"password\": \"Password123!\",\n  \"platform\": \"game\",\n  \"deviceInfo\": \"Postman\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Refresh Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();\r",
+              "pm.environment.set(\"accessToken\", json.data.accessToken);\r",
+              "pm.environment.set(\"refreshToken\", json.data.refreshToken); "
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/refresh",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout (DELETE)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Forgot Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user1@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/forgot-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "forgot-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reset Password (OTP)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user1@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/reset-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "reset-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Change Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"oldPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/change-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "change-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Me",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();\r",
+              "pm.environment.set(\"accessToken\", json.accessToken);\r",
+              "pm.environment.set(\"refreshToken\", json.refreshToken); "
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"sodoshinochi@gmail.com\",\n  \"password\": \"Password123!\",\n  \"platform\": \"game\",\n  \"deviceInfo\": \"Postman\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/me?include=gameProfile",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "me"
+          ],
+          "query": [
+            {
+              "key": "include",
+              "value": "gameProfile"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test Admin (role)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/me-admin",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "me-admin"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Presence",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/presence/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "presence",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Session Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/sessions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "sessions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Presence",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/presence/e4476466-3958-4dff-8540-3484bd480024",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "presence",
+            "e4476466-3958-4dff-8540-3484bd480024"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Presence List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/presence",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "presence"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "if (pm.response.code === 401) {\r",
+          "    const refreshReq = {\r",
+          "        url: pm.environment.get(\"baseUrl\") + \"/api/auth/refresh\",\r",
+          "        method: \"POST\",\r",
+          "        header: { \"Content-Type\": \"application/json\" },\r",
+          "        body: {\r",
+          "            mode: \"raw\",\r",
+          "            raw: JSON.stringify({ \r",
+          "                refreshToken: pm.environment.get(\"refreshToken\") \r",
+          "            })\r",
+          "        }\r",
+          "    };\r",
+          "\r",
+          "    pm.sendRequest(refreshReq, (err, res) => {\r",
+          "        if (!err && res.code === 200) {\r",
+          "            const json = res.json();\r",
+          "            const data = json.data || json; \r",
+          "\r",
+          "            pm.environment.set(\"accessToken\", data.accessToken);\r",
+          "            pm.environment.set(\"refreshToken\", data.refreshToken);\r",
+          "            \r",
+          "            // chạy lại request vừa fail\r",
+          "            postman.setNextRequest(pm.info.requestName);\r",
+          "        }\r",
+          "    });\r",
+          "}\r",
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "verifyToken",
+      "value": ""
+    }
+  ]
+}

@@ -47,6 +47,8 @@ const createId = init({ length: 24 });
 
 /** Redis key for a user's active session on a given platform. */
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
+const presenceDetailsKey = (sessionId: string) => `user_session_details:${sessionId}`;
+const onlineZsetKey = 'online_users_by_last_active';
 
 /** Redis key for email verification token. */
 const emailVerifyTokenKey = (token: string) => `email_verify:${token}`;
@@ -213,6 +215,10 @@ export class AuthService {
         { sessionId: existing.sessionId, status: SessionStatus.ACTIVE },
         { status: SessionStatus.REVOKED, logoutTime: new Date() },
       );
+      await this.redis.pipeline([
+        { cmd: 'zrem', args: [onlineZsetKey, existing.sessionId] },
+        { cmd: 'del', args: [presenceDetailsKey(existing.sessionId)] },
+      ]);
     }
 
     const sessionId = createId();
@@ -240,7 +246,12 @@ export class AuthService {
         ],
       },
       { cmd: 'expire', args: [rtKey(user.id, platform), sessionTtl] },
-      { cmd: 'zadd', args: ['online_users_by_last_active', Date.now(), sessionId] },
+      {
+        cmd: 'hset',
+        args: [presenceDetailsKey(sessionId), { userId: user.id, platform, lastActive: loginTime }],
+      },
+      { cmd: 'expire', args: [presenceDetailsKey(sessionId), sessionTtl] },
+      { cmd: 'zadd', args: [onlineZsetKey, Date.now(), sessionId] },
     ]);
 
     const session = this.em.create(UserSession, {
@@ -551,6 +562,22 @@ export class AuthService {
       throw new UnauthorizedException('auth.unauthorized');
     }
 
+    if (stored.sessionId) {
+      const dbSession = await this.em.findOne(
+        UserSession,
+        { sessionId: stored.sessionId, status: SessionStatus.ACTIVE },
+        { fields: ['id'] },
+      );
+      if (!dbSession) {
+        await this.redis.pipeline([
+          { cmd: 'del', args: [rtKey(userId, platform)] },
+          { cmd: 'zrem', args: [onlineZsetKey, stored.sessionId] },
+          { cmd: 'del', args: [presenceDetailsKey(stored.sessionId)] },
+        ]);
+        throw new UnauthorizedException('auth.unauthorized');
+      }
+    }
+
     const user = await this.em.findOne(User, { id: userId }, { fields: ['role'] });
     if (!user) throw new UnauthorizedException('auth.unauthorized');
 
@@ -571,11 +598,19 @@ export class AuthService {
       { expiresIn: accessTtl },
     );
 
-    await this.redis.pipeline([
+    const commands: Array<{ cmd: string; args: any[] }> = [];
+    if (stored.sessionId) {
+      commands.push({ cmd: 'zrem', args: [onlineZsetKey, stored.sessionId] });
+      commands.push({ cmd: 'del', args: [presenceDetailsKey(stored.sessionId)] });
+    }
+    commands.push(
       { cmd: 'hset', args: [rtKey(userId, platform), { tokenHash: newTokenHash, sessionId: newSessionId, lastActive: now }] },
       { cmd: 'expire', args: [rtKey(userId, platform), sessionTtl] },
-      { cmd: 'zadd', args: ['online_users_by_last_active', Date.now(), newSessionId] },
-    ]);
+      { cmd: 'hset', args: [presenceDetailsKey(newSessionId), { userId, platform, lastActive: now }] },
+      { cmd: 'expire', args: [presenceDetailsKey(newSessionId), sessionTtl] },
+      { cmd: 'zadd', args: [onlineZsetKey, Date.now(), newSessionId] },
+    );
+    await this.redis.pipeline(commands);
 
     // Update DB session record
     await this.em.nativeUpdate(
@@ -592,7 +627,10 @@ export class AuthService {
 
     await this.redis.del(rtKey(userId, platform));
     if (stored?.sessionId) {
-      await this.redis.zrem('online_users_by_last_active', stored.sessionId);
+      await this.redis.pipeline([
+        { cmd: 'zrem', args: [onlineZsetKey, stored.sessionId] },
+        { cmd: 'del', args: [presenceDetailsKey(stored.sessionId)] },
+      ]);
     }
 
     if (stored?.sessionId) {

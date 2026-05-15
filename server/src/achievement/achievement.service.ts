@@ -17,7 +17,7 @@ export class AchievementService {
   async findOne(id: string): Promise<Achievement> {
     const achievement = await this.em.findOne(Achievement, { id });
     if (!achievement) {
-      throw new NotFoundException('achievement.not_found');
+      throw new NotFoundException('achievements.not_found');
     }
     return achievement;
   }
@@ -29,7 +29,7 @@ export class AchievementService {
   async create(dto: CreateAchievementDto): Promise<Achievement> {
     const existing = await this.em.findOne(Achievement, { criteriaCode: dto.criteriaCode });
     if (existing) {
-      throw new BadRequestException('achievement.already_exists');
+      throw new BadRequestException('achievements.already_exists');
     }
 
     const achievement = this.em.create(Achievement, {
@@ -47,7 +47,7 @@ export class AchievementService {
     if (dto.criteriaCode) {
       const existing = await this.em.findOne(Achievement, { criteriaCode: dto.criteriaCode, id: { $ne: id } });
       if (existing) {
-        throw new BadRequestException('achievement.already_exists');
+        throw new BadRequestException('achievements.already_exists');
       }
     }
     this.em.assign(achievement, dto);

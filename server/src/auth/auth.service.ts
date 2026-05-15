@@ -652,6 +652,44 @@ export class AuthService {
     void auditLog;
   }
 
+  private async revokeUserSessions(
+    userId: string,
+    options?: { excludePlatform?: string },
+  ): Promise<void> {
+    const sessions = await this.em.find(
+      UserSession,
+      { userId: this.em.getReference(User, userId), status: SessionStatus.ACTIVE },
+      { fields: ['id', 'sessionId', 'platform'] },
+    );
+
+    if (sessions.length === 0) return;
+
+    const now = new Date();
+
+    for (const session of sessions) {
+      if (options?.excludePlatform && session.platform === options.excludePlatform) {
+        continue;
+      }
+
+      if (session.platform) {
+        const key = rtKey(userId, session.platform);
+        const stored = await this.redis.hgetall(key);
+        if (stored?.sessionId === session.sessionId) {
+          await this.redis.del(key);
+        }
+      }
+
+      await this.redis.zrem(onlineZsetKey, session.sessionId);
+      await this.redis.del(presenceDetailsKey(session.sessionId));
+
+      await this.em.nativeUpdate(
+        UserSession,
+        { id: session.id, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: now },
+      );
+    }
+  }
+
   async verifyEmail(dto: VerifyEmailRequestDto): Promise<void> {
     const verificationRecord = await this.redis.hgetall(emailVerifyTokenKey(dto.token));
     const userId = verificationRecord?.userId;
@@ -726,11 +764,17 @@ export class AuthService {
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
     await this.em.flush();
 
+    await this.revokeUserSessions(String(user.id));
+
     // Clean up OTP
     await this.redis.del(key);
   }
 
-  async changePassword(userId: string, dto: ChangePasswordRequestDto): Promise<void> {
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordRequestDto,
+    currentPlatform?: string,
+  ): Promise<void> {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) {
       throw new UnauthorizedException('auth.user_not_found');
@@ -748,6 +792,8 @@ export class AuthService {
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
     await this.em.flush();
+
+    await this.revokeUserSessions(userId, { excludePlatform: currentPlatform });
   }
 
   /**

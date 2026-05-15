@@ -181,7 +181,7 @@ export class AuthController {
     @Body() dto: ChangePasswordRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.authService.changePassword(user.userId, dto);
+    await this.authService.changePassword(user.userId, dto, user.platform);
     return okResponse(
       'auth.password_changed_success',
       null,

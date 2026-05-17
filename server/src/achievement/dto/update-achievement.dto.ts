@@ -32,7 +32,6 @@ export class UpdateAchievementDto {
     @ApiPropertyOptional({ example: '2026-03' })
     @IsOptional()
     @IsString()
-    @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
     seasonMonth?: string;
   
     @ApiPropertyOptional({ example: '2026-12-31T23:59:59.000Z' })

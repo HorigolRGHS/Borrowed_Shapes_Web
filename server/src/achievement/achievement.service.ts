@@ -50,7 +50,12 @@ export class AchievementService {
         throw new BadRequestException('achievements.already_exists');
       }
     }
-    this.em.assign(achievement, dto);
+    this.em.assign(achievement, {
+    ...dto,
+    seasonMonth: dto.seasonMonth
+      ? `${dto.seasonMonth}-01`
+      : null,
+  });
     await this.em.flush();
     return achievement;
   }

@@ -52,6 +52,22 @@
     "session_not_found": "Không tìm thấy phiên chơi",
     "profile_not_found": "Không tìm thấy hồ sơ game"
   },
+  "season_team": {
+    "created_success": "Tạo team mùa này thành công",
+    "joined_success": "Tham gia team mùa này thành công",
+    "no_team": "Bạn chưa ở trong team mùa này",
+    "current_team": "Đã tải team hiện tại thành công",
+    "already_in_team": "Bạn đã ở trong một team mùa này rồi",
+    "team_full": "Team mùa này đã đủ thành viên",
+    "not_found": "Không tìm thấy team mùa này",
+    "member_not_found": "Không tìm thấy thành viên trong team mùa này",
+    "cannot_kick_leader": "Bạn không thể kick trưởng nhóm",
+    "not_in_team": "Bạn không ở trong team này",
+    "leader_cannot_leave": "Trưởng nhóm không thể rời team",
+    "kicked_success": "Đã kick thành viên thành công",
+    "left_success": "Rời team mùa này thành công",
+    "deleted_success": "Đã xóa team mùa này thành công"
+  },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",
     "password_required": "Vui lòng nhập mật khẩu",

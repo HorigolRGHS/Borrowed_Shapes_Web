@@ -52,6 +52,22 @@
     "session_not_found": "Session not found",
     "profile_not_found": "Game profile not found"
   },
+  "season_team": {
+    "created_success": "Season team created successfully",
+    "joined_success": "Joined season team successfully",
+    "no_team": "You are not in a season team",
+    "current_team": "Current season team loaded successfully",
+    "already_in_team": "You are already in a season team",
+    "team_full": "This season team is full",
+    "not_found": "Season team not found",
+    "member_not_found": "Season team member not found",
+    "cannot_kick_leader": "You cannot kick the team leader",
+    "not_in_team": "You are not in this season team",
+    "leader_cannot_leave": "The team leader cannot leave the team",
+    "kicked_success": "Member kicked successfully",
+    "left_success": "Left season team successfully",
+    "deleted_success": "Season team deleted successfully"
+  },
   "validation": {
     "invalid_email": "Invalid email address",
     "password_required": "Password is required",

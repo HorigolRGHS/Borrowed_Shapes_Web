@@ -10,10 +10,10 @@ export class CreateAchievementDto {
   name!: string;
 
   @ApiPropertyOptional({ example: 'Achieved your first victory' })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(500)
-  description!: string;
+  description?: string;
 
   @ApiProperty({ example: 'WIN_FIRST_GAME' })
   @IsNotEmpty()

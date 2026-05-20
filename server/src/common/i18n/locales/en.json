@@ -36,6 +36,7 @@
     "otp_expired": "OTP expired or invalid",
     "password_not_set": "Password not set for this account",
     "current_password_incorrect": "Current password is incorrect",
+    "new_password_same_as_old": "New password cannot be the same as the current password",
     "session_not_found": "Session not found"
   },
   "game": {

@@ -5,6 +5,7 @@ import { WikiRevision } from '../../entities/WikiRevision';
 import {
   WIKI_LIST_DEFAULT_LIMIT,
   WIKI_LIST_MAX_LIMIT,
+  WIKI_SEARCH_MAX_LENGTH,
 } from '../dto/wiki-constants';
 import { WikiListItemDto, WikiListResponseDto } from '../dto/wiki-list.dto';
 import { isValidSlug } from '../dto/wiki-slug.validator';
@@ -144,6 +145,67 @@ export class WikiService {
       updatedAt: page.updatedAt,
       latestRevision: detailRev,
       matchedSlugLocale: requestedSlug === page.slug ? 'en' : 'vi',
+    };
+  }
+
+  async search(
+    query: { q: string; page?: number; limit?: number },
+    includeAll: boolean,
+  ): Promise<WikiListResponseDto> {
+    if (query.q.length > WIKI_SEARCH_MAX_LENGTH) {
+      throw new BadRequestException('wiki.invalid_input');
+    }
+    const trimmed = query.q.trim();
+    if (trimmed.length === 0) {
+      return this.list({ page: query.page, limit: query.limit }, includeAll);
+    }
+
+    const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
+    const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
+    const offset = (page - 1) * limit;
+
+    const escaped = escapeLike(trimmed);
+    const pattern = `%${escaped}%`;
+    const prefixPattern = `${escaped}%`;
+
+    const where: any = {
+      $or: [
+        { title: { $ilike: pattern } },
+        { title_vi: { $ilike: pattern } },
+      ],
+    };
+    if (!includeAll) where.isPublished = true;
+
+    // MikroORM does not directly support CASE in orderBy; use raw expression on the query builder.
+    const qb = this.em.createQueryBuilder(WikiPage, 'p');
+    qb.select('*')
+      .where(where)
+      .orderBy({
+        [`(CASE
+          WHEN LOWER(p.title) = LOWER('${trimmed.replace(/'/g, "''")}')
+            OR LOWER(p.title_vi) = LOWER('${trimmed.replace(/'/g, "''")}') THEN 1
+          WHEN p.title ILIKE '${prefixPattern.replace(/'/g, "''")}'
+            OR p.title_vi ILIKE '${prefixPattern.replace(/'/g, "''")}' THEN 2
+          ELSE 3
+        END)`]: 'asc',
+        'p.updatedAt': 'desc',
+      })
+      .limit(limit, offset);
+
+    const [pages, total] = await Promise.all([
+      qb.getResult(),
+      this.em.count(WikiPage, where),
+    ]);
+
+    // populate after raw qb
+    await this.em.populate(pages, ['latestRevisionId.authorId']);
+
+    return {
+      items: pages.map((p) => this.toListItem(p)),
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     };
   }
 }

@@ -150,3 +150,44 @@ describe('WikiService.getBySlug', () => {
     await expect(service.getBySlug('a')).rejects.toThrow('wiki.not_found');
   });
 });
+
+describe('WikiService.search', () => {
+  let service: WikiService;
+  let em: { execute: jest.Mock; findAndCount: jest.Mock; createQueryBuilder: jest.Mock; count: jest.Mock; populate: jest.Mock };
+
+  beforeEach(async () => {
+    const qb: any = {
+      select: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      getResult: jest.fn().mockResolvedValue([]),
+    };
+    em = {
+      execute: jest.fn().mockResolvedValue([]),
+      findAndCount: jest.fn().mockResolvedValue([[], 0]),
+      createQueryBuilder: jest.fn().mockReturnValue(qb),
+      count: jest.fn().mockResolvedValue(0),
+      populate: jest.fn().mockResolvedValue(undefined),
+    };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('rejects q over 500 chars', async () => {
+    await expect(
+      service.search({ q: 'x'.repeat(501), page: 1, limit: 20 }, false),
+    ).rejects.toThrow('wiki.invalid_input');
+  });
+
+  it('falls back to list when q is empty after trim', async () => {
+    const out = await service.search({ q: '   ', page: 1, limit: 20 }, false);
+    expect(em.findAndCount).toHaveBeenCalled();
+    expect(out.items).toEqual([]);
+  });
+});

@@ -303,4 +303,54 @@ export class WikiRevisionService {
 
     return this.wikiService.getByIdForAdmin(pageId);
   }
+
+  async delete(pageId: string, adminUserId: string, ipAddress: string): Promise<void> {
+    const snapshot = await this.em.transactional(async (em) => {
+      const page = await em.findOne(
+        WikiPage,
+        { id: pageId },
+        { populate: ['latestRevisionId.authorId'] as any },
+      );
+      if (!page) throw new NotFoundException('wiki.not_found');
+
+      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      const author = latest?.authorId as User | undefined;
+      const oldValue = {
+        page: {
+          id: page.id,
+          slug: page.slug,
+          slug_vi: page.slug_vi,
+          title: page.title,
+          title_vi: page.title_vi,
+          metadataJson: page.metadataJson ?? null,
+          isPublished: page.isPublished,
+          createdAt: page.createdAt,
+          updatedAt: page.updatedAt,
+        },
+        latestRevision: latest
+          ? {
+              id: latest.id,
+              content: latest.content,
+              content_vi: latest.content_vi,
+              summary: latest.summary ?? null,
+              summary_vi: latest.summary_vi ?? null,
+              authorId: author?.id ?? null,
+              createdAt: latest.createdAt,
+            }
+          : null,
+      };
+
+      await em.removeAndFlush(page);
+      return { pageId: page.id, oldValue };
+    });
+
+    await this.audit.log({
+      userId: adminUserId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'WikiPage',
+      entityId: snapshot.pageId,
+      oldValue: snapshot.oldValue,
+      ipAddress,
+    });
+  }
 }

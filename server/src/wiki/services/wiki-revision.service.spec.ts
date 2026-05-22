@@ -353,3 +353,57 @@ describe('WikiRevisionService.rollback', () => {
     );
   });
 });
+
+describe('WikiRevisionService.delete', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+
+  beforeEach(async () => {
+    em = {
+      findOne: jest.fn(),
+      removeAndFlush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(async (cb: any) => cb(em)),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: { getByIdForAdmin: jest.fn() } },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('throws 404 when page missing', async () => {
+    em.findOne.mockResolvedValueOnce(null);
+    await expect(service.delete('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.not_found');
+  });
+
+  it('snapshots page + latest revision into audit oldValue', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1', slug: 's', slug_vi: 'sv', title: 't', title_vi: 'tv',
+      metadataJson: null, isPublished: false,
+      createdAt: new Date(), updatedAt: new Date(),
+      latestRevisionId: {
+        id: 'r1', content: 'c', content_vi: 'cv',
+        summary: null, summary_vi: null,
+        authorId: { id: 'u1' },
+        createdAt: new Date(),
+      },
+    });
+    await service.delete('p1', 'admin-1', '1.1.1.1');
+    expect(em.removeAndFlush).toHaveBeenCalled();
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionType: 'DELETE',
+        oldValue: expect.objectContaining({
+          page: expect.objectContaining({ id: 'p1' }),
+          latestRevision: expect.objectContaining({ id: 'r1' }),
+        }),
+      }),
+    );
+  });
+});

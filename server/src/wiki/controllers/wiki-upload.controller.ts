@@ -68,14 +68,22 @@ export class WikiUploadController {
       originalName: sanitizedName,
     });
 
-    const asset = this.em.create(FileAsset, {
-      fileName: sanitizedName,
-      fileVersion: stored.key,
-      filePath: stored.url,
-      fileSize: BigInt(stored.size),
-      mimeType,
-    } as any);
-    await this.em.flush();
+    let asset: FileAsset;
+    try {
+      asset = this.em.create(FileAsset, {
+        fileName: sanitizedName,
+        fileVersion: stored.key,
+        filePath: stored.url,
+        fileSize: BigInt(stored.size),
+        mimeType,
+      } as any);
+      await this.em.flush();
+    } catch (err) {
+      // Compensating delete: storage already wrote the file but DB persist failed.
+      // Best-effort cleanup; storage.delete swallows ENOENT.
+      await this.storage.delete(stored.key).catch(() => {});
+      throw err;
+    }
 
     await this.audit.log({
       userId: user.userId,

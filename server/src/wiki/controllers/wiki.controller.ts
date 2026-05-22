@@ -5,7 +5,7 @@ import { Public } from '../../auth/decorators/public.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { WikiService } from '../services/wiki.service';
 import { WikiListQueryDto, WikiListResponseDto } from '../dto/wiki-list.dto';
-import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
+import { WikiDetailResponseDto, WikiDetailRevisionDto } from '../dto/wiki-detail.dto';
 import { WikiSearchQueryDto } from '../dto/wiki-search.dto';
 import {
   WikiHistoryResponseDto,
@@ -71,6 +71,7 @@ export class WikiController {
   @Roles('USER', 'ADMIN')
   @Get(':id/history/:revisionId')
   @ApiOperation({ summary: 'Get full content of a single revision' })
+  @ApiResponse({ status: 200, type: WikiDetailRevisionDto })
   async getRevision(
     @Param('id') id: string,
     @Param('revisionId') revisionId: string,

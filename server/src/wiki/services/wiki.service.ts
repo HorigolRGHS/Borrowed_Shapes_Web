@@ -13,7 +13,10 @@ import { WikiDetailResponseDto, WikiDetailRevisionDto } from '../dto/wiki-detail
 import {
   WikiHistoryItemDto,
   WikiHistoryResponseDto,
+  WikiDiffChunkDto,
+  WikiRevisionDiffResponseDto,
 } from '../dto/wiki-history.dto';
+import { diffLines } from 'diff';
 
 function escapeLike(input: string): string {
   return input.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
@@ -257,5 +260,73 @@ export class WikiService {
       limit: safeLimit,
       totalPages: Math.max(1, Math.ceil(total / safeLimit)),
     };
+  }
+
+  async getRevision(pageId: string, revisionId: string): Promise<WikiDetailRevisionDto> {
+    const rev = await this.em.findOne(
+      WikiRevision,
+      { id: revisionId, pageId: { id: pageId } as any },
+      { populate: ['authorId'] },
+    );
+    if (!rev) throw new NotFoundException('wiki.revision_not_found');
+    return this.toDetailRevision(rev);
+  }
+
+  async getRevisionDiff(pageId: string, revisionId: string): Promise<WikiRevisionDiffResponseDto> {
+    const current = await this.em.findOne(
+      WikiRevision,
+      { id: revisionId, pageId: { id: pageId } as any },
+      { populate: ['authorId'] },
+    );
+    if (!current) throw new NotFoundException('wiki.revision_not_found');
+
+    const previous = await this.em.findOne(
+      WikiRevision,
+      { pageId: { id: pageId } as any, createdAt: { $lt: current.createdAt } },
+      { populate: ['authorId'], orderBy: { createdAt: 'desc' } },
+    );
+
+    if (!previous) {
+      return {
+        current: this.toDetailRevision(current),
+        previous: null,
+        isFirst: true,
+        diff: null,
+      };
+    }
+
+    const stripImageData = (md: string): string =>
+      md.replace(/!\[[^\]]*\]\(data:[^)]+\)/g, '![image](data-url-stripped)');
+
+    const enChunks = this.toDiffChunks(diffLines(stripImageData(previous.content), stripImageData(current.content)));
+    const viChunks = this.toDiffChunks(diffLines(stripImageData(previous.content_vi), stripImageData(current.content_vi)));
+
+    return {
+      current: this.toDetailRevision(current),
+      previous: this.toDetailRevision(previous),
+      isFirst: false,
+      diff: { en: enChunks, vi: viChunks },
+    };
+  }
+
+  private toDetailRevision(rev: WikiRevision): WikiDetailRevisionDto {
+    const author = rev.authorId as any;
+    return {
+      id: rev.id,
+      content: rev.content,
+      content_vi: rev.content_vi,
+      summary: rev.summary ?? null,
+      summary_vi: rev.summary_vi ?? null,
+      author: author?.id ? { id: author.id, displayName: author.displayName ?? '' } : null,
+      createdAt: rev.createdAt,
+    };
+  }
+
+  private toDiffChunks(parts: { added?: boolean; removed?: boolean; value: string; count?: number }[]): WikiDiffChunkDto[] {
+    return parts.map((part) => ({
+      type: part.added ? 'add' : part.removed ? 'remove' : 'equal',
+      value: part.value,
+      count: part.count ?? part.value.split('\n').length,
+    }));
   }
 }

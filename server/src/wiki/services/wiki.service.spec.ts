@@ -233,3 +233,77 @@ describe('WikiService.getHistory', () => {
     expect(out.items[1].isLatest).toBe(false);
   });
 });
+
+describe('WikiService.getRevision', () => {
+  let service: WikiService;
+  let em: { findOne: jest.Mock };
+
+  beforeEach(async () => {
+    em = { findOne: jest.fn() };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('returns 404 when revision id does not match pageId', async () => {
+    em.findOne.mockResolvedValueOnce(null);
+    await expect(service.getRevision('p1', 'r-other')).rejects.toThrow('wiki.revision_not_found');
+  });
+});
+
+describe('WikiService.getRevisionDiff', () => {
+  let service: WikiService;
+  let em: any;
+
+  beforeEach(async () => {
+    em = {
+      findOne: jest.fn(),
+    };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('returns isFirst=true when no previous revision exists', async () => {
+    em.findOne
+      .mockResolvedValueOnce({
+        id: 'r1', pageId: { id: 'p1' },
+        content: 'a', content_vi: 'b',
+        summary: null, summary_vi: null,
+        authorId: null, createdAt: new Date('2026-05-01'),
+      })
+      .mockResolvedValueOnce(null);
+    const out = await service.getRevisionDiff('p1', 'r1');
+    expect(out.isFirst).toBe(true);
+    expect(out.previous).toBeNull();
+    expect(out.diff).toBeNull();
+  });
+
+  it('produces diff between current and previous', async () => {
+    em.findOne
+      .mockResolvedValueOnce({
+        id: 'r2', pageId: { id: 'p1' },
+        content: 'line1\nline2\nline3', content_vi: 'a',
+        summary: null, summary_vi: null,
+        authorId: null, createdAt: new Date('2026-05-02'),
+      })
+      .mockResolvedValueOnce({
+        id: 'r1', pageId: { id: 'p1' },
+        content: 'line1\nline3', content_vi: 'a',
+        summary: null, summary_vi: null,
+        authorId: null, createdAt: new Date('2026-05-01'),
+      });
+    const out = await service.getRevisionDiff('p1', 'r2');
+    expect(out.isFirst).toBe(false);
+    expect(out.diff).not.toBeNull();
+    expect(out.diff!.en.some((c: { type: string }) => c.type === 'add')).toBe(true);
+  });
+});

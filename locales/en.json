@@ -66,5 +66,74 @@
     "display_name_invalid": "Only letters, numbers, spaces, underscores, and hyphens allowed",
     "Unverified email": "Your email is not verified yet. Please check your inbox.",
     "AUTH.UNVERIFIED_EMAIL": "Your email is not verified yet. Please check your inbox."
+  },
+  "wiki": {
+    "list_title": "Wiki",
+    "list_subtitle": "Browse the knowledge base",
+    "search_placeholder": "Search wiki by title...",
+    "search_no_results": "No wiki pages match your search",
+    "empty_list": "No wiki pages yet",
+    "draft_badge": "DRAFT",
+    "published_badge": "PUBLISHED",
+    "back_to_list": "Back to wiki list",
+
+    "create_button": "Create wiki",
+    "edit_button": "Edit",
+    "delete_button": "Delete",
+    "history_button": "History",
+    "rollback_button": "Rollback to this",
+    "view_button": "View",
+    "publish_button": "Publish",
+    "unpublish_button": "Unpublish",
+    "save_draft_button": "Save as draft",
+    "save_publish_button": "Save & publish",
+
+    "field_title_en": "Title (English)",
+    "field_title_vi": "Title (Vietnamese)",
+    "field_slug_en": "Slug (English)",
+    "field_slug_vi": "Slug (Vietnamese)",
+    "field_summary_en": "Summary (English)",
+    "field_summary_vi": "Summary (Vietnamese)",
+    "field_content": "Content",
+
+    "tab_en": "English",
+    "tab_vi": "Vietnamese",
+    "copy_from_en": "Copy from English",
+    "copy_from_vi": "Copy from Vietnamese",
+
+    "publish_warn_same_content": "English and Vietnamese content are identical. Are you sure both languages are translated?",
+    "publish_warn_empty": "Both English and Vietnamese content must be filled to publish",
+
+    "upload_uploading": "Uploading image...",
+    "upload_failed": "Image upload failed",
+
+    "unsaved_changes_warning": "You have unsaved changes. Leave anyway?",
+
+    "edited_by": "Edited by {name} on {date}",
+    "last_updated": "Updated {date}",
+
+    "no_history": "No history",
+    "no_previous_revision": "This is the first revision",
+    "diff_unchanged_collapsed": "{count} unchanged lines",
+
+    "toc_title": "On this page",
+
+    "confirm_delete_title": "Delete wiki?",
+    "confirm_delete_message": "This action cannot be undone. Type the slug to confirm:",
+    "confirm_delete_input_hint": "Enter \"{slug}\" to confirm",
+    "confirm_rollback_title": "Rollback to this revision?",
+    "confirm_rollback_message": "A new revision will be created with this content. The current latest revision is preserved in history.",
+
+    "conflict_title": "This wiki was edited by someone else",
+    "conflict_message": "Reload to see their changes, or force overwrite to keep yours.",
+    "conflict_reload": "Reload",
+    "conflict_force": "Force overwrite",
+
+    "viewing_revision": "Viewing revision",
+    "rollback_summary_default": "Rollback to revision {id}",
+
+    "reserved_slug_error": "This slug is reserved",
+    "slug_taken_error": "This slug is already in use",
+    "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes"
   }
 }

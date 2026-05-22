@@ -165,10 +165,11 @@ describe('WikiRevisionService.update', () => {
     ).rejects.toThrow('wiki.not_found');
   });
 
-  it('throws ConflictException when expectedLatestRevisionId mismatch and not forceOverwrite', async () => {
+  it('throws ConflictException with currentLatest payload on stale expectedLatestRevisionId', async () => {
     em.findOne.mockResolvedValueOnce(fakePage('r-current'));
-    await expect(
-      service.update(
+    let captured: ConflictException | null = null;
+    try {
+      await service.update(
         'p1',
         {
           expectedLatestRevisionId: 'r-stale',
@@ -176,8 +177,17 @@ describe('WikiRevisionService.update', () => {
           content: 'c', content_vi: 'cv',
         } as any,
         'admin-1', '1.1.1.1',
-      ),
-    ).rejects.toBeInstanceOf(ConflictException);
+      );
+    } catch (e) {
+      captured = e as ConflictException;
+    }
+    expect(captured).toBeInstanceOf(ConflictException);
+    const body = captured!.getResponse() as any;
+    expect(body.messageKey ?? body.message).toBe('wiki.conflict_revision');
+    expect(body.currentLatest).toBeDefined();
+    expect(body.currentLatest.id).toBe('r-current');
+    expect(body.currentLatest.content).toBe('OLD');
+    expect(body.currentLatest.content_vi).toBe('OLD_VI');
   });
 
   it('proceeds when forceOverwrite is true even with mismatch', async () => {

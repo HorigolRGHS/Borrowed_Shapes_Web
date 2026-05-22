@@ -407,3 +407,73 @@ describe('WikiRevisionService.delete', () => {
     );
   });
 });
+
+describe('WikiRevisionService.publish/unpublish', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+
+  beforeEach(async () => {
+    em = {
+      findOne: jest.fn(),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(async (cb: any) => cb(em)),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: { getByIdForAdmin: jest.fn().mockResolvedValue({}) } },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('rejects publish with empty content', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1', isPublished: false,
+      latestRevisionId: { id: 'r1', content: '', content_vi: '' },
+    });
+    await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_empty');
+  });
+
+  it('rejects publish with empty content_vi', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1', isPublished: false,
+      latestRevisionId: { id: 'r1', content: 'a', content_vi: '' },
+    });
+    await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_empty');
+  });
+
+  it('publishes when content non-empty', async () => {
+    const page: any = {
+      id: 'p1', isPublished: false,
+      latestRevisionId: { id: 'r1', content: 'a', content_vi: 'b' },
+    };
+    em.findOne.mockResolvedValueOnce(page);
+    await service.publish('p1', 'admin-1', '1.1.1.1');
+    expect(page.isPublished).toBe(true);
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newValue: expect.objectContaining({ action: 'publish' }),
+      }),
+    );
+  });
+
+  it('unpublishes regardless of content', async () => {
+    const page: any = {
+      id: 'p1', isPublished: true,
+      latestRevisionId: { id: 'r1', content: '', content_vi: '' },
+    };
+    em.findOne.mockResolvedValueOnce(page);
+    await service.unpublish('p1', 'admin-1', '1.1.1.1');
+    expect(page.isPublished).toBe(false);
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newValue: expect.objectContaining({ action: 'unpublish' }),
+      }),
+    );
+  });
+});

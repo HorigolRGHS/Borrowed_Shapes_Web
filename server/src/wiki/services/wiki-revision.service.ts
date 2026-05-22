@@ -353,4 +353,52 @@ export class WikiRevisionService {
       ipAddress,
     });
   }
+
+  async publish(pageId: string, adminUserId: string, ipAddress: string): Promise<WikiDetailResponseDto> {
+    await this.em.transactional(async (em) => {
+      const page = await em.findOne(
+        WikiPage,
+        { id: pageId },
+        { populate: ['latestRevisionId'] as any },
+      );
+      if (!page) throw new NotFoundException('wiki.not_found');
+      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      if (!latest || latest.content === '' || latest.content_vi === '') {
+        throw new BadRequestException('wiki.cannot_publish_empty');
+      }
+      page.isPublished = true;
+      await em.flush();
+    });
+
+    await this.audit.log({
+      userId: adminUserId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'WikiPage',
+      entityId: pageId,
+      newValue: { action: 'publish' },
+      ipAddress,
+    });
+
+    return this.wikiService.getByIdForAdmin(pageId);
+  }
+
+  async unpublish(pageId: string, adminUserId: string, ipAddress: string): Promise<WikiDetailResponseDto> {
+    await this.em.transactional(async (em) => {
+      const page = await em.findOne(WikiPage, { id: pageId });
+      if (!page) throw new NotFoundException('wiki.not_found');
+      page.isPublished = false;
+      await em.flush();
+    });
+
+    await this.audit.log({
+      userId: adminUserId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'WikiPage',
+      entityId: pageId,
+      newValue: { action: 'unpublish' },
+      ipAddress,
+    });
+
+    return this.wikiService.getByIdForAdmin(pageId);
+  }
 }

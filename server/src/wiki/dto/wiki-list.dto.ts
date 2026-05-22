@@ -1,5 +1,5 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsString, MaxLength, IsIn, IsBoolean } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString, MaxLength, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   WIKI_LIST_DEFAULT_LIMIT,
@@ -38,13 +38,6 @@ export class WikiListQueryDto {
   @IsOptional()
   @IsIn(['asc', 'desc'])
   order?: 'asc' | 'desc' = 'desc';
-
-  // Admin-only path uses dedicated controller; this flag is a server-internal switch.
-  @ApiPropertyOptional({ description: 'Admin-only: include unpublished pages' })
-  @IsOptional()
-  @IsBoolean()
-  @Type(() => Boolean)
-  includeAll?: boolean;
 }
 
 export class WikiAuthorDto {

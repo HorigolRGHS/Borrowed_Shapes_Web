@@ -18,12 +18,15 @@ export interface WikiAuditLogParams {
 export class WikiAuditService {
   private readonly logger = new Logger(WikiAuditService.name);
 
-  constructor(private em: EntityManager) {}
+  constructor(private readonly em: EntityManager) {}
 
   async log(params: WikiAuditLogParams): Promise<void> {
+    // Use a forked EM so we don't accidentally flush the caller's pending changes.
+    // Auditing is intentionally non-blocking — failures here log a warning, never throw.
+    const em = this.em.fork();
     try {
-      this.em.create(AuditLog, {
-        userId: this.em.getReference(User, params.userId),
+      em.create(AuditLog, {
+        userId: em.getReference(User, params.userId),
         actionType: params.actionType,
         entityName: params.entityName,
         entityId: params.entityId,
@@ -31,9 +34,11 @@ export class WikiAuditService {
         newValue: params.newValue,
         ipAddress: params.ipAddress,
       });
-      await this.em.flush();
+      await em.flush();
     } catch (err) {
-      this.logger.warn(`Audit log failed for ${params.entityName}:${params.entityId} action=${params.actionType}: ${err}`);
+      this.logger.warn(
+        `Audit log failed for userId=${params.userId} ${params.entityName}:${params.entityId} action=${params.actionType}: ${err}`,
+      );
     }
   }
 }

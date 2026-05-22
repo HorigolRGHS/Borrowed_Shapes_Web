@@ -5,14 +5,21 @@ import { AuditActionType } from '../../entities/AuditActionType';
 
 describe('WikiAuditService', () => {
   let service: WikiAuditService;
-  let em: { create: jest.Mock; flush: jest.Mock; getReference: jest.Mock };
+  let em: {
+    create: jest.Mock;
+    flush: jest.Mock;
+    getReference: jest.Mock;
+    fork: jest.Mock;
+  };
 
   beforeEach(async () => {
     em = {
       create: jest.fn(),
       flush: jest.fn().mockResolvedValue(undefined),
       getReference: jest.fn().mockReturnValue({ id: 'user-1' }),
+      fork: jest.fn(),
     };
+    em.fork.mockReturnValue(em);
     const moduleRef = await Test.createTestingModule({
       providers: [
         WikiAuditService,

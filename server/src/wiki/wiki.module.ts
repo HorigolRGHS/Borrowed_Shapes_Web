@@ -12,12 +12,13 @@ import { WIKI_STORAGE } from './services/wiki-storage.service';
 import { LocalDiskStorageService } from './services/local-disk-storage.service';
 import { WikiAdminController } from './controllers/wiki-admin.controller';
 import { WikiController } from './controllers/wiki.controller';
+import { WikiUploadController } from './controllers/wiki-upload.controller';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([WikiPage, WikiRevision, AuditLog, FileAsset, User]),
   ],
-  controllers: [WikiAdminController, WikiController],
+  controllers: [WikiAdminController, WikiUploadController, WikiController],
   providers: [
     WikiAuditService,
     WikiService,

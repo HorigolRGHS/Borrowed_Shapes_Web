@@ -107,7 +107,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "transformIgnorePatterns": [
-      "/node_modules/(?!(@paralleldrive/cuid2|@noble/hashes))"
+      "/node_modules/(?!(@paralleldrive/cuid2|@noble/hashes|file-type|strtok3|token-types|@tokenizer/inflate|uint8array-extras|@borewit/text-codec))"
     ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"

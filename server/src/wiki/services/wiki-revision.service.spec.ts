@@ -105,3 +105,154 @@ describe('WikiRevisionService.create', () => {
     );
   });
 });
+
+describe('WikiRevisionService.update', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    em = {
+      findOne: jest.fn(),
+      create: jest.fn((_e, data) => ({ ...data, id: 'new-rev' })),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(async (cb: any) => cb(em)),
+      getReference: jest.fn((_e, id) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({} as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  function fakePage(latestId: string) {
+    return {
+      id: 'p1',
+      slug: 'old-slug', slug_vi: 'old-vi',
+      title: 'Old', title_vi: 'OldVi',
+      metadataJson: null,
+      isPublished: false,
+      latestRevisionId: {
+        id: latestId,
+        content: 'OLD', content_vi: 'OLD_VI',
+        summary: null, summary_vi: null,
+      },
+    };
+  }
+
+  it('throws 404 when page missing', async () => {
+    em.findOne.mockResolvedValueOnce(null);
+    await expect(
+      service.update(
+        'p1',
+        {
+          expectedLatestRevisionId: 'r1',
+          slug: 'a', slug_vi: 'b', title: 't', title_vi: 'tv',
+          content: 'c', content_vi: 'cv',
+        } as any,
+        'admin-1', '1.1.1.1',
+      ),
+    ).rejects.toThrow('wiki.not_found');
+  });
+
+  it('throws ConflictException when expectedLatestRevisionId mismatch and not forceOverwrite', async () => {
+    em.findOne.mockResolvedValueOnce(fakePage('r-current'));
+    await expect(
+      service.update(
+        'p1',
+        {
+          expectedLatestRevisionId: 'r-stale',
+          slug: 'a', slug_vi: 'b', title: 't', title_vi: 'tv',
+          content: 'c', content_vi: 'cv',
+        } as any,
+        'admin-1', '1.1.1.1',
+      ),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('proceeds when forceOverwrite is true even with mismatch', async () => {
+    em.findOne.mockResolvedValueOnce(fakePage('r-current'));
+    await service.update(
+      'p1',
+      {
+        expectedLatestRevisionId: 'r-stale',
+        forceOverwrite: true,
+        slug: 'old-slug', slug_vi: 'old-vi',
+        title: 'Old', title_vi: 'OldVi',
+        content: 'NEW', content_vi: 'NEW_VI',
+      } as any,
+      'admin-1', '1.1.1.1',
+    );
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newValue: expect.objectContaining({ forceOverwrite: true }),
+      }),
+    );
+  });
+
+  it('skips creating revision when content unchanged but updates metadata', async () => {
+    em.findOne.mockResolvedValueOnce(fakePage('r-current'));
+    await service.update(
+      'p1',
+      {
+        expectedLatestRevisionId: 'r-current',
+        slug: 'new-slug', slug_vi: 'old-vi',
+        title: 'Old', title_vi: 'OldVi',
+        content: 'OLD', content_vi: 'OLD_VI',  // unchanged
+      } as any,
+      'admin-1', '1.1.1.1',
+    );
+    // no revision created
+    expect(em.create).not.toHaveBeenCalled();
+    // page metadata changed → audit logged
+    expect(audit.log).toHaveBeenCalled();
+  });
+
+  it('detects total no-op and skips flush + audit', async () => {
+    em.findOne.mockResolvedValueOnce(fakePage('r-current'));
+    await service.update(
+      'p1',
+      {
+        expectedLatestRevisionId: 'r-current',
+        slug: 'old-slug', slug_vi: 'old-vi',
+        title: 'Old', title_vi: 'OldVi',
+        content: 'OLD', content_vi: 'OLD_VI',
+      } as any,
+      'admin-1', '1.1.1.1',
+    );
+    expect(em.create).not.toHaveBeenCalled();
+    expect(audit.log).not.toHaveBeenCalled();
+  });
+
+  it('rejects publishing with empty content', async () => {
+    em.findOne.mockResolvedValueOnce({
+      ...fakePage('r-current'),
+      latestRevisionId: {
+        id: 'r-current', content: '', content_vi: '',
+        summary: null, summary_vi: null,
+      },
+    });
+    await expect(
+      service.update(
+        'p1',
+        {
+          expectedLatestRevisionId: 'r-current',
+          slug: 'old-slug', slug_vi: 'old-vi',
+          title: 'Old', title_vi: 'OldVi',
+          content: '', content_vi: '',
+          isPublished: true,
+        } as any,
+        'admin-1', '1.1.1.1',
+      ),
+    ).rejects.toThrow('wiki.cannot_publish_empty');
+  });
+});

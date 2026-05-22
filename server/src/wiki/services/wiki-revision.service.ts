@@ -12,6 +12,7 @@ import { AuditActionType } from '../../entities/AuditActionType';
 import { WikiAuditService } from './wiki-audit.service';
 import { WikiService } from './wiki.service';
 import { WikiCreateRequestDto } from '../dto/wiki-create.dto';
+import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
 import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { slugRejectionReason } from '../dto/wiki-slug.validator';
 
@@ -89,5 +90,136 @@ export class WikiRevisionService {
     });
 
     return this.wikiService.getByIdForAdmin(result.pageId);
+  }
+
+  async update(
+    pageId: string,
+    dto: WikiUpdateRequestDto,
+    adminUserId: string,
+    ipAddress: string,
+  ): Promise<WikiDetailResponseDto> {
+    const result = await this.em.transactional(async (em) => {
+      const page = await em.findOne(
+        WikiPage,
+        { id: pageId },
+        { populate: ['latestRevisionId'] as any },
+      );
+      if (!page) throw new NotFoundException('wiki.not_found');
+
+      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      const currentLatestId = latest?.id ?? null;
+
+      if (dto.expectedLatestRevisionId !== currentLatestId && !dto.forceOverwrite) {
+        throw new ConflictException({
+          messageKey: 'wiki.conflict_revision',
+          currentLatest: latest
+            ? {
+                id: latest.id,
+                content: latest.content,
+                content_vi: latest.content_vi,
+                summary: latest.summary ?? null,
+                summary_vi: latest.summary_vi ?? null,
+                createdAt: latest.createdAt,
+              }
+            : null,
+        });
+      }
+
+      if (dto.slug !== page.slug) validateSlugOrThrow(dto.slug);
+      if (dto.slug_vi !== page.slug_vi) validateSlugOrThrow(dto.slug_vi);
+
+      const willPublish = dto.isPublished === true && page.isPublished === false;
+      const effectiveContent = dto.content;
+      const effectiveContentVi = dto.content_vi;
+      if (willPublish && (effectiveContent === '' || effectiveContentVi === '')) {
+        throw new BadRequestException('wiki.cannot_publish_empty');
+      }
+
+      const metadataDiff: string[] = [];
+      if (dto.slug !== page.slug) metadataDiff.push('slug');
+      if (dto.slug_vi !== page.slug_vi) metadataDiff.push('slug_vi');
+      if (dto.title !== page.title) metadataDiff.push('title');
+      if (dto.title_vi !== page.title_vi) metadataDiff.push('title_vi');
+      if (JSON.stringify(dto.metadataJson ?? null) !== JSON.stringify(page.metadataJson ?? null)) {
+        metadataDiff.push('metadataJson');
+      }
+      const publishStateChanged = dto.isPublished !== undefined && dto.isPublished !== page.isPublished;
+      if (publishStateChanged) metadataDiff.push('isPublished');
+
+      const contentChanged =
+        !latest ||
+        dto.content !== latest.content ||
+        dto.content_vi !== latest.content_vi ||
+        (dto.summary ?? null) !== (latest.summary ?? null) ||
+        (dto.summary_vi ?? null) !== (latest.summary_vi ?? null);
+
+      if (!contentChanged && metadataDiff.length === 0) {
+        return {
+          pageId: page.id,
+          fromRevisionId: currentLatestId,
+          toRevisionId: currentLatestId,
+          totalNoop: true,
+          metadataDiff,
+          publishStateChanged,
+        };
+      }
+
+      page.slug = dto.slug;
+      page.slug_vi = dto.slug_vi;
+      page.title = dto.title;
+      page.title_vi = dto.title_vi;
+      page.metadataJson = dto.metadataJson ?? null;
+      if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
+
+      let newRevisionId: string | null = currentLatestId;
+      if (contentChanged) {
+        const newRevision = em.create(WikiRevision, {
+          pageId: page,
+          authorId: em.getReference(User, adminUserId),
+          content: dto.content,
+          content_vi: dto.content_vi,
+          summary: dto.summary ?? null,
+          summary_vi: dto.summary_vi ?? null,
+        } as any);
+        await em.flush();
+        page.latestRevisionId = newRevision;
+        newRevisionId = newRevision.id;
+      }
+
+      try {
+        await em.flush();
+      } catch (err) {
+        if (isPostgresUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        throw err;
+      }
+
+      return {
+        pageId: page.id,
+        fromRevisionId: currentLatestId,
+        toRevisionId: newRevisionId,
+        totalNoop: false,
+        metadataDiff,
+        publishStateChanged,
+      };
+    });
+
+    if (!result.totalNoop) {
+      await this.audit.log({
+        userId: adminUserId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'WikiPage',
+        entityId: result.pageId,
+        newValue: {
+          fromRevisionId: result.fromRevisionId,
+          toRevisionId: result.toRevisionId,
+          changedFields: result.metadataDiff,
+          publishStateChanged: result.publishStateChanged,
+          forceOverwrite: dto.forceOverwrite ?? false,
+        },
+        ipAddress,
+      });
+    }
+
+    return this.wikiService.getByIdForAdmin(pageId);
   }
 }

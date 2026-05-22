@@ -241,6 +241,7 @@ describe('WikiRevisionService.update', () => {
       'admin-1', '1.1.1.1',
     );
     expect(em.create).not.toHaveBeenCalled();
+    expect(em.flush).not.toHaveBeenCalled();
     expect(audit.log).not.toHaveBeenCalled();
   });
 

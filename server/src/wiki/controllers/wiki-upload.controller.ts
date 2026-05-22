@@ -1,5 +1,5 @@
 import {
-  Controller, Post, UseInterceptors, UploadedFile, Req, Inject, BadRequestException, PayloadTooLargeException,
+  Controller, Post, UseInterceptors, UploadedFile, Req, Inject, BadRequestException, PayloadTooLargeException, UseFilters,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -17,10 +17,12 @@ import { AuditActionType } from '../../entities/AuditActionType';
 import { WikiUploadResponseDto } from '../dto/wiki-upload.dto';
 import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 import { UPLOAD_MAX_SIZE } from '../dto/wiki-constants';
+import { MulterExceptionFilter } from './multer-exception.filter';
 
 @ApiTags('wiki-upload')
 @ApiBearerAuth()
 @Roles('ADMIN')
+@UseFilters(MulterExceptionFilter)
 @Controller('wiki')
 export class WikiUploadController {
   constructor(

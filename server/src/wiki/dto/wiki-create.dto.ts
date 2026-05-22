@@ -77,7 +77,7 @@ export class WikiCreateRequestDto {
 
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
-  metadataJson?: any;
+  metadataJson?: unknown;
 
   @ApiPropertyOptional({ default: false })
   @IsOptional()

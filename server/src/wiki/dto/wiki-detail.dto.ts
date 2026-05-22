@@ -41,7 +41,7 @@ export class WikiDetailResponseDto {
   title_vi!: string;
 
   @ApiProperty({ nullable: true, type: Object })
-  metadataJson!: any | null;
+  metadataJson!: unknown | null;
 
   @ApiProperty()
   isPublished!: boolean;

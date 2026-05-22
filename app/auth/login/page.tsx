@@ -119,7 +119,7 @@ export default function LoginPage() {
                 <label className="text-sm font-semibold text-slate-700">
                   {t("auth.password")}
                 </label>
-                <a href="/auth/forgot-password" size="sm" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                <a href="/auth/forgot-password" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
                    {t("auth.forgot_password") || "Forgot password?"}
                 </a>
               </div>

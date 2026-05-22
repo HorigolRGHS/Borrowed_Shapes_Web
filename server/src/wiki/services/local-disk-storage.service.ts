@@ -8,13 +8,7 @@ import {
   WikiStorageUploadInput,
   WikiStorageUploadResult,
 } from './wiki-storage.service';
-
-const MIME_EXT_MAP: Record<string, string> = {
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-  'image/webp': '.webp',
-  'image/gif': '.gif',
-};
+import { MIME_EXT_MAP } from '../dto/wiki-constants';
 
 @Injectable()
 export class LocalDiskStorageService implements WikiStorageService {
@@ -35,7 +29,7 @@ export class LocalDiskStorageService implements WikiStorageService {
   }
 
   async upload(input: WikiStorageUploadInput): Promise<WikiStorageUploadResult> {
-    const ext = MIME_EXT_MAP[input.mimeType];
+    const ext = (MIME_EXT_MAP as Record<string, string>)[input.mimeType];
     if (!ext) throw new Error(`Unsupported mime type: ${input.mimeType}`);
 
     const key = `${randomUUID()}${ext}`;

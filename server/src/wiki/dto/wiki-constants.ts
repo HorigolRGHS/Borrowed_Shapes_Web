@@ -10,11 +10,15 @@ export const WIKI_LIST_MAX_LIMIT = 50;
 
 export const RESERVED_SLUGS = ['new', 'admin', 'search', 'history', 'edit', 'api', '_next'];
 
-export const ALLOWED_UPLOAD_MIMES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-] as const;
+export const MIME_EXT_MAP = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+} as const;
+
+export type AllowedMimeType = keyof typeof MIME_EXT_MAP;
+
+export const ALLOWED_UPLOAD_MIMES = Object.keys(MIME_EXT_MAP) as AllowedMimeType[];
 
 export const UPLOAD_MAX_SIZE = 5 * 1024 * 1024; // 5 MiB

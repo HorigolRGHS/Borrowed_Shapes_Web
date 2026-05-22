@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { WikiRevisionService } from './wiki-revision.service';
 import { WikiAuditService } from './wiki-audit.service';
 import { WikiService } from './wiki.service';
@@ -486,5 +486,35 @@ describe('WikiRevisionService.publish/unpublish', () => {
         newValue: expect.objectContaining({ action: 'unpublish' }),
       }),
     );
+  });
+
+  it('publish on already-published page is a no-op (no flush, no audit)', async () => {
+    const page: any = {
+      id: 'p1', isPublished: true,
+      latestRevisionId: { id: 'r1', content: 'a', content_vi: 'b' },
+    };
+    em.findOne.mockResolvedValueOnce(page);
+    await service.publish('p1', 'admin-1', '1.1.1.1');
+    expect(em.flush).not.toHaveBeenCalled();
+    expect(audit.log).not.toHaveBeenCalled();
+  });
+
+  it('unpublish on already-unpublished page is a no-op (no flush, no audit)', async () => {
+    const page: any = {
+      id: 'p1', isPublished: false,
+    };
+    em.findOne.mockResolvedValueOnce(page);
+    await service.unpublish('p1', 'admin-1', '1.1.1.1');
+    expect(em.flush).not.toHaveBeenCalled();
+    expect(audit.log).not.toHaveBeenCalled();
+  });
+
+  it('rejects publish when latestRevisionId is null', async () => {
+    em.findOne.mockResolvedValue({
+      id: 'p1', isPublished: false,
+      latestRevisionId: null,
+    });
+    await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_no_revision');
   });
 });

@@ -361,49 +361,59 @@ export class WikiRevisionService {
   }
 
   async publish(pageId: string, adminUserId: string, ipAddress: string): Promise<WikiDetailResponseDto> {
-    await this.em.transactional(async (em) => {
+    const result = await this.em.transactional(async (em) => {
       const page = await em.findOne(
         WikiPage,
         { id: pageId },
         { populate: ['latestRevisionId'] as any },
       );
       if (!page) throw new NotFoundException('wiki.not_found');
+      if (page.isPublished) return { noop: true };
       const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
-      if (!latest || latest.content === '' || latest.content_vi === '') {
+      // TODO: Phase 5 i18n — `wiki.cannot_publish_no_revision` is added to backend locales now
+      if (!latest) throw new BadRequestException('wiki.cannot_publish_no_revision');
+      if (latest.content === '' || latest.content_vi === '') {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
       page.isPublished = true;
       await em.flush();
+      return { noop: false };
     });
 
-    await this.audit.log({
-      userId: adminUserId,
-      actionType: AuditActionType.UPDATE,
-      entityName: 'WikiPage',
-      entityId: pageId,
-      newValue: { action: 'publish' },
-      ipAddress,
-    });
+    if (!result.noop) {
+      await this.audit.log({
+        userId: adminUserId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'WikiPage',
+        entityId: pageId,
+        newValue: { action: 'publish' },
+        ipAddress,
+      });
+    }
 
     return this.wikiService.getByIdForAdmin(pageId);
   }
 
   async unpublish(pageId: string, adminUserId: string, ipAddress: string): Promise<WikiDetailResponseDto> {
-    await this.em.transactional(async (em) => {
+    const result = await this.em.transactional(async (em) => {
       const page = await em.findOne(WikiPage, { id: pageId });
       if (!page) throw new NotFoundException('wiki.not_found');
+      if (!page.isPublished) return { noop: true };
       page.isPublished = false;
       await em.flush();
+      return { noop: false };
     });
 
-    await this.audit.log({
-      userId: adminUserId,
-      actionType: AuditActionType.UPDATE,
-      entityName: 'WikiPage',
-      entityId: pageId,
-      newValue: { action: 'unpublish' },
-      ipAddress,
-    });
+    if (!result.noop) {
+      await this.audit.log({
+        userId: adminUserId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'WikiPage',
+        entityId: pageId,
+        newValue: { action: 'unpublish' },
+        ipAddress,
+      });
+    }
 
     return this.wikiService.getByIdForAdmin(pageId);
   }

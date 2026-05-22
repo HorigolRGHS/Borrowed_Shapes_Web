@@ -65,5 +65,8 @@
     "display_name_min_3": "Tên hiển thị phải có ít nhất 3 ký tự",
     "display_name_max_20": "Tên hiển thị không được quá 20 ký tự",
     "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối"
+  },
+  "wiki": {
+    "cannot_publish_no_revision": "Không thể xuất bản wiki không có phiên bản"
   }
 }

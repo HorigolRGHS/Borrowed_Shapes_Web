@@ -67,6 +67,11 @@
     "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối"
   },
   "wiki": {
-    "cannot_publish_no_revision": "Không thể xuất bản wiki không có phiên bản"
+    "cannot_publish_no_revision": "Không thể xuất bản wiki không có phiên bản",
+    "upload_missing": "Không có file được tải lên",
+    "upload_too_large": "File vượt quá giới hạn 5MB",
+    "upload_invalid_type": "Loại file không được chấp nhận, chỉ cho phép JPEG, PNG, WebP, GIF",
+    "upload_failed": "Tải lên thất bại",
+    "uploaded": "Đã tải file lên"
   }
 }

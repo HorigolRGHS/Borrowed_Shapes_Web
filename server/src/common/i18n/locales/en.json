@@ -67,11 +67,31 @@
     "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens"
   },
   "wiki": {
+    "list_success": "Wiki list retrieved",
+    "search_success": "Search completed",
+    "detail_success": "Wiki detail retrieved",
+    "history_success": "History retrieved",
+    "revision_success": "Revision retrieved",
+    "diff_success": "Diff computed",
+    "created": "Wiki created",
+    "updated": "Wiki updated",
+    "deleted": "Wiki deleted",
+    "rolled_back": "Wiki rolled back",
+    "published": "Wiki published",
+    "unpublished": "Wiki unpublished",
+    "uploaded": "File uploaded",
+    "not_found": "Wiki page not found",
+    "revision_not_found": "Wiki revision not found",
+    "slug_taken": "This slug is already in use",
+    "invalid_slug": "Slug must contain only lowercase letters, digits, and dashes (max 200 chars)",
+    "reserved_slug": "This slug is reserved and cannot be used",
+    "invalid_input": "Invalid input",
+    "conflict_revision": "Wiki has been edited by someone else; reload or force overwrite",
+    "cannot_publish_empty": "Cannot publish wiki with empty content; provide both EN and VI text",
     "cannot_publish_no_revision": "Cannot publish wiki with no revision",
-    "upload_missing": "No file provided",
     "upload_too_large": "Upload exceeds the 5MB limit",
     "upload_invalid_type": "Upload type rejected; only JPEG, PNG, WebP, GIF allowed",
-    "upload_failed": "Upload failed",
-    "uploaded": "File uploaded"
+    "upload_missing": "No file provided",
+    "upload_failed": "Upload failed"
   }
 }

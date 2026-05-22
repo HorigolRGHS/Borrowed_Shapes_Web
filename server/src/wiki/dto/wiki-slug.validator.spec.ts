@@ -1,4 +1,4 @@
-import { isValidSlug } from './wiki-slug.validator';
+import { isValidSlug, slugRejectionReason } from './wiki-slug.validator';
 
 describe('isValidSlug', () => {
   it('accepts lowercase, digits, dashes', () => {
@@ -33,5 +33,23 @@ describe('isValidSlug', () => {
     expect(isValidSlug('edit')).toBe(false);
     expect(isValidSlug('api')).toBe(false);
     expect(isValidSlug('_next')).toBe(false);
+  });
+});
+
+describe('slugRejectionReason', () => {
+  it('returns null for valid slug', () => {
+    expect(slugRejectionReason('dragon-knight')).toBeNull();
+  });
+  it('returns "reserved" for reserved slug', () => {
+    expect(slugRejectionReason('admin')).toBe('reserved');
+  });
+  it('returns "invalid" for empty string', () => {
+    expect(slugRejectionReason('')).toBe('invalid');
+  });
+  it('returns "invalid" for malformed slug', () => {
+    expect(slugRejectionReason('Bad Slug!')).toBe('invalid');
+  });
+  it('returns "invalid" for too-long slug', () => {
+    expect(slugRejectionReason('a'.repeat(201))).toBe('invalid');
   });
 });

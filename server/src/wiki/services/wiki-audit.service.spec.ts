@@ -29,7 +29,7 @@ describe('WikiAuditService', () => {
     service = moduleRef.get(WikiAuditService);
   });
 
-  it('writes an audit log entry', async () => {
+  it('writes an audit log entry with correct fields', async () => {
     await service.log({
       userId: 'user-1',
       actionType: AuditActionType.CREATE,
@@ -39,7 +39,16 @@ describe('WikiAuditService', () => {
       ipAddress: '127.0.0.1',
     });
 
-    expect(em.create).toHaveBeenCalledTimes(1);
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        actionType: AuditActionType.CREATE,
+        entityName: 'WikiPage',
+        entityId: 'page-1',
+        newValue: { foo: 'bar' },
+        ipAddress: '127.0.0.1',
+      }),
+    );
     expect(em.flush).toHaveBeenCalledTimes(1);
   });
 

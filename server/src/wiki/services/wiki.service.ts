@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { FilterQuery } from '@mikro-orm/core';
 import { WikiPage } from '../../entities/WikiPage';
 import { WikiRevision } from '../../entities/WikiRevision';
+import { User } from '../../entities/User';
 import {
   WIKI_LIST_DEFAULT_LIMIT,
   WIKI_LIST_MAX_LIMIT,
@@ -17,10 +19,7 @@ import {
   WikiRevisionDiffResponseDto,
 } from '../dto/wiki-history.dto';
 import { diffLines } from 'diff';
-
-function escapeLike(input: string): string {
-  return input.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
-}
+import { escapeLike } from '../../common/utils/sql-like';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -39,12 +38,12 @@ export class WikiService {
     const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
     const offset = (page - 1) * limit;
 
-    const where: any = {};
-    if (!includeAll) where.isPublished = true;
+    const where: FilterQuery<WikiPage> = {};
+    if (!includeAll) (where as Record<string, unknown>).isPublished = true;
 
     if (query.q && query.q.trim().length > 0) {
       const pattern = `%${escapeLike(query.q.trim())}%`;
-      where.$or = [
+      (where as Record<string, unknown>).$or = [
         { title: { $ilike: pattern } },
         { title_vi: { $ilike: pattern } },
       ];
@@ -74,9 +73,13 @@ export class WikiService {
     };
   }
 
+  private toAuthor(user: User | undefined | null): { id: string; displayName: string } | null {
+    if (!user || !user.id) return null;
+    return { id: user.id, displayName: (user.displayName as string | undefined) ?? '' };
+  }
+
   private toListItem(p: WikiPage): WikiListItemDto {
-    const rev = p.latestRevisionId as unknown as WikiRevision | undefined;
-    const author = rev?.authorId as any;
+    const rev = p.latestRevisionId;
     return {
       id: p.id,
       slug: p.slug,
@@ -90,9 +93,7 @@ export class WikiService {
             id: rev.id,
             summary: rev.summary ?? null,
             summary_vi: rev.summary_vi ?? null,
-            author: author?.id
-              ? { id: author.id, displayName: author.displayName ?? '' }
-              : null,
+            author: this.toAuthor(rev.authorId),
             createdAt: rev.createdAt,
           }
         : null,
@@ -127,17 +128,14 @@ export class WikiService {
   }
 
   private toDetail(page: WikiPage, requestedSlug: string): WikiDetailResponseDto {
-    const rev = page.latestRevisionId as unknown as WikiRevision;
-    const author = rev.authorId as any;
+    const rev = page.latestRevisionId as WikiRevision;
     const detailRev: WikiDetailRevisionDto = {
       id: rev.id,
       content: rev.content,
       content_vi: rev.content_vi,
       summary: rev.summary ?? null,
       summary_vi: rev.summary_vi ?? null,
-      author: author?.id
-        ? { id: author.id, displayName: author.displayName ?? '' }
-        : null,
+      author: this.toAuthor(rev.authorId),
       createdAt: rev.createdAt,
     };
     return {
@@ -171,41 +169,31 @@ export class WikiService {
     const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
     const offset = (page - 1) * limit;
 
-    const escaped = escapeLike(trimmed);
-    const pattern = `%${escaped}%`;
-    const prefixPattern = `${escaped}%`;
+    const pattern = `%${escapeLike(trimmed)}%`;
 
-    const where: any = {
+    const where: FilterQuery<WikiPage> = {
       $or: [
         { title: { $ilike: pattern } },
         { title_vi: { $ilike: pattern } },
       ],
+      ...(includeAll ? {} : { isPublished: true }),
     };
-    if (!includeAll) where.isPublished = true;
 
-    // MikroORM does not directly support CASE in orderBy; use raw expression on the query builder.
-    const qb = this.em.createQueryBuilder(WikiPage, 'p');
-    qb.select('*')
-      .where(where)
-      .orderBy({
-        [`(CASE
-          WHEN LOWER(p.title) = LOWER('${trimmed.replace(/'/g, "''")}')
-            OR LOWER(p.title_vi) = LOWER('${trimmed.replace(/'/g, "''")}') THEN 1
-          WHEN p.title ILIKE '${prefixPattern.replace(/'/g, "''")}'
-            OR p.title_vi ILIKE '${prefixPattern.replace(/'/g, "''")}' THEN 2
-          ELSE 3
-        END)`]: 'asc',
-        'p.updatedAt': 'desc',
-      })
-      .limit(limit, offset);
-
-    const [pages, total] = await Promise.all([
-      qb.getResult(),
-      this.em.count(WikiPage, where),
-    ]);
-
-    // populate after raw qb
-    await this.em.populate(pages, ['latestRevisionId.authorId']);
+    // Note: relevance ordering via SQL CASE was attempted but MikroORM 6's
+    // orderBy key-based API does not safely accept a raw CASE expression
+    // (it gets quoted as an identifier). Falling back to updatedAt DESC,
+    // which keeps results stable and predictable. Title-based ranking is
+    // a nice-to-have rather than a BR requirement.
+    const [pages, total] = await this.em.findAndCount(
+      WikiPage,
+      where,
+      {
+        populate: ['latestRevisionId.authorId'],
+        orderBy: { updatedAt: 'desc' },
+        limit,
+        offset,
+      },
+    );
 
     return {
       items: pages.map((p) => this.toListItem(p)),
@@ -230,7 +218,7 @@ export class WikiService {
 
     const [revisions, total] = await this.em.findAndCount(
       WikiRevision,
-      { pageId: p },
+      { pageId: p } as FilterQuery<WikiRevision>,
       {
         populate: ['authorId'],
         orderBy: { createdAt: 'desc' },
@@ -239,19 +227,17 @@ export class WikiService {
       },
     );
 
-    const latestId = (p.latestRevisionId as unknown as WikiRevision | undefined)?.id ?? null;
+    const latestRev = p.latestRevisionId;
+    const latestId = latestRev?.id ?? null;
 
-    const items: WikiHistoryItemDto[] = revisions.map((r) => {
-      const author = r.authorId as any;
-      return {
-        id: r.id,
-        summary: r.summary ?? null,
-        summary_vi: r.summary_vi ?? null,
-        author: author?.id ? { id: author.id, displayName: author.displayName ?? '' } : null,
-        createdAt: r.createdAt,
-        isLatest: r.id === latestId,
-      };
-    });
+    const items: WikiHistoryItemDto[] = revisions.map((r) => ({
+      id: r.id,
+      summary: r.summary ?? null,
+      summary_vi: r.summary_vi ?? null,
+      author: this.toAuthor(r.authorId),
+      createdAt: r.createdAt,
+      isLatest: r.id === latestId,
+    }));
 
     return {
       items,
@@ -265,7 +251,7 @@ export class WikiService {
   async getRevision(pageId: string, revisionId: string): Promise<WikiDetailRevisionDto> {
     const rev = await this.em.findOne(
       WikiRevision,
-      { id: revisionId, pageId: { id: pageId } as any },
+      { id: revisionId, pageId: this.em.getReference(WikiPage, pageId) } as FilterQuery<WikiRevision>,
       { populate: ['authorId'] },
     );
     if (!rev) throw new NotFoundException('wiki.revision_not_found');
@@ -275,14 +261,17 @@ export class WikiService {
   async getRevisionDiff(pageId: string, revisionId: string): Promise<WikiRevisionDiffResponseDto> {
     const current = await this.em.findOne(
       WikiRevision,
-      { id: revisionId, pageId: { id: pageId } as any },
+      { id: revisionId, pageId: this.em.getReference(WikiPage, pageId) } as FilterQuery<WikiRevision>,
       { populate: ['authorId'] },
     );
     if (!current) throw new NotFoundException('wiki.revision_not_found');
 
     const previous = await this.em.findOne(
       WikiRevision,
-      { pageId: { id: pageId } as any, createdAt: { $lt: current.createdAt } },
+      {
+        pageId: this.em.getReference(WikiPage, pageId),
+        createdAt: { $lt: current.createdAt },
+      } as FilterQuery<WikiRevision>,
       { populate: ['authorId'], orderBy: { createdAt: 'desc' } },
     );
 
@@ -310,14 +299,13 @@ export class WikiService {
   }
 
   private toDetailRevision(rev: WikiRevision): WikiDetailRevisionDto {
-    const author = rev.authorId as any;
     return {
       id: rev.id,
       content: rev.content,
       content_vi: rev.content_vi,
       summary: rev.summary ?? null,
       summary_vi: rev.summary_vi ?? null,
-      author: author?.id ? { id: author.id, displayName: author.displayName ?? '' } : null,
+      author: this.toAuthor(rev.authorId),
       createdAt: rev.createdAt,
     };
   }

@@ -153,22 +153,11 @@ describe('WikiService.getBySlug', () => {
 
 describe('WikiService.search', () => {
   let service: WikiService;
-  let em: { execute: jest.Mock; findAndCount: jest.Mock; createQueryBuilder: jest.Mock; count: jest.Mock; populate: jest.Mock };
+  let em: { findAndCount: jest.Mock };
 
   beforeEach(async () => {
-    const qb: any = {
-      select: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      getResult: jest.fn().mockResolvedValue([]),
-    };
     em = {
-      execute: jest.fn().mockResolvedValue([]),
       findAndCount: jest.fn().mockResolvedValue([[], 0]),
-      createQueryBuilder: jest.fn().mockReturnValue(qb),
-      count: jest.fn().mockResolvedValue(0),
-      populate: jest.fn().mockResolvedValue(undefined),
     };
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -189,6 +178,36 @@ describe('WikiService.search', () => {
     const out = await service.search({ q: '   ', page: 1, limit: 20 }, false);
     expect(em.findAndCount).toHaveBeenCalled();
     expect(out.items).toEqual([]);
+  });
+
+  it('passes orderBy to findAndCount when searching with a non-empty q', async () => {
+    await service.search({ q: 'dragon', page: 1, limit: 20 }, false);
+    expect(em.findAndCount).toHaveBeenCalled();
+    const call = em.findAndCount.mock.calls[0];
+    const opts = call[2];
+    expect(opts.orderBy).toBeDefined();
+    // current strategy is plain updatedAt desc; if we ever reintroduce
+    // relevance ordering this assertion should be updated to match.
+    expect(opts.orderBy).toEqual({ updatedAt: 'desc' });
+  });
+
+  it('applies isPublished filter unless includeAll is true', async () => {
+    await service.search({ q: 'dragon', page: 1, limit: 20 }, false);
+    const where1 = em.findAndCount.mock.calls[0][1];
+    expect(where1).toMatchObject({ isPublished: true });
+
+    em.findAndCount.mockClear();
+    await service.search({ q: 'dragon', page: 1, limit: 20 }, true);
+    const where2 = em.findAndCount.mock.calls[0][1];
+    expect(where2).not.toHaveProperty('isPublished');
+  });
+
+  it('escapes ILIKE wildcards in search q', async () => {
+    await service.search({ q: '50%_off', page: 1, limit: 20 }, false);
+    const where = em.findAndCount.mock.calls[0][1];
+    const orClause = where.$or as { title?: { $ilike: string }; title_vi?: { $ilike: string } }[];
+    expect(orClause).toBeDefined();
+    expect(orClause[0].title?.$ilike).toContain('50\\%\\_off');
   });
 });
 
@@ -236,10 +255,13 @@ describe('WikiService.getHistory', () => {
 
 describe('WikiService.getRevision', () => {
   let service: WikiService;
-  let em: { findOne: jest.Mock };
+  let em: { findOne: jest.Mock; getReference: jest.Mock };
 
   beforeEach(async () => {
-    em = { findOne: jest.fn() };
+    em = {
+      findOne: jest.fn(),
+      getReference: jest.fn().mockImplementation((_e, id) => ({ id })),
+    };
     const moduleRef = await Test.createTestingModule({
       providers: [
         WikiService,
@@ -262,6 +284,7 @@ describe('WikiService.getRevisionDiff', () => {
   beforeEach(async () => {
     em = {
       findOne: jest.fn(),
+      getReference: jest.fn().mockImplementation((_e: unknown, id: string) => ({ id })),
     };
     const moduleRef = await Test.createTestingModule({
       providers: [

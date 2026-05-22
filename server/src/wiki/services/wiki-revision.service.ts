@@ -13,6 +13,7 @@ import { WikiAuditService } from './wiki-audit.service';
 import { WikiService } from './wiki.service';
 import { WikiCreateRequestDto } from '../dto/wiki-create.dto';
 import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
+import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
 import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { slugRejectionReason } from '../dto/wiki-slug.validator';
 
@@ -215,6 +216,86 @@ export class WikiRevisionService {
           changedFields: result.metadataDiff,
           publishStateChanged: result.publishStateChanged,
           forceOverwrite: dto.forceOverwrite ?? false,
+        },
+        ipAddress,
+      });
+    }
+
+    return this.wikiService.getByIdForAdmin(pageId);
+  }
+
+  async rollback(
+    pageId: string,
+    dto: WikiRollbackRequestDto,
+    adminUserId: string,
+    ipAddress: string,
+  ): Promise<WikiDetailResponseDto> {
+    const result = await this.em.transactional(async (em) => {
+      const page = await em.findOne(
+        WikiPage,
+        { id: pageId },
+        { populate: ['latestRevisionId'] as any },
+      );
+      if (!page) throw new NotFoundException('wiki.not_found');
+
+      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      const currentLatestId = latest?.id ?? null;
+      if (dto.expectedLatestRevisionId !== currentLatestId) {
+        throw new ConflictException({
+          messageKey: 'wiki.conflict_revision',
+          currentLatest: latest ? { id: latest.id, createdAt: latest.createdAt } : null,
+        });
+      }
+
+      if (dto.targetRevisionId === currentLatestId) {
+        return {
+          pageId: page.id,
+          noop: true,
+          fromRevisionId: currentLatestId,
+          newRevisionId: currentLatestId,
+          targetRevisionId: dto.targetRevisionId,
+        };
+      }
+
+      const target = await em.findOne(
+        WikiRevision,
+        { id: dto.targetRevisionId, pageId: { id: pageId } as any },
+      );
+      if (!target) throw new NotFoundException('wiki.revision_not_found');
+
+      const newRevision = em.create(WikiRevision, {
+        pageId: page,
+        authorId: em.getReference(User, adminUserId),
+        content: target.content,
+        content_vi: target.content_vi,
+        summary: `Rollback to revision ${target.id} (created ${target.createdAt.toISOString()})`,
+        summary_vi: `Khôi phục về phiên bản ${target.id} (tạo ${target.createdAt.toISOString()})`,
+      } as any);
+      await em.flush();
+
+      page.latestRevisionId = newRevision;
+      await em.flush();
+
+      return {
+        pageId: page.id,
+        noop: false,
+        fromRevisionId: currentLatestId,
+        newRevisionId: newRevision.id,
+        targetRevisionId: target.id,
+      };
+    });
+
+    if (!result.noop) {
+      await this.audit.log({
+        userId: adminUserId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'WikiPage',
+        entityId: result.pageId,
+        newValue: {
+          action: 'rollback',
+          targetRevisionId: result.targetRevisionId,
+          fromRevisionId: result.fromRevisionId,
+          newRevisionId: result.newRevisionId,
         },
         ipAddress,
       });

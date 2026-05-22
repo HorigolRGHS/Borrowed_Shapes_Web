@@ -256,3 +256,100 @@ describe('WikiRevisionService.update', () => {
     ).rejects.toThrow('wiki.cannot_publish_empty');
   });
 });
+
+describe('WikiRevisionService.rollback', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    em = {
+      findOne: jest.fn(),
+      create: jest.fn((_e, data) => ({ ...data, id: 'rolled-back-rev' })),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(async (cb: any) => cb(em)),
+      getReference: jest.fn((_e, id) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({} as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('throws 404 when page missing', async () => {
+    em.findOne.mockResolvedValueOnce(null);
+    await expect(
+      service.rollback('p1', { targetRevisionId: 'r1', expectedLatestRevisionId: 'r2' }, 'admin-1', '1.1.1.1'),
+    ).rejects.toThrow('wiki.not_found');
+  });
+
+  it('throws conflict when latest mismatch', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1',
+      latestRevisionId: { id: 'r-current' },
+    });
+    await expect(
+      service.rollback('p1', { targetRevisionId: 'r1', expectedLatestRevisionId: 'r-stale' }, 'admin-1', '1.1.1.1'),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('throws revision_not_found when target belongs to another page', async () => {
+    em.findOne
+      .mockResolvedValueOnce({
+        id: 'p1', latestRevisionId: { id: 'r-current' },
+      })
+      .mockResolvedValueOnce(null);
+    await expect(
+      service.rollback('p1', { targetRevisionId: 'r-other', expectedLatestRevisionId: 'r-current' }, 'admin-1', '1.1.1.1'),
+    ).rejects.toThrow('wiki.revision_not_found');
+  });
+
+  it('returns no-op when target equals current latest', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1', latestRevisionId: { id: 'r-current' },
+    });
+    await service.rollback(
+      'p1',
+      { targetRevisionId: 'r-current', expectedLatestRevisionId: 'r-current' },
+      'admin-1', '1.1.1.1',
+    );
+    expect(em.create).not.toHaveBeenCalled();
+    expect(audit.log).not.toHaveBeenCalled();
+  });
+
+  it('creates new revision copying target content', async () => {
+    em.findOne
+      .mockResolvedValueOnce({
+        id: 'p1', latestRevisionId: { id: 'r-current' },
+      })
+      .mockResolvedValueOnce({
+        id: 'r-target',
+        pageId: { id: 'p1' },
+        content: 'OLD', content_vi: 'OLD_VI',
+        createdAt: new Date('2026-04-01'),
+      });
+    await service.rollback(
+      'p1',
+      { targetRevisionId: 'r-target', expectedLatestRevisionId: 'r-current' },
+      'admin-1', '1.1.1.1',
+    );
+    expect(em.create).toHaveBeenCalled();
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newValue: expect.objectContaining({
+          action: 'rollback',
+          targetRevisionId: 'r-target',
+        }),
+      }),
+    );
+  });
+});

@@ -10,6 +10,10 @@ import {
 import { WikiListItemDto, WikiListResponseDto } from '../dto/wiki-list.dto';
 import { isValidSlug } from '../dto/wiki-slug.validator';
 import { WikiDetailResponseDto, WikiDetailRevisionDto } from '../dto/wiki-detail.dto';
+import {
+  WikiHistoryItemDto,
+  WikiHistoryResponseDto,
+} from '../dto/wiki-history.dto';
 
 function escapeLike(input: string): string {
   return input.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
@@ -206,6 +210,52 @@ export class WikiService {
       page,
       limit,
       totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
+  }
+
+  async getHistory(pageId: string, page: number, limit: number): Promise<WikiHistoryResponseDto> {
+    const p = await this.em.findOne(
+      WikiPage,
+      { id: pageId },
+      { populate: ['latestRevisionId'] },
+    );
+    if (!p) throw new NotFoundException('wiki.not_found');
+
+    const safePage = clamp(page, 1, Number.MAX_SAFE_INTEGER);
+    const safeLimit = clamp(limit, 1, WIKI_LIST_MAX_LIMIT);
+    const offset = (safePage - 1) * safeLimit;
+
+    const [revisions, total] = await this.em.findAndCount(
+      WikiRevision,
+      { pageId: p },
+      {
+        populate: ['authorId'],
+        orderBy: { createdAt: 'desc' },
+        limit: safeLimit,
+        offset,
+      },
+    );
+
+    const latestId = (p.latestRevisionId as unknown as WikiRevision | undefined)?.id ?? null;
+
+    const items: WikiHistoryItemDto[] = revisions.map((r) => {
+      const author = r.authorId as any;
+      return {
+        id: r.id,
+        summary: r.summary ?? null,
+        summary_vi: r.summary_vi ?? null,
+        author: author?.id ? { id: author.id, displayName: author.displayName ?? '' } : null,
+        createdAt: r.createdAt,
+        isLatest: r.id === latestId,
+      };
+    });
+
+    return {
+      items,
+      total,
+      page: safePage,
+      limit: safeLimit,
+      totalPages: Math.max(1, Math.ceil(total / safeLimit)),
     };
   }
 }

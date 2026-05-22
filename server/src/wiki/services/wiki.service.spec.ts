@@ -191,3 +191,45 @@ describe('WikiService.search', () => {
     expect(out.items).toEqual([]);
   });
 });
+
+describe('WikiService.getHistory', () => {
+  let service: WikiService;
+  let em: { findOne: jest.Mock; findAndCount: jest.Mock };
+
+  beforeEach(async () => {
+    em = {
+      findOne: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue([[], 0]),
+    };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('throws 404 when page does not exist', async () => {
+    em.findOne.mockResolvedValueOnce(null);
+    await expect(service.getHistory('p1', 1, 20)).rejects.toThrow('wiki.not_found');
+  });
+
+  it('marks isLatest correctly', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1',
+      latestRevisionId: { id: 'r2' },
+    });
+    em.findAndCount.mockResolvedValueOnce([
+      [
+        { id: 'r2', summary: null, summary_vi: null, authorId: null, createdAt: new Date() },
+        { id: 'r1', summary: null, summary_vi: null, authorId: null, createdAt: new Date() },
+      ],
+      2,
+    ]);
+    const out = await service.getHistory('p1', 1, 20);
+    expect(out.items[0].id).toBe('r2');
+    expect(out.items[0].isLatest).toBe(true);
+    expect(out.items[1].isLatest).toBe(false);
+  });
+});

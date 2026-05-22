@@ -56,7 +56,7 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.create(dto, user.userId, req.ip ?? '');
+    const data = await this.revisionService.create(dto, user.userId, req.ip ?? 'unknown');
     return okResponse('wiki.created', data, `${req.method} ${req.path}`);
   }
 
@@ -70,7 +70,7 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.update(id, dto, user.userId, req.ip ?? '');
+    const data = await this.revisionService.update(id, dto, user.userId, req.ip ?? 'unknown');
     return okResponse('wiki.updated', data, `${req.method} ${req.path}`);
   }
 
@@ -82,7 +82,7 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.revisionService.delete(id, user.userId, req.ip ?? '');
+    await this.revisionService.delete(id, user.userId, req.ip ?? 'unknown');
     return okResponse('wiki.deleted', null, `${req.method} ${req.path}`);
   }
 
@@ -96,7 +96,7 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.rollback(id, dto, user.userId, req.ip ?? '');
+    const data = await this.revisionService.rollback(id, dto, user.userId, req.ip ?? 'unknown');
     return okResponse('wiki.rolled_back', data, `${req.method} ${req.path}`);
   }
 
@@ -109,7 +109,7 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.publish(id, user.userId, req.ip ?? '');
+    const data = await this.revisionService.publish(id, user.userId, req.ip ?? 'unknown');
     return okResponse('wiki.published', data, `${req.method} ${req.path}`);
   }
 
@@ -122,7 +122,7 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.unpublish(id, user.userId, req.ip ?? '');
+    const data = await this.revisionService.unpublish(id, user.userId, req.ip ?? 'unknown');
     return okResponse('wiki.unpublished', data, `${req.method} ${req.path}`);
   }
 }

@@ -7,12 +7,13 @@ import { FileAsset } from '../entities/FileAsset';
 import { User } from '../entities/User';
 import { WikiAuditService } from './services/wiki-audit.service';
 import { WikiService } from './services/wiki.service';
+import { WikiController } from './controllers/wiki.controller';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([WikiPage, WikiRevision, AuditLog, FileAsset, User]),
   ],
-  controllers: [],
+  controllers: [WikiController],
   providers: [WikiAuditService, WikiService],
   exports: [WikiAuditService, WikiService],
 })

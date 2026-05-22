@@ -111,8 +111,10 @@ export class WikiRevisionService {
 
       const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
       const currentLatestId = latest?.id ?? null;
+      const conflictDetected = dto.expectedLatestRevisionId !== currentLatestId;
+      const forceOverwriteApplied = conflictDetected && dto.forceOverwrite === true;
 
-      if (dto.expectedLatestRevisionId !== currentLatestId && !dto.forceOverwrite) {
+      if (conflictDetected && !dto.forceOverwrite) {
         throw new ConflictException({
           messageKey: 'wiki.conflict_revision',
           currentLatest: latest
@@ -164,6 +166,7 @@ export class WikiRevisionService {
           totalNoop: true,
           metadataDiff,
           publishStateChanged,
+          forceOverwriteApplied,
         };
       }
 
@@ -203,6 +206,7 @@ export class WikiRevisionService {
         totalNoop: false,
         metadataDiff,
         publishStateChanged,
+        forceOverwriteApplied,
       };
     });
 
@@ -217,7 +221,7 @@ export class WikiRevisionService {
           toRevisionId: result.toRevisionId,
           changedFields: result.metadataDiff,
           publishStateChanged: result.publishStateChanged,
-          forceOverwrite: dto.forceOverwrite ?? false,
+          forceOverwrite: result.forceOverwriteApplied,
         },
         ipAddress,
       });

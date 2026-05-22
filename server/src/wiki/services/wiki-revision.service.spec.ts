@@ -8,6 +8,7 @@ import { WikiService } from './wiki.service';
 function makePostgresUniqueError() {
   const err: any = new Error('duplicate key value violates unique constraint');
   err.code = '23505';
+  err.constraint = 'WikiPage_slug_key';
   return err;
 }
 

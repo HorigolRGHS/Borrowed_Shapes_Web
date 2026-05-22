@@ -17,8 +17,10 @@ import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
 import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { slugRejectionReason } from '../dto/wiki-slug.validator';
 
-function isPostgresUniqueError(err: any): boolean {
-  return err?.code === '23505' || err?.driverError?.code === '23505';
+function isWikiSlugUniqueError(err: any): boolean {
+  if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
+  const constraint = err?.constraint ?? err?.driverError?.constraint ?? '';
+  return constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slug_vi_key';
 }
 
 function validateSlugOrThrow(slug: string): void {
@@ -55,7 +57,7 @@ export class WikiRevisionService {
       try {
         await em.flush();
       } catch (err) {
-        if (isPostgresUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
         throw err;
       }
 
@@ -190,7 +192,7 @@ export class WikiRevisionService {
       try {
         await em.flush();
       } catch (err) {
-        if (isPostgresUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
         throw err;
       }
 

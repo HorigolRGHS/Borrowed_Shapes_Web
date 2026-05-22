@@ -65,3 +65,88 @@ describe('WikiService.list', () => {
     });
   });
 });
+
+describe('WikiService.getBySlug', () => {
+  let service: WikiService;
+  let em: { findOne: jest.Mock };
+
+  beforeEach(async () => {
+    em = { findOne: jest.fn() };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('returns 404 when slug missing', async () => {
+    em.findOne.mockResolvedValueOnce(null);
+    await expect(service.getBySlug('nope')).rejects.toThrow('wiki.not_found');
+  });
+
+  it('rejects invalid slug format', async () => {
+    await expect(service.getBySlug('Invalid Slug')).rejects.toThrow('wiki.invalid_slug');
+  });
+
+  it('marks matched locale as en when slug matches `slug` column', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1',
+      slug: 'dragon-knight',
+      slug_vi: 'hiep-si-rong',
+      title: 'Dragon Knight',
+      title_vi: 'Hiệp sĩ rồng',
+      metadataJson: null,
+      isPublished: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      latestRevisionId: {
+        id: 'r1',
+        content: 'a',
+        content_vi: 'b',
+        summary: null,
+        summary_vi: null,
+        authorId: { id: 'u1', displayName: 'A' },
+        createdAt: new Date(),
+      },
+    });
+    const out = await service.getBySlug('dragon-knight');
+    expect(out.matchedSlugLocale).toBe('en');
+  });
+
+  it('marks matched locale as vi when slug matches `slug_vi` column', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1',
+      slug: 'dragon-knight',
+      slug_vi: 'hiep-si-rong',
+      title: 'Dragon Knight',
+      title_vi: 'Hiệp sĩ rồng',
+      metadataJson: null,
+      isPublished: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      latestRevisionId: {
+        id: 'r1',
+        content: 'a',
+        content_vi: 'b',
+        summary: null,
+        summary_vi: null,
+        authorId: { id: 'u1', displayName: 'A' },
+        createdAt: new Date(),
+      },
+    });
+    const out = await service.getBySlug('hiep-si-rong');
+    expect(out.matchedSlugLocale).toBe('vi');
+  });
+
+  it('throws when latestRevisionId is null', async () => {
+    em.findOne.mockResolvedValueOnce({
+      id: 'p1', slug: 'a', slug_vi: 'b', title: 'A', title_vi: 'B',
+      metadataJson: null, isPublished: true,
+      createdAt: new Date(), updatedAt: new Date(),
+      latestRevisionId: null,
+    });
+    await expect(service.getBySlug('a')).rejects.toThrow('wiki.not_found');
+  });
+});

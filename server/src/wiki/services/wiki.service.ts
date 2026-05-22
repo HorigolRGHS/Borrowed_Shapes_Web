@@ -7,6 +7,8 @@ import {
   WIKI_LIST_MAX_LIMIT,
 } from '../dto/wiki-constants';
 import { WikiListItemDto, WikiListResponseDto } from '../dto/wiki-list.dto';
+import { isValidSlug } from '../dto/wiki-slug.validator';
+import { WikiDetailResponseDto, WikiDetailRevisionDto } from '../dto/wiki-detail.dto';
 
 function escapeLike(input: string): string {
   return input.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
@@ -86,6 +88,62 @@ export class WikiService {
             createdAt: rev.createdAt,
           }
         : null,
+    };
+  }
+
+  async getBySlug(slug: string): Promise<WikiDetailResponseDto> {
+    if (!isValidSlug(slug)) {
+      throw new BadRequestException('wiki.invalid_slug');
+    }
+    const page = await this.em.findOne(
+      WikiPage,
+      { $or: [{ slug }, { slug_vi: slug }], isPublished: true },
+      { populate: ['latestRevisionId.authorId'] },
+    );
+    if (!page || !page.latestRevisionId) {
+      throw new NotFoundException('wiki.not_found');
+    }
+    return this.toDetail(page, slug);
+  }
+
+  async getByIdForAdmin(id: string): Promise<WikiDetailResponseDto> {
+    const page = await this.em.findOne(
+      WikiPage,
+      { id },
+      { populate: ['latestRevisionId.authorId'] },
+    );
+    if (!page || !page.latestRevisionId) {
+      throw new NotFoundException('wiki.not_found');
+    }
+    return this.toDetail(page, page.slug);
+  }
+
+  private toDetail(page: WikiPage, requestedSlug: string): WikiDetailResponseDto {
+    const rev = page.latestRevisionId as unknown as WikiRevision;
+    const author = rev.authorId as any;
+    const detailRev: WikiDetailRevisionDto = {
+      id: rev.id,
+      content: rev.content,
+      content_vi: rev.content_vi,
+      summary: rev.summary ?? null,
+      summary_vi: rev.summary_vi ?? null,
+      author: author?.id
+        ? { id: author.id, displayName: author.displayName ?? '' }
+        : null,
+      createdAt: rev.createdAt,
+    };
+    return {
+      id: page.id,
+      slug: page.slug,
+      slug_vi: page.slug_vi,
+      title: page.title,
+      title_vi: page.title_vi,
+      metadataJson: page.metadataJson ?? null,
+      isPublished: page.isPublished,
+      createdAt: page.createdAt,
+      updatedAt: page.updatedAt,
+      latestRevision: detailRev,
+      matchedSlugLocale: requestedSlug === page.slug ? 'en' : 'vi',
     };
   }
 }

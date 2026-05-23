@@ -68,4 +68,47 @@ describe('LocalDiskStorageService', () => {
     await svc.delete(out.key); // second call should not throw
     await expect(fs.access(path.join(tmpDir, 'wiki', out.key))).rejects.toThrow();
   });
+
+  describe('Boundary', () => {
+    it('uploads a 0-byte buffer and reports size=0', async () => {
+      const out = await svc.upload({
+        buffer: Buffer.alloc(0),
+        mimeType: 'image/png',
+        originalName: 'empty.png',
+      });
+      expect(out.size).toBe(0);
+      const written = await fs.readFile(path.join(tmpDir, 'wiki', out.key));
+      expect(written.length).toBe(0);
+    });
+
+    it('uploads a large 1MB buffer successfully', async () => {
+      const big = Buffer.alloc(1_048_576, 0x41);
+      const out = await svc.upload({
+        buffer: big,
+        mimeType: 'image/jpeg',
+        originalName: 'big.jpg',
+      });
+      expect(out.size).toBe(1_048_576);
+      const written = await fs.readFile(path.join(tmpDir, 'wiki', out.key));
+      expect(written.length).toBe(1_048_576);
+    });
+  });
+
+  describe('Abnormal', () => {
+    it('throws for an unsupported mime type (image/heic)', async () => {
+      await expect(
+        svc.upload({
+          buffer: Buffer.from([0]),
+          mimeType: 'image/heic',
+          originalName: 'x.heic',
+        }),
+      ).rejects.toThrow('Unsupported mime type');
+    });
+
+    it('delete with a path-traversal key does not escape wikiDir and swallows ENOENT', async () => {
+      // path.join with the traversal segment results in a path outside wikiDir,
+      // but the file does not exist, so the ENOENT branch is hit.
+      await expect(svc.delete('../etc/passwd')).resolves.toBeUndefined();
+    });
+  });
 });

@@ -78,5 +78,88 @@ describe('Wiki module (e2e)', () => {
     await app.close();
   });
 
-  // Tests added in subsequent tasks.
+  // ---------------------------------------------------------------------------
+  // Task 11.2: Public read endpoints (BR-66, BR-77, BR-78)
+  // ---------------------------------------------------------------------------
+  describe('Public read endpoints', () => {
+    beforeAll(async () => {
+      // Seed a published page for public-read tests
+      const res = await request(app.getHttpServer())
+        .post('/api/wiki')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'e2e-pub',
+          slug_vi: 'e2e-pub-vi',
+          title: 'E2E Public',
+          title_vi: 'E2E Cong khai',
+          content: '# Heading\nbody',
+          content_vi: '# Tieu de\nnoi dung',
+          isPublished: true,
+        })
+        .expect(201);
+      createdPageId = res.body.data.id;
+      firstRevisionId = res.body.data.latestRevision.id;
+    });
+
+    it('GET /wiki returns paginated published pages without auth (BR-77)', async () => {
+      const res = await request(app.getHttpServer()).get('/api/wiki').expect(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toMatchObject({
+        page: 1,
+        limit: 20,
+        total: expect.any(Number),
+        totalPages: expect.any(Number),
+      });
+      expect(
+        res.body.data.items.some((i: { id: string }) => i.id === createdPageId),
+      ).toBe(true);
+    });
+
+    it('GET /wiki/slug/:slug returns detail by EN slug (BR-78)', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/wiki/slug/e2e-pub')
+        .expect(200);
+      expect(res.body.data.matchedSlugLocale).toBe('en');
+      expect(res.body.data.latestRevision.content).toContain('Heading');
+    });
+
+    it('GET /wiki/slug/:slug returns detail by VI slug', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/wiki/slug/e2e-pub-vi')
+        .expect(200);
+      expect(res.body.data.matchedSlugLocale).toBe('vi');
+    });
+
+    it('GET /wiki/slug/:slug returns 404 for unknown slug', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/wiki/slug/no-such-slug')
+        .expect(404);
+      expect(res.body.message).toBe('wiki.not_found');
+    });
+
+    it('GET /wiki/search filters by title (BR-66)', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/wiki/search')
+        .query({ q: 'E2E' })
+        .expect(200);
+      expect(
+        res.body.data.items.some((i: { id: string }) => i.id === createdPageId),
+      ).toBe(true);
+    });
+
+    it('GET /wiki rejects oversize limit by clamping', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/wiki')
+        .query({ limit: 9999 })
+        .expect(200);
+      expect(res.body.data.limit).toBeLessThanOrEqual(50);
+    });
+
+    it('GET /wiki/search rejects oversize q', async () => {
+      await request(app.getHttpServer())
+        .get('/api/wiki/search')
+        .query({ q: 'x'.repeat(501) })
+        .expect(400);
+    });
+  });
 });

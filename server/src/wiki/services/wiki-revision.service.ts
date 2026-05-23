@@ -116,7 +116,7 @@ export class WikiRevisionService {
 
       if (conflictDetected && !dto.forceOverwrite) {
         throw new ConflictException({
-          messageKey: 'wiki.conflict_revision',
+          message: 'wiki.conflict_revision',
           currentLatest: latest
             ? {
                 id: latest.id,
@@ -248,7 +248,7 @@ export class WikiRevisionService {
       const currentLatestId = latest?.id ?? null;
       if (dto.expectedLatestRevisionId !== currentLatestId) {
         throw new ConflictException({
-          messageKey: 'wiki.conflict_revision',
+          message: 'wiki.conflict_revision',
           currentLatest: latest ? { id: latest.id, createdAt: latest.createdAt } : null,
         });
       }

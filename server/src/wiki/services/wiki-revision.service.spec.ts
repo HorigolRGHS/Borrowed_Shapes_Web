@@ -183,7 +183,7 @@ describe('WikiRevisionService.update', () => {
     }
     expect(captured).toBeInstanceOf(ConflictException);
     const body = captured!.getResponse() as any;
-    expect(body.messageKey ?? body.message).toBe('wiki.conflict_revision');
+    expect(body.message).toBe('wiki.conflict_revision');
     expect(body.currentLatest).toBeDefined();
     expect(body.currentLatest.id).toBe('r-current');
     expect(body.currentLatest.content).toBe('OLD');

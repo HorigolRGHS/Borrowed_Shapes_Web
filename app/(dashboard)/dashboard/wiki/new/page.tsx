@@ -13,7 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function AdminWikiNewPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +34,7 @@ export default function AdminWikiNewPage() {
         content_vi: value.content_vi,
         summary: value.summary || undefined,
         summary_vi: value.summary_vi || undefined,
+        metadataJson: value.metadata,
         isPublished: mode === "publish",
       });
       router.push(`/dashboard/wiki/${detail.id}/edit`);
@@ -63,6 +64,7 @@ export default function AdminWikiNewPage() {
             onCancel={() => router.push("/dashboard/wiki")}
             saving={saving}
             submitError={error}
+            locale={locale}
           />
         </CardContent>
       </Card>

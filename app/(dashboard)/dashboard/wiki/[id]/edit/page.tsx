@@ -15,6 +15,7 @@ import {
   type WikiFormValue,
 } from "@/components/wiki/wiki-form";
 import type { WikiDetail } from "@/models/dtos/wiki.dto";
+import { emptyWikiMetadata } from "@/models/dtos/wiki-metadata.dto";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,7 +40,7 @@ export default function AdminWikiEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [detail, setDetail] = useState<WikiDetail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -87,6 +88,7 @@ export default function AdminWikiEditPage({
     content: detail.latestRevision.content,
     content_vi: detail.latestRevision.content_vi,
     isPublished: detail.isPublished,
+    metadata: detail.metadataJson ?? emptyWikiMetadata,
   };
 
   const lastEditedBy = detail.latestRevision.author?.displayName ?? "—";
@@ -109,6 +111,7 @@ export default function AdminWikiEditPage({
         content_vi: value.content_vi,
         summary: value.summary || undefined,
         summary_vi: value.summary_vi || undefined,
+        metadataJson: value.metadata,
         isPublished: mode === "publish",
         expectedLatestRevisionId: detail.latestRevision.id,
         forceOverwrite: force || undefined,
@@ -194,6 +197,8 @@ export default function AdminWikiEditPage({
             saving={saving}
             submitError={submitError}
             isEdit
+            locale={locale}
+            excludeSlug={detail.slug}
           />
         </CardContent>
       </Card>

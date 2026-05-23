@@ -106,6 +106,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleNameMapper": {
+      "^@models/(.*)$": "<rootDir>/../../models/$1"
+    },
     "transformIgnorePatterns": [
       "/node_modules/(?!(@paralleldrive/cuid2|@noble/hashes|file-type|strtok3|token-types|@tokenizer/inflate|uint8array-extras|@borewit/text-codec))"
     ],

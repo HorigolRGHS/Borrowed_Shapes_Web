@@ -27,7 +27,7 @@ export default function AdminWikiNewPage() {
         summary_vi: value.summary_vi || undefined,
         isPublished: mode === 'publish',
       });
-      router.push(`/admin/wiki/${detail.id}/edit`);
+      router.push(`/dashboard/wiki/${detail.id}/edit`);
     } catch (e: any) {
       setError(e?.response?.data?.message ?? 'Create failed');
       setSaving(false);
@@ -40,7 +40,7 @@ export default function AdminWikiNewPage() {
       <WikiForm
         initial={emptyWikiFormValue}
         onSubmit={handleSubmit}
-        onCancel={() => router.push('/admin/wiki')}
+        onCancel={() => router.push('/dashboard/wiki')}
         saving={saving}
         submitError={error}
       />

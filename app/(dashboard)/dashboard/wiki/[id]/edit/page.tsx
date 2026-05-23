@@ -138,7 +138,7 @@ export default function AdminWikiEditPage({
       <WikiForm
         initial={initial}
         onSubmit={(value, mode) => submit(value, mode)}
-        onCancel={() => router.push('/admin/wiki')}
+        onCancel={() => router.push('/dashboard/wiki')}
         saving={saving}
         submitError={submitError}
         isEdit

@@ -17,13 +17,13 @@ async function loginAsAdmin(page: import('@playwright/test').Page) {
 }
 
 test.describe('Wiki Admin — Auth gate', () => {
-  test('guest visiting /admin/wiki is redirected to login', async ({ page }) => {
-    await page.goto('/admin/wiki');
+  test('guest visiting /dashboard/wiki is redirected to login', async ({ page }) => {
+    await page.goto('/dashboard/wiki');
     await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
   });
 
-  test('guest visiting /admin/wiki/new is redirected to login', async ({ page }) => {
-    await page.goto('/admin/wiki/new');
+  test('guest visiting /dashboard/wiki/new is redirected to login', async ({ page }) => {
+    await page.goto('/dashboard/wiki/new');
     await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
   });
 });
@@ -40,13 +40,13 @@ test.describe('Wiki Admin — Logged in flows', () => {
   });
 
   test('admin list page renders with Create button', async ({ page }) => {
-    await page.goto('/admin/wiki');
-    await expect(page.getByRole('heading', { name: /admin/i })).toBeVisible();
+    await page.goto('/dashboard/wiki');
+    await expect(page.getByRole('heading', { name: /admin · wiki/i, level: 1 })).toBeVisible();
     await expect(page.getByRole('link', { name: /create wiki|tạo wiki/i })).toBeVisible();
   });
 
   test('admin list filter buttons are clickable', async ({ page }) => {
-    await page.goto('/admin/wiki');
+    await page.goto('/dashboard/wiki');
     const allBtn = page.getByRole('button', { name: /^all$/i });
     const draftBtn = page.getByRole('button', { name: /draft|bản nháp/i });
     await expect(allBtn).toBeVisible();
@@ -56,7 +56,7 @@ test.describe('Wiki Admin — Logged in flows', () => {
   });
 
   test('create form: slug auto-fills from title', async ({ page }) => {
-    await page.goto('/admin/wiki/new');
+    await page.goto('/dashboard/wiki/new');
     // Form input order: 0=title_en, 1=title_vi, 2=slug_en, 3=slug_vi, 4=summary_en (textarea), 5=summary_vi (textarea)
     const inputs = page.locator('main input[type="text"]');
     await inputs.nth(0).fill('Dragon Knight Test');
@@ -66,7 +66,7 @@ test.describe('Wiki Admin — Logged in flows', () => {
   });
 
   test('create form: slug auto-strips Vietnamese diacritics', async ({ page }) => {
-    await page.goto('/admin/wiki/new');
+    await page.goto('/dashboard/wiki/new');
     const inputs = page.locator('main input[type="text"]');
     await inputs.nth(1).fill('Hiệp sĩ rồng');
     await page.waitForTimeout(600);
@@ -74,14 +74,14 @@ test.describe('Wiki Admin — Logged in flows', () => {
   });
 
   test('create form: reserved slug shows error', async ({ page }) => {
-    await page.goto('/admin/wiki/new');
+    await page.goto('/dashboard/wiki/new');
     const inputs = page.locator('main input[type="text"]');
     await inputs.nth(2).fill('admin');
     await expect(page.getByText(/reserved|dành riêng/i)).toBeVisible({ timeout: 3000 });
   });
 
   test('create form: invalid slug shows error', async ({ page }) => {
-    await page.goto('/admin/wiki/new');
+    await page.goto('/dashboard/wiki/new');
     const inputs = page.locator('main input[type="text"]');
     await inputs.nth(2).fill('Invalid Slug!');
     await expect(page.getByText(/lowercase|chữ thường/i).first()).toBeVisible({ timeout: 3000 });

@@ -59,7 +59,7 @@ export function WikiAdminCard({ item, onDeleted }: Props) {
           {t('wiki.view_button')}
         </Link>
         <Link
-          href={`/admin/wiki/${item.id}/edit`}
+          href={`/dashboard/wiki/${item.id}/edit`}
           className="text-sm px-3 py-1 rounded border border-blue-300 text-blue-700 hover:bg-blue-50"
         >
           {t('wiki.edit_button')}

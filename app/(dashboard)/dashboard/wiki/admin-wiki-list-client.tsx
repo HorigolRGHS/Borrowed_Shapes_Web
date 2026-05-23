@@ -44,7 +44,7 @@ export function AdminWikiListClient() {
   const handleFilter = (next: FilterMode) => {
     const newSp = new URLSearchParams();
     if (next !== 'all') newSp.set('filter', next);
-    router.push(`/admin/wiki${newSp.toString() ? '?' + newSp.toString() : ''}`);
+    router.push(`/dashboard/wiki${newSp.toString() ? '?' + newSp.toString() : ''}`);
   };
 
   const handleDeleted = (id: string) => {
@@ -60,7 +60,7 @@ export function AdminWikiListClient() {
           <p className="text-sm text-gray-500 mt-1">{t('wiki.list_subtitle')}</p>
         </div>
         <Link
-          href="/admin/wiki/new"
+          href="/dashboard/wiki/new"
           className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
         >
           + {t('wiki.create_button')}
@@ -97,7 +97,7 @@ export function AdminWikiListClient() {
           <WikiPagination
             page={data.page}
             totalPages={data.totalPages}
-            basePath="/admin/wiki"
+            basePath="/dashboard/wiki"
             extraParams={filter !== 'all' ? { filter } : undefined}
           />
         </>

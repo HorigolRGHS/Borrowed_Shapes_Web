@@ -330,4 +330,67 @@ describe('Wiki module (e2e)', () => {
       createdPageId = null; // already deleted
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Task 11.4: Image upload happy path + rejections
+  // ---------------------------------------------------------------------------
+  describe('Wiki upload', () => {
+    // Real PNG header bytes (8 bytes is enough for file-type to detect)
+    const PNG_HEADER = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      Buffer.alloc(64),
+    ]);
+    const NOT_AN_IMAGE = Buffer.from('definitely not a png');
+
+    it('rejects unauthenticated upload', async () => {
+      await request(app.getHttpServer())
+        .post('/api/wiki/upload')
+        .attach('file', PNG_HEADER, { filename: 'a.png', contentType: 'image/png' })
+        .expect(401);
+    });
+
+    it('rejects user-role upload', async () => {
+      if (!userToken) return;
+      await request(app.getHttpServer())
+        .post('/api/wiki/upload')
+        .set('Authorization', `Bearer ${userToken}`)
+        .attach('file', PNG_HEADER, { filename: 'a.png', contentType: 'image/png' })
+        .expect(403);
+    });
+
+    it('admin uploads PNG and gets a URL', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/wiki/upload')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', PNG_HEADER, { filename: 'pic.png', contentType: 'image/png' })
+        .expect(200);
+      expect(res.body.data.url).toMatch(/\/uploads\/wiki\/[a-f0-9-]+\.png$/);
+      expect(res.body.data.mimeType).toBe('image/png');
+    });
+
+    it('rejects mime/content mismatch (text declared as png)', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/wiki/upload')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', NOT_AN_IMAGE, {
+          filename: 'fake.png',
+          contentType: 'image/png',
+        })
+        .expect(400);
+      expect(res.body.message).toBe('wiki.upload_invalid_type');
+    });
+
+    it('rejects SVG outright', async () => {
+      const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+      const res = await request(app.getHttpServer())
+        .post('/api/wiki/upload')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', svg, {
+          filename: 'evil.svg',
+          contentType: 'image/svg+xml',
+        })
+        .expect(400);
+      expect(res.body.message).toBe('wiki.upload_invalid_type');
+    });
+  });
 });

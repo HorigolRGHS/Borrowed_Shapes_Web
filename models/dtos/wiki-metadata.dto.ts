@@ -19,7 +19,6 @@ export const wikiStatsSchema = z.record(
 export type WikiStats = z.infer<typeof wikiStatsSchema>;
 
 const optionalUrl = z
-  .string()
   .url()
   .or(z.literal(""))
   .transform((v) => (v === "" ? undefined : v))
@@ -55,6 +54,7 @@ export const wikiMetadataSchema = z
   .strict();
 
 export type WikiMetadata = z.infer<typeof wikiMetadataSchema>;
+export type CompactWikiMetadata = Partial<WikiMetadata>;
 
 export const emptyWikiMetadata: WikiMetadata = wikiMetadataSchema.parse({});
 
@@ -69,18 +69,16 @@ export const emptyWikiMetadata: WikiMetadata = wikiMetadataSchema.parse({});
  */
 export function compactMetadata(
   meta: WikiMetadata | null | undefined,
-): WikiMetadata | null {
+): CompactWikiMetadata | null {
   if (!meta) return null;
-  const out: Partial<WikiMetadata> = {};
+  const out: CompactWikiMetadata = {};
   if (meta.category) out.category = meta.category;
-  if (meta.tags && meta.tags.length > 0) out.tags = meta.tags;
-  if (meta.tags_vi && meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
+  if (meta.tags.length > 0) out.tags = meta.tags;
+  if (meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
   if (meta.infoboxImage) out.infoboxImage = meta.infoboxImage;
-  if (meta.stats && Object.keys(meta.stats).length > 0) out.stats = meta.stats;
+  if (Object.keys(meta.stats).length > 0) out.stats = meta.stats;
   if (meta.location) out.location = meta.location;
   if (meta.location_vi) out.location_vi = meta.location_vi;
-  if (meta.relatedPages && meta.relatedPages.length > 0) {
-    out.relatedPages = meta.relatedPages;
-  }
-  return Object.keys(out).length === 0 ? null : (out as WikiMetadata);
+  if (meta.relatedPages.length > 0) out.relatedPages = meta.relatedPages;
+  return Object.keys(out).length === 0 ? null : out;
 }

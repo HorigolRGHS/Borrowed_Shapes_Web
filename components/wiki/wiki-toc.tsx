@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { useI18n } from '@/lib/i18/i18n-context';
-import { extractToc } from '@/lib/wiki/markdown-toc';
+import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/lib/i18/i18n-context";
+import { extractToc } from "@/lib/wiki/markdown-toc";
+import { cn } from "@/lib/utils";
 
 interface Props {
   markdown: string;
@@ -22,7 +23,7 @@ export function WikiToc({ markdown }: Props) {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setActiveId(visible[0].target.id);
       },
-      { rootMargin: '-20% 0px -70% 0px', threshold: 0 },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 },
     );
     items.forEach(({ id }) => {
       const el = document.getElementById(id);
@@ -35,17 +36,18 @@ export function WikiToc({ markdown }: Props) {
 
   return (
     <nav className="hidden lg:block w-60 shrink-0 sticky top-24 self-start text-sm">
-      <p className="font-semibold text-gray-700 mb-2">{t('wiki.toc_title')}</p>
-      <ul className="space-y-1 border-l border-gray-200">
+      <p className="font-semibold text-foreground mb-2">{t("wiki.toc_title")}</p>
+      <ul className="space-y-1 border-l border-border">
         {items.map((it) => (
           <li key={it.id} style={{ paddingLeft: `${(it.level - 1) * 12}px` }}>
             <a
               href={`#${it.id}`}
-              className={`block px-3 py-1 -ml-px border-l-2 transition ${
+              className={cn(
+                "block px-3 py-1 -ml-px border-l-2 transition",
                 it.id === activeId
-                  ? 'border-blue-500 text-blue-700 font-medium'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
+                  ? "border-primary text-primary font-medium"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
             >
               {it.text}
             </a>

@@ -39,11 +39,8 @@ export default async function WikiSearchPage({
         <WikiList
           data={data}
           emptyMessageKey="wiki.search_no_results"
-          buildHref={(p) => {
-            const sp = new URLSearchParams({ q });
-            if (p > 1) sp.set('page', String(p));
-            return `/wiki/search?${sp.toString()}`;
-          }}
+          basePath="/wiki/search"
+          extraParams={{ q }}
         />
       )}
     </main>

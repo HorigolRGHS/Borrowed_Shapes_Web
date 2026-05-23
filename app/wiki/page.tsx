@@ -46,13 +46,8 @@ export default async function WikiListPage({
         <Suspense fallback={<div>Loading…</div>}>
           <WikiList
             data={data}
-            buildHref={(p) => {
-              const sp = new URLSearchParams();
-              if (p > 1) sp.set('page', String(p));
-              if (q) sp.set('q', q);
-              const qs = sp.toString();
-              return qs ? `/wiki?${qs}` : '/wiki';
-            }}
+            basePath="/wiki"
+            extraParams={q ? { q } : undefined}
           />
         </Suspense>
       )}

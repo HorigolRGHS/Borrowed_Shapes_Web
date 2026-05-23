@@ -89,7 +89,7 @@ export function WikiHistoryList({
       <WikiPagination
         page={page}
         totalPages={totalPages}
-        buildHref={(p) => `/wiki/${encodeURIComponent(slug)}/history?page=${p}`}
+        basePath={`/wiki/${encodeURIComponent(slug)}/history`}
       />
       <p className="text-sm text-gray-500 mt-4 text-center">
         {total} revisions

@@ -7,17 +7,17 @@ import { WikiPagination } from './wiki-pagination';
 
 interface Props {
   data: WikiListResponse;
-  buildHref: (page: number) => string;
+  basePath: string;
+  extraParams?: Record<string, string>;
   showDraftBadge?: boolean;
-  itemHrefBuilder?: (slug: string, slug_vi: string) => string;
   emptyMessageKey?: string;
 }
 
 export function WikiList({
   data,
-  buildHref,
+  basePath,
+  extraParams,
   showDraftBadge = false,
-  itemHrefBuilder,
   emptyMessageKey = 'wiki.empty_list',
 }: Props) {
   const { t } = useI18n();
@@ -36,11 +36,15 @@ export function WikiList({
             key={item.id}
             item={item}
             showDraftBadge={showDraftBadge}
-            href={itemHrefBuilder?.(item.slug, item.slug_vi)}
           />
         ))}
       </div>
-      <WikiPagination page={data.page} totalPages={data.totalPages} buildHref={buildHref} />
+      <WikiPagination
+        page={data.page}
+        totalPages={data.totalPages}
+        basePath={basePath}
+        extraParams={extraParams}
+      />
     </>
   );
 }

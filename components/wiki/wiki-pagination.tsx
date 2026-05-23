@@ -5,7 +5,8 @@ import Link from 'next/link';
 interface Props {
   page: number;
   totalPages: number;
-  buildHref: (page: number) => string;
+  basePath: string;
+  extraParams?: Record<string, string>;
 }
 
 function range(from: number, to: number): number[] {
@@ -14,7 +15,19 @@ function range(from: number, to: number): number[] {
   return out;
 }
 
-export function WikiPagination({ page, totalPages, buildHref }: Props) {
+function buildHref(basePath: string, page: number, extraParams?: Record<string, string>): string {
+  const sp = new URLSearchParams();
+  if (extraParams) {
+    for (const [k, v] of Object.entries(extraParams)) {
+      if (v !== undefined && v !== null && v !== '') sp.set(k, v);
+    }
+  }
+  if (page > 1) sp.set('page', String(page));
+  const qs = sp.toString();
+  return qs ? `${basePath}?${qs}` : basePath;
+}
+
+export function WikiPagination({ page, totalPages, basePath, extraParams }: Props) {
   if (totalPages <= 1) return null;
 
   // Show up to 7 buttons with ellipsis: 1 ... p-1 p p+1 ... last
@@ -35,7 +48,7 @@ export function WikiPagination({ page, totalPages, buildHref }: Props) {
   return (
     <nav className="flex items-center gap-2 justify-center mt-8" aria-label="Pagination">
       <Link
-        href={prevDisabled ? '#' : buildHref(page - 1)}
+        href={prevDisabled ? '#' : buildHref(basePath, page - 1, extraParams)}
         aria-disabled={prevDisabled}
         className={`px-3 py-1 rounded border ${prevDisabled ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
       >
@@ -47,7 +60,7 @@ export function WikiPagination({ page, totalPages, buildHref }: Props) {
         ) : (
           <Link
             key={p}
-            href={buildHref(p)}
+            href={buildHref(basePath, p, extraParams)}
             className={`px-3 py-1 rounded border ${p === page ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100'}`}
           >
             {p}
@@ -55,7 +68,7 @@ export function WikiPagination({ page, totalPages, buildHref }: Props) {
         ),
       )}
       <Link
-        href={nextDisabled ? '#' : buildHref(page + 1)}
+        href={nextDisabled ? '#' : buildHref(basePath, page + 1, extraParams)}
         aria-disabled={nextDisabled}
         className={`px-3 py-1 rounded border ${nextDisabled ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
       >

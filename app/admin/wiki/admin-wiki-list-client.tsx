@@ -97,13 +97,8 @@ export function AdminWikiListClient() {
           <WikiPagination
             page={data.page}
             totalPages={data.totalPages}
-            buildHref={(p) => {
-              const newSp = new URLSearchParams();
-              if (p > 1) newSp.set('page', String(p));
-              if (filter !== 'all') newSp.set('filter', filter);
-              const qs = newSp.toString();
-              return qs ? `/admin/wiki?${qs}` : '/admin/wiki';
-            }}
+            basePath="/admin/wiki"
+            extraParams={filter !== 'all' ? { filter } : undefined}
           />
         </>
       )}

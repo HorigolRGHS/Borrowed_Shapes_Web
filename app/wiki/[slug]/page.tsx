@@ -1,11 +1,14 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { fetchWikiBySlug } from '@/lib/wiki/api';
-import { WikiContentRenderer } from '@/components/wiki/wiki-content-renderer';
-import { WikiToc } from '@/components/wiki/wiki-toc';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { fetchWikiBySlug } from "@/lib/wiki/api";
+import { WikiContentRenderer } from "@/components/wiki/wiki-content-renderer";
+import { WikiToc } from "@/components/wiki/wiki-toc";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -19,7 +22,7 @@ export async function generateMetadata({
       title: detail.title,
       description: detail.latestRevision.summary ?? undefined,
       alternates: {
-        canonical: `/wiki/${detail.matchedSlugLocale === 'en' ? detail.slug : detail.slug_vi}`,
+        canonical: `/wiki/${detail.matchedSlugLocale === "en" ? detail.slug : detail.slug_vi}`,
         languages: {
           en: `/wiki/${detail.slug}`,
           vi: `/wiki/${detail.slug_vi}`,
@@ -27,7 +30,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: 'Wiki' };
+    return { title: "Wiki" };
   }
 }
 
@@ -46,40 +49,46 @@ export default async function WikiDetailPage({
     throw err;
   }
 
-  // Render content per requested locale: if URL slug matched English, prefer EN content.
-  const isVi = detail.matchedSlugLocale === 'vi';
+  const isVi = detail.matchedSlugLocale === "vi";
   const title = isVi ? detail.title_vi : detail.title;
-  const content = isVi ? detail.latestRevision.content_vi : detail.latestRevision.content;
-  const author = detail.latestRevision.author?.displayName ?? '—';
+  const content = isVi
+    ? detail.latestRevision.content_vi
+    : detail.latestRevision.content;
+  const author = detail.latestRevision.author?.displayName ?? "—";
   const updated = new Date(detail.updatedAt);
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-7xl">
-      <nav className="text-sm text-gray-500 mb-4">
-        <Link href="/wiki" className="hover:text-gray-900">Wiki</Link>
+      <nav className="text-sm text-muted-foreground mb-4">
+        <Link href="/wiki" className="hover:text-foreground">
+          Wiki
+        </Link>
         <span className="mx-2">›</span>
-        <span className="text-gray-700">{title}</span>
+        <span className="text-foreground">{title}</span>
       </nav>
 
       <div className="flex gap-8">
         <div className="flex-1 min-w-0">
-          <header className="mb-6">
-            <h1 className="text-4xl font-bold text-gray-900">{title}</h1>
-            <p className="mt-2 text-sm text-gray-500">
+          <header className="mb-6 space-y-2">
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
+              {!detail.isPublished && (
+                <Badge variant="secondary">Draft</Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
               {author} · {updated.toLocaleString()}
             </p>
           </header>
 
           <WikiContentRenderer markdown={content} />
 
-          <div className="mt-8 pt-4 border-t border-gray-200">
-            <Link
-              href={`/wiki/${encodeURIComponent(slug)}/history`}
-              className="text-sm text-blue-600 hover:underline"
-            >
+          <Separator className="my-8" />
+          <Button asChild variant="link" className="px-0">
+            <Link href={`/wiki/${encodeURIComponent(slug)}/history`}>
               View history →
             </Link>
-          </div>
+          </Button>
         </div>
         <WikiToc markdown={content} />
       </div>

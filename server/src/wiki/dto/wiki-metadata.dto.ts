@@ -30,13 +30,10 @@ export class FiniteNumberStatsConstraint
   validate(value: unknown): boolean {
     if (value === undefined || value === null) return true;
     if (typeof value !== 'object' || Array.isArray(value)) return false;
-    for (const v of Object.values(value as Record<string, unknown>)) {
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      const trimmed = k.trim();
+      if (trimmed.length === 0 || trimmed.length > 40) return false;
       if (typeof v !== 'number' || !Number.isFinite(v)) return false;
-    }
-    for (const k of Object.keys(value as Record<string, unknown>)) {
-      if (typeof k !== 'string' || k.trim().length === 0 || k.length > 40) {
-        return false;
-      }
     }
     return true;
   }

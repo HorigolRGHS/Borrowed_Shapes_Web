@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Public } from '../../auth/decorators/public.decorator';
@@ -11,6 +11,7 @@ import {
   WikiHistoryResponseDto,
   WikiRevisionDiffResponseDto,
 } from '../dto/wiki-history.dto';
+import { RelatedPageDto } from '../dto/wiki-metadata.dto';
 import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 
 @ApiTags('wiki')
@@ -40,6 +41,26 @@ export class WikiController {
   ): Promise<ApiResponseDto<WikiListResponseDto>> {
     const data = await this.wikiService.search(query, false);
     return okResponse('wiki.search_success', data, `${req.method} ${req.path}`);
+  }
+
+  @Public()
+  @Get('related')
+  @ApiOperation({ summary: 'Resolve related-page slugs to titles' })
+  @ApiResponse({ status: 200, type: [RelatedPageDto] })
+  async getRelatedTitles(
+    @Query('slugs') slugs: string,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<RelatedPageDto[]>> {
+    const list = (slugs ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    const deduped = Array.from(new Set(list));
+    if (deduped.length > 30) {
+      throw new BadRequestException('wiki.too_many_related_slugs');
+    }
+    const data = await this.wikiService.findBySlugs(deduped);
+    return okResponse('wiki.related_success', data, `${req.method} ${req.path}`);
   }
 
   @Public()

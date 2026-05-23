@@ -92,6 +92,8 @@
     "upload_too_large": "Upload exceeds the 5MB limit",
     "upload_invalid_type": "Upload type rejected; only JPEG, PNG, WebP, GIF allowed",
     "upload_missing": "No file provided",
-    "upload_failed": "Upload failed"
+    "upload_failed": "Upload failed",
+    "related_success": "Related pages resolved",
+    "too_many_related_slugs": "At most 30 related slugs may be requested at once"
   }
 }

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -9,6 +10,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
+  ValidateNested,
 } from 'class-validator';
 import {
   WIKI_TITLE_MAX_LENGTH,
@@ -16,6 +18,7 @@ import {
   WIKI_CONTENT_MAX_LENGTH,
 } from './wiki-constants';
 import { isValidSlug, slugRejectionReason } from './wiki-slug.validator';
+import { WikiMetadataDto } from './wiki-metadata.dto';
 
 @ValidatorConstraint({ name: 'wikiSlug', async: false })
 export class WikiSlugConstraint implements ValidatorConstraintInterface {
@@ -75,9 +78,11 @@ export class WikiCreateRequestDto {
   @MaxLength(WIKI_SUMMARY_MAX_LENGTH)
   summary_vi?: string;
 
-  @ApiPropertyOptional({ type: Object })
+  @ApiPropertyOptional({ type: WikiMetadataDto, nullable: true })
   @IsOptional()
-  metadataJson?: unknown;
+  @ValidateNested()
+  @Type(() => WikiMetadataDto)
+  metadataJson?: WikiMetadataDto | null;
 
   @ApiPropertyOptional({ default: false })
   @IsOptional()

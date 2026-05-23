@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { WikiAuthorDto } from './wiki-list.dto';
+import { WikiMetadataDto } from './wiki-metadata.dto';
 
 export class WikiDetailRevisionDto {
   @ApiProperty()
@@ -40,8 +41,8 @@ export class WikiDetailResponseDto {
   @ApiProperty()
   title_vi!: string;
 
-  @ApiProperty({ nullable: true, type: Object })
-  metadataJson!: unknown | null;
+  @ApiProperty({ type: WikiMetadataDto, nullable: true })
+  metadataJson!: WikiMetadataDto | null;
 
   @ApiProperty()
   isPublished!: boolean;

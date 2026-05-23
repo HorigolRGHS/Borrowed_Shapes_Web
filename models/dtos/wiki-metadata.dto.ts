@@ -32,10 +32,7 @@ const optionalShortText = z
   .transform((v) => (v === "" ? undefined : v))
   .optional();
 
-const tagArray = z
-  .array(z.string().trim().min(1).max(40))
-  .max(20)
-  .default([]);
+const tagArray = z.array(z.string().trim().min(1).max(40)).max(20);
 
 export const wikiMetadataSchema = z
   .object({
@@ -43,20 +40,22 @@ export const wikiMetadataSchema = z
     tags: tagArray,
     tags_vi: tagArray,
     infoboxImage: optionalUrl,
-    stats: wikiStatsSchema.default({}),
+    stats: wikiStatsSchema,
     location: optionalShortText,
     location_vi: optionalShortText,
-    relatedPages: z
-      .array(z.string().trim().min(1).max(120))
-      .max(30)
-      .default([]),
+    relatedPages: z.array(z.string().trim().min(1).max(120)).max(30),
   })
   .strict();
 
 export type WikiMetadata = z.infer<typeof wikiMetadataSchema>;
 export type CompactWikiMetadata = Partial<WikiMetadata>;
 
-export const emptyWikiMetadata: WikiMetadata = wikiMetadataSchema.parse({});
+export const emptyWikiMetadata: WikiMetadata = {
+  tags: [],
+  tags_vi: [],
+  stats: {},
+  relatedPages: [],
+};
 
 /**
  * Drops fields that should not be persisted to JSONB:

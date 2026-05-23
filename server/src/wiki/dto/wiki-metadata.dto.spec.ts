@@ -10,7 +10,11 @@ interface Fixture {
 }
 
 const fixtures: Fixture[] = [
-  { name: 'empty object', input: {}, expected: 'pass' },
+  {
+    name: 'empty object (with required defaults)',
+    input: { tags: [], tags_vi: [], stats: {}, relatedPages: [] },
+    expected: 'pass',
+  },
   {
     name: 'happy path full',
     input: {

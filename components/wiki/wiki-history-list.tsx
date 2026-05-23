@@ -1,12 +1,34 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { useI18n } from '@/lib/i18/i18n-context';
-import { useUserRole } from '@/lib/wiki/use-user-role';
-import { rollbackWiki } from '@/lib/wiki/api';
-import type { WikiHistoryItem } from '@/models/dtos/wiki.dto';
-import { WikiPagination } from './wiki-pagination';
+import Link from "next/link";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useI18n } from "@/lib/i18/i18n-context";
+import { useUserRole } from "@/lib/wiki/use-user-role";
+import { rollbackWiki } from "@/lib/wiki/api";
+import type { WikiHistoryItem } from "@/models/dtos/wiki.dto";
+import { WikiPagination } from "./wiki-pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   pageId: string;
@@ -19,19 +41,28 @@ interface Props {
 }
 
 export function WikiHistoryList({
-  pageId, slug, items, total, page, totalPages, expectedLatestRevisionId,
+  pageId,
+  slug,
+  items,
+  total,
+  page,
+  totalPages,
+  expectedLatestRevisionId,
 }: Props) {
   const { t, locale } = useI18n();
   const role = useUserRole();
-  const isAdmin = role === 'ADMIN';
+  const isAdmin = role === "ADMIN";
   const [busy, setBusy] = useState<string | null>(null);
 
   if (items.length === 0) {
-    return <div className="py-16 text-center text-gray-500">{t('wiki.no_history')}</div>;
+    return (
+      <p className="py-16 text-center text-muted-foreground">
+        {t("wiki.no_history")}
+      </p>
+    );
   }
 
   const handleRollback = async (revisionId: string) => {
-    if (!confirm(t('wiki.confirm_rollback_message'))) return;
     setBusy(revisionId);
     try {
       await rollbackWiki(pageId, {
@@ -40,7 +71,7 @@ export function WikiHistoryList({
       });
       window.location.href = `/wiki/${encodeURIComponent(slug)}`;
     } catch (err: any) {
-      alert(err?.response?.data?.message ?? 'Rollback failed');
+      alert(err?.response?.data?.message ?? "Rollback failed");
     } finally {
       setBusy(null);
     }
@@ -48,50 +79,91 @@ export function WikiHistoryList({
 
   return (
     <div>
-      <ul className="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
-        {items.map((it) => {
-          const summary = locale === 'vi' ? it.summary_vi : it.summary;
-          const created = new Date(it.createdAt).toLocaleString(locale);
-          const author = it.author?.displayName ?? '—';
-          return (
-            <li key={it.id} className="p-4 flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="text-sm text-gray-500">{created} · {author}</div>
-                {summary && <div className="mt-1 text-gray-900">{summary}</div>}
-                {it.isLatest && (
-                  <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800">
-                    Latest
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2 shrink-0">
-                <Link
-                  href={`/wiki/${encodeURIComponent(slug)}/history/${it.id}`}
-                  className="text-sm px-3 py-1 rounded border hover:bg-gray-100"
-                >
-                  {t('wiki.view_button')}
-                </Link>
-                {isAdmin && !it.isLatest && (
-                  <button
-                    type="button"
-                    disabled={busy === it.id}
-                    onClick={() => handleRollback(it.id)}
-                    className="text-sm px-3 py-1 rounded border border-orange-300 text-orange-700 hover:bg-orange-50 disabled:opacity-50"
-                  >
-                    {busy === it.id ? '…' : t('wiki.rollback_button')}
-                  </button>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Author</TableHead>
+              <TableHead>Summary</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((it) => {
+              const summary = locale === "vi" ? it.summary_vi : it.summary;
+              const created = new Date(it.createdAt).toLocaleString(locale);
+              const author = it.author?.displayName ?? "—";
+              return (
+                <TableRow key={it.id}>
+                  <TableCell className="font-mono text-xs whitespace-nowrap">
+                    {created}
+                  </TableCell>
+                  <TableCell>{author}</TableCell>
+                  <TableCell className="max-w-md truncate">
+                    {summary ?? <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                  <TableCell>
+                    {it.isLatest && <Badge>Latest</Badge>}
+                  </TableCell>
+                  <TableCell className="text-right space-x-2 whitespace-nowrap">
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        href={`/wiki/${encodeURIComponent(slug)}/history/${it.id}`}
+                      >
+                        {t("wiki.view_button")}
+                      </Link>
+                    </Button>
+                    {isAdmin && !it.isLatest && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy === it.id}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            {busy === it.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              t("wiki.rollback_button")
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              {t("wiki.confirm_rollback_title")}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t("wiki.confirm_rollback_message")}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleRollback(it.id)}
+                            >
+                              {t("wiki.rollback_button")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
       <WikiPagination
         page={page}
         totalPages={totalPages}
         basePath={`/wiki/${encodeURIComponent(slug)}/history`}
       />
-      <p className="text-sm text-gray-500 mt-4 text-center">
+      <p className="text-sm text-muted-foreground mt-4 text-center">
         {total} revisions
       </p>
     </div>

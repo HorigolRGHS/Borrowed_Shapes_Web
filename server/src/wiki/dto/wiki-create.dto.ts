@@ -11,6 +11,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
   ValidateNested,
+  IsObject,
 } from 'class-validator';
 import {
   WIKI_TITLE_MAX_LENGTH,
@@ -80,6 +81,7 @@ export class WikiCreateRequestDto {
 
   @ApiPropertyOptional({ type: WikiMetadataDto, nullable: true })
   @IsOptional()
+  @IsObject()
   @ValidateNested()
   @Type(() => WikiMetadataDto)
   metadataJson?: WikiMetadataDto | null;

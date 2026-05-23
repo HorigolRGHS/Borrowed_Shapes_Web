@@ -105,6 +105,86 @@ describe('WikiRevisionService.create', () => {
       }),
     );
   });
+
+  describe('Boundary', () => {
+    it('creates a draft with empty content', async () => {
+      await service.create(
+        {
+          slug: 'ok-slug', slug_vi: 'ok-vi',
+          title: 'A', title_vi: 'B',
+          content: '', content_vi: '',
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      );
+      expect(em.create).toHaveBeenCalled();
+      expect(audit.log).toHaveBeenCalled();
+    });
+
+    it('creates a page with content of 1MB', async () => {
+      const big = 'a'.repeat(1_000_000);
+      await service.create(
+        {
+          slug: 'ok-slug', slug_vi: 'ok-vi',
+          title: 'A', title_vi: 'B',
+          content: big, content_vi: big,
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      );
+      expect(em.create).toHaveBeenCalled();
+    });
+
+    it('creates a page when metadataJson is null', async () => {
+      await service.create(
+        {
+          slug: 'ok-slug', slug_vi: 'ok-vi',
+          title: 'A', title_vi: 'B',
+          content: 'a', content_vi: 'b',
+          metadataJson: null,
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      );
+      expect(em.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('Abnormal', () => {
+    it('translates Postgres unique violation on slug_vi to ConflictException', async () => {
+      const err: any = new Error('duplicate key value violates unique constraint');
+      err.code = '23505';
+      err.constraint = 'WikiPage_slug_vi_key';
+      em.flush.mockRejectedValueOnce(err);
+      await expect(
+        service.create(
+          {
+            slug: 'ok-slug', slug_vi: 'ok-vi',
+            title: 'A', title_vi: 'B',
+            content: 'a', content_vi: 'b',
+          } as any,
+          'admin-1', '127.0.0.1',
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('does NOT translate 23505 errors with unrelated constraint name', async () => {
+      const err: any = new Error('duplicate key value violates unique constraint');
+      err.code = '23505';
+      err.constraint = 'something_else_key';
+      em.flush.mockRejectedValueOnce(err);
+      await expect(
+        service.create(
+          {
+            slug: 'ok-slug', slug_vi: 'ok-vi',
+            title: 'A', title_vi: 'B',
+            content: 'a', content_vi: 'b',
+          } as any,
+          'admin-1', '127.0.0.1',
+        ),
+      ).rejects.toMatchObject({ code: '23505' });
+    });
+  });
 });
 
 describe('WikiRevisionService.update', () => {
@@ -267,6 +347,75 @@ describe('WikiRevisionService.update', () => {
       ),
     ).rejects.toThrow('wiki.cannot_publish_empty');
   });
+
+  describe('Boundary', () => {
+    it('updates only metadataJson — skips revision creation but logs metadataJson in changedFields', async () => {
+      em.findOne.mockResolvedValueOnce({
+        ...fakePage('r-current'),
+        metadataJson: { a: 1 },
+      });
+      await service.update(
+        'p1',
+        {
+          expectedLatestRevisionId: 'r-current',
+          slug: 'old-slug', slug_vi: 'old-vi',
+          title: 'Old', title_vi: 'OldVi',
+          content: 'OLD', content_vi: 'OLD_VI',
+          metadataJson: { a: 2 },
+        } as any,
+        'admin-1', '1.1.1.1',
+      );
+      expect(em.create).not.toHaveBeenCalled();
+      expect(audit.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          newValue: expect.objectContaining({
+            changedFields: expect.arrayContaining(['metadataJson']),
+          }),
+        }),
+      );
+    });
+
+    it('proceeds without conflict when expectedLatestRevisionId equals current latest', async () => {
+      em.findOne.mockResolvedValueOnce(fakePage('r-current'));
+      await expect(
+        service.update(
+          'p1',
+          {
+            expectedLatestRevisionId: 'r-current',
+            slug: 'old-slug', slug_vi: 'old-vi',
+            title: 'Old', title_vi: 'OldVi',
+            content: 'NEW', content_vi: 'NEW_VI',
+          } as any,
+          'admin-1', '1.1.1.1',
+        ),
+      ).resolves.toBeDefined();
+    });
+  });
+
+  describe('Abnormal', () => {
+    it('throws conflict when latestRevisionId is null but expectedLatestRevisionId is non-empty', async () => {
+      em.findOne.mockResolvedValueOnce({
+        id: 'p1',
+        slug: 'old-slug', slug_vi: 'old-vi',
+        title: 'Old', title_vi: 'OldVi',
+        metadataJson: null,
+        isPublished: false,
+        latestRevisionId: null,
+      });
+      await expect(
+        service.update(
+          'p1',
+          {
+            expectedLatestRevisionId: 'r-anything',
+            slug: 'old-slug', slug_vi: 'old-vi',
+            title: 'Old', title_vi: 'OldVi',
+            content: 'NEW', content_vi: 'NEW_VI',
+          } as any,
+          'admin-1', '1.1.1.1',
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+  });
 });
 
 describe('WikiRevisionService.rollback', () => {
@@ -364,6 +513,47 @@ describe('WikiRevisionService.rollback', () => {
       }),
     );
   });
+
+  describe('Boundary', () => {
+    it('rolls back to the oldest revision (target with empty content)', async () => {
+      em.findOne
+        .mockResolvedValueOnce({
+          id: 'p1', latestRevisionId: { id: 'r-current' },
+        })
+        .mockResolvedValueOnce({
+          id: 'r-oldest',
+          pageId: { id: 'p1' },
+          content: '', content_vi: '',
+          createdAt: new Date('2026-01-01'),
+        });
+      await service.rollback(
+        'p1',
+        { targetRevisionId: 'r-oldest', expectedLatestRevisionId: 'r-current' },
+        'admin-1', '1.1.1.1',
+      );
+      expect(em.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ content: '', content_vi: '' }),
+      );
+    });
+  });
+
+  describe('Abnormal', () => {
+    it('throws revision_not_found when page has 0 revisions yet a targetRevisionId is supplied', async () => {
+      em.findOne
+        .mockResolvedValueOnce({
+          id: 'p1', latestRevisionId: { id: 'r-current' },
+        })
+        .mockResolvedValueOnce(null);
+      await expect(
+        service.rollback(
+          'p1',
+          { targetRevisionId: 'r-ghost', expectedLatestRevisionId: 'r-current' },
+          'admin-1', '1.1.1.1',
+        ),
+      ).rejects.toThrow('wiki.revision_not_found');
+    });
+  });
 });
 
 describe('WikiRevisionService.delete', () => {
@@ -417,6 +607,27 @@ describe('WikiRevisionService.delete', () => {
         }),
       }),
     );
+  });
+
+  describe('Boundary', () => {
+    it('audit log includes latestRevision=null when page has no revisions', async () => {
+      em.findOne.mockResolvedValueOnce({
+        id: 'p1', slug: 's', slug_vi: 'sv', title: 't', title_vi: 'tv',
+        metadataJson: null, isPublished: false,
+        createdAt: new Date(), updatedAt: new Date(),
+        latestRevisionId: null,
+      });
+      await service.delete('p1', 'admin-1', '1.1.1.1');
+      expect(em.removeAndFlush).toHaveBeenCalled();
+      expect(audit.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionType: 'DELETE',
+          oldValue: expect.objectContaining({
+            latestRevision: null,
+          }),
+        }),
+      );
+    });
   });
 });
 
@@ -517,5 +728,38 @@ describe('WikiRevisionService.publish/unpublish', () => {
     });
     await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_no_revision');
+  });
+
+  describe('Boundary', () => {
+    it('publishes when content is a single space (truthy, non-empty)', async () => {
+      const page: any = {
+        id: 'p1', isPublished: false,
+        latestRevisionId: { id: 'r1', content: ' ', content_vi: ' ' },
+      };
+      em.findOne.mockResolvedValueOnce(page);
+      await service.publish('p1', 'admin-1', '1.1.1.1');
+      expect(page.isPublished).toBe(true);
+    });
+
+    it('publishes when both content and content_vi are minimum non-empty (single char)', async () => {
+      const page: any = {
+        id: 'p1', isPublished: false,
+        latestRevisionId: { id: 'r1', content: 'a', content_vi: 'a' },
+      };
+      em.findOne.mockResolvedValueOnce(page);
+      await service.publish('p1', 'admin-1', '1.1.1.1');
+      expect(page.isPublished).toBe(true);
+    });
+  });
+
+  describe('Abnormal', () => {
+    it('rejects publish when content is 1MB but content_vi is empty', async () => {
+      const big = 'a'.repeat(1_000_000);
+      em.findOne.mockResolvedValueOnce({
+        id: 'p1', isPublished: false,
+        latestRevisionId: { id: 'r1', content: big, content_vi: '' },
+      });
+      await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_empty');
+    });
   });
 });

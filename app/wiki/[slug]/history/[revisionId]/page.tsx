@@ -8,6 +8,8 @@ import {
 } from '@/lib/wiki/api';
 import { WikiDiffView } from '@/components/wiki/wiki-diff-view';
 import { WikiContentRenderer } from '@/components/wiki/wiki-content-renderer';
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
 
 export const dynamic = 'force-dynamic';
@@ -53,20 +55,34 @@ export default async function WikiRevisionPage({
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
-      <nav className="text-sm text-gray-500 mb-4">
-        <Link href="/wiki" className="hover:text-gray-900">Wiki</Link>
+      <nav className="text-sm text-muted-foreground mb-4">
+        <Link href="/wiki" className="hover:text-foreground">Wiki</Link>
         <span className="mx-2">›</span>
-        <Link href={`/wiki/${encodeURIComponent(slug)}`} className="hover:text-gray-900">{title}</Link>
+        <Link
+          href={`/wiki/${encodeURIComponent(slug)}`}
+          className="hover:text-foreground"
+        >
+          {title}
+        </Link>
         <span className="mx-2">›</span>
-        <Link href={`/wiki/${encodeURIComponent(slug)}/history`} className="hover:text-gray-900">History</Link>
+        <Link
+          href={`/wiki/${encodeURIComponent(slug)}/history`}
+          className="hover:text-foreground"
+        >
+          History
+        </Link>
         <span className="mx-2">›</span>
-        <span className="text-gray-700">{revisionId.slice(0, 8)}…</span>
+        <span className="text-foreground">{revisionId.slice(0, 8)}…</span>
       </nav>
 
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Revision @ {created}</h1>
-        <p className="mt-1 text-sm text-gray-500">By {author}</p>
-        {revision.summary && <p className="mt-2 text-gray-700">{revision.summary}</p>}
+      <header className="mb-6 space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Revision @ {created}
+        </h1>
+        <p className="text-sm text-muted-foreground">By {author}</p>
+        {revision.summary && (
+          <p className="text-foreground">{revision.summary}</p>
+        )}
       </header>
 
       <section className="mb-8">
@@ -74,15 +90,25 @@ export default async function WikiRevisionPage({
         <WikiDiffView diff={diff.diff} isFirst={diff.isFirst} />
       </section>
 
-      <section>
-        <h2 className="text-lg font-semibold mb-3">Content snapshot</h2>
-        <div className="border border-gray-200 rounded-lg p-6 bg-white">
-          <h3 className="text-sm uppercase text-gray-500 mb-2">English</h3>
-          <WikiContentRenderer markdown={revision.content} />
-          <hr className="my-6 border-gray-200" />
-          <h3 className="text-sm uppercase text-gray-500 mb-2">Tiếng Việt</h3>
-          <WikiContentRenderer markdown={revision.content_vi} />
-        </div>
+      <section className="space-y-6">
+        <h2 className="text-lg font-semibold">Content snapshot</h2>
+        <Card>
+          <CardContent className="space-y-6 pt-6">
+            <div>
+              <h3 className="text-xs uppercase text-muted-foreground mb-2">
+                English
+              </h3>
+              <WikiContentRenderer markdown={revision.content} />
+            </div>
+            <Separator />
+            <div>
+              <h3 className="text-xs uppercase text-muted-foreground mb-2">
+                Tiếng Việt
+              </h3>
+              <WikiContentRenderer markdown={revision.content_vi} />
+            </div>
+          </CardContent>
+        </Card>
       </section>
     </main>
   );

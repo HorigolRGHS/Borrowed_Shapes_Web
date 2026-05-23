@@ -41,17 +41,20 @@ export default async function WikiHistoryPage({
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
-      <nav className="text-sm text-gray-500 mb-4">
-        <Link href="/wiki" className="hover:text-gray-900">Wiki</Link>
+      <nav className="text-sm text-muted-foreground mb-4">
+        <Link href="/wiki" className="hover:text-foreground">Wiki</Link>
         <span className="mx-2">›</span>
-        <Link href={`/wiki/${encodeURIComponent(slug)}`} className="hover:text-gray-900">
+        <Link
+          href={`/wiki/${encodeURIComponent(slug)}`}
+          className="hover:text-foreground"
+        >
           {title}
         </Link>
         <span className="mx-2">›</span>
-        <span className="text-gray-700">History</span>
+        <span className="text-foreground">History</span>
       </nav>
 
-      <h1 className="text-2xl font-bold mb-6">History — {title}</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-6">History — {title}</h1>
 
       <WikiHistoryList
         pageId={detail.id}

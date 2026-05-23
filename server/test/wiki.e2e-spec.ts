@@ -162,4 +162,172 @@ describe('Wiki module (e2e)', () => {
         .expect(400);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Task 11.3: Admin write endpoints + role gates (BR-83, BR-84, BR-113, BR-114, BR-115)
+  // ---------------------------------------------------------------------------
+  describe('Admin write endpoints', () => {
+    it('POST /wiki rejects guests with 401 (BR-113)', async () => {
+      await request(app.getHttpServer())
+        .post('/api/wiki')
+        .send({
+          slug: 'guest-attempt',
+          slug_vi: 'guest-attempt-vi',
+          title: 't',
+          title_vi: 'tv',
+          content: '',
+          content_vi: '',
+        })
+        .expect(401);
+    });
+
+    it('POST /wiki rejects users with 403', async () => {
+      if (!userToken) return; // skip if no user seeded
+      await request(app.getHttpServer())
+        .post('/api/wiki')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          slug: 'user-attempt',
+          slug_vi: 'user-attempt-vi',
+          title: 't',
+          title_vi: 'tv',
+          content: '',
+          content_vi: '',
+        })
+        .expect(403);
+    });
+
+    it('POST /wiki rejects reserved slug', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/wiki')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'admin',
+          slug_vi: 'admin-vi',
+          title: 't',
+          title_vi: 'tv',
+          content: '',
+          content_vi: '',
+        })
+        .expect(400);
+      expect(res.body.message).toBe('wiki.reserved_slug');
+    });
+
+    it('POST /wiki rejects duplicate slug with 409', async () => {
+      await request(app.getHttpServer())
+        .post('/api/wiki')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'e2e-pub',
+          slug_vi: 'e2e-dup-vi',
+          title: 'd',
+          title_vi: 'dv',
+          content: '',
+          content_vi: '',
+        })
+        .expect(409);
+    });
+
+    it('PUT /wiki/:id with stale revision returns 409 (BR-114)', async () => {
+      expect(createdPageId).toBeTruthy();
+      expect(firstRevisionId).toBeTruthy();
+
+      // First successful update — produces new revision
+      const ok = await request(app.getHttpServer())
+        .put(`/api/wiki/${createdPageId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'e2e-pub',
+          slug_vi: 'e2e-pub-vi',
+          title: 'E2E Public V2',
+          title_vi: 'E2E Cong khai V2',
+          content: 'updated',
+          content_vi: 'cap nhat',
+          expectedLatestRevisionId: firstRevisionId,
+        })
+        .expect(200);
+
+      const newRev = ok.body.data.latestRevision.id;
+      expect(newRev).not.toBe(firstRevisionId);
+
+      // Stale update -> 409
+      const stale = await request(app.getHttpServer())
+        .put(`/api/wiki/${createdPageId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'e2e-pub',
+          slug_vi: 'e2e-pub-vi',
+          title: 'stale',
+          title_vi: 'stale-vi',
+          content: 'x',
+          content_vi: 'y',
+          expectedLatestRevisionId: firstRevisionId, // intentionally stale
+        })
+        .expect(409);
+      expect(stale.body.message).toBe('wiki.conflict_revision');
+
+      firstRevisionId = newRev;
+    });
+
+    it('PUT /wiki/:id with forceOverwrite bypasses stale check', async () => {
+      // Use an obviously-wrong expectedLatestRevisionId but set forceOverwrite=true
+      const res = await request(app.getHttpServer())
+        .put(`/api/wiki/${createdPageId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: 'e2e-pub',
+          slug_vi: 'e2e-pub-vi',
+          title: 'Forced',
+          title_vi: 'Forced VI',
+          content: 'forced',
+          content_vi: 'forced vi',
+          expectedLatestRevisionId: 'definitely-not-current',
+          forceOverwrite: true,
+        })
+        .expect(200);
+      expect(res.body.data.latestRevision.content).toBe('forced');
+      firstRevisionId = res.body.data.latestRevision.id;
+    });
+
+    it('POST /wiki/:id/rollback creates new revision from target (BR-83)', async () => {
+      const hist = await request(app.getHttpServer())
+        .get(`/api/wiki/${createdPageId}/history`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+      const earliest =
+        hist.body.data.items[hist.body.data.items.length - 1].id;
+      expect(earliest).toBeTruthy();
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/wiki/${createdPageId}/rollback`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          targetRevisionId: earliest,
+          expectedLatestRevisionId: firstRevisionId,
+        })
+        .expect(200);
+      expect(res.body.data.latestRevision.id).not.toBe(earliest);
+      firstRevisionId = res.body.data.latestRevision.id;
+    });
+
+    it('GET /wiki/:id/history requires login (BR-84)', async () => {
+      await request(app.getHttpServer())
+        .get(`/api/wiki/${createdPageId}/history`)
+        .expect(401);
+    });
+
+    it('DELETE /wiki/:id requires admin (BR-115)', async () => {
+      if (userToken) {
+        await request(app.getHttpServer())
+          .delete(`/api/wiki/${createdPageId}`)
+          .set('Authorization', `Bearer ${userToken}`)
+          .expect(403);
+      }
+      await request(app.getHttpServer())
+        .delete(`/api/wiki/${createdPageId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+      createdPageId = null; // already deleted
+    });
+  });
 });

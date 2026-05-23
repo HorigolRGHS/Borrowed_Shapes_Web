@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { slugifyEn, slugifyVi } from "@/lib/wiki/slug";
@@ -19,6 +19,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { I18nFormMessage } from "@/components/ui/i18n-form-message";
+import { WikiMetadataForm } from "./metadata/wiki-metadata-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,8 @@ interface Props {
   submitError?: string | null;
   isEdit?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
+  excludeSlug?: string;
+  locale: "en" | "vi";
 }
 
 export function WikiForm({
@@ -68,6 +71,8 @@ export function WikiForm({
   submitError = null,
   isEdit = false,
   onDirtyChange,
+  excludeSlug,
+  locale,
 }: Props) {
   const { t } = useI18n();
   const form = useForm<WikiFormValue>({
@@ -154,6 +159,20 @@ export function WikiForm({
   return (
     <Form {...form}>
       <form className="space-y-6">
+        <Controller
+          control={form.control}
+          name="metadata"
+          render={({ field }) => (
+            <WikiMetadataForm
+              value={field.value}
+              onChange={field.onChange}
+              excludeSlug={excludeSlug}
+              locale={locale}
+              defaultOpen={!isEdit}
+            />
+          )}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}

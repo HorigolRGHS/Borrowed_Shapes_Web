@@ -9,8 +9,8 @@ function slugReason(slug: string): string | null {
 }
 
 export const wikiFormSchema = z.object({
-  title: z.string().trim().min(1, "wiki.invalid_slug_error"),
-  title_vi: z.string().trim().min(1, "wiki.invalid_slug_error"),
+  title: z.string().trim().min(1, "wiki.title_required_error"),
+  title_vi: z.string().trim().min(1, "wiki.title_required_error"),
   slug: z.string().superRefine((s, ctx) => {
     const reason = slugReason(s);
     if (reason) ctx.addIssue({ code: "custom", message: reason });

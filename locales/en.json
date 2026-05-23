@@ -139,6 +139,7 @@
 
     "reserved_slug_error": "This slug is reserved",
     "slug_taken_error": "This slug is already in use",
-    "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes"
+    "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes",
+    "title_required_error": "Title is required"
   }
 }

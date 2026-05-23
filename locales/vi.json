@@ -139,6 +139,7 @@
 
     "reserved_slug_error": "Slug này đã được dành riêng",
     "slug_taken_error": "Slug này đã được sử dụng",
-    "invalid_slug_error": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang"
+    "invalid_slug_error": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang",
+    "title_required_error": "Vui lòng nhập tiêu đề"
   }
 }

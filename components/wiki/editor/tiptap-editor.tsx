@@ -16,6 +16,8 @@ import { useI18n } from '@/lib/i18/i18n-context';
 import { TiptapToolbar } from './tiptap-toolbar';
 import { getMarkdown, setMarkdown } from './tiptap-markdown';
 import { attachImageDropAndPaste } from './tiptap-image-upload';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export interface TiptapEditorValue {
   en: string;
@@ -110,37 +112,32 @@ export function TiptapEditor({ value, onChange, readonly = false, onUploadError 
   };
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-      <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50">
-        <div className="flex">
-          <button
-            type="button"
-            onClick={() => switchTab('en')}
-            className={`px-4 py-2 text-sm font-medium ${activeTab === 'en' ? 'bg-white border-b-2 border-blue-500 text-blue-700' : 'text-gray-600'}`}
-          >
-            {t('wiki.tab_en')}
-          </button>
-          <button
-            type="button"
-            onClick={() => switchTab('vi')}
-            className={`px-4 py-2 text-sm font-medium ${activeTab === 'vi' ? 'bg-white border-b-2 border-blue-500 text-blue-700' : 'text-gray-600'}`}
-          >
-            {t('wiki.tab_vi')}
-          </button>
-        </div>
-        <button
+    <div className="rounded-md border bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
+      <div className="flex items-center justify-between border-b bg-muted/30 px-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => switchTab(v as "en" | "vi")}
+          className="w-auto"
+        >
+          <TabsList className="h-9 bg-transparent">
+            <TabsTrigger value="en">{t("wiki.tab_en")}</TabsTrigger>
+            <TabsTrigger value="vi">{t("wiki.tab_vi")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={copyFromOther}
-          className="text-xs px-3 py-1 mr-2 rounded border bg-white hover:bg-gray-100"
           title="Copy content from the other language"
         >
-          {activeTab === 'en' ? t('wiki.copy_from_vi') : t('wiki.copy_from_en')}
-        </button>
+          {activeTab === "en" ? t("wiki.copy_from_vi") : t("wiki.copy_from_en")}
+        </Button>
       </div>
       <TiptapToolbar editor={editor} />
       <EditorContent
         editor={editor}
-        className="prose max-w-none p-4 min-h-[300px] focus:outline-none [&_.ProseMirror]:min-h-[280px] [&_.ProseMirror]:outline-none"
+        className="prose prose-slate dark:prose-invert max-w-none p-4 min-h-[300px] focus:outline-none [&_.ProseMirror]:min-h-[280px] [&_.ProseMirror]:outline-none"
       />
     </div>
   );

@@ -18,6 +18,7 @@ import {
   WikiDiffChunkDto,
   WikiRevisionDiffResponseDto,
 } from '../dto/wiki-history.dto';
+import { RelatedPageDto } from '../dto/wiki-metadata.dto';
 import { diffLines } from 'diff';
 import { escapeLike } from '../../common/utils/sql-like';
 
@@ -125,6 +126,27 @@ export class WikiService {
       throw new NotFoundException('wiki.not_found');
     }
     return this.toDetail(page, page.slug);
+  }
+
+  async findBySlugs(slugs: string[]): Promise<RelatedPageDto[]> {
+    if (slugs.length === 0) return [];
+
+    const rows = await this.em.find(
+      WikiPage,
+      { $or: [{ slug: { $in: slugs } }, { slug_vi: { $in: slugs } }] },
+      { fields: ['id', 'slug', 'slug_vi', 'title', 'title_vi'] },
+    );
+
+    return slugs.map((s) => {
+      const row = rows.find((r) => r.slug === s || r.slug_vi === s);
+      if (!row) return { slug: s, exists: false };
+      return {
+        slug: s,
+        title: row.title,
+        title_vi: row.title_vi,
+        exists: true,
+      };
+    });
   }
 
   private toDetail(page: WikiPage, requestedSlug: string): WikiDetailResponseDto {

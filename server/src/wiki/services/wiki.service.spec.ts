@@ -488,3 +488,53 @@ describe('WikiService.getRevisionDiff', () => {
     });
   });
 });
+
+describe('WikiService.findBySlugs', () => {
+  let service: WikiService;
+  let em: { find: jest.Mock };
+
+  beforeEach(async () => {
+    em = { find: jest.fn() };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('returns one entry per input slug, exists flag set per match', async () => {
+    em.find.mockResolvedValue([
+      { id: '1', slug: 'link', slug_vi: 'lien-ket', title: 'Link', title_vi: 'Liên Kết' },
+      { id: '2', slug: 'zelda', slug_vi: 'zelda-vi', title: 'Zelda', title_vi: 'Zelda VI' },
+    ]);
+
+    const result = await service.findBySlugs(['link', 'zelda', 'ganondorf']);
+
+    expect(result).toEqual([
+      { slug: 'link', title: 'Link', title_vi: 'Liên Kết', exists: true },
+      { slug: 'zelda', title: 'Zelda', title_vi: 'Zelda VI', exists: true },
+      { slug: 'ganondorf', exists: false },
+    ]);
+  });
+
+  it('matches input against either slug or slug_vi', async () => {
+    em.find.mockResolvedValue([
+      { id: '1', slug: 'link', slug_vi: 'lien-ket', title: 'Link', title_vi: 'Liên Kết' },
+    ]);
+
+    const result = await service.findBySlugs(['lien-ket']);
+
+    expect(result).toEqual([
+      { slug: 'lien-ket', title: 'Link', title_vi: 'Liên Kết', exists: true },
+    ]);
+  });
+
+  it('returns empty array on empty input', async () => {
+    const result = await service.findBySlugs([]);
+
+    expect(result).toEqual([]);
+    expect(em.find).not.toHaveBeenCalled();
+  });
+});

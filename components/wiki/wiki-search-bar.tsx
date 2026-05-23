@@ -1,30 +1,32 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { useI18n } from '@/lib/i18/i18n-context';
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Search } from "lucide-react";
+import { useI18n } from "@/lib/i18/i18n-context";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   initialQuery?: string;
 }
 
-export function WikiSearchBar({ initialQuery = '' }: Props) {
+export function WikiSearchBar({ initialQuery = "" }: Props) {
   const { t } = useI18n();
   const router = useRouter();
   const [value, setValue] = useState(initialQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    },
+    [],
+  );
 
   const triggerNavigate = (q: string) => {
     const trimmed = q.trim();
-    if (trimmed.length === 0) {
-      router.push('/wiki');
-    } else {
-      router.push(`/wiki/search?q=${encodeURIComponent(trimmed)}`);
-    }
+    if (trimmed.length === 0) router.push("/wiki");
+    else router.push(`/wiki/search?q=${encodeURIComponent(trimmed)}`);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,13 +43,14 @@ export function WikiSearchBar({ initialQuery = '' }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl">
-      <input
+    <form onSubmit={handleSubmit} className="relative w-full">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
         type="search"
         value={value}
         onChange={handleChange}
-        placeholder={t('wiki.search_placeholder')}
-        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+        placeholder={t("wiki.search_placeholder")}
+        className="pl-9"
       />
     </form>
   );

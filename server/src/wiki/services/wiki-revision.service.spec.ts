@@ -148,6 +148,45 @@ describe('WikiRevisionService.create', () => {
       );
       expect(em.create).toHaveBeenCalled();
     });
+
+    it('strips empty metadata arrays before persisting', async () => {
+      await service.create(
+        {
+          slug: 'ok-slug', slug_vi: 'ok-vi',
+          title: 'A', title_vi: 'B',
+          content: 'a', content_vi: 'b',
+          metadataJson: { tags: [], tags_vi: [], stats: {}, relatedPages: [] },
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      );
+      const persistedPage = em.create.mock.calls.find(
+        (call: unknown[]) => (call[1] as any)?.slug === 'ok-slug',
+      );
+      expect(persistedPage).toBeDefined();
+      expect((persistedPage![1] as any).metadataJson).toBeNull();
+    });
+
+    it('keeps non-empty metadata fields on persist', async () => {
+      await service.create(
+        {
+          slug: 'ok-slug', slug_vi: 'ok-vi',
+          title: 'A', title_vi: 'B',
+          content: 'a', content_vi: 'b',
+          metadataJson: { category: 'Boss', tags: ['legendary'], tags_vi: [], stats: {}, relatedPages: [] },
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      );
+      const persistedPage = em.create.mock.calls.find(
+        (call: unknown[]) => (call[1] as any)?.slug === 'ok-slug',
+      );
+      expect(persistedPage).toBeDefined();
+      expect((persistedPage![1] as any).metadataJson).toEqual({
+        category: 'Boss',
+        tags: ['legendary'],
+      });
+    });
   });
 
   describe('Abnormal', () => {
@@ -352,7 +391,7 @@ describe('WikiRevisionService.update', () => {
     it('updates only metadataJson — skips revision creation but logs metadataJson in changedFields', async () => {
       em.findOne.mockResolvedValueOnce({
         ...fakePage('r-current'),
-        metadataJson: { a: 1 },
+        metadataJson: { category: 'Boss' },
       });
       await service.update(
         'p1',
@@ -361,7 +400,7 @@ describe('WikiRevisionService.update', () => {
           slug: 'old-slug', slug_vi: 'old-vi',
           title: 'Old', title_vi: 'OldVi',
           content: 'OLD', content_vi: 'OLD_VI',
-          metadataJson: { a: 2 },
+          metadataJson: { category: 'Item', tags: [], tags_vi: [], stats: {}, relatedPages: [] },
         } as any,
         'admin-1', '1.1.1.1',
       );

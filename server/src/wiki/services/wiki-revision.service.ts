@@ -16,6 +16,7 @@ import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
 import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
 import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { slugRejectionReason } from '../dto/wiki-slug.validator';
+import { compactMetadata } from '@models/dtos/wiki-metadata.dto';
 
 function isWikiSlugUniqueError(err: any): boolean {
   if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
@@ -51,7 +52,7 @@ export class WikiRevisionService {
         slug_vi: dto.slug_vi,
         title: dto.title,
         title_vi: dto.title_vi,
-        metadataJson: dto.metadataJson ?? null,
+        metadataJson: compactMetadata(dto.metadataJson as never),
         isPublished: dto.isPublished ?? false,
       } as any);
       try {
@@ -145,7 +146,10 @@ export class WikiRevisionService {
       if (dto.slug_vi !== page.slug_vi) metadataDiff.push('slug_vi');
       if (dto.title !== page.title) metadataDiff.push('title');
       if (dto.title_vi !== page.title_vi) metadataDiff.push('title_vi');
-      if (JSON.stringify(dto.metadataJson ?? null) !== JSON.stringify(page.metadataJson ?? null)) {
+      if (
+        JSON.stringify(compactMetadata(dto.metadataJson as never)) !==
+        JSON.stringify(page.metadataJson ?? null)
+      ) {
         metadataDiff.push('metadataJson');
       }
       const publishStateChanged = dto.isPublished !== undefined && dto.isPublished !== page.isPublished;
@@ -174,7 +178,7 @@ export class WikiRevisionService {
       page.slug_vi = dto.slug_vi;
       page.title = dto.title;
       page.title_vi = dto.title_vi;
-      page.metadataJson = dto.metadataJson ?? null;
+      page.metadataJson = compactMetadata(dto.metadataJson as never);
       if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
 
       let newRevisionId: string | null = currentLatestId;

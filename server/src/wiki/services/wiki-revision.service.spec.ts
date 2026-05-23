@@ -223,6 +223,29 @@ describe('WikiRevisionService.create', () => {
         ),
       ).rejects.toMatchObject({ code: '23505' });
     });
+
+    it('persists null when metadata has only category (partial wire shape, no defaults)', async () => {
+      // Reproduces wire-boundary case: class-validator DTO passes {category: 'Boss'}
+      // straight through with no .tags / .tags_vi / .stats / .relatedPages defaults.
+      // Persistence layer must not crash.
+      await expect(
+        service.create(
+          {
+            slug: 'partial-slug', slug_vi: 'partial-vi',
+            title: 'P', title_vi: 'P',
+            content: 'a', content_vi: 'b',
+            metadataJson: { category: 'Boss' },
+          } as any,
+          'admin-1',
+          '127.0.0.1',
+        ),
+      ).resolves.not.toThrow();
+      const persistedPage = em.create.mock.calls.find(
+        (call: unknown[]) => (call[1] as any)?.slug === 'partial-slug',
+      );
+      expect(persistedPage).toBeDefined();
+      expect((persistedPage![1] as any).metadataJson).toEqual({ category: 'Boss' });
+    });
   });
 });
 

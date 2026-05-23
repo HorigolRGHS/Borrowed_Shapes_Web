@@ -52,7 +52,7 @@ export class WikiRevisionService {
         slug_vi: dto.slug_vi,
         title: dto.title,
         title_vi: dto.title_vi,
-        metadataJson: compactMetadata(dto.metadataJson as never),
+        metadataJson: compactMetadata(dto.metadataJson),
         isPublished: dto.isPublished ?? false,
       } as any);
       try {
@@ -147,7 +147,7 @@ export class WikiRevisionService {
       if (dto.title !== page.title) metadataDiff.push('title');
       if (dto.title_vi !== page.title_vi) metadataDiff.push('title_vi');
       if (
-        JSON.stringify(compactMetadata(dto.metadataJson as never)) !==
+        JSON.stringify(compactMetadata(dto.metadataJson)) !==
         JSON.stringify(page.metadataJson ?? null)
       ) {
         metadataDiff.push('metadataJson');
@@ -178,7 +178,7 @@ export class WikiRevisionService {
       page.slug_vi = dto.slug_vi;
       page.title = dto.title;
       page.title_vi = dto.title_vi;
-      page.metadataJson = compactMetadata(dto.metadataJson as never);
+      page.metadataJson = compactMetadata(dto.metadataJson);
       if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
 
       let newRevisionId: string | null = currentLatestId;

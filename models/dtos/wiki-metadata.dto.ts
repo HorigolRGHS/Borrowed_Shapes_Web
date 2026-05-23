@@ -68,17 +68,19 @@ export const emptyWikiMetadata: WikiMetadata = wikiMetadataSchema.parse({});
  * `null` instead of `{}` when the wiki has no metadata.
  */
 export function compactMetadata(
-  meta: WikiMetadata | null | undefined,
+  meta: Partial<WikiMetadata> | null | undefined,
 ): CompactWikiMetadata | null {
   if (!meta) return null;
   const out: CompactWikiMetadata = {};
   if (meta.category) out.category = meta.category;
-  if (meta.tags.length > 0) out.tags = meta.tags;
-  if (meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
+  if (meta.tags && meta.tags.length > 0) out.tags = meta.tags;
+  if (meta.tags_vi && meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
   if (meta.infoboxImage) out.infoboxImage = meta.infoboxImage;
-  if (Object.keys(meta.stats).length > 0) out.stats = meta.stats;
+  if (meta.stats && Object.keys(meta.stats).length > 0) out.stats = meta.stats;
   if (meta.location) out.location = meta.location;
   if (meta.location_vi) out.location_vi = meta.location_vi;
-  if (meta.relatedPages.length > 0) out.relatedPages = meta.relatedPages;
+  if (meta.relatedPages && meta.relatedPages.length > 0) {
+    out.relatedPages = meta.relatedPages;
+  }
   return Object.keys(out).length === 0 ? null : out;
 }

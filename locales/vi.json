@@ -51,7 +51,11 @@
     "logout": "Đăng xuất",
     "switch_lang": "Tiếng Việt",
     "back_to_home": "Quay lại Trang chủ",
-    "loading": "Đang tải..."
+    "loading": "Đang tải...",
+    "theme_light": "Sáng",
+    "theme_dark": "Tối",
+    "theme_system": "Theo hệ thống",
+    "theme_toggle_label": "Đổi giao diện"
   },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",

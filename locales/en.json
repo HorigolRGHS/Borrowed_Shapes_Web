@@ -51,7 +51,11 @@
     "logout": "Logout",
     "switch_lang": "English",
     "back_to_home": "Back to Home",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "System",
+    "theme_toggle_label": "Toggle theme"
   },
   "validation": {
     "invalid_email": "Invalid email address",

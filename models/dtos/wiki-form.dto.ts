@@ -1,5 +1,9 @@
 import * as z from "zod";
 import { checkSlug } from "@/lib/wiki/slug";
+import {
+  wikiMetadataSchema,
+  emptyWikiMetadata,
+} from "./wiki-metadata.dto";
 
 function slugReason(slug: string): string | null {
   const issue = checkSlug(slug);
@@ -24,6 +28,7 @@ export const wikiFormSchema = z.object({
   content: z.string(),
   content_vi: z.string(),
   isPublished: z.boolean(),
+  metadata: wikiMetadataSchema,
 });
 
 export type WikiFormValue = z.infer<typeof wikiFormSchema>;
@@ -38,4 +43,5 @@ export const emptyWikiFormValue: WikiFormValue = {
   content: "",
   content_vi: "",
   isPublished: false,
+  metadata: emptyWikiMetadata,
 };

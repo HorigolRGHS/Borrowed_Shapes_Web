@@ -1,3 +1,5 @@
+import type { WikiMetadata } from "./wiki-metadata.dto";
+
 export interface WikiAuthor {
   id: string;
   displayName: string;
@@ -46,7 +48,7 @@ export interface WikiDetail {
   slug_vi: string;
   title: string;
   title_vi: string;
-  metadataJson: any | null;
+  metadataJson: WikiMetadata | null;
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
@@ -93,7 +95,7 @@ export interface WikiCreateRequest {
   content_vi: string;
   summary?: string;
   summary_vi?: string;
-  metadataJson?: any;
+  metadataJson?: WikiMetadata | null;
   isPublished?: boolean;
 }
 

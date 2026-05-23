@@ -152,6 +152,7 @@ export function WikiMetadataForm({
                         type="button"
                         variant="ghost"
                         size="sm"
+                        disabled={uploading}
                         onClick={() => patch({ infoboxImage: undefined })}
                       >
                         <X className="h-4 w-4 mr-1" />

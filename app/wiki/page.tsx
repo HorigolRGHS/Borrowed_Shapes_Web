@@ -1,15 +1,12 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { fetchWikiList } from '@/lib/wiki/api';
-import { WikiList } from '@/components/wiki/wiki-list';
-import { WikiSearchBar } from '@/components/wiki/wiki-search-bar';
-import type { WikiListResponse } from '@/models/dtos/wiki.dto';
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { fetchWikiList } from "@/lib/wiki/api";
+import { WikiList } from "@/components/wiki/wiki-list";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { WikiListResponse } from "@/models/dtos/wiki.dto";
 
-export const metadata: Metadata = {
-  title: 'Wiki',
-};
-
-export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: "Wiki" };
+export const dynamic = "force-dynamic";
 
 export default async function WikiListPage({
   searchParams,
@@ -26,24 +23,21 @@ export default async function WikiListPage({
     data = await fetchWikiList({ page, limit: 20, q });
   } catch (err: unknown) {
     const e = err as { response?: { data?: { message?: string } } };
-    errorMessage = e?.response?.data?.message ?? 'Failed to load wiki list';
+    errorMessage = e?.response?.data?.message ?? "Failed to load wiki list";
   }
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-6xl">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Wiki</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Wiki</h1>
       </header>
-      <div className="mb-6">
-        <WikiSearchBar initialQuery={q ?? ''} />
-      </div>
       {errorMessage && (
-        <div className="rounded border border-red-200 bg-red-50 text-red-700 px-4 py-3 mb-4">
-          {errorMessage}
-        </div>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
       )}
       {data && (
-        <Suspense fallback={<div>Loading…</div>}>
+        <Suspense fallback={<WikiList.Skeleton />}>
           <WikiList
             data={data}
             basePath="/wiki"

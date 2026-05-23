@@ -55,7 +55,8 @@
     "theme_light": "Sáng",
     "theme_dark": "Tối",
     "theme_system": "Theo hệ thống",
-    "theme_toggle_label": "Đổi giao diện"
+    "theme_toggle_label": "Đổi giao diện",
+    "site_brand": "Wiki Borrowed Shapes"
   },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",

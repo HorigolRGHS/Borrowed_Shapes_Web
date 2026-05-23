@@ -55,7 +55,8 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "theme_system": "System",
-    "theme_toggle_label": "Toggle theme"
+    "theme_toggle_label": "Toggle theme",
+    "site_brand": "Borrowed Shapes Wiki"
   },
   "validation": {
     "invalid_email": "Invalid email address",

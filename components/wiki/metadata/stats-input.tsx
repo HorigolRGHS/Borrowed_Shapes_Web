@@ -29,6 +29,7 @@ function rowsToValue(rows: Row[]): Record<string, number> {
   for (const r of rows) {
     const k = r.key.trim();
     if (!k) continue;
+    if (r.value.trim() === "") continue;
     const n = Number(r.value);
     if (!Number.isFinite(n)) continue;
     out[k] = n;
@@ -50,6 +51,8 @@ export function StatsInput({ value, onChange, className }: Props) {
     if (externalKeys !== internalKeys) {
       setRows(rowsFromValue(value));
     }
+    // Intentionally only depends on `value`: resync from external state
+    // only when the parent's key set diverges, not on every internal edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
@@ -87,7 +90,7 @@ export function StatsInput({ value, onChange, className }: Props) {
         <div className="space-y-2">
           {rows.map((row, i) => {
             const k = row.key.trim().toLowerCase();
-            const dup = k && seenKeys.get(k) !== i;
+            const dup = !!k && seenKeys.get(k) !== i;
             return (
               <div key={i} className="flex items-center gap-2">
                 <Input
@@ -96,7 +99,7 @@ export function StatsInput({ value, onChange, className }: Props) {
                   placeholder={t("wiki.metadata.stat_key_placeholder")}
                   maxLength={40}
                   className={dup ? "border-destructive" : undefined}
-                  aria-invalid={dup ? true : undefined}
+                  aria-invalid={dup || undefined}
                 />
                 <Input
                   type="number"

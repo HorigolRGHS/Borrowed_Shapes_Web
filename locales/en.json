@@ -140,6 +140,54 @@
     "reserved_slug_error": "This slug is reserved",
     "slug_taken_error": "This slug is already in use",
     "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes",
-    "title_required_error": "Title is required"
+    "title_required_error": "Title is required",
+    "metadata": {
+      "title": "Metadata",
+      "title_optional": "(optional)",
+      "expand": "Show metadata",
+      "collapse": "Hide metadata",
+
+      "category_label": "Category",
+      "category_none": "—",
+      "category": {
+        "Character": "Character",
+        "Item": "Item",
+        "Map": "Map",
+        "Mechanic": "Mechanic",
+        "Boss": "Boss",
+        "Other": "Other"
+      },
+
+      "infobox_image": "Infobox image",
+      "upload_button": "Upload image",
+      "upload_hint": "JPG/PNG/WebP/GIF, max 5MB",
+      "replace_button": "Replace",
+      "remove_button": "Remove",
+      "uploading": "Uploading…",
+      "upload_failed": "Image upload failed",
+
+      "tags_en": "Tags (English)",
+      "tags_vi": "Tags (Vietnamese)",
+      "tag_placeholder": "Type a tag and press Enter",
+      "tag_max": "Maximum 20 tags",
+
+      "stats": "Stats",
+      "stat_key_placeholder": "Stat name (e.g. stamina)",
+      "stat_value_placeholder": "Value",
+      "add_stat": "Add stat",
+      "no_stats": "No stats. Click Add stat to define one.",
+      "stat_dup_error": "Duplicate stat name",
+      "stat_value_required": "Stat name and value must both be set",
+
+      "location_en": "Location (English)",
+      "location_vi": "Location (Vietnamese)",
+
+      "related_pages": "Related pages",
+      "related_search": "Search wiki…",
+      "related_no_match": "No matches",
+      "related_max": "Maximum 30 related pages",
+
+      "infobox_label": "Infobox"
+    }
   }
 }

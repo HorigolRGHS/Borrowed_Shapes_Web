@@ -109,3 +109,35 @@ export class RelatedPageDto {
   @ApiProperty()
   exists!: boolean;
 }
+
+/**
+ * Drops fields that should not be persisted to JSONB:
+ * - empty arrays (tags, tags_vi, relatedPages)
+ * - empty stats object
+ * - undefined optional scalars
+ *
+ * Returns null if the result has no remaining keys, so the column stores
+ * `null` instead of `{}` when the wiki has no metadata.
+ *
+ * Mirrors the frontend Zod-schema-derived helper in
+ * `models/dtos/wiki-metadata.dto.ts`. Schema parity is enforced by
+ * `wiki-metadata.dto.spec.ts`; this helper is duplicated locally so the
+ * backend runtime doesn't need to require the frontend module.
+ */
+export function compactMetadata(
+  meta: WikiMetadataDto | null | undefined,
+): Partial<WikiMetadataDto> | null {
+  if (!meta) return null;
+  const out: Partial<WikiMetadataDto> = {};
+  if (meta.category) out.category = meta.category;
+  if (meta.tags && meta.tags.length > 0) out.tags = meta.tags;
+  if (meta.tags_vi && meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
+  if (meta.infoboxImage) out.infoboxImage = meta.infoboxImage;
+  if (meta.stats && Object.keys(meta.stats).length > 0) out.stats = meta.stats;
+  if (meta.location) out.location = meta.location;
+  if (meta.location_vi) out.location_vi = meta.location_vi;
+  if (meta.relatedPages && meta.relatedPages.length > 0) {
+    out.relatedPages = meta.relatedPages;
+  }
+  return Object.keys(out).length === 0 ? null : out;
+}

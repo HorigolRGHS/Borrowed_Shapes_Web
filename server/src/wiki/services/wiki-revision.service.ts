@@ -16,7 +16,7 @@ import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
 import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
 import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { slugRejectionReason } from '../dto/wiki-slug.validator';
-import { compactMetadata } from '@models/dtos/wiki-metadata.dto';
+import { compactMetadata } from '../dto/wiki-metadata.dto';
 
 function isWikiSlugUniqueError(err: any): boolean {
   if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;

@@ -102,18 +102,27 @@ export default function AdminWikiNewPage() {
           setBumped(null);
           return;
         }
-        if (!slugEnTouched && result.slug !== slug) {
-          form.setValue("slug", result.slug, { shouldValidate: true });
-          setBumped({ original: slug, final: result.slug });
-        } else if (!slugViTouched && result.slug_vi !== slug_vi) {
-          form.setValue("slug_vi", result.slug_vi, { shouldValidate: true });
-          setBumped({ original: slug_vi, final: result.slug_vi });
-        } else {
-          // Manual mode — surface as suggestion only.
-          const original = result.slug !== slug ? slug : slug_vi;
-          const final = result.slug !== slug ? result.slug : result.slug_vi;
-          setBumped({ original, final });
+        const enChanged = result.slug !== slug;
+        const viChanged = result.slug_vi !== slug_vi;
+        let notice: BumpedNotice | null = null;
+
+        if (enChanged) {
+          if (!slugEnTouched) {
+            form.setValue("slug", result.slug, { shouldValidate: true });
+          }
+          notice = { original: slug, final: result.slug };
         }
+        if (viChanged) {
+          if (!slugViTouched) {
+            form.setValue("slug_vi", result.slug_vi, { shouldValidate: true });
+          }
+          // Prefer the EN notice when both collided (single bumped notice
+          // slot in the UI). VI surfaces only when EN didn't change.
+          if (!notice) {
+            notice = { original: slug_vi, final: result.slug_vi };
+          }
+        }
+        setBumped(notice);
       } catch {
         // Availability check failed; submit-time 409 path will handle it.
       }
@@ -167,6 +176,12 @@ export default function AdminWikiNewPage() {
             setSubmitting(false);
             return;
           }
+          const retryMessage = (
+            recheckErr as { response?: { data?: { message?: string } } }
+          )?.response?.data?.message;
+          setSubmitError(retryMessage ?? t("wiki.new.create_failed"));
+          setSubmitting(false);
+          return;
         }
       }
       setSubmitError(message ?? t("wiki.new.create_failed"));
@@ -222,7 +237,10 @@ export default function AdminWikiNewPage() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => setEditing(true)}
+                  onClick={() => {
+                    setTouched(true);
+                    setEditing(true);
+                  }}
                   aria-label={t("wiki.new.edit_slug")}
                 >
                   <Pencil className="h-4 w-4" />

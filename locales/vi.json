@@ -161,7 +161,9 @@
       "cancel_confirm_message": "Bạn có thay đổi chưa lưu. Rời trang sẽ mất các thay đổi này.",
       "cancel_confirm_leave": "Rời trang",
       "cancel_confirm_stay": "Ở lại",
-      "title_placeholder": "Nhập tiêu đề..."
+      "title_placeholder": "Nhập tiêu đề...",
+      "save_draft_success": "Đã lưu nháp",
+      "save_publish_success": "Đã lưu và xuất bản"
     },
     "settings": {
       "title_heading": "Cài đặt",

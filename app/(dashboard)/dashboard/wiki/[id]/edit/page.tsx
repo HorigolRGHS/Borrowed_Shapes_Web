@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { fetchAdminWikiById, updateWiki } from "@/lib/wiki/api";
 import {
@@ -111,6 +112,12 @@ export default function AdminWikiEditPage({
       });
       setDetail(updated);
       setConflict(null);
+      toast.success(
+        mode === "publish"
+          ? t("wiki.edit.save_publish_success")
+          : t("wiki.edit.save_draft_success"),
+      );
+      return { ok: true };
     } catch (e: any) {
       const status = e?.response?.status;
       const body = e?.response?.data;
@@ -119,8 +126,11 @@ export default function AdminWikiEditPage({
           body?.data?.currentLatest ?? body?.currentLatest ?? null;
         setConflict({ latest, pending: value, mode });
       } else {
-        setSubmitError(body?.message ?? "Save failed");
+        const msg = body?.message ?? "Save failed";
+        setSubmitError(msg);
+        toast.error(msg);
       }
+      return { ok: false };
     } finally {
       setSaving(false);
     }

@@ -47,7 +47,10 @@ const TiptapEditor = dynamic(
 
 interface Props {
   initial: WikiFormValue;
-  onSubmit: (value: WikiFormValue, mode: "draft" | "publish") => Promise<void>;
+  onSubmit: (
+    value: WikiFormValue,
+    mode: "draft" | "publish",
+  ) => Promise<{ ok: boolean } | void>;
   onCancel?: () => void;
   saving?: boolean;
   submitError?: string | null;
@@ -149,12 +152,19 @@ export function WikiForm({
       setWarnSame(true);
       return;
     }
-    await onSubmit(value, mode);
+    const result = await onSubmit(value, mode);
+    if (result?.ok) {
+      form.reset(value, { keepDirty: false });
+    }
   };
 
   const handlePublishConfirmed = async () => {
     setWarnSame(false);
-    await onSubmit(form.getValues(), "publish");
+    const value = form.getValues();
+    const result = await onSubmit(value, "publish");
+    if (result?.ok) {
+      form.reset(value, { keepDirty: false });
+    }
   };
 
   const requestCancel = () => {

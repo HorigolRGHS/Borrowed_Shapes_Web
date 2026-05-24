@@ -53,7 +53,7 @@ export class AchievementController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AchievementResponseDto[]>> {
-    const achievements = await this.achievementService.findAll();
+    const achievements = await this.achievementService.findAllWithEarnedCount();
     const data = achievements.map((a) => ({
       id: a.id,
       name: a.name,
@@ -63,6 +63,7 @@ export class AchievementController {
       type: a.type,
       seasonMonth: a.seasonMonth,
       expiresAt: a.expiresAt,
+      earnedCount: a.earnedCount,
     }));
     return okResponse(
       'achievements.list_success',
@@ -92,6 +93,7 @@ export class AchievementController {
       type: a.type,
       seasonMonth: a.seasonMonth,
       expiresAt: a.expiresAt,
+      earnedCount: a.earnedCount,
     }));
 
     return okResponse(
@@ -113,7 +115,7 @@ export class AchievementController {
   ): Promise<ApiResponseDto<UserAchievementResponseDto[]>> {
     if (!user.gameProfileId) {
       return okResponse(
-        'achievements.user_list_success',
+        'achievements.users_success',
         [],
         `${req.method} ${req.path}`,
       );
@@ -144,6 +146,21 @@ export class AchievementController {
       `${req.method} ${req.path}`,
     );
   }
+  
+  @Get(':id/users')
+async findUsersByAchievement(
+  @Param('id') id: string,
+  @Req() req: Request,
+) {
+  const users =
+    await this.achievementService.findUsersByAchievement(id);
+
+  return okResponse(
+    'achievements.users_success',
+    users,
+    `${req.method} ${req.path}`,
+  );
+}
 
   @Get(':id')
   @ApiOperation({ summary: 'Get achievement details' })

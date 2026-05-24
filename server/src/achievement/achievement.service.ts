@@ -14,6 +14,27 @@ export class AchievementService {
     return this.em.find(Achievement, {});
   }
 
+  async findAllWithEarnedCount(): Promise<Array<Achievement & { earnedCount: number }>> {
+    const rows = await this.em.execute(
+      `select a.*, count(ua."achievementId") as "earnedCount"
+       from game."Achievement" a
+       left join game."UserAchievement" ua on ua."achievementId" = a.id
+       group by a.id`,
+    );
+
+    return (rows || []).map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      criteriaCode: row.criteriaCode,
+      badgeImageUrl: row.badgeImageUrl,
+      type: row.type,
+      seasonMonth: row.seasonMonth,
+      expiresAt: row.expiresAt,
+      earnedCount: Number(row.earnedCount || 0),
+    }));
+  }
+
   async findOne(id: string): Promise<Achievement> {
     const achievement = await this.em.findOne(Achievement, { id });
     if (!achievement) {
@@ -65,16 +86,60 @@ export class AchievementService {
     await this.em.removeAndFlush(achievement);
   }
 
-  async search(query: string): Promise<Achievement[]> {
+  async search(query: string): Promise<Array<Achievement & { earnedCount: number }>> {
   query = query?.trim();
   if (!query) {
     return [];
   }
-  return this.em.find(Achievement, {
-    $or: [
-      { name: { $ilike: `%${query}%` } },
-      { description: { $ilike: `%${query}%` } },
-    ],
-  });
+  const searchTerm = `%${query}%`;
+  const rows = await this.em.execute(
+    `select a.*, count(ua."achievementId") as "earnedCount"
+     from game."Achievement" a
+     left join game."UserAchievement" ua on ua."achievementId" = a.id
+     where a.name ilike ? or a.description ilike ?
+     group by a.id`,
+    [searchTerm, searchTerm],
+  );
+
+  return (rows || []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    criteriaCode: row.criteriaCode,
+    badgeImageUrl: row.badgeImageUrl,
+    type: row.type,
+    seasonMonth: row.seasonMonth,
+    expiresAt: row.expiresAt,
+    earnedCount: Number(row.earnedCount || 0),
+  }));
+}
+
+async findUsersByAchievement(achievementId: string) {
+  const rows = await this.em.execute(
+    `
+    select
+      gp."id" as "id",
+      u."displayName" as "displayName",
+      u."imgUrl" as "avatarUrl",
+      ua."achievedAt" as "earnedAt"
+
+    from game."UserAchievement" ua
+
+    inner join game."GameProfile" gp
+      on gp."id" = ua."gameProfileId"
+
+    inner join auth."User" u
+      on u."id" = gp."userId"
+
+    where ua."achievementId" = ?
+
+    order by ua."achievedAt" asc
+    `,
+    [achievementId],
+  );
+
+  console.log(rows);
+
+  return rows || [];
 }
 }

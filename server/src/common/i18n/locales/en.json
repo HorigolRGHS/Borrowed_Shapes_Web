@@ -66,18 +66,17 @@
     "display_name_max_20": "Display name must not exceed 20 characters",
     "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens"
   },
-<<<<<<< HEAD
   "achievements": {
     "list_success": "Achievements retrieved successfully",
     "search_success": "Achievements search completed successfully",
     "detail_success": "Achievement details retrieved successfully",
-    "user_list_success": "User achievements retrieved successfully",
+    "users_success": "User achievements retrieved successfully",
     "create_success": "Achievement created successfully",
     "update_success": "Achievement updated successfully",
     "delete_success": "Achievement deleted successfully",
     "not_found": "Achievement not found",
     "already_exists": "Achievement with this criteria code already exists"
-=======
+  },
   "wiki": {
     "list_success": "Wiki list retrieved",
     "search_success": "Search completed",
@@ -107,6 +106,5 @@
     "upload_failed": "Upload failed",
     "related_success": "Related pages resolved",
     "too_many_related_slugs": "At most 30 related slugs may be requested at once"
->>>>>>> 19e655496fe6cbcff2aa37bd9c09fbc5d2a5091f
   }
 }

@@ -25,4 +25,7 @@ export class AchievementResponseDto {
 
   @ApiPropertyOptional({ example: '2026-12-31T23:59:59.000Z' })
   expiresAt?: Date;
+
+  @ApiPropertyOptional({ example: 12 })
+  earnedCount?: number;
 }

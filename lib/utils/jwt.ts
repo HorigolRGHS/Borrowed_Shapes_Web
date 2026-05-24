@@ -1,5 +1,5 @@
 /**
- * Giải mã JWT Payload (không verify chữ ký - dùng cho frontend/middleware)
+ * Giải mã JWT Payload (không verify chữ ký - dùng cho frontend/proxy)
  */
 export function decodeJwt(token: string): any {
   try {

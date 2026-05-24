@@ -50,3 +50,8 @@ docs/
 # Wiki uploads (served by Nest static; stored outside git)
 server/uploads/
 uploads/
+
+CLAUDE.md
+AGENTS.md
+
+/docs

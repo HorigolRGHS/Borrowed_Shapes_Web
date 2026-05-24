@@ -14,6 +14,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -94,14 +95,14 @@ export function WikiSettingsSheet({
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               {t("wiki.settings.url_section")}
             </h3>
-            <FormItem>
-              <FormLabel>{t("wiki.tab_en")}</FormLabel>
+            <div className="space-y-1">
+              <Label>{t("wiki.tab_en")}</Label>
               <SlugEditRow name="slug" onTouchedChange={onSlugEnTouched} />
-            </FormItem>
-            <FormItem>
-              <FormLabel>{t("wiki.tab_vi")}</FormLabel>
+            </div>
+            <div className="space-y-1">
+              <Label>{t("wiki.tab_vi")}</Label>
               <SlugEditRow name="slug_vi" onTouchedChange={onSlugViTouched} />
-            </FormItem>
+            </div>
           </section>
 
           <Separator />

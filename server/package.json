@@ -53,6 +53,8 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "diff": "^9.0.0",
+    "file-type": "^22.0.1",
     "ioredis": "^5.10.0",
     "nodemailer": "^6.9.7",
     "reflect-metadata": "^0.2.2",
@@ -70,8 +72,10 @@
     "@swc/cli": "^0.7.10",
     "@swc/core": "^1.15.18",
     "@types/bcrypt": "^6.0.0",
+    "@types/diff": "^7.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/nodemailer": "^6.4.14",
     "@types/supertest": "^6.0.2",
@@ -102,8 +106,11 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleNameMapper": {
+      "^@models/(.*)$": "<rootDir>/../../models/$1"
+    },
     "transformIgnorePatterns": [
-      "/node_modules/(?!(@paralleldrive/cuid2|@noble/hashes))"
+      "/node_modules/(?!(@paralleldrive/cuid2|@noble/hashes|file-type|strtok3|token-types|@tokenizer/inflate|uint8array-extras|@borewit/text-codec))"
     ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"

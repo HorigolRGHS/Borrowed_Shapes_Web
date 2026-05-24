@@ -55,6 +55,11 @@ services:
       DB_SYNC_INTERVAL_MS: ${DB_SYNC_INTERVAL_MS:-60000}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-me}
       ACCESS_TOKEN_TTL_SEC: ${ACCESS_TOKEN_TTL_SEC:-900}
+      WIKI_UPLOAD_BASE_URL: ${WIKI_UPLOAD_BASE_URL:-http://localhost:3001}
+      WIKI_UPLOAD_DIR: ${WIKI_UPLOAD_DIR:-uploads}
+      WIKI_UPLOAD_MAX_SIZE: ${WIKI_UPLOAD_MAX_SIZE:-5242880}
+    volumes:
+      - ./server/uploads:/app/uploads
     depends_on:
       bs_postgres:
         condition: service_healthy

@@ -52,7 +52,12 @@
     "logout": "Logout",
     "switch_lang": "English",
     "back_to_home": "Back to Home",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "System",
+    "theme_toggle_label": "Toggle theme",
+    "site_brand": "Borrowed Shapes Wiki"
   },
   "validation": {
     "invalid_email": "Invalid email address",
@@ -67,6 +72,171 @@
     "display_name_invalid": "Only letters, numbers, spaces, underscores, and hyphens allowed",
     "Unverified email": "Your email is not verified yet. Please check your inbox.",
     "AUTH.UNVERIFIED_EMAIL": "Your email is not verified yet. Please check your inbox."
+  },
+  "wiki": {
+    "list_title": "Wiki",
+    "list_subtitle": "Browse the knowledge base",
+    "admin_title": "Wiki management",
+    "filter_all": "All",
+    "col_title": "Title",
+    "col_status": "Status",
+    "col_updated": "Updated",
+    "col_actions": "Actions",
+    "col_date": "Date",
+    "col_author": "Author",
+    "col_summary": "Summary",
+    "latest_badge": "Latest",
+    "actions_menu_label": "Open actions menu",
+    "search_placeholder": "Search wiki by title...",
+    "search_no_results": "No wiki pages match your search",
+    "empty_list": "No wiki pages yet",
+    "draft_badge": "DRAFT",
+    "published_badge": "PUBLISHED",
+    "back_to_list": "Back to wiki list",
+
+    "create_button": "Create wiki",
+    "edit_button": "Edit",
+    "delete_button": "Delete",
+    "history_button": "History",
+    "rollback_button": "Rollback to this",
+    "view_button": "View",
+    "publish_button": "Publish",
+    "unpublish_button": "Unpublish",
+    "save_draft_button": "Save as draft",
+    "save_publish_button": "Save & publish",
+
+    "field_title_en": "Title (English)",
+    "field_title_vi": "Title (Vietnamese)",
+    "field_slug_en": "Slug (English)",
+    "field_slug_vi": "Slug (Vietnamese)",
+    "field_summary_en": "Summary (English)",
+    "field_summary_vi": "Summary (Vietnamese)",
+    "field_content": "Content",
+
+    "tab_en": "English",
+    "tab_vi": "Vietnamese",
+    "copy_from_en": "Copy from English",
+    "copy_from_vi": "Copy from Vietnamese",
+
+    "publish_warn_same_content": "English and Vietnamese content are identical. Are you sure both languages are translated?",
+    "publish_warn_empty": "Both English and Vietnamese content must be filled to publish",
+
+    "upload_uploading": "Uploading image...",
+    "upload_failed": "Image upload failed",
+
+    "unsaved_changes_warning": "You have unsaved changes. Leave anyway?",
+
+    "edited_by": "Edited by {name} on {date}",
+    "last_updated": "Updated {date}",
+
+    "no_history": "No history",
+    "no_previous_revision": "This is the first revision",
+    "diff_unchanged_collapsed": "{count} unchanged lines",
+
+    "toc_title": "On this page",
+
+    "confirm_delete_title": "Delete wiki?",
+    "confirm_delete_message": "This action cannot be undone. Type the slug to confirm:",
+    "confirm_delete_input_hint": "Enter \"{slug}\" to confirm",
+    "confirm_rollback_title": "Rollback to this revision?",
+    "confirm_rollback_message": "A new revision will be created with this content. The current latest revision is preserved in history.",
+
+    "conflict_title": "This wiki was edited by someone else",
+    "conflict_message": "Reload to see their changes, or force overwrite to keep yours.",
+    "conflict_reload": "Reload",
+    "conflict_force": "Force overwrite",
+
+    "viewing_revision": "Viewing revision",
+    "rollback_summary_default": "Rollback to revision {id}",
+
+    "reserved_slug_error": "This slug is reserved",
+    "slug_taken_error": "This slug is already in use",
+    "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes",
+    "title_required_error": "Title is required",
+    "new": {
+      "title_step1": "Create wiki",
+      "title_field": "Title",
+      "url_preview": "URL:",
+      "edit_slug": "Edit URL",
+      "confirm_slug": "Done",
+      "slug_bumped": "Slug \"{original}\" is taken — using \"{final}\" instead",
+      "create_button": "Create draft",
+      "cancel_button": "Cancel",
+      "create_failed": "Could not create draft",
+      "creating": "Creating…"
+    },
+    "edit": {
+      "settings_button": "Settings",
+      "unsaved_indicator": "Unsaved changes",
+      "cancel_button": "Cancel",
+      "cancel_confirm_title": "Discard changes?",
+      "cancel_confirm_message": "You have unsaved changes. Leaving will discard them.",
+      "cancel_confirm_leave": "Leave",
+      "cancel_confirm_stay": "Stay",
+      "title_placeholder": "Enter title...",
+      "save_draft_success": "Draft saved",
+      "save_publish_success": "Saved and published"
+    },
+    "settings": {
+      "title_heading": "Settings",
+      "title_section": "Title",
+      "url_section": "URL",
+      "summary_section": "Summary",
+      "status_section": "Status",
+      "metadata_section": "Metadata",
+      "published_label": "Published",
+      "published_desc": "This page is public.",
+      "draft_label": "Draft",
+      "draft_desc": "Only admins can see this page."
+    },
+    "metadata": {
+      "title": "Metadata",
+      "title_optional": "(optional)",
+      "expand": "Show metadata",
+      "collapse": "Hide metadata",
+
+      "category_label": "Category",
+      "category_none": "—",
+      "category": {
+        "Character": "Character",
+        "Item": "Item",
+        "Map": "Map",
+        "Mechanic": "Mechanic",
+        "Boss": "Boss",
+        "Other": "Other"
+      },
+
+      "infobox_image": "Infobox image",
+      "upload_button": "Upload image",
+      "upload_hint": "JPG/PNG/WebP/GIF, max 5MB",
+      "replace_button": "Replace",
+      "remove_button": "Remove",
+      "uploading": "Uploading…",
+      "upload_failed": "Image upload failed",
+
+      "tags_en": "Tags (English)",
+      "tags_vi": "Tags (Vietnamese)",
+      "tag_placeholder": "Type a tag and press Enter",
+      "tag_max": "Maximum 20 tags",
+
+      "stats": "Stats",
+      "stat_key_placeholder": "Stat name (e.g. stamina)",
+      "stat_value_placeholder": "Value",
+      "add_stat": "Add stat",
+      "no_stats": "No stats. Click Add stat to define one.",
+      "stat_dup_error": "Duplicate stat name",
+      "stat_value_required": "Stat name and value must both be set",
+
+      "location_en": "Location (English)",
+      "location_vi": "Location (Vietnamese)",
+
+      "related_pages": "Related pages",
+      "related_search": "Search wiki…",
+      "related_no_match": "No matches",
+      "related_max": "Maximum 30 related pages",
+
+      "infobox_label": "Infobox"
+    }
   },
     "achievements": {
     "list_success": "Achievements retrieved successfully",

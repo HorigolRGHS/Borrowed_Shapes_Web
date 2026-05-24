@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, X } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { createWiki } from "@/lib/wiki/api";
 import {
@@ -30,6 +29,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { I18nFormMessage } from "@/components/ui/i18n-form-message";
+import { SlugEditRow } from "@/components/wiki/slug-edit-row";
 
 interface BumpedNotice {
   original: string;
@@ -43,8 +43,6 @@ export default function AdminWikiNewPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [slugEnTouched, setSlugEnTouched] = useState(false);
   const [slugViTouched, setSlugViTouched] = useState(false);
-  const [editingEn, setEditingEn] = useState(false);
-  const [editingVi, setEditingVi] = useState(false);
   const [bumped, setBumped] = useState<BumpedNotice | null>(null);
 
   const form = useForm<Step1FormValue>({
@@ -190,70 +188,6 @@ export default function AdminWikiNewPage() {
     }
   };
 
-  const renderSlugRow = (
-    slugValue: string,
-    editing: boolean,
-    setEditing: (b: boolean) => void,
-    setTouched: (b: boolean) => void,
-    fieldName: "slug" | "slug_vi",
-  ) => (
-    <FormField
-      control={form.control}
-      name={fieldName}
-      render={({ field }) => (
-        <FormItem>
-          <div className="flex items-center gap-2">
-            {editing ? (
-              <>
-                <FormControl>
-                  <Input
-                    {...field}
-                    autoFocus
-                    onChange={(e) => {
-                      setTouched(true);
-                      field.onChange(e);
-                    }}
-                  />
-                </FormControl>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setEditing(false)}
-                  aria-label={t("wiki.new.confirm_slug")}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground flex-1 truncate">
-                  {t("wiki.new.url_preview")}{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-foreground">
-                    /wiki/{slugValue || "…"}
-                  </code>
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setTouched(true);
-                    setEditing(true);
-                  }}
-                  aria-label={t("wiki.new.edit_slug")}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-          </div>
-          <I18nFormMessage />
-        </FormItem>
-      )}
-    />
-  );
-
   const titlesFilled = !!title?.trim() && !!title_vi?.trim();
   const slugsValid =
     !form.formState.errors.slug && !form.formState.errors.slug_vi;
@@ -296,13 +230,7 @@ export default function AdminWikiNewPage() {
                 )}
               />
 
-              {renderSlugRow(
-                slug,
-                editingEn,
-                setEditingEn,
-                setSlugEnTouched,
-                "slug",
-              )}
+              <SlugEditRow name="slug" onTouchedChange={setSlugEnTouched} />
 
               <FormField
                 control={form.control}
@@ -320,13 +248,7 @@ export default function AdminWikiNewPage() {
                 )}
               />
 
-              {renderSlugRow(
-                slug_vi,
-                editingVi,
-                setEditingVi,
-                setSlugViTouched,
-                "slug_vi",
-              )}
+              <SlugEditRow name="slug_vi" onTouchedChange={setSlugViTouched} />
 
               {bumped && (
                 <p className="text-xs text-muted-foreground">

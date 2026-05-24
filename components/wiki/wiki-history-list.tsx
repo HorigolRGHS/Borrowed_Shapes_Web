@@ -83,11 +83,11 @@ export function WikiHistoryList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Author</TableHead>
-              <TableHead>Summary</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t("wiki.col_date")}</TableHead>
+              <TableHead>{t("wiki.col_author")}</TableHead>
+              <TableHead>{t("wiki.col_summary")}</TableHead>
+              <TableHead>{t("wiki.col_status")}</TableHead>
+              <TableHead className="text-right">{t("wiki.col_actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -105,7 +105,7 @@ export function WikiHistoryList({
                     {summary ?? <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell>
-                    {it.isLatest && <Badge>Latest</Badge>}
+                    {it.isLatest && <Badge>{t("wiki.latest_badge")}</Badge>}
                   </TableCell>
                   <TableCell className="text-right space-x-2 whitespace-nowrap">
                     <Button asChild variant="outline" size="sm">

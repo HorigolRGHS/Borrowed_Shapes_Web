@@ -119,7 +119,7 @@ export function AdminWikiListClient() {
     <main className="container mx-auto px-4 py-8 max-w-6xl">
       <header className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin · Wiki</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("wiki.admin_title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t("wiki.list_subtitle")}
           </p>
@@ -138,7 +138,7 @@ export function AdminWikiListClient() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="all">{t("wiki.filter_all")}</SelectItem>
             <SelectItem value="published">{t("wiki.published_badge")}</SelectItem>
             <SelectItem value="draft">{t("wiki.draft_badge")}</SelectItem>
           </SelectContent>
@@ -155,10 +155,10 @@ export function AdminWikiListClient() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Updated</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
+              <TableHead>{t("wiki.col_title")}</TableHead>
+              <TableHead>{t("wiki.col_status")}</TableHead>
+              <TableHead>{t("wiki.col_updated")}</TableHead>
+              <TableHead className="w-[80px] text-right">{t("wiki.col_actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -222,7 +222,7 @@ export function AdminWikiListClient() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Open actions menu"
+                            aria-label={t("wiki.actions_menu_label")}
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
@@ -332,7 +332,7 @@ export function AdminWikiListClient() {
               onClick={() => setPendingDelete(null)}
               disabled={deleting}
             >
-              Cancel
+              {t("wiki.edit.cancel_button")}
             </Button>
             <Button
               variant="destructive"

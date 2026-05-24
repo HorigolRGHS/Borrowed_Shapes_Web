@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { AuthCard } from "@/components/auth/auth-card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 type VerifyState = "loading" | "success" | "error";
 
@@ -14,7 +18,6 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     let active = true;
-
     const run = async () => {
       if (!token) {
         if (!active) return;
@@ -22,23 +25,17 @@ function VerifyEmailContent() {
         setMessage("Missing verification token.");
         return;
       }
-
       try {
         const res = await fetch(
           `/api/auth/verify-email?token=${encodeURIComponent(token)}`,
-          {
-            method: "POST",
-          },
+          { method: "POST" },
         );
         const data = await res.json().catch(() => ({}));
-
         if (!active) return;
-
         if (res.ok) {
           setState("success");
           setMessage(
-            data?.message ??
-              "Email verified successfully. You can now login in game/web.",
+            data?.message ?? "Email verified successfully. You can now login.",
           );
         } else {
           setState("error");
@@ -50,46 +47,48 @@ function VerifyEmailContent() {
         setMessage("Cannot connect to server. Please try again.");
       }
     };
-
     run();
-
     return () => {
       active = false;
     };
   }, [token]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
-      <section className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg">
-        <h1 className="text-2xl font-semibold text-zinc-900">
-          Email Verification
-        </h1>
-        <p className="mt-3 text-zinc-700">{message}</p>
-
-        {state === "loading" && (
-          <p className="mt-4 text-sm text-zinc-500">Please wait...</p>
-        )}
-
-        {state !== "loading" && (
-          <div className="mt-6 flex gap-3">
-            <Link
-              href="/"
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-            >
-              Back to Home
-            </Link>
-            {state === "error" && (
-              <Link
-                href="/auth/reset-password"
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-              >
-                Open Reset Page
-              </Link>
-            )}
-          </div>
-        )}
-      </section>
-    </main>
+    <AuthCard title="Email Verification">
+      {state === "loading" && (
+        <Alert>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <AlertTitle>{message}</AlertTitle>
+          <AlertDescription>Please wait...</AlertDescription>
+        </Alert>
+      )}
+      {state === "success" && (
+        <Alert>
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle>Verified</AlertTitle>
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      )}
+      {state === "error" && (
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>Verification failed</AlertTitle>
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      )}
+      {state !== "loading" && (
+        <div className="mt-6 flex gap-2 justify-center">
+          <Button asChild>
+            <Link href="/">Back to Home</Link>
+          </Button>
+          {state === "error" && (
+            <Button asChild variant="outline">
+              <Link href="/auth/reset-password">Open Reset Page</Link>
+            </Button>
+          )}
+        </div>
+      )}
+    </AuthCard>
   );
 }
 
@@ -97,9 +96,9 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
-          <p className="text-zinc-600">Loading...</p>
-        </main>
+        <AuthCard title="Email Verification">
+          <p className="text-muted-foreground">Loading...</p>
+        </AuthCard>
       }
     >
       <VerifyEmailContent />

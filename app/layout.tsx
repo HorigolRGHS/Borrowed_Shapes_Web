@@ -4,16 +4,17 @@ import "./globals.css";
 import { ToastProvider } from "@/components/providers/toast";
 import { I18nProvider } from "@/lib/i18/i18n-context";
 import AuthSessionHandler from "@/components/handlers/auth-session-handler";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "react-toastify/dist/ReactToastify.css";
+import { cookies } from "next/headers";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Borrowed Shapes Wiki",
   description: "Wiki for Borrowed Shapes game",
 };
-
-import { cookies } from "next/headers";
 
 export default async function RootLayout({
   children,
@@ -24,13 +25,25 @@ export default async function RootLayout({
   const locale = (cookieStore.get("NEXT_LOCALE")?.value as any) || "en";
 
   return (
-    <html lang={locale}>
-      <body className={inter.className}>
-        <I18nProvider initialLocale={locale}>
-          <AuthSessionHandler />
-          <ToastProvider />
-          {children}
-        </I18nProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={cn(
+          inter.variable,
+          "min-h-screen bg-background text-foreground font-sans antialiased",
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <I18nProvider initialLocale={locale}>
+            <AuthSessionHandler />
+            <ToastProvider />
+            {children}
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -28,6 +28,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let rawMessage: string | string[] = 'common.internal_server_error';
+    let extraData: Record<string, unknown> | null = null;
     const lang = request.headers['accept-language'] as string;
 
     if (exception instanceof HttpException) {
@@ -37,7 +38,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         rawMessage = res;
       } else if (typeof res === 'object' && res !== null) {
         const resObj = res as any;
-        rawMessage = resObj.message ?? rawMessage;
+        rawMessage = resObj.messageKey ?? resObj.message ?? rawMessage;
+        // Preserve structured payload (e.g. currentLatest for optimistic concurrency conflicts)
+        const { message: _m, messageKey: _mk, statusCode: _sc, error: _e, ...rest } = resObj;
+        extraData = Object.keys(rest).length > 0 ? rest : null;
       }
 
       // Body parser throws BadRequestException for malformed JSON before DTO validation runs.
@@ -62,11 +66,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = this.i18n.t(rawMessage, lang);
     }
 
-    const payload = new ApiResponseDto<null>(
+    const payload = new ApiResponseDto<unknown>(
       statusCode,
       false,
       message,
-      null,
+      extraData,
       request.url,
       new Date().toISOString(),
     );

@@ -6,7 +6,6 @@ import { decodeJwt, normalizeJwt } from "@/lib/utils/jwt";
 const protectedRoutes = [
   { path: "/dashboard", roles: ["ADMIN"] },
   { path: "/profile", roles: ["ADMIN", "USER"] },
-  { path: "/admin", roles: ["ADMIN"] },
   { path: "/auth/change-password", roles: ["ADMIN", "USER"] },
 ];
 
@@ -48,7 +47,7 @@ function isTokenExpired(decoded: any): boolean {
   return exp * 1000 <= Date.now();
 }
 
-async function tryRefreshInMiddleware(req: NextRequest) {
+async function tryRefreshInProxy(req: NextRequest) {
   const refreshToken = req.cookies.get("refreshToken")?.value;
   if (!refreshToken) return null;
 
@@ -84,13 +83,13 @@ async function tryRefreshInMiddleware(req: NextRequest) {
   }
 }
 
-// ======== MAIN MIDDLEWARE ========
+// ======== MAIN PROXY ========
 
-export function middleware(req: NextRequest) {
-  return handleMiddleware(req);
+export function proxy(req: NextRequest) {
+  return handleProxy(req);
 }
 
-async function handleMiddleware(req: NextRequest) {
+async function handleProxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isStaticAsset(pathname)) {
@@ -103,9 +102,9 @@ async function handleMiddleware(req: NextRequest) {
   let role = normalized?.role ?? "";
 
   const shouldRefresh = !normalized || isTokenExpired(decoded);
-  let refreshed: Awaited<ReturnType<typeof tryRefreshInMiddleware>> = null;
+  let refreshed: Awaited<ReturnType<typeof tryRefreshInProxy>> = null;
   if (shouldRefresh) {
-    refreshed = await tryRefreshInMiddleware(req);
+    refreshed = await tryRefreshInProxy(req);
     if (refreshed) {
       decoded = refreshed.normalized;
       normalized = refreshed.normalized;

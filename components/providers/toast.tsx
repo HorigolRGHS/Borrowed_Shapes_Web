@@ -1,7 +1,10 @@
 "use client";
+
 import { ToastContainer } from "react-toastify";
+import { useTheme } from "next-themes";
 
 export function ToastProvider() {
+  const { resolvedTheme } = useTheme();
   return (
     <ToastContainer
       position="top-right"
@@ -13,7 +16,7 @@ export function ToastProvider() {
       pauseOnFocusLoss
       draggable
       pauseOnHover
-      theme="colored"
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
     />
   );
 }

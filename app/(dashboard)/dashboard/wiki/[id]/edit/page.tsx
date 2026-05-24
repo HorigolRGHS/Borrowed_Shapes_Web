@@ -4,19 +4,13 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18/i18n-context";
-import {
-  fetchAdminWikiById,
-  updateWiki,
-  publishWiki,
-  unpublishWiki,
-} from "@/lib/wiki/api";
+import { fetchAdminWikiById, updateWiki } from "@/lib/wiki/api";
 import {
   WikiForm,
   type WikiFormValue,
 } from "@/components/wiki/wiki-form";
 import type { WikiDetail } from "@/models/dtos/wiki.dto";
 import { emptyWikiMetadata } from "@/models/dtos/wiki-metadata.dto";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -51,7 +45,6 @@ export default function AdminWikiEditPage({
     pending: WikiFormValue;
     mode: "draft" | "publish";
   }>(null);
-  const [pubBusy, setPubBusy] = useState(false);
 
   useEffect(() => {
     fetchAdminWikiById(id)
@@ -133,75 +126,36 @@ export default function AdminWikiEditPage({
     }
   };
 
-  const togglePublish = async () => {
-    setPubBusy(true);
-    try {
-      const updated = detail.isPublished
-        ? await unpublishWiki(id)
-        : await publishWiki(id);
-      setDetail(updated);
-    } catch (e: any) {
-      setSubmitError(e?.response?.data?.message ?? "Publish toggle failed");
-    } finally {
-      setPubBusy(false);
-    }
-  };
-
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
-      <nav className="text-sm text-muted-foreground mb-4">
-        <Link href="/dashboard/wiki" className="hover:text-foreground">
-          Wiki
-        </Link>
-        <span className="mx-2">›</span>
-        <span className="text-foreground">{detail.title}</span>
+      <nav className="text-sm text-muted-foreground mb-6 flex items-center justify-between gap-3">
+        <div className="min-w-0 truncate">
+          <Link href="/dashboard/wiki" className="hover:text-foreground">
+            Wiki
+          </Link>
+          <span className="mx-2">›</span>
+          <span className="text-foreground">{detail.title}</span>
+        </div>
+        <Button asChild variant="outline" size="sm" className="shrink-0">
+          <Link href={`/wiki/${encodeURIComponent(detail.slug)}/history`}>
+            {t("wiki.history_button")}
+          </Link>
+        </Button>
       </nav>
 
-      <header className="mb-6 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {t("wiki.edit_button")}: {detail.title}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("wiki.edited_by")
-              .replace("{name}", lastEditedBy)
-              .replace("{date}", lastEditedAt)}
-          </p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/wiki/${encodeURIComponent(detail.slug)}/history`}>
-              {t("wiki.history_button")}
-            </Link>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={pubBusy}
-            onClick={togglePublish}
-          >
-            {detail.isPublished
-              ? t("wiki.unpublish_button")
-              : t("wiki.publish_button")}
-          </Button>
-        </div>
-      </header>
-
-      <Card>
-        <CardContent className="pt-6">
-          <WikiForm
-            initial={initial}
-            onSubmit={(value, mode) => submit(value, mode)}
-            onCancel={() => router.push("/dashboard/wiki")}
-            saving={saving}
-            submitError={submitError}
-            isEdit
-            locale={locale}
-            excludeSlug={detail.slug}
-          />
-        </CardContent>
-      </Card>
+      <WikiForm
+        initial={initial}
+        onSubmit={(value, mode) => submit(value, mode)}
+        onCancel={() => router.push("/dashboard/wiki")}
+        saving={saving}
+        submitError={submitError}
+        isEdit
+        locale={locale}
+        excludeSlug={detail.slug}
+        headerSubtitle={t("wiki.edited_by")
+          .replace("{name}", lastEditedBy)
+          .replace("{date}", lastEditedAt)}
+      />
 
       <Dialog
         open={conflict !== null}

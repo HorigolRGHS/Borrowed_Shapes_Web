@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { useEffect, useState, type ReactNode } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Settings } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { slugifyEn, slugifyVi } from "@/lib/wiki/slug";
 import {
@@ -11,17 +12,7 @@ import {
   wikiFormSchema,
   type WikiFormValue,
 } from "@/models/dtos/wiki-form.dto";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { I18nFormMessage } from "@/components/ui/i18n-form-message";
-import { WikiMetadataForm } from "./metadata/wiki-metadata-form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -35,6 +26,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { EditableTitle } from "./editable-title";
+import { StickySaveBar } from "./sticky-save-bar";
+import { WikiSettingsSheet } from "./wiki-settings-sheet";
 
 export type { WikiFormValue };
 export { emptyWikiFormValue };
@@ -61,6 +55,7 @@ interface Props {
   onDirtyChange?: (dirty: boolean) => void;
   excludeSlug?: string;
   locale: "en" | "vi";
+  headerSubtitle?: ReactNode;
 }
 
 export function WikiForm({
@@ -73,6 +68,7 @@ export function WikiForm({
   onDirtyChange,
   excludeSlug,
   locale,
+  headerSubtitle,
 }: Props) {
   const { t } = useI18n();
   const form = useForm<WikiFormValue>({
@@ -82,9 +78,8 @@ export function WikiForm({
   });
 
   const [warnSame, setWarnSame] = useState(false);
-  // Track whether the user has manually edited the slug. Edit mode starts true
-  // (server-provided slug must not be auto-overwritten by title changes); create
-  // mode starts false so slug auto-fills until the user types in the slug field.
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [slugEnTouched, setSlugEnTouched] = useState(isEdit);
   const [slugViTouched, setSlugViTouched] = useState(isEdit);
 
@@ -96,7 +91,7 @@ export function WikiForm({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  // Auto-slug from title when the slug hasn't been manually touched yet.
+  // Auto-slug from title when not manually touched.
   useEffect(() => {
     if (slugEnTouched) return;
     if (!title) return;
@@ -117,7 +112,7 @@ export function WikiForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title_vi, slugViTouched]);
 
-  // Beforeunload warning
+  // Beforeunload warning while dirty.
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       if (!form.formState.isDirty) return;
@@ -130,7 +125,21 @@ export function WikiForm({
 
   const submitWithMode = async (mode: "draft" | "publish") => {
     const valid = await form.trigger();
-    if (!valid) return;
+    if (!valid) {
+      const e = form.formState.errors;
+      if (
+        e.slug ||
+        e.slug_vi ||
+        e.summary ||
+        e.summary_vi ||
+        e.metadata ||
+        (locale === "en" && e.title_vi) ||
+        (locale === "vi" && e.title)
+      ) {
+        setSettingsOpen(true);
+      }
+      return;
+    }
     const value = form.getValues();
     if (
       mode === "publish" &&
@@ -148,132 +157,83 @@ export function WikiForm({
     await onSubmit(form.getValues(), "publish");
   };
 
+  const requestCancel = () => {
+    if (form.formState.isDirty) {
+      setConfirmCancel(true);
+    } else {
+      onCancel?.();
+    }
+  };
+
   const titlesFilled =
     !!form.watch("title")?.trim() && !!form.watch("title_vi")?.trim();
   const contentFilled =
     !!form.watch("content")?.trim() && !!form.watch("content_vi")?.trim();
-  const slugsValid = !form.formState.errors.slug && !form.formState.errors.slug_vi;
+  const slugsValid =
+    !form.formState.errors.slug && !form.formState.errors.slug_vi;
   const canSubmitDraft = titlesFilled && slugsValid && !saving;
   const canPublish = canSubmitDraft && contentFilled;
 
+  const errors = form.formState.errors;
+  const settingsHasError =
+    !!errors.slug ||
+    !!errors.slug_vi ||
+    !!errors.summary ||
+    !!errors.summary_vi ||
+    !!errors.metadata ||
+    (locale === "en" && !!errors.title_vi) ||
+    (locale === "vi" && !!errors.title);
+
+  const activeTitleField = locale === "vi" ? "title_vi" : "title";
+  const activeTitleValue =
+    locale === "vi" ? form.watch("title_vi") : form.watch("title");
+  const activeTitleErrorKey =
+    locale === "vi"
+      ? errors.title_vi?.message
+      : errors.title?.message;
+
   return (
     <Form {...form}>
-      <form className="space-y-6">
-        <Controller
-          control={form.control}
-          name="metadata"
-          render={({ field }) => (
-            <WikiMetadataForm
-              value={field.value}
-              onChange={field.onChange}
-              excludeSlug={excludeSlug}
-              locale={locale}
-              defaultOpen={!isEdit}
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <EditableTitle
+              value={activeTitleValue}
+              onChange={(v) =>
+                form.setValue(activeTitleField, v, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+              placeholder={t("wiki.edit.title_placeholder")}
+              error={activeTitleErrorKey ? t(activeTitleErrorKey) : null}
             />
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("wiki.field_title_en")}</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <I18nFormMessage />
-              </FormItem>
+            {headerSubtitle && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {headerSubtitle}
+              </p>
             )}
-          />
-          <FormField
-            control={form.control}
-            name="title_vi"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("wiki.field_title_vi")}</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <I18nFormMessage />
-              </FormItem>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSettingsOpen(true)}
+            className="relative shrink-0"
+          >
+            <Settings className="h-4 w-4 mr-1" />
+            {t("wiki.edit.settings_button")}
+            {settingsHasError && (
+              <span
+                aria-hidden
+                className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive"
+              />
             )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("wiki.field_slug_en")}</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    onChange={(e) => {
-                      setSlugEnTouched(true);
-                      field.onChange(e);
-                    }}
-                  />
-                </FormControl>
-                <I18nFormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="slug_vi"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("wiki.field_slug_vi")}</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    onChange={(e) => {
-                      setSlugViTouched(true);
-                      field.onChange(e);
-                    }}
-                  />
-                </FormControl>
-                <I18nFormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="summary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("wiki.field_summary_en")}</FormLabel>
-                <FormControl>
-                  <Textarea rows={2} {...field} />
-                </FormControl>
-                <I18nFormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="summary_vi"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("wiki.field_summary_vi")}</FormLabel>
-                <FormControl>
-                  <Textarea rows={2} {...field} />
-                </FormControl>
-                <I18nFormMessage />
-              </FormItem>
-            )}
-          />
+          </Button>
         </div>
 
         <div className="space-y-2">
-          <Label>{t("wiki.field_content")}</Label>
+          <Label className="sr-only">{t("wiki.field_content")}</Label>
           <TiptapEditor
             value={{
               en: form.watch("content"),
@@ -291,30 +251,26 @@ export function WikiForm({
             <AlertDescription>{submitError}</AlertDescription>
           </Alert>
         )}
+      </div>
 
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!canSubmitDraft}
-            onClick={() => submitWithMode("draft")}
-          >
-            {t("wiki.save_draft_button")}
-          </Button>
-          <Button
-            type="button"
-            disabled={!canPublish}
-            onClick={() => submitWithMode("publish")}
-          >
-            {t("wiki.save_publish_button")}
-          </Button>
-          {onCancel && (
-            <Button type="button" variant="ghost" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
-        </div>
-      </form>
+      <StickySaveBar
+        isDirty={isDirty}
+        saving={saving}
+        canSubmitDraft={canSubmitDraft}
+        canPublish={canPublish}
+        onSaveDraft={() => submitWithMode("draft")}
+        onPublish={() => submitWithMode("publish")}
+        onCancel={requestCancel}
+      />
+
+      <WikiSettingsSheet
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        excludeSlug={excludeSlug}
+        locale={locale}
+        onSlugEnTouched={setSlugEnTouched}
+        onSlugViTouched={setSlugViTouched}
+      />
 
       <AlertDialog open={warnSame} onOpenChange={setWarnSame}>
         <AlertDialogContent>
@@ -328,6 +284,32 @@ export function WikiForm({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handlePublishConfirmed}>
               Publish anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("wiki.edit.cancel_confirm_title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("wiki.edit.cancel_confirm_message")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t("wiki.edit.cancel_confirm_stay")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmCancel(false);
+                onCancel?.();
+              }}
+            >
+              {t("wiki.edit.cancel_confirm_leave")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

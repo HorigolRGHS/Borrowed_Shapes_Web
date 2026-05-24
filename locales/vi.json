@@ -153,6 +153,28 @@
       "create_failed": "Không tạo được bản nháp",
       "creating": "Đang tạo..."
     },
+    "edit": {
+      "settings_button": "Cài đặt",
+      "unsaved_indicator": "Có thay đổi chưa lưu",
+      "cancel_button": "Hủy",
+      "cancel_confirm_title": "Rời trang?",
+      "cancel_confirm_message": "Bạn có thay đổi chưa lưu. Rời trang sẽ mất các thay đổi này.",
+      "cancel_confirm_leave": "Rời trang",
+      "cancel_confirm_stay": "Ở lại",
+      "title_placeholder": "Nhập tiêu đề..."
+    },
+    "settings": {
+      "title_heading": "Cài đặt",
+      "title_section": "Tiêu đề",
+      "url_section": "Đường dẫn",
+      "summary_section": "Tóm tắt",
+      "status_section": "Trạng thái",
+      "metadata_section": "Thông tin bổ sung",
+      "published_label": "Đã xuất bản",
+      "published_desc": "Trang đang công khai. Người dùng có thể xem.",
+      "draft_label": "Bản nháp",
+      "draft_desc": "Trang chỉ admin nhìn thấy."
+    },
     "metadata": {
       "title": "Thông tin bổ sung",
       "title_optional": "(không bắt buộc)",

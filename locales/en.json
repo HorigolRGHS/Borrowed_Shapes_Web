@@ -153,6 +153,28 @@
       "create_failed": "Could not create draft",
       "creating": "Creating…"
     },
+    "edit": {
+      "settings_button": "Settings",
+      "unsaved_indicator": "Unsaved changes",
+      "cancel_button": "Cancel",
+      "cancel_confirm_title": "Discard changes?",
+      "cancel_confirm_message": "You have unsaved changes. Leaving will discard them.",
+      "cancel_confirm_leave": "Leave",
+      "cancel_confirm_stay": "Stay",
+      "title_placeholder": "Enter title..."
+    },
+    "settings": {
+      "title_heading": "Settings",
+      "title_section": "Title",
+      "url_section": "URL",
+      "summary_section": "Summary",
+      "status_section": "Status",
+      "metadata_section": "Metadata",
+      "published_label": "Published",
+      "published_desc": "This page is public.",
+      "draft_label": "Draft",
+      "draft_desc": "Only admins can see this page."
+    },
     "metadata": {
       "title": "Metadata",
       "title_optional": "(optional)",

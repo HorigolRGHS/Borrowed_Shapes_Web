@@ -176,7 +176,10 @@ export function WikiSettingsSheet({
           <Separator />
 
           {/* Thông tin bổ sung */}
-          <section>
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("wiki.settings.metadata_section")}
+            </h3>
             <Controller
               control={form.control}
               name="metadata"

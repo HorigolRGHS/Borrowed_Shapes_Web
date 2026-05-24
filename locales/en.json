@@ -182,6 +182,7 @@
       "url_section": "URL",
       "summary_section": "Summary",
       "status_section": "Status",
+      "metadata_section": "Metadata",
       "published_label": "Published",
       "published_desc": "This page is public.",
       "draft_label": "Draft",

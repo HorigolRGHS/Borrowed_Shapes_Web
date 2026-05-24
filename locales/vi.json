@@ -141,6 +141,18 @@
     "slug_taken_error": "Slug này đã được sử dụng",
     "invalid_slug_error": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang",
     "title_required_error": "Vui lòng nhập tiêu đề",
+    "new": {
+      "title_step1": "Tạo wiki mới",
+      "title_field": "Tiêu đề",
+      "url_preview": "Đường dẫn:",
+      "edit_slug": "Chỉnh sửa URL",
+      "confirm_slug": "Xong",
+      "slug_bumped": "Slug \"{original}\" đã được dùng — tự động đổi thành \"{final}\"",
+      "create_button": "Tạo bản nháp",
+      "cancel_button": "Hủy",
+      "create_failed": "Không tạo được bản nháp",
+      "creating": "Đang tạo..."
+    },
     "metadata": {
       "title": "Thông tin bổ sung",
       "title_optional": "(không bắt buộc)",

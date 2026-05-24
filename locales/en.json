@@ -141,6 +141,18 @@
     "slug_taken_error": "This slug is already in use",
     "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes",
     "title_required_error": "Title is required",
+    "new": {
+      "title_step1": "Create wiki",
+      "title_field": "Title",
+      "url_preview": "URL:",
+      "edit_slug": "Edit URL",
+      "confirm_slug": "Done",
+      "slug_bumped": "Slug \"{original}\" is taken — using \"{final}\" instead",
+      "create_button": "Create draft",
+      "cancel_button": "Cancel",
+      "create_failed": "Could not create draft",
+      "creating": "Creating…"
+    },
     "metadata": {
       "title": "Metadata",
       "title_optional": "(optional)",

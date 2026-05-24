@@ -90,7 +90,7 @@ export function EditableTitle({
       <button
         type="button"
         onClick={enterEdit}
-        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-foreground transition"
+        className="md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-foreground transition"
         aria-label="Edit title"
       >
         <Pencil className="h-4 w-4" />

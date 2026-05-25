@@ -59,6 +59,7 @@ export default function DashboardLayout({
   const navItems = [
     { href: "/dashboard", label: t("common.dashboard") },
     { href: "/dashboard/wiki", label: "Wiki" },
+    { href: "/dashboard/achievements", label: t("common.achievements") },
   ];
 
   const isActive = (href: string) =>

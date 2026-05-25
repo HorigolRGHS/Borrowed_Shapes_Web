@@ -29,12 +29,12 @@ export const registerSchema = z.object({
   }
 });
 
-export type RegisterFormValues = z.infer<typeof registerSchema>;
-
 export interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
 }
+
+export type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export const changePasswordSchema = z
   .object({

@@ -34,6 +34,8 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export type RegisterFormValues = z.infer<typeof registerSchema>;
+
 export const changePasswordSchema = z
   .object({
     oldPassword: z.string().min(1, "validation.password_required"),

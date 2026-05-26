@@ -1,0 +1,6 @@
+export enum ReportAction {
+  WARNING = 'WARNING',
+  NO_ACTION = 'NO_ACTION',
+  BAN_PERMANENT = 'BAN_PERMANENT',
+  BAN_CUSTOM = 'BAN_CUSTOM',
+}

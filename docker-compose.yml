@@ -1,9 +1,8 @@
 version: '3.8'
 
 services:
-  # --- PostgreSQL Service với pgvector ---
-  postgres:
-    # Thay đổi image ở đây
+  # ─── PostgreSQL ─────────────────────────────────────────────────────────────
+  bs_postgres:
     image: postgres:16-alpine
     container_name: my_postgres
     restart: always
@@ -14,15 +13,84 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-bws} -d ${POSTGRES_DB:-borrowed_shapes}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # --- Redis Stack giữ nguyên ---
-  redis-stack:
-    image: redis/redis-stack:latest
-    container_name: my_redis_stack
-    restart: always
-    ports:
-      - "6379:6379"
-      - "8001:8001"
+  # ─── Redis ──────────────────────────────────────────────────────────────────
+  bs_redis:
+    image: redis:7-alpine
+    restart: unless-stopped
     volumes:
-      - ./redis_data:/data
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend (NestJS) ────────────────────────────────────────────────────────
+  bs_be:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgres://${POSTGRES_USER:-bws}:${POSTGRES_PASSWORD:-password}@bs_postgres:5432/${POSTGRES_DB:-borrowed_shapes}?connection_limit=10&pool_timeout=20
+      REDIS_URL: ${REDIS_URL:-redis://bs_redis:6379}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      SESSION_TTL_SEC: ${SESSION_TTL_SEC:-604800}
+      HEARTBEAT_TIMEOUT_SEC: ${HEARTBEAT_TIMEOUT_SEC:-60}
+      HEARTBEAT_TIMEOUT_MS: ${HEARTBEAT_TIMEOUT_MS:-60000}
+      REDIS_CLEANUP_INTERVAL_MS: ${REDIS_CLEANUP_INTERVAL_MS:-60000}
+      DB_SYNC_INTERVAL_MS: ${DB_SYNC_INTERVAL_MS:-60000}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-me}
+      ACCESS_TOKEN_TTL_SEC: ${ACCESS_TOKEN_TTL_SEC:-900}
+      WIKI_UPLOAD_BASE_URL: ${WIKI_UPLOAD_BASE_URL:-http://localhost:3001}
+      WIKI_UPLOAD_DIR: ${WIKI_UPLOAD_DIR:-uploads}
+      WIKI_UPLOAD_MAX_SIZE: ${WIKI_UPLOAD_MAX_SIZE:-5242880}
+    volumes:
+      - ./server/uploads:/app/uploads
+    depends_on:
+      bs_postgres:
+        condition: service_healthy
+      bs_redis:
+        condition: service_healthy
+    # Chạy MikroORM schema:fresh trước khi khởi động server (code-first approach)
+    command: sh -c "npx mikro-orm schema:fresh --run && node dist/main.js"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  # ─── Frontend (Next.js) ──────────────────────────────────────────────────────
+  bs_fe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://bs_be:3001}
+    depends_on:
+      bs_be:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

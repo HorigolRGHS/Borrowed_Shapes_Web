@@ -4,40 +4,33 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
-import { UserSession } from '../entities/user-session.entity';
-import { AuditLog } from '../entities/audit-log.entity';
-import { User } from '../entities/user.entity';
-import { SessionStatus, AuditActionType } from '../entities/enums';
+import { UserSession } from '../entities/UserSession';
+import { AuditLog } from '../entities/AuditLog';
+import { User } from '../entities/User';
+import { SessionStatus } from '../entities/SessionStatus';
+import { AuditActionType } from '../entities/AuditActionType';
 
-const PLATFORMS = ['game', 'forum'] as const;
+import { UserSessionResponseDto, SessionMeResponseDto } from './dto/sessions.dto';
+
+const PLATFORMS = ['game', 'web'] as const;
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
+const presenceDetailsKey = (sessionId: string) => `user_session_details:${sessionId}`;
+const onlineZsetKey = 'online_users_by_last_active';
 
 @Injectable()
 export class SessionsService {
   constructor(
     private em: EntityManager,
     private redis: RedisService,
-    private config: ConfigService,
   ) {}
 
-  async heartbeat(userId: string, platform: string): Promise<void> {
-    const ttl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
-    const now = new Date().toISOString();
-    const key = rtKey(userId, platform);
-    await this.redis.pipeline([
-      { cmd: 'hset', args: [key, { lastActive: now }] },
-      { cmd: 'expire', args: [key, ttl] },
-    ]);
-  }
-
-  async getMe(userId: string, platform: string) {
+  async getMe(userId: string, platform: string): Promise<SessionMeResponseDto> {
     const details = await this.redis.hgetall(rtKey(userId, platform));
     return { userId, platform, ...details };
   }
 
-  async listSessions(userId: string, currentPlatform: string) {
+  async listSessions(userId: string, currentPlatform: string): Promise<UserSessionResponseDto[]> {
     // Read both platform slots in one pipeline
     const keys = PLATFORMS.map((p) => rtKey(userId, p));
     const liveResults = await this.redis.hgetallMany(keys);
@@ -52,7 +45,7 @@ export class SessionsService {
 
     const dbSessions = await this.em.find(
       UserSession,
-      { user: userId },
+      { userId },
       { orderBy: { loginTime: 'desc' } },
     );
 
@@ -61,6 +54,7 @@ export class SessionsService {
       const live = isActive && s.platform ? (liveByPlatform.get(s.platform) ?? null) : null;
       return {
         id: s.id,
+        userId: s.userId.id,
         sessionId: s.sessionId,
         platform: s.platform,
         loginTime: s.loginTime,
@@ -82,21 +76,23 @@ export class SessionsService {
     ipAddress: string,
   ): Promise<void> {
     const session = await this.em.findOne(UserSession, { id: dbSessionId });
-    if (!session) throw new NotFoundException('Session not found');
+    if (!session) throw new NotFoundException('auth.session_not_found');
 
-    if (session.user.id !== requestUserId && requestUserRole !== 'ADMIN') {
-      throw new ForbiddenException();
+    if (session.userId.id !== requestUserId && requestUserRole !== 'ADMIN') {
+      throw new ForbiddenException('common.forbidden');
     }
 
     // Find which platform slot currently holds this session and remove it
     if (session.platform) {
-      const key = rtKey(session.user.id, session.platform);
+      const key = rtKey(session.userId.id, session.platform);
       const stored = await this.redis.hgetall(key);
       if (stored?.sessionId === session.sessionId) {
         await this.redis.del(key);
-        await this.redis.zrem('online_users_by_last_active', session.sessionId);
       }
     }
+
+    await this.redis.zrem(onlineZsetKey, session.sessionId);
+    await this.redis.del(presenceDetailsKey(session.sessionId));
 
     await this.em.nativeUpdate(
       UserSession,
@@ -105,7 +101,7 @@ export class SessionsService {
     );
 
     const auditLog = this.em.create(AuditLog, {
-      user: this.em.getReference(User, requestUserId),
+      userId: this.em.getReference(User, requestUserId),
       actionType: AuditActionType.REVOKE_SESSION,
       entityName: 'UserSession',
       entityId: dbSessionId,

@@ -9,7 +9,7 @@ import type { Request } from 'express';
 import { RedisService } from '../../redis/redis.service';
 
 const LIMIT = 5;
-const WINDOW_SEC = 120; // 2 minutes
+const WINDOW_SEC = 0; // 2 minutes
 
 /**
  * Rate limit: 5 requests per 2 minutes per IP.

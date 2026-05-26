@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { PresenceService } from './presence.service';
 
@@ -12,7 +12,7 @@ export class PresenceSyncJob {
     private presenceService: PresenceService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron('*/10 * * * * *')
   async cleanupExpired(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {
@@ -23,7 +23,7 @@ export class PresenceSyncJob {
     });
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron('*/10 * * * * *')
   async syncToDb(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {

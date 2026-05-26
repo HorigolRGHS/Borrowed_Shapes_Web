@@ -4,6 +4,8 @@ export interface RequestUser {
   userId: string;
   role: string;
   platform: string;
+  sessionId?: string;
+  gameProfileId?: string | null;
 }
 
 export const CurrentUser = createParamDecorator(

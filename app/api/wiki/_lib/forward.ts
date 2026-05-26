@@ -1,5 +1,6 @@
 // app/api/wiki/_lib/forward.ts
 import { NextRequest, NextResponse } from "next/server";
+import axios, { type AxiosResponse } from "axios";
 import apiClient from "@/lib/api/api-client";
 import type { ApiResponse } from "@/models/dtos/api-response.dto";
 
@@ -8,18 +9,6 @@ type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 interface ForwardOptions {
   params?: Record<string, unknown>;
   body?: unknown;
-}
-
-function isAxiosErrorWithResponse(
-  err: unknown,
-): err is { response: { status: number; data: unknown } } {
-  if (typeof err !== "object" || err === null) return false;
-  const maybe = err as { response?: { status?: unknown } };
-  return (
-    typeof maybe.response === "object" &&
-    maybe.response !== null &&
-    typeof maybe.response.status === "number"
-  );
 }
 
 export async function forwardJson(
@@ -33,7 +22,7 @@ export async function forwardJson(
       params: opts.params,
     };
 
-    let res;
+    let res: AxiosResponse<unknown>;
     switch (method) {
       case "GET":
         res = await apiClient.get(backendPath, config);
@@ -50,11 +39,15 @@ export async function forwardJson(
       case "PATCH":
         res = await apiClient.patch(backendPath, opts.body ?? {}, config);
         break;
+      default: {
+        const _exhaustive: never = method;
+        throw new Error(`Unsupported method: ${_exhaustive}`);
+      }
     }
 
     return NextResponse.json(res.data, { status: res.status });
   } catch (err: unknown) {
-    if (isAxiosErrorWithResponse(err)) {
+    if (axios.isAxiosError(err) && err.response) {
       return NextResponse.json(err.response.data, {
         status: err.response.status,
       });

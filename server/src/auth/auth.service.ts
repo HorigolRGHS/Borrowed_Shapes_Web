@@ -760,6 +760,14 @@ export class AuthService {
       throw new UnauthorizedException('auth.user_not_found');
     }
 
+    // Check if new password is the same as current password
+    if (user.passwordHash) {
+      const isSameAsOld = await bcrypt.compare(dto.newPassword, user.passwordHash);
+      if (isSameAsOld) {
+        throw new BadRequestException('auth.new_password_same_as_old');
+      }
+    }
+
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
     await this.em.flush();
@@ -787,6 +795,12 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.oldPassword, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedException('auth.current_password_incorrect');
+    }
+
+    // Check if new password is the same as old password
+    const isSameAsOld = await bcrypt.compare(dto.newPassword, user.passwordHash);
+    if (isSameAsOld) {
+      throw new BadRequestException('auth.new_password_same_as_old');
     }
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);

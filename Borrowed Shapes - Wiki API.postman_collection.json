@@ -1,0 +1,736 @@
+{
+  "info": {
+    "_postman_id": "c1d2e3f4-5a6b-7c8d-9e0f-112233445566",
+    "name": "Borrowed Shapes - Wiki API",
+    "description": "CRUD, search, history, rollback, publish/unpublish, image upload for the wiki module. Run after the Auth collection's Login to populate {{accessToken}}.\n\nFlow: Login (from Auth collection) -> Create -> Get by slug -> Update -> History -> Rollback -> Delete.\n\nVariables used:\n- {{baseUrl}} (shared with Auth collection, e.g. http://localhost:3001)\n- {{accessToken}} (set by Auth collection's Login)\n- {{wikiId}} (set by Create wiki / List published)\n- {{wikiSlug}} (set by Create wiki)\n- {{revisionId}} (set by Create wiki / Get by slug / Update)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Public Reads",
+      "item": [
+        {
+          "name": "List published",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "if (json.success && json.data && json.data.items && json.data.items.length > 0) {\r",
+                  "  pm.environment.set(\"wikiId\", json.data.items[0].id);\r",
+                  "  pm.environment.set(\"wikiSlug\", json.data.items[0].slug);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki?page=1&limit=20&q=&sort=createdAt&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "q", "value": "" },
+                { "key": "sort", "value": "createdAt" },
+                { "key": "order", "value": "desc" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search wiki",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/search?q=dragon&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "search"],
+              "query": [
+                { "key": "q", "value": "dragon" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by slug",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "if (json.success && json.data && json.data.latestRevision) {\r",
+                  "  pm.environment.set(\"revisionId\", json.data.latestRevision.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/slug/{{wikiSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "slug", "{{wikiSlug}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "History",
+      "description": "Authenticated reads (USER or ADMIN). Requires {{accessToken}} from the Auth collection's Login.",
+      "item": [
+        {
+          "name": "List revisions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/history?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "history"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get single revision",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/history/{{revisionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "history", "{{revisionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Diff revision vs previous",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/history/{{revisionId}}/diff",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "history", "{{revisionId}}", "diff"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Reads",
+      "description": "Admin-only reads. Requires {{accessToken}} for an ADMIN role user.",
+      "item": [
+        {
+          "name": "Admin list (incl. drafts)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/admin?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "admin"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin get by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/admin/{{wikiId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "admin", "{{wikiId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Writes",
+      "description": "Admin-only mutations. Requires {{accessToken}} for an ADMIN role user.",
+      "item": [
+        {
+          "name": "Create wiki",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "if (json.success) {\r",
+                  "  pm.environment.set(\"wikiId\", json.data.id);\r",
+                  "  pm.environment.set(\"wikiSlug\", json.data.slug);\r",
+                  "  pm.environment.set(\"revisionId\", json.data.latestRevision.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"dragon-knight\",\n  \"slug_vi\": \"hiep-si-rong\",\n  \"title\": \"Dragon Knight\",\n  \"title_vi\": \"Hiệp sĩ rồng\",\n  \"content\": \"# Hello\\n\\nThis is the dragon knight.\",\n  \"content_vi\": \"# Xin chào\\n\\nĐây là hiệp sĩ rồng.\",\n  \"summary\": \"Class summary\",\n  \"summary_vi\": \"Tóm tắt class\",\n  \"isPublished\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update wiki",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "if (json.success) {\r",
+                  "  pm.environment.set(\"revisionId\", json.data.latestRevision.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"dragon-knight\",\n  \"slug_vi\": \"hiep-si-rong\",\n  \"title\": \"Dragon Knight v2\",\n  \"title_vi\": \"Hiệp sĩ rồng v2\",\n  \"content\": \"# Updated\\n\\nNew content.\",\n  \"content_vi\": \"# Cập nhật\\n\\nNội dung mới.\",\n  \"expectedLatestRevisionId\": \"{{revisionId}}\",\n  \"forceOverwrite\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete wiki",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rollback to revision",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "if (json.success) {\r",
+                  "  pm.environment.set(\"revisionId\", json.data.latestRevision.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetRevisionId\": \"<paste a revision id from history>\",\n  \"expectedLatestRevisionId\": \"{{revisionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/rollback",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "rollback"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Publish",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "publish"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unpublish",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/unpublish",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "unpublish"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "description": "Admin-only image upload. Multipart form-data; field name is `file`. Allowed mime types: image/jpeg, image/png, image/webp, image/gif. Max size 5MB.",
+      "item": [
+        {
+          "name": "Upload image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Pick a jpeg/png/webp/gif file <= 5MB"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "upload"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Abnormal Cases",
+      "description": "Negative paths to verify 4xx error handling. Each request includes a description explaining the expected status and message.",
+      "item": [
+        {
+          "name": "401 - History without auth",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Expected: 401 Unauthorized. The history endpoint requires a valid access token; sending no Authorization header should be rejected by the global auth guard.",
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/history?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "history"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Create with USER role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 403 Forbidden. Manual setup: log in as a USER (not ADMIN) so {{accessToken}} carries the USER role, then run this. The @Roles('ADMIN') guard on the admin controller should reject the request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"forbidden-page\",\n  \"slug_vi\": \"trang-cam\",\n  \"title\": \"Forbidden\",\n  \"title_vi\": \"Cấm\",\n  \"content\": \"# nope\",\n  \"content_vi\": \"# không\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "404 - Get by non-existent slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Expected: 404 wiki.not_found. The slug 'non-existent-slug' should not match any published page.",
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/slug/non-existent-slug",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "slug", "non-existent-slug"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Invalid slug format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 400 wiki.invalid_slug. Slug 'Bad Slug!' fails the [a-z0-9-]+ regex (uppercase, space, exclamation).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"Bad Slug!\",\n  \"slug_vi\": \"slug-vi\",\n  \"title\": \"Bad slug demo\",\n  \"title_vi\": \"Demo slug xấu\",\n  \"content\": \"# x\",\n  \"content_vi\": \"# x\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Reserved slug",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 400 wiki.reserved_slug. The slug 'admin' is in RESERVED_SLUGS and must be rejected.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"admin\",\n  \"slug_vi\": \"slug-vi\",\n  \"title\": \"Reserved slug demo\",\n  \"title_vi\": \"Demo slug dự trữ\",\n  \"content\": \"# x\",\n  \"content_vi\": \"# x\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Cannot publish empty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 400 wiki.cannot_publish_empty. Setup: create a wiki with empty content/content_vi (or update it to be empty) and capture its id into {{wikiId}}, then call this endpoint.",
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}", "publish"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Slug taken (create twice)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 409 wiki.slug_taken. Run the regular Create wiki request first to seed slug 'dragon-knight', then send this request to attempt the same slug again.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"dragon-knight\",\n  \"slug_vi\": \"hiep-si-rong\",\n  \"title\": \"Dragon Knight (dup)\",\n  \"title_vi\": \"Hiệp sĩ rồng (trùng)\",\n  \"content\": \"# dup\",\n  \"content_vi\": \"# trùng\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Conflict revision",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 409 wiki.conflict_revision. Setup: capture an old revision id (e.g. from a fresh Create) into {{revisionId}}, run Update once so the latest revision moves forward, then send this request reusing the stale {{revisionId}} so expectedLatestRevisionId no longer matches the latest.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"dragon-knight\",\n  \"slug_vi\": \"hiep-si-rong\",\n  \"title\": \"Dragon Knight stale\",\n  \"title_vi\": \"Hiệp sĩ rồng (cũ)\",\n  \"content\": \"# stale\",\n  \"content_vi\": \"# cũ\",\n  \"expectedLatestRevisionId\": \"{{revisionId}}\",\n  \"forceOverwrite\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "{{wikiId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "413 - Upload too large",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 413 wiki.upload_too_large. Manual test: attach an image file > 5MB to the `file` form field. Multer's fileSize limit (UPLOAD_MAX_SIZE = 5 MiB) plus the explicit size check in the controller should produce a 413.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Manually attach a file larger than 5MB"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "upload"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "415 - Upload invalid type (SVG)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Expected: 415 wiki.upload_invalid_type. Manual test: attach an SVG (or any non-jpeg/png/webp/gif) file to the `file` form field. ALLOWED_UPLOAD_MIMES does not include image/svg+xml, so the upload validator should reject it.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Manually attach an .svg file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wiki/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wiki", "upload"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.response.code === 401) {\r",
+          "    const refreshReq = {\r",
+          "        url: pm.environment.get(\"baseUrl\") + \"/api/auth/refresh\",\r",
+          "        method: \"POST\",\r",
+          "        header: { \"Content-Type\": \"application/json\" },\r",
+          "        body: {\r",
+          "            mode: \"raw\",\r",
+          "            raw: JSON.stringify({\r",
+          "                refreshToken: pm.environment.get(\"refreshToken\")\r",
+          "            })\r",
+          "        }\r",
+          "    };\r",
+          "\r",
+          "    pm.sendRequest(refreshReq, (err, res) => {\r",
+          "        if (!err && res.code === 200) {\r",
+          "            const json = res.json();\r",
+          "            const data = json.data || json;\r",
+          "            pm.environment.set(\"accessToken\", data.accessToken);\r",
+          "            pm.environment.set(\"refreshToken\", data.refreshToken);\r",
+          "            postman.setNextRequest(pm.info.requestName);\r",
+          "        }\r",
+          "    });\r",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "wikiId",
+      "value": ""
+    },
+    {
+      "key": "wikiSlug",
+      "value": ""
+    },
+    {
+      "key": "revisionId",
+      "value": ""
+    }
+  ]
+}

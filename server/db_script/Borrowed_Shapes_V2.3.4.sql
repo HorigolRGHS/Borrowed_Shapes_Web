@@ -1,9 +1,14 @@
 -- ═══════════════════════════════════════
 --  Database Schema - Game Unity + Web Wiki/Forum
---  Version: 2.3.1
+--  Version: 2.3.4
 -- ═══════════════════════════════════════
 
 SET TIMEZONE = 'Asia/Ho_Chi_Minh';
+
+
+--DROP SCHEMA IF EXISTS auth CASCADE;
+--DROP SCHEMA IF EXISTS game CASCADE;
+--DROP SCHEMA IF EXISTS web CASCADE;
 
 CREATE SCHEMA IF NOT EXISTS public;
 -- Extension cho case-insensitive text (email, displayName)
@@ -149,25 +154,6 @@ INSERT INTO game."Level" ("id", "displayName", "order") VALUES
 ON CONFLICT ("id") DO NOTHING;
 
 
-CREATE SEQUENCE game.gameprofile_id_seq START 1;
-
-
--- ─── GameProfile ─────────────────────────────────────────
-CREATE TABLE game."GameProfile" (
-  "id" TEXT NOT NULL PRIMARY KEY 
-       DEFAULT 'BS' || lpad(nextval('game.gameprofile_id_seq')::text, 8, '0'),
-  "userId"         TEXT        NOT NULL UNIQUE,
-  "totalPlayTime"  INT         NOT NULL DEFAULT 0,
-  "totalSessions"  INT         NOT NULL DEFAULT 0,
-  "totalWins"      INT         NOT NULL DEFAULT 0,
-  "totalLosses"    INT         NOT NULL DEFAULT 0,
-  "totalAbandoned" INT         NOT NULL DEFAULT 0,
-  "createdAt"      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  "updatedAt"      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT "GameProfile_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES auth."User"("id") ON DELETE CASCADE
-);
 
 -- ─── Achievement ─────────────────────────────────────────
 CREATE TABLE game."Achievement" (
@@ -182,6 +168,33 @@ CREATE TABLE game."Achievement" (
   "seasonMonth"    DATE,  -- NULL nếu PERMANENT
   "expiresAt"      TIMESTAMPTZ  -- NULL nếu PERMANENT, = cuối tháng nếu SEASONAL
 );
+
+
+
+
+CREATE SEQUENCE game.gameprofile_id_seq START 1;
+
+
+-- ─── GameProfile ─────────────────────────────────────────
+CREATE TABLE game."GameProfile" (
+  "id" TEXT NOT NULL PRIMARY KEY 
+       DEFAULT 'BS' || lpad(nextval('game.gameprofile_id_seq')::text, 8, '0'),
+  "userId"              TEXT        NOT NULL UNIQUE,
+  "totalPlayTime"       INT         NOT NULL DEFAULT 0,
+  "totalSessions"       INT         NOT NULL DEFAULT 0,
+  "totalWins"           INT         NOT NULL DEFAULT 0,
+  "totalLosses"         INT         NOT NULL DEFAULT 0,
+  "totalAbandoned"      INT         NOT NULL DEFAULT 0,
+  "equippedAchievementId" TEXT, -- NEW
+  "createdAt"           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updatedAt"           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  CONSTRAINT "GameProfile_userId_fkey"
+    FOREIGN KEY ("userId") REFERENCES auth."User"("id") ON DELETE CASCADE,
+  CONSTRAINT "GameProfile_equippedAchievementId_fkey"
+    FOREIGN KEY ("equippedAchievementId") REFERENCES game."Achievement"("id")
+);
+
 
 /**
  * INSERT INTO game."Achievement"(name, "criteriaCode", description, "badgeImageUrl", type, "seasonMonth", "expiresAt")
@@ -379,14 +392,18 @@ CREATE TYPE web."ReportAction"      AS ENUM ('WARNING', 'NO_ACTION', 'BAN_PERMAN
 
 -- ─── ForumCategory ───────────────────────────────────────
 CREATE TABLE web."ForumCategory" (
-  "id"           TEXT    NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "name"         TEXT    NOT NULL UNIQUE,
-  "slug"         TEXT    NOT NULL UNIQUE,
-  "description"  TEXT,
-  "iconUrl"      TEXT,
-  "isOfficial"   BOOLEAN NOT NULL DEFAULT FALSE,
-  "displayOrder" INT     NOT NULL DEFAULT 0
+  "id"              TEXT    NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "name"            TEXT    NOT NULL UNIQUE, -- English default
+  "name_vi"         TEXT    NOT NULL UNIQUE, -- NEW: Vietnamese
+  "slug"            TEXT    NOT NULL UNIQUE, -- English default
+  "slug_vi"         TEXT    NOT NULL UNIQUE, -- NEW: Vietnamese
+  "description"     TEXT, -- English default
+  "description_vi"  TEXT, -- NEW: Vietnamese
+  "iconUrl"         TEXT,
+  "isOfficial"      BOOLEAN NOT NULL DEFAULT FALSE,
+  "displayOrder"    INT     NOT NULL DEFAULT 0
 );
+
 
 -- ─── ForumThread ─────────────────────────────────────────
 CREATE TABLE web."ForumThread" (
@@ -514,8 +531,10 @@ CREATE TABLE web."ReportResponse" (
 -- ─── WikiPage ────────────────────────────────────────────
 CREATE TABLE web."WikiPage" (
   "id"               TEXT        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "slug"             TEXT        NOT NULL UNIQUE,
-  "title"            TEXT        NOT NULL,
+  "slug"             TEXT        NOT NULL UNIQUE, 
+  "slug_vi"          TEXT        NOT NULL UNIQUE, 
+  "title"            TEXT        NOT NULL, 
+  "title_vi"         TEXT        NOT NULL,
   "metadataJson"     JSONB,
   "isPublished"      BOOLEAN     NOT NULL DEFAULT FALSE,
   "latestRevisionId" TEXT,
@@ -528,12 +547,14 @@ CREATE INDEX "WikiPage_metadata_gin_idx" ON web."WikiPage" USING GIN ("metadataJ
 
 -- ─── WikiRevision ────────────────────────────────────────
 CREATE TABLE web."WikiRevision" (
-  "id"        TEXT        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "pageId"    TEXT        NOT NULL,
-  "authorId"  TEXT        NOT NULL,
-  "content"   TEXT        NOT NULL,
-  "summary"   TEXT,
-  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "id"         TEXT        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "pageId"      TEXT        NOT NULL,
+  "authorId"    TEXT        NOT NULL,
+  "content"     TEXT        NOT NULL,
+  "content_vi"  TEXT        NOT NULL, 
+  "summary"     TEXT, 
+  "summary_vi"  TEXT, 
+  "createdAt"   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT "WikiRevision_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES web."WikiPage"("id") ON DELETE CASCADE,
   CONSTRAINT "WikiRevision_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE SET NULL
 );
@@ -548,21 +569,23 @@ ALTER TABLE web."WikiPage"
 
 -- ─── Announcement ────────────────────────────────────────
 CREATE TABLE web."Announcement" (
-  "id"          TEXT                   NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  "authorId"    TEXT                   NOT NULL,
-  "slug"        TEXT                   NOT NULL UNIQUE,
-  "title"       TEXT                   NOT NULL,
-  "summary"     TEXT,
-  "content"     TEXT                   NOT NULL,
-  "type"        web."AnnouncementType" NOT NULL DEFAULT 'NEWS',
-  "isPinned"    BOOLEAN                NOT NULL DEFAULT FALSE,
-  "isPublished" BOOLEAN                NOT NULL DEFAULT FALSE,
-  "publishedAt" TIMESTAMPTZ,
-  "createdAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
-  "updatedAt"   TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
-  
-  CONSTRAINT "Announcement_authorId_fkey"
-    FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE SET NULL
+  "id"           TEXT                   NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "authorId"     TEXT                   NOT NULL,
+  "slug"         TEXT                   NOT NULL UNIQUE, 
+  "slug_vi"      TEXT                   NOT NULL UNIQUE, 
+  "title"        TEXT                   NOT NULL, 
+  "title_vi"     TEXT                   NOT NULL,
+  "summary"      TEXT, 
+  "summary_vi"   TEXT, 
+  "content"      TEXT                   NOT NULL,
+  "content_vi"   TEXT                   NOT NULL, 
+  "type"         web."AnnouncementType" NOT NULL DEFAULT 'NEWS',
+  "isPinned"     BOOLEAN                NOT NULL DEFAULT FALSE,
+  "isPublished"  BOOLEAN                NOT NULL DEFAULT FALSE,
+  "publishedAt"  TIMESTAMPTZ,
+  "createdAt"    TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
+  "updatedAt"    TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
+  CONSTRAINT "Announcement_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES auth."User"("id") ON DELETE SET NULL
 );
 
 CREATE INDEX "Announcement_isPublished_publishedAt_idx"

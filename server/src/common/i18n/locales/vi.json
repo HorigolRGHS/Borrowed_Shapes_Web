@@ -81,6 +81,8 @@
     "display_name_required": "Vui lòng nhập tên hiển thị",
     "display_name_min_3": "Tên hiển thị phải có ít nhất 3 ký tự",
     "display_name_max_20": "Tên hiển thị không được quá 20 ký tự",
-    "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối"
+    "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối",
+    "min_length_3": "Phải có ít nhất 3 ký tự",
+    "max_length_20": "Không được vượt quá 20 ký tự"
   }
 }

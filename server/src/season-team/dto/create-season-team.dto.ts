@@ -1,14 +1,15 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, MinLength, MaxLength } from 'class-validator';
 
 export class CreateSeasonTeamDto {
-	@ApiPropertyOptional({
+	@ApiProperty({
 		description: 'Tên team hiển thị',
 		example: 'SpeedRunners',
-		maxLength: 50,
+		minLength: 3,
+		maxLength: 20,
 	})
-	@IsOptional()
 	@IsString({ message: 'validation.invalid_string' })
-	@MaxLength(50, { message: 'validation.max_length_50' })
+	@MinLength(3, { message: 'validation.min_length_3' })
+	@MaxLength(20, { message: 'validation.max_length_20' })
 	name?: string;
 }

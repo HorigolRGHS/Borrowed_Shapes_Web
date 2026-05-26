@@ -23,11 +23,11 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-import { AchievementService } from './achievement.service';
-import { CreateAchievementDto } from './dto/create-achievement.dto';
-import { UpdateAchievementDto } from './dto/update-achievement.dto';
-import { AchievementResponseDto } from './dto/achievement-response.dto';
-import { UserAchievementResponseDto } from './dto/user-achievement-response.dto';
+import { AchievementService } from './achievements.service';
+import { CreateAchievementDto } from './dto/create-achievements.dto';
+import { UpdateAchievementDto } from './dto/update-achievements.dto';
+import { AchievementResponseDto } from './dto/achievements-response.dto';
+import { UserAchievementResponseDto } from './dto/user-achievements-response.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';

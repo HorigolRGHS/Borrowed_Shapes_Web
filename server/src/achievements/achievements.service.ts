@@ -2,8 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
-import { CreateAchievementDto } from './dto/create-achievement.dto';
-import { UpdateAchievementDto } from './dto/update-achievement.dto';
+import { CreateAchievementDto } from './dto/create-achievements.dto';
+import { UpdateAchievementDto } from './dto/update-achievements.dto';
 
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AchievementResponseDto } from './achievement-response.dto';
+import { AchievementResponseDto } from './achievements-response.dto';
 
 export class UserAchievementResponseDto {
   @ApiProperty({ type: AchievementResponseDto })

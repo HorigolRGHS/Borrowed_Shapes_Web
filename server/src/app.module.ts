@@ -11,6 +11,7 @@ import { AchievementModule } from './achievement/achievement.module';
 import { I18nModule } from './common/i18n/i18n.module';
 import { HeartbeatInterceptor } from './common/interceptors/heartbeat.interceptor';
 import { WikiModule } from './wiki/wiki.module';
+import { ForumModule } from './forums/forums.module';
 import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
@@ -25,6 +26,7 @@ import mikroOrmConfig from './mikro-orm.config';
     AchievementModule,
     I18nModule,
     WikiModule,
+    ForumModule,
   ],
   providers: [
     {

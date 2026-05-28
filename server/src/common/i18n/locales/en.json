@@ -11,7 +11,7 @@
     "invalid_redirect_uri": "Invalid redirectUri",
     "email_already_linked": "Email already linked to another Google account",
     "login_code_expired": "Login code expired or invalid",
-    "unauthorized": "Unauthorized access, please login again",
+    "unauthorized": "Unauthorized access, please log in again",
     "unverified_email": "Your email is not verified yet",
     "invalid_credentials": "Invalid credentials",
     "email_password_required": "Email and password are required",
@@ -23,7 +23,7 @@
     "invalid_google_token": "Invalid Google token",
     "email_verify_subject": "[Borrowed Shapes] Verify your Email",
     "register_success": "Registration successful, please check your email to verify",
-    "login_success": "Login successful",
+    "login_success": "Log in successful",
     "google_exchange_success": "Google exchange successful",
     "token_refreshed": "Token refreshed successfully",
     "logout_success": "Logout successful",
@@ -106,5 +106,22 @@
     "upload_failed": "Upload failed",
     "related_success": "Related pages resolved",
     "too_many_related_slugs": "At most 30 related slugs may be requested at once"
+  },
+  "forum": {
+    "list_success": "Forums retrieved successfully",
+    "detail_success": "Thread details retrieved successfully",
+    "create_success": "Thread created successfully",
+    "update_success": "Thread updated successfully",
+    "delete_success": "Thread deleted successfully",
+    "vote_success": "Vote recorded successfully",
+    "thread_not_found": "Thread not found",
+    "category_not_found": "Category not found",
+    "category_required": "Category is required",
+    "title_required": "Title is required",
+    "content_required": "Content is required",
+    "invalid_author": "Author not found",
+    "invalid_user": "User not found",
+    "forbidden_update": "You don't have permission to update this thread",
+    "forbidden_delete": "You don't have permission to delete this thread"
   }
 }

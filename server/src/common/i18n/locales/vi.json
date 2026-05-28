@@ -36,6 +36,7 @@
     "otp_expired": "Mã OTP đã hết hạn hoặc không hợp lệ",
     "password_not_set": "Tài khoản này chưa thiết lập mật khẩu",
     "current_password_incorrect": "Mật khẩu hiện tại không chính xác",
+    "new_password_same_as_old": "Mật khẩu mới không được trùng với mật khẩu hiện tại",
     "session_not_found": "Không tìm thấy phiên làm việc"
   },
   "game": {
@@ -52,6 +53,22 @@
     "session_not_found": "Không tìm thấy phiên chơi",
     "profile_not_found": "Không tìm thấy hồ sơ game"
   },
+  "season_team": {
+    "created_success": "Tạo team mùa này thành công",
+    "joined_success": "Tham gia team mùa này thành công",
+    "no_team": "Bạn chưa ở trong team mùa này",
+    "current_team": "Đã tải team hiện tại thành công",
+    "already_in_team": "Bạn đã ở trong một team mùa này rồi",
+    "team_full": "Team mùa này đã đủ thành viên",
+    "not_found": "Không tìm thấy team mùa này",
+    "member_not_found": "Không tìm thấy thành viên trong team mùa này",
+    "cannot_kick_leader": "Bạn không thể kick trưởng nhóm",
+    "not_in_team": "Bạn không ở trong team này",
+    "leader_cannot_leave": "Trưởng nhóm không thể rời team",
+    "kicked_success": "Đã kick thành viên thành công",
+    "left_success": "Rời team mùa này thành công",
+    "deleted_success": "Đã xóa team mùa này thành công"
+  },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",
     "password_required": "Vui lòng nhập mật khẩu",
@@ -64,7 +81,20 @@
     "display_name_required": "Vui lòng nhập tên hiển thị",
     "display_name_min_3": "Tên hiển thị phải có ít nhất 3 ký tự",
     "display_name_max_20": "Tên hiển thị không được quá 20 ký tự",
-    "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối"
+    "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối",
+    "min_length_3": "Phải có ít nhất 3 ký tự",
+    "max_length_20": "Không được vượt quá 20 ký tự"
+  },
+  "achievements": {
+    "list_success": "Lấy danh sách thành tựu thành công",
+    "search_success": "Tìm kiếm thành tựu thành công",
+    "detail_success": "Lấy chi tiết thành tựu thành công",
+    "users_success": "Lấy danh sách thành tựu của người dùng thành công",
+    "create_success": "Tạo thành tựu thành công",
+    "update_success": "Cập nhật thành tựu thành công",
+    "delete_success": "Xóa thành tựu thành công",
+    "not_found": "Không tìm thấy thành tựu",
+    "already_exists": "Thành tựu với mã tiêu chí này đã tồn tại"
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",

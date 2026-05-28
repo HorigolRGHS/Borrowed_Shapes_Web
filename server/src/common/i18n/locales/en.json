@@ -36,6 +36,7 @@
     "otp_expired": "OTP expired or invalid",
     "password_not_set": "Password not set for this account",
     "current_password_incorrect": "Current password is incorrect",
+    "new_password_same_as_old": "New password cannot be the same as the current password",
     "session_not_found": "Session not found"
   },
   "game": {
@@ -52,6 +53,22 @@
     "session_not_found": "Session not found",
     "profile_not_found": "Game profile not found"
   },
+  "season_team": {
+    "created_success": "Season team created successfully",
+    "joined_success": "Joined season team successfully",
+    "no_team": "You are not in a season team",
+    "current_team": "Current season team loaded successfully",
+    "already_in_team": "You are already in a season team",
+    "team_full": "This season team is full",
+    "not_found": "Season team not found",
+    "member_not_found": "Season team member not found",
+    "cannot_kick_leader": "You cannot kick the team leader",
+    "not_in_team": "You are not in this season team",
+    "leader_cannot_leave": "The team leader cannot leave the team",
+    "kicked_success": "Member kicked successfully",
+    "left_success": "Left season team successfully",
+    "deleted_success": "Season team deleted successfully"
+  },
   "validation": {
     "invalid_email": "Invalid email address",
     "password_required": "Password is required",
@@ -64,7 +81,20 @@
     "display_name_required": "Display name is required",
     "display_name_min_3": "Display name must be at least 3 characters",
     "display_name_max_20": "Display name must not exceed 20 characters",
-    "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens"
+    "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens",
+    "min_length_3": "Must be at least 3 characters",
+    "max_length_20": "Must not exceed 20 characters"
+  },
+  "achievements": {
+    "list_success": "Achievements retrieved successfully",
+    "search_success": "Achievements search completed successfully",
+    "detail_success": "Achievement details retrieved successfully",
+    "users_success": "User achievements retrieved successfully",
+    "create_success": "Achievement created successfully",
+    "update_success": "Achievement updated successfully",
+    "delete_success": "Achievement deleted successfully",
+    "not_found": "Achievement not found",
+    "already_exists": "Achievement with this criteria code already exists"
   },
   "wiki": {
     "list_success": "Wiki list retrieved",

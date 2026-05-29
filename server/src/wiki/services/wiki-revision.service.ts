@@ -203,7 +203,12 @@ export class WikiRevisionService {
           metadataJson: compactMetadata(dto.metadataJson),
           isPublished: dto.isPublished ?? page.isPublished,
         } as any);
-        await em.flush();
+        try {
+          await em.flush();
+        } catch (err) {
+          if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+          throw err;
+        }
         page.latestRevisionId = newRevision;
         newRevisionId = newRevision.id;
       }

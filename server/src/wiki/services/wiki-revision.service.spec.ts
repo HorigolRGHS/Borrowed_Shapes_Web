@@ -571,6 +571,43 @@ describe('WikiRevisionService.update writes full snapshot', () => {
     expect(newRev.metadataJson).toEqual({ category: 'Boss' });
     expect(newRev.isPublished).toBe(true);
   });
+
+  it('translates Postgres unique violation on slug change to ConflictException', async () => {
+    const existingPage: any = {
+      id: 'p1',
+      slug: 'old-slug',
+      slug_vi: 'old-slug-vi',
+      title: 'Old',
+      title_vi: 'Cũ',
+      metadataJson: null,
+      isPublished: false,
+      latestRevisionId: { id: 'r1', content: '', content_vi: '', summary: null, summary_vi: null, createdAt: new Date() },
+    };
+    em.findOne = jest.fn().mockResolvedValue(existingPage);
+    em.create = jest.fn((_e: unknown, data: any) => ({ ...data, id: 'r2' }));
+    const uniqueErr: any = new Error('duplicate key value violates unique constraint');
+    uniqueErr.code = '23505';
+    uniqueErr.constraint = 'WikiPage_slug_key';
+    em.flush = jest.fn().mockRejectedValueOnce(uniqueErr);
+
+    await expect(
+      service.update(
+        'p1',
+        {
+          slug: 'taken-slug',
+          slug_vi: 'old-slug-vi',
+          title: 'Old',
+          title_vi: 'Cũ',
+          content: '',
+          content_vi: '',
+          metadataJson: null,
+          expectedLatestRevisionId: 'r1',
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      ),
+    ).rejects.toThrow('wiki.slug_taken');
+  });
 });
 
 describe('WikiRevisionService.rollback', () => {

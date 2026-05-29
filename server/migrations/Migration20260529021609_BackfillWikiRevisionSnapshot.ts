@@ -19,16 +19,10 @@ export class Migration20260529021609_BackfillWikiRevisionSnapshot extends Migrat
   }
 
   override async down(): Promise<void> {
-    this.addSql(`
-      UPDATE web."WikiRevision"
-      SET
-        "title" = NULL,
-        "title_vi" = NULL,
-        "slug" = NULL,
-        "slug_vi" = NULL,
-        "metadataJson" = NULL,
-        "isPublished" = NULL;
-    `);
+    // Backfill is logically irreversible. Once the next migration sets
+    // NOT NULL on these columns, nulling them would violate the
+    // constraint; and rows written by the application after backfill
+    // would be erased rather than restored. Leave empty.
   }
 
 }

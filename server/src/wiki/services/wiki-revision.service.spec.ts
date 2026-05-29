@@ -748,6 +748,83 @@ describe('WikiRevisionService.rollback', () => {
   });
 });
 
+describe('WikiRevisionService.rollback applies full snapshot', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    const transactionalImpl = async (cb: any) => cb(em);
+    em = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(transactionalImpl),
+      getReference: jest.fn((_e: unknown, id: string) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('restores title/slug/metadata/isPublished from target revision', async () => {
+    const page: any = {
+      id: 'p1',
+      slug: 'now-slug', slug_vi: 'now-slug-vi',
+      title: 'Now', title_vi: 'Bây giờ',
+      metadataJson: { category: 'Item' },
+      isPublished: true,
+      latestRevisionId: { id: 'r3' },
+    };
+    const target: any = {
+      id: 'r2',
+      content: 'old body', content_vi: 'thân cũ',
+      summary: 'old', summary_vi: 'cũ',
+      title: 'Old', title_vi: 'Cũ',
+      slug: 'old-slug', slug_vi: 'old-slug-vi',
+      metadataJson: { category: 'Boss' },
+      isPublished: false,
+      createdAt: new Date('2026-05-01'),
+    };
+    const created: any[] = [];
+    em.findOne = jest.fn()
+      .mockResolvedValueOnce(page)
+      .mockResolvedValueOnce(target);
+    em.create = jest.fn((_e: unknown, data: any) => {
+      const obj = { ...data, id: 'r4' };
+      created.push(obj);
+      return obj;
+    });
+
+    await service.rollback(
+      'p1',
+      { targetRevisionId: 'r2', expectedLatestRevisionId: 'r3' } as any,
+      'admin-1',
+      '127.0.0.1',
+    );
+
+    const restored = created.find((c) => c.id === 'r4');
+    expect(restored.title).toBe('Old');
+    expect(restored.slug).toBe('old-slug');
+    expect(restored.metadataJson).toEqual({ category: 'Boss' });
+    expect(restored.isPublished).toBe(false);
+    expect(page.title).toBe('Old');
+    expect(page.slug).toBe('old-slug');
+    expect(page.metadataJson).toEqual({ category: 'Boss' });
+    expect(page.isPublished).toBe(false);
+  });
+});
+
 describe('WikiRevisionService.delete', () => {
   let service: WikiRevisionService;
   let em: any;

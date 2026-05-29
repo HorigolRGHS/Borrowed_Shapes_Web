@@ -297,10 +297,22 @@ export class WikiRevisionService {
         content_vi: target.content_vi,
         summary: `Rollback to revision ${target.id} (created ${target.createdAt.toISOString()})`,
         summary_vi: `Khôi phục về phiên bản ${target.id} (tạo ${target.createdAt.toISOString()})`,
+        title: target.title,
+        title_vi: target.title_vi,
+        slug: target.slug,
+        slug_vi: target.slug_vi,
+        metadataJson: target.metadataJson ?? null,
+        isPublished: target.isPublished,
       } as any);
       await em.flush();
 
       page.latestRevisionId = newRevision;
+      page.slug = target.slug;
+      page.slug_vi = target.slug_vi;
+      page.title = target.title;
+      page.title_vi = target.title_vi;
+      page.metadataJson = target.metadataJson ?? null;
+      page.isPublished = target.isPublished;
       await em.flush();
 
       return {

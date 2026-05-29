@@ -157,6 +157,12 @@ export class WikiService {
       content_vi: rev.content_vi,
       summary: rev.summary ?? null,
       summary_vi: rev.summary_vi ?? null,
+      title: rev.title,
+      title_vi: rev.title_vi,
+      slug: rev.slug,
+      slug_vi: rev.slug_vi,
+      metadataJson: (rev.metadataJson as Record<string, unknown> | undefined) ?? null,
+      isPublished: rev.isPublished,
       author: this.toAuthor(rev.authorId),
       createdAt: rev.createdAt,
     };
@@ -254,6 +260,12 @@ export class WikiService {
 
     const items: WikiHistoryItemDto[] = revisions.map((r) => ({
       id: r.id,
+      title: r.title,
+      title_vi: r.title_vi,
+      slug: r.slug,
+      slug_vi: r.slug_vi,
+      metadataJson: (r.metadataJson as Record<string, unknown> | undefined) ?? null,
+      isPublished: r.isPublished,
       summary: r.summary ?? null,
       summary_vi: r.summary_vi ?? null,
       author: this.toAuthor(r.authorId),
@@ -327,6 +339,12 @@ export class WikiService {
       content_vi: rev.content_vi,
       summary: rev.summary ?? null,
       summary_vi: rev.summary_vi ?? null,
+      title: rev.title,
+      title_vi: rev.title_vi,
+      slug: rev.slug,
+      slug_vi: rev.slug_vi,
+      metadataJson: (rev.metadataJson as Record<string, unknown> | undefined) ?? null,
+      isPublished: rev.isPublished,
       author: this.toAuthor(rev.authorId),
       createdAt: rev.createdAt,
     };

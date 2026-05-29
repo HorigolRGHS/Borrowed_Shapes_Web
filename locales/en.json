@@ -174,6 +174,9 @@
       "cancel_confirm_leave": "Leave",
       "cancel_confirm_stay": "Stay",
       "title_placeholder": "Enter title...",
+      "untitled_placeholder": "Untitled",
+      "summary_placeholder_en": "Add a short summary…",
+      "summary_placeholder_vi": "Add a short summary…",
       "save_draft_success": "Draft saved",
       "save_publish_success": "Saved and published"
     },

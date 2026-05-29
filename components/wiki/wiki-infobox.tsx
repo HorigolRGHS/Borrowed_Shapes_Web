@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +21,23 @@ interface InfoboxI18n {
   tagsLabel: string;
 }
 
+interface InfoboxEditSlots {
+  image?: ReactNode;
+  category?: ReactNode;
+  stats?: ReactNode;
+  location?: ReactNode;
+  tags?: ReactNode;
+  related?: ReactNode;
+}
+
 interface Props {
   metadata: unknown;
   title: string;
   locale: "en" | "vi";
   relatedTitles?: Map<string, RelatedPageEntry>;
   i18n: InfoboxI18n;
+  mode?: "view" | "edit";
+  editSlots?: InfoboxEditSlots;
 }
 
 function isEmpty(m: WikiMetadata): boolean {
@@ -57,6 +69,8 @@ export function WikiInfobox({
   locale,
   relatedTitles,
   i18n,
+  mode = "view",
+  editSlots,
 }: Props) {
   // Persisted rows are produced by compactMetadata, so they may omit empty
   // collection fields. Fill them in with empty defaults before parsing so a
@@ -68,6 +82,13 @@ export function WikiInfobox({
   const parsed = wikiMetadataSchema.safeParse(merged);
   if (!parsed.success) return null;
   const m = parsed.data;
+
+  if (mode === "edit" && editSlots) {
+    return (
+      <WikiInfoboxEdit i18n={i18n} editSlots={editSlots} />
+    );
+  }
+
   if (isEmpty(m)) return null;
 
   const tags = pickTags(m, locale);
@@ -188,6 +209,60 @@ export function WikiInfobox({
                 </ul>
               </div>
             </>
+          )}
+        </CardContent>
+      </Card>
+    </aside>
+  );
+}
+
+function WikiInfoboxEdit({
+  i18n,
+  editSlots,
+}: {
+  i18n: InfoboxI18n;
+  editSlots: InfoboxEditSlots;
+}) {
+  return (
+    <aside aria-label={i18n.infoboxLabel}>
+      <Card>
+        <CardContent className="space-y-4 pt-4">
+          {editSlots.image && <div>{editSlots.image}</div>}
+          {editSlots.category && (
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                {i18n.categoryLabel}
+              </p>
+              {editSlots.category}
+            </div>
+          )}
+          {editSlots.stats && (
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{i18n.statsLabel}</p>
+              {editSlots.stats}
+            </div>
+          )}
+          {editSlots.location && (
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                {i18n.locationLabel}
+              </p>
+              {editSlots.location}
+            </div>
+          )}
+          {editSlots.tags && (
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{i18n.tagsLabel}</p>
+              {editSlots.tags}
+            </div>
+          )}
+          {editSlots.related && (
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                {i18n.relatedLabel}
+              </p>
+              {editSlots.related}
+            </div>
           )}
         </CardContent>
       </Card>

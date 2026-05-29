@@ -1,4 +1,5 @@
-import { IsEnum, IsInt, IsString, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsString } from 'class-validator';
 
 export enum EndSessionStatus {
   FINISHED = 'FINISHED',
@@ -7,13 +8,11 @@ export enum EndSessionStatus {
 }
 
 export class EndSessionRequestDto {
+  @ApiProperty({ example: 'session_123' })
   @IsString()
   sessionId!: string;
 
-  @IsInt()
-  @Min(0)
-  completionTimeSec!: number;
-
+  @ApiProperty({ enum: EndSessionStatus, example: EndSessionStatus.FINISHED })
   @IsEnum(EndSessionStatus)
   status!: EndSessionStatus;
 }

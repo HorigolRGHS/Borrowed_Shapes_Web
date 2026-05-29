@@ -2,7 +2,7 @@ import { Body, Controller, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
 import { GameService } from './game.service';
-import { InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
+import { EndRunRequestDto, InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
 import { JoinLobbyRequestDto } from './dto/join-lobby.dto';
 import { StartSessionRequestDto, SessionIdResponseDto } from './dto/start-session.dto';
 import { EndSessionRequestDto } from './dto/end-session.dto';
@@ -49,6 +49,15 @@ export class GameController {
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;
     return this.gameService.endSession(dto, path);
+  }
+
+  @Post('run/end')
+  async endRun(
+    @Body() dto: EndRunRequestDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<null>> {
+    const path = `${req.method} ${req.path}`;
+    return this.gameService.endRun(dto, path);
   }
 
   @Post('lobby/:lobbyId/leave')

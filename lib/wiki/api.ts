@@ -105,6 +105,13 @@ export async function createWiki(req: WikiCreateRequest): Promise<WikiDetail> {
   return res.data;
 }
 
+export async function createWikiStub(): Promise<WikiDetail> {
+  const res = await bffFetchJson<WikiDetail>("POST", "/api/wiki", {
+    body: { stub: true },
+  });
+  return res.data;
+}
+
 export async function updateWiki(
   id: string,
   req: WikiUpdateRequest,

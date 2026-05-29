@@ -1,11 +1,11 @@
 {
   "auth": {
-    "login": "Login",
+    "login": "Log in",
     "email": "Email",
     "password": "Password",
     "signing_in": "Signing in...",
-    "login_success": "Login successful!",
-    "login_failed": "Login failed",
+    "login_success": "Log in successful!",
+    "login_failed": "Log in failed",
     "welcome_back": "Welcome back!",
     "login_subtitle": "Sign in to continue your adventure",
     "forgot_password": "Forgot password?",
@@ -49,7 +49,7 @@
     "home": "Home",
     "dashboard": "Dashboard",
     "achievements": "Achievements",
-    "logout": "Logout",
+    "logout": "Log out",
     "switch_lang": "English",
     "back_to_home": "Back to Home",
     "loading": "Loading...",

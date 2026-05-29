@@ -28,6 +28,24 @@ export class WikiRevision {
   @Property({ type: 'text', nullable: true })
   summary_vi?: string;
 
+  @Property({ type: 'text', nullable: true })
+  title?: string;
+
+  @Property({ type: 'text', nullable: true })
+  title_vi?: string;
+
+  @Property({ type: 'text', nullable: true })
+  slug?: string;
+
+  @Property({ type: 'text', nullable: true })
+  slug_vi?: string;
+
+  @Property({ type: 'jsonb', nullable: true })
+  metadataJson?: Record<string, unknown>;
+
+  @Property({ type: 'boolean', nullable: true })
+  isPublished?: boolean;
+
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;
 

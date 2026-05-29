@@ -249,6 +249,71 @@ describe('WikiRevisionService.create', () => {
   });
 });
 
+describe('WikiRevisionService.create stub mode', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    const transactionalImpl = async (cb: any) => cb(em);
+    em = {
+      create: jest.fn((_entity, data) => ({ ...data, id: data.id ?? 'new-id' })),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(transactionalImpl),
+      getReference: jest.fn((_entity, id) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('generates placeholder slug/title when stub=true', async () => {
+    await service.create({ stub: true } as any, 'admin-1', '127.0.0.1');
+
+    const page = em.create.mock.calls
+      .map((c: unknown[]) => c[1] as any)
+      .find((d: any) => typeof d?.slug === 'string');
+    expect(page).toBeDefined();
+    expect(page.slug).toMatch(/^untitled-[a-z0-9]{6}$/);
+    expect(page.slug_vi).toMatch(/^khong-ten-[a-z0-9]{6}$/);
+    expect(page.title).toBe('');
+    expect(page.title_vi).toBe('');
+    expect(page.isPublished).toBe(false);
+  });
+
+  it('rejects non-stub payload missing required fields', async () => {
+    await expect(
+      service.create({} as any, 'admin-1', '127.0.0.1'),
+    ).rejects.toThrow('wiki.invalid_input');
+  });
+
+  it('retries with a fresh slug on stub collision', async () => {
+    const uniqueErr: any = new Error('duplicate key');
+    uniqueErr.code = '23505';
+    uniqueErr.constraint = 'WikiPage_slug_key';
+    // First attempt's page flush collides; retry succeeds.
+    em.flush = jest
+      .fn()
+      .mockRejectedValueOnce(uniqueErr)
+      .mockResolvedValue(undefined);
+
+    await expect(
+      service.create({ stub: true } as any, 'admin-1', '127.0.0.1'),
+    ).resolves.toBeDefined();
+    expect(wikiSvc.getByIdForAdmin).toHaveBeenCalled();
+  });
+});
+
 describe('WikiRevisionService.update', () => {
   let service: WikiRevisionService;
   let em: any;

@@ -1,8 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsString,
-  IsNotEmpty,
   IsOptional,
   IsBoolean,
   MaxLength,
@@ -33,39 +32,46 @@ export class WikiSlugConstraint implements ValidatorConstraintInterface {
 }
 
 export class WikiCreateRequestDto {
-  @ApiProperty()
+  @ApiPropertyOptional({ description: 'When true, server generates placeholders for all fields' })
+  @IsOptional()
+  @IsBoolean()
+  stub?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @Validate(WikiSlugConstraint)
-  slug!: string;
+  slug?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @Validate(WikiSlugConstraint)
-  slug_vi!: string;
+  slug_vi?: string;
 
-  @ApiProperty({ maxLength: WIKI_TITLE_MAX_LENGTH })
+  @ApiPropertyOptional({ maxLength: WIKI_TITLE_MAX_LENGTH })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(WIKI_TITLE_MAX_LENGTH)
-  title!: string;
+  title?: string;
 
-  @ApiProperty({ maxLength: WIKI_TITLE_MAX_LENGTH })
+  @ApiPropertyOptional({ maxLength: WIKI_TITLE_MAX_LENGTH })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(WIKI_TITLE_MAX_LENGTH)
-  title_vi!: string;
+  title_vi?: string;
 
-  @ApiProperty({ maxLength: WIKI_CONTENT_MAX_LENGTH })
+  @ApiPropertyOptional({ maxLength: WIKI_CONTENT_MAX_LENGTH })
+  @IsOptional()
   @IsString()
   @MaxLength(WIKI_CONTENT_MAX_LENGTH)
-  content!: string;
+  content?: string;
 
-  @ApiProperty({ maxLength: WIKI_CONTENT_MAX_LENGTH })
+  @ApiPropertyOptional({ maxLength: WIKI_CONTENT_MAX_LENGTH })
+  @IsOptional()
   @IsString()
   @MaxLength(WIKI_CONTENT_MAX_LENGTH)
-  content_vi!: string;
+  content_vi?: string;
 
   @ApiPropertyOptional({ maxLength: WIKI_SUMMARY_MAX_LENGTH })
   @IsOptional()

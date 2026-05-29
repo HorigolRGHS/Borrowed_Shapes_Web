@@ -352,7 +352,7 @@ describe('WikiRevisionService.update', () => {
     );
   });
 
-  it('skips creating revision when content unchanged but updates metadata', async () => {
+  it('creates a snapshot revision when content unchanged but metadata changes', async () => {
     em.findOne.mockResolvedValueOnce(fakePage('r-current'));
     await service.update(
       'p1',
@@ -364,8 +364,18 @@ describe('WikiRevisionService.update', () => {
       } as any,
       'admin-1', '1.1.1.1',
     );
-    // no revision created
-    expect(em.create).not.toHaveBeenCalled();
+    // revision created with full snapshot (content from dto, slug from dto)
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        content: 'OLD',
+        content_vi: 'OLD_VI',
+        slug: 'new-slug',
+        slug_vi: 'old-vi',
+        title: 'Old',
+        title_vi: 'OldVi',
+      }),
+    );
     // page metadata changed → audit logged
     expect(audit.log).toHaveBeenCalled();
   });
@@ -411,7 +421,7 @@ describe('WikiRevisionService.update', () => {
   });
 
   describe('Boundary', () => {
-    it('updates only metadataJson — skips revision creation but logs metadataJson in changedFields', async () => {
+    it('updates only metadataJson — creates revision with new metadata snapshot and logs metadataJson in changedFields', async () => {
       em.findOne.mockResolvedValueOnce({
         ...fakePage('r-current'),
         metadataJson: { category: 'Boss' },
@@ -427,7 +437,12 @@ describe('WikiRevisionService.update', () => {
         } as any,
         'admin-1', '1.1.1.1',
       );
-      expect(em.create).not.toHaveBeenCalled();
+      expect(em.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          metadataJson: { category: 'Item' },
+        }),
+      );
       expect(audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
           newValue: expect.objectContaining({
@@ -477,6 +492,84 @@ describe('WikiRevisionService.update', () => {
         ),
       ).rejects.toBeInstanceOf(ConflictException);
     });
+  });
+});
+
+describe('WikiRevisionService.update writes full snapshot', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    const transactionalImpl = async (cb: any) => cb(em);
+    em = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(transactionalImpl),
+      getReference: jest.fn((_e: unknown, id: string) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('persists title/slug/metadata/isPublished onto the new revision', async () => {
+    const existingPage: any = {
+      id: 'p1',
+      slug: 'old-slug',
+      slug_vi: 'old-slug-vi',
+      title: 'Old',
+      title_vi: 'Cũ',
+      metadataJson: null,
+      isPublished: false,
+      latestRevisionId: { id: 'r1', content: '', content_vi: '', summary: null, summary_vi: null, createdAt: new Date() },
+    };
+    const created: any[] = [];
+    em.findOne = jest.fn().mockResolvedValue(existingPage);
+    em.create = jest.fn((_e: unknown, data: any) => {
+      const obj = { ...data, id: 'r2' };
+      created.push(obj);
+      return obj;
+    });
+
+    await service.update(
+      'p1',
+      {
+        slug: 'new-slug',
+        slug_vi: 'old-slug-vi',
+        title: 'New',
+        title_vi: 'Mới',
+        content: 'body',
+        content_vi: 'thân',
+        summary: 's',
+        summary_vi: 't',
+        metadataJson: { category: 'Boss' },
+        isPublished: true,
+        expectedLatestRevisionId: 'r1',
+      } as any,
+      'admin-1',
+      '127.0.0.1',
+    );
+
+    const newRev = created.find((c) => c.id === 'r2');
+    expect(newRev).toBeDefined();
+    expect(newRev.title).toBe('New');
+    expect(newRev.title_vi).toBe('Mới');
+    expect(newRev.slug).toBe('new-slug');
+    expect(newRev.slug_vi).toBe('old-slug-vi');
+    expect(newRev.metadataJson).toEqual({ category: 'Boss' });
+    expect(newRev.isPublished).toBe(true);
   });
 });
 

@@ -69,6 +69,12 @@ export class WikiRevisionService {
         content_vi: dto.content_vi,
         summary: dto.summary ?? null,
         summary_vi: dto.summary_vi ?? null,
+        title: dto.title,
+        title_vi: dto.title_vi,
+        slug: dto.slug,
+        slug_vi: dto.slug_vi,
+        metadataJson: compactMetadata(dto.metadataJson),
+        isPublished: dto.isPublished ?? false,
       } as any);
       await em.flush();
 
@@ -181,8 +187,8 @@ export class WikiRevisionService {
       page.metadataJson = compactMetadata(dto.metadataJson);
       if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
 
-      let newRevisionId: string | null = currentLatestId;
-      if (contentChanged) {
+      let newRevisionId: string;
+      {
         const newRevision = em.create(WikiRevision, {
           pageId: page,
           authorId: em.getReference(User, adminUserId),
@@ -190,6 +196,12 @@ export class WikiRevisionService {
           content_vi: dto.content_vi,
           summary: dto.summary ?? null,
           summary_vi: dto.summary_vi ?? null,
+          title: dto.title,
+          title_vi: dto.title_vi,
+          slug: dto.slug,
+          slug_vi: dto.slug_vi,
+          metadataJson: compactMetadata(dto.metadataJson),
+          isPublished: dto.isPublished ?? page.isPublished,
         } as any);
         await em.flush();
         page.latestRevisionId = newRevision;

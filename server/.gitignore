@@ -36,3 +36,6 @@ npm-debug.log*
 !.vscode/extensions.json
 
 /generated/prisma
+
+# MikroORM migration snapshot (regenerated on demand)
+/migrations/.snapshot-*.json

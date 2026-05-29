@@ -178,11 +178,12 @@ SlashMenu.displayName = "SlashMenu";
 
 const suggestionConfig: Omit<SuggestionOptions<SlashItem>, "editor"> = {
   char: "/",
-  // Only trigger on an empty block so "/" mid-sentence stays literal.
+  // Only trigger when "/" is the first character of its block, so "/" typed
+  // mid-sentence stays literal. range.from is the position of the "/" itself;
+  // parentOffset === 0 means it begins the block.
   allow: ({ state, range }) => {
     const $from = state.doc.resolve(range.from);
-    const isEmptyBlock = $from.parent.content.size === 0;
-    return isEmptyBlock;
+    return $from.parentOffset === 0;
   },
   items: ({ query }) => {
     const q = query.toLowerCase().trim();

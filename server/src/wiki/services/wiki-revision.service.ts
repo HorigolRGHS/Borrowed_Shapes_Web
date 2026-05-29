@@ -313,7 +313,12 @@ export class WikiRevisionService {
       page.title_vi = target.title_vi;
       page.metadataJson = target.metadataJson ?? null;
       page.isPublished = target.isPublished;
-      await em.flush();
+      try {
+        await em.flush();
+      } catch (err) {
+        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        throw err;
+      }
 
       return {
         pageId: page.id,

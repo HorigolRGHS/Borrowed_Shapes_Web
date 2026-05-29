@@ -815,13 +815,61 @@ describe('WikiRevisionService.rollback applies full snapshot', () => {
 
     const restored = created.find((c) => c.id === 'r4');
     expect(restored.title).toBe('Old');
+    expect(restored.title_vi).toBe('Cũ');
     expect(restored.slug).toBe('old-slug');
+    expect(restored.slug_vi).toBe('old-slug-vi');
+    expect(restored.content).toBe('old body');
     expect(restored.metadataJson).toEqual({ category: 'Boss' });
     expect(restored.isPublished).toBe(false);
     expect(page.title).toBe('Old');
+    expect(page.title_vi).toBe('Cũ');
     expect(page.slug).toBe('old-slug');
+    expect(page.slug_vi).toBe('old-slug-vi');
     expect(page.metadataJson).toEqual({ category: 'Boss' });
     expect(page.isPublished).toBe(false);
+    expect(page.latestRevisionId).toBe(restored);
+  });
+
+  it('translates slug-conflict on rollback page flush to ConflictException', async () => {
+    const page: any = {
+      id: 'p1',
+      slug: 'now-slug', slug_vi: 'now-slug-vi',
+      title: 'Now', title_vi: 'Bây giờ',
+      metadataJson: null,
+      isPublished: true,
+      latestRevisionId: { id: 'r3' },
+    };
+    const target: any = {
+      id: 'r2',
+      content: 'old', content_vi: 'cũ',
+      summary: null, summary_vi: null,
+      title: 'Old', title_vi: 'Cũ',
+      slug: 'taken-slug', slug_vi: 'old-slug-vi',
+      metadataJson: null,
+      isPublished: false,
+      createdAt: new Date('2026-05-01'),
+    };
+    em.findOne = jest.fn()
+      .mockResolvedValueOnce(page)
+      .mockResolvedValueOnce(target);
+    em.create = jest.fn((_e: unknown, data: any) => ({ ...data, id: 'r4' }));
+    const uniqueErr: any = new Error('duplicate key value violates unique constraint');
+    uniqueErr.code = '23505';
+    uniqueErr.constraint = 'WikiPage_slug_key';
+    // First flush (revision insert) succeeds; second flush (page mutation) collides.
+    em.flush = jest
+      .fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(uniqueErr);
+
+    await expect(
+      service.rollback(
+        'p1',
+        { targetRevisionId: 'r2', expectedLatestRevisionId: 'r3' } as any,
+        'admin-1',
+        '127.0.0.1',
+      ),
+    ).rejects.toThrow('wiki.slug_taken');
   });
 });
 

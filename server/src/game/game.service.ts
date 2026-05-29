@@ -9,7 +9,7 @@ import { GameProfile } from '../entities/GameProfile';
 import { Level } from '../entities/Level';
 import { GameSessionStatus } from '../entities/GameSessionStatus';
 import { SessionResult } from '../entities/SessionResult';
-import { InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
+import { EndRunRequestDto, InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
 import { JoinLobbyRequestDto } from './dto/join-lobby.dto';
 import { StartSessionRequestDto, SessionIdResponseDto } from './dto/start-session.dto';
 import {
@@ -28,6 +28,15 @@ export class GameService {
 
       if (!lobbyLevel) {
         throw new BadRequestException('game.lobby_level_not_configured');
+      }
+
+      const existingRun = await em.findOne(
+        GameRun,
+        { lobbyId: dto.lobbyId, isCompleted: false },
+        { orderBy: { startedAt: 'desc' } },
+      );
+      if (existingRun) {
+        throw new BadRequestException('game.run_already_active');
       }
 
       // Create a new game run (table: game.GameRun)
@@ -49,7 +58,7 @@ export class GameService {
       const lobbySession = em.create(GameSession, {
         runId: run,
         levelId: lobbyLevel,
-        status: GameSessionStatus.WAITING,
+        status: GameSessionStatus.IN_PROGRESS,
         startedAt: new Date(),
         minPlayers: dto.minPlayers,
         maxPlayers: dto.maxPlayers,
@@ -90,6 +99,11 @@ export class GameService {
         gameProfileId: gameProfile.id,
       });
 
+      const isLocked = await this.isRunLocked(em, run.id);
+      if (isLocked && !existing) {
+        throw new BadRequestException('game.run_locked');
+      }
+
       if (!existing) {
         // Add joining player into run roster (table: game.GameRunPlayer)
         em.create(GameRunPlayer, {
@@ -99,24 +113,25 @@ export class GameService {
         });
       }
 
-      const lobbySession = await em.findOne(GameSession, {
-        runId: run.id,
-        levelId: 'lobby',
-      });
+      const activeSession = await this.findActiveSession(em, run.id);
+      const lobbySession = activeSession
+        ? undefined
+        : await em.findOne(GameSession, { runId: run.id, levelId: 'lobby' });
 
-      if (!lobbySession) {
+      const targetSession = activeSession ?? lobbySession;
+      if (!targetSession) {
         throw new NotFoundException('game.lobby_session_not_found');
       }
 
       const sessionPlayer = await em.findOne(GameSessionPlayer, {
-        sessionId: lobbySession.id,
+        sessionId: targetSession.id,
         gameProfileId: gameProfile.id,
       });
 
       if (!sessionPlayer) {
-        // Add joining player into lobby session participants (table: game.GameSessionPlayer)
+        // Add joining player into active/lobby session participants (table: game.GameSessionPlayer)
         em.create(GameSessionPlayer, {
-          sessionId: lobbySession,
+          sessionId: targetSession,
           gameProfileId: gameProfile,
           isAbsent: false,
         });
@@ -151,7 +166,7 @@ export class GameService {
 
       let session = await em.findOne(
         GameSession,
-        { runId: run.id, levelId: level.id },
+        { runId: run.id, levelId: level.id, status: GameSessionStatus.IN_PROGRESS },
       );
 
       if (!session) {
@@ -162,11 +177,11 @@ export class GameService {
         const minPlayers = lobbySession?.minPlayers ?? 2;
         const maxPlayers = lobbySession?.maxPlayers ?? 5;
 
-        // Create level session on first start request for this map (table: game.GameSession)
+        // Create a new session when no active session exists for this map (table: game.GameSession)
         session = em.create(GameSession, {
           runId: run,
           levelId: level,
-          status: GameSessionStatus.WAITING,
+          status: GameSessionStatus.IN_PROGRESS,
           startedAt: new Date(),
           minPlayers,
           maxPlayers,
@@ -217,12 +232,16 @@ export class GameService {
       const { status, result } = this.mapEndStatus(dto.status);
       session.status = status;
       session.result = result;
-      session.completionTimeSec = dto.completionTimeSec;
       session.endedAt = new Date();
+      session.completionTimeSec = Math.max(
+        0,
+        Math.floor((session.endedAt.getTime() - session.startedAt.getTime()) / 1000),
+      );
 
       const isLobbySession = session.levelId.id === 'lobby';
 
       if (!isLobbySession) {
+        const completionTimeSec = session.completionTimeSec ?? 0;
         const sessionPlayers = await em.find(
           GameSessionPlayer,
           { sessionId: session.id },
@@ -232,7 +251,7 @@ export class GameService {
         for (const sessionPlayer of sessionPlayers) {
           const profile = sessionPlayer.gameProfileId as GameProfile;
           profile.totalSessions += 1;
-          profile.totalPlayTime += dto.completionTimeSec;
+          profile.totalPlayTime += completionTimeSec;
 
           if (result === SessionResult.WIN) {
             profile.totalWins += 1;
@@ -244,32 +263,42 @@ export class GameService {
         }
       }
 
-      if (status === GameSessionStatus.FINISHED) {
-        const run = await em.findOne(GameRun, { id: session.runId.id });
-        if (!run) {
-          throw new NotFoundException('game.run_not_found');
-        }
-
-        const finishedCount = await em.count(GameSession, {
-          runId: run.id,
-          status: GameSessionStatus.FINISHED,
-        });
-
-        if (finishedCount >= run.totalLevels) {
-          run.isCompleted = true;
-          run.completedAt = new Date();
-          run.totalTimeSec = Math.max(
-            0,
-            Math.floor((run.completedAt.getTime() - run.startedAt.getTime()) / 1000),
-          );
-        }
-      }
-
       await em.flush();
     });
 
     return okResponse<null>(
       'game.session_ended',
+      null,
+      path,
+    );
+  }
+
+  async endRun(dto: EndRunRequestDto, path: string) {
+    await this.em.transactional(async (em) => {
+      const run = await em.findOne(GameRun, { id: dto.runId });
+      if (!run) {
+        throw new NotFoundException('game.run_not_found');
+      }
+
+      const sessions = await em.find(GameSession, {
+        runId: run.id,
+        levelId: { $ne: 'lobby' },
+      });
+
+      const totalTimeSec = sessions.reduce(
+        (sum, s) => sum + (s.completionTimeSec ?? 0),
+        0,
+      );
+
+      run.isCompleted = true;
+      run.completedAt = new Date();
+      run.totalTimeSec = totalTimeSec;
+
+      await em.flush();
+    });
+
+    return okResponse<null>(
+      'game.run_ended',
       null,
       path,
     );
@@ -340,5 +369,20 @@ export class GameService {
       throw new NotFoundException('game.profile_not_found');
     }
     return gameProfile;
+  }
+
+  private async isRunLocked(em: EntityManager, runId: string): Promise<boolean> {
+    const nonLobbySession = await em.findOne(GameSession, {
+      runId,
+      levelId: { $ne: 'lobby' },
+    });
+    return Boolean(nonLobbySession);
+  }
+
+  private async findActiveSession(em: EntityManager, runId: string): Promise<GameSession | null> {
+    return em.findOne(GameSession, {
+      runId,
+      status: GameSessionStatus.IN_PROGRESS,
+    });
   }
 }

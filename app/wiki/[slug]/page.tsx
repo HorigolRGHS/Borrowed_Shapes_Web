@@ -6,6 +6,8 @@ import { fetchWikiBySlug } from "@/lib/wiki/api";
 import { WikiContentRenderer } from "@/components/wiki/wiki-content-renderer";
 import { WikiToc } from "@/components/wiki/wiki-toc";
 import { WikiInfobox } from "@/components/wiki/wiki-infobox";
+import { WikiPageShell } from "@/components/wiki/wiki-page-shell";
+import { WikiPageHeader } from "@/components/wiki/wiki-page-header";
 import { fetchRelatedTitles } from "@/lib/wiki/related-api";
 import {
   wikiMetadataSchema,
@@ -13,7 +15,6 @@ import {
 } from "@/models/dtos/wiki-metadata.dto";
 import enDict from "@/locales/en.json";
 import viDict from "@/locales/vi.json";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
@@ -110,54 +111,42 @@ export default async function WikiDetailPage({
         <span className="text-foreground">{title}</span>
       </nav>
 
-      <div className="flex gap-8">
-        <div className="flex-1 min-w-0">
-          <div className="lg:hidden mb-6">
-            <WikiInfobox
-              metadata={detail.metadataJson}
-              title={title}
-              locale={uiLocale}
-              relatedTitles={relatedTitles}
-              i18n={infoboxI18n}
-            />
-          </div>
-
-          <header className="mb-6 space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
-              {!detail.isPublished && (
-                <Badge variant="secondary">Draft</Badge>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {author} · {updated.toLocaleString()}
-            </p>
-          </header>
-
-          <WikiContentRenderer markdown={content} />
-
-          <Separator className="my-8" />
-          <Button asChild variant="link" className="px-0">
-            <Link href={`/wiki/${encodeURIComponent(slug)}/history`}>
-              View history →
-            </Link>
-          </Button>
-        </div>
-        <aside className="hidden w-72 shrink-0 lg:block">
-          <div className="sticky top-24 space-y-4">
-            <WikiInfobox
-              metadata={detail.metadataJson}
-              title={title}
-              locale={uiLocale}
-              relatedTitles={relatedTitles}
-              i18n={infoboxI18n}
-            />
-          </div>
-          <div className="mt-4">
-            <WikiToc markdown={content} />
-          </div>
-        </aside>
-      </div>
+      <WikiPageShell
+        header={
+          <WikiPageHeader
+            mode="view"
+            title={title}
+            summary={
+              isVi
+                ? detail.latestRevision.summary_vi
+                : detail.latestRevision.summary
+            }
+            isDraft={!detail.isPublished}
+            byline={`${author} · ${updated.toLocaleString()}`}
+          />
+        }
+        body={
+          <>
+            <WikiContentRenderer markdown={content} />
+            <Separator className="my-8" />
+            <Button asChild variant="link" className="px-0">
+              <Link href={`/wiki/${encodeURIComponent(slug)}/history`}>
+                View history →
+              </Link>
+            </Button>
+          </>
+        }
+        infobox={
+          <WikiInfobox
+            metadata={detail.metadataJson}
+            title={title}
+            locale={uiLocale}
+            relatedTitles={relatedTitles}
+            i18n={infoboxI18n}
+          />
+        }
+        toc={<WikiToc markdown={content} />}
+      />
     </main>
   );
 }

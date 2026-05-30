@@ -73,12 +73,11 @@ export class ForumService {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
 
-    // increment viewCount
-    await this.em.nativeUpdate(ForumThread, { id }, { viewCount: thread.viewCount + 1 });
-
-    // reload
-    const reloaded = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
-    return reloaded;
+    // defensively increment viewCount on the entity and flush
+    thread.viewCount = (Number(thread.viewCount) || 0) + 1;
+    await this.em.flush();
+    // thread is already populated with authorId and categoryId
+    return thread;
   }
 
   // Create — category REQUIRED

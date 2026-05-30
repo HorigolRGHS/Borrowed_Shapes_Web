@@ -14,4 +14,4 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [AchievementController],
   providers: [AchievementService],
 })
-export class AchievementModule {}
+export class AchievementModule { }

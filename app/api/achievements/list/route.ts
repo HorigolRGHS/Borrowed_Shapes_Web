@@ -3,7 +3,10 @@ import { api } from "@/lib/api/api-client";
 
 export async function GET(request: NextRequest) {
   try {
-    const res = await api.get("/achievements");
+    const { searchParams } = request.nextUrl;
+    const res = await api.get("/achievements", {
+      params: Object.fromEntries(searchParams.entries()),
+    });
 
     return NextResponse.json(res);
 

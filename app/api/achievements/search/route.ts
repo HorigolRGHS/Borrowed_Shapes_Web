@@ -3,10 +3,9 @@ import { api } from "@/lib/api/api-client";
 
 export async function GET(request: NextRequest) {
   try {
-    const query = request.nextUrl.searchParams.get("q") || "";
-
+    const { searchParams } = request.nextUrl;
     const res = await api.get("/achievements/search", {
-      params: { q: query }
+      params: Object.fromEntries(searchParams.entries()),
     });
 
     return NextResponse.json(res);

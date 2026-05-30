@@ -41,12 +41,15 @@
   },
   "game": {
     "run_initialized": "Khởi tạo lượt chơi thành công",
+    "run_ended": "Kết thúc lượt chơi thành công",
     "joined_success": "Tham gia lượt chơi thành công",
     "session_started": "Màn chơi đã bắt đầu",
     "session_ended": "Màn chơi kết thúc thành công",
     "left_lobby": "Đã rời phòng chờ",
     "lobby_level_not_configured": "Cấp độ phòng chờ chưa được cấu hình",
     "run_not_found_for_lobby": "Không tìm thấy lượt chơi cho phòng chờ này",
+    "run_already_active": "Lượt chơi cho phòng chờ này đang hoạt động",
+    "run_locked": "Lượt chơi đã bắt đầu và bị khóa",
     "lobby_session_not_found": "Không tìm thấy phiên phòng chờ",
     "run_not_found": "Không tìm thấy lượt chơi",
     "level_not_found": "Không tìm thấy cấp độ",
@@ -125,5 +128,22 @@
     "upload_failed": "Tải lên thất bại",
     "related_success": "Đã phân giải các slug liên quan",
     "too_many_related_slugs": "Mỗi lần chỉ có thể yêu cầu tối đa 30 slug liên quan"
+  },
+  "forum": {
+    "list_success": "Lấy danh sách forums thành công",
+    "detail_success": "Lấy chi tiết bài viết thành công",
+    "create_success": "Tạo bài viết thành công",
+    "update_success": "Cập nhật bài viết thành công",
+    "delete_success": "Xóa bài viết thành công",
+    "vote_success": "Bình chọn thành công",
+    "thread_not_found": "Bài viết không tồn tại",
+    "category_not_found": "Danh mục không tồn tại",
+    "category_required": "Danh mục là bắt buộc",
+    "title_required": "Tiêu đề là bắt buộc",
+    "content_required": "Nội dung là bắt buộc",
+    "invalid_author": "Tác giả không tồn tại",
+    "invalid_user": "Người dùng không tồn tại",
+    "forbidden_update": "Bạn không có quyền cập nhật bài viết này",
+    "forbidden_delete": "Bạn không có quyền xóa bài viết này"
   }
 }

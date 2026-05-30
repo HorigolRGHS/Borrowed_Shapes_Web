@@ -1,11 +1,11 @@
 {
   "auth": {
-    "login": "Login",
+    "login": "Log in",
     "email": "Email",
     "password": "Password",
     "signing_in": "Signing in...",
-    "login_success": "Login successful!",
-    "login_failed": "Login failed",
+    "login_success": "Log in successful!",
+    "login_failed": "Log in failed",
     "welcome_back": "Welcome back!",
     "login_subtitle": "Sign in to continue your adventure",
     "forgot_password": "Forgot password?",
@@ -49,7 +49,7 @@
     "home": "Home",
     "dashboard": "Dashboard",
     "achievements": "Achievements",
-    "logout": "Logout",
+    "logout": "Log out",
     "switch_lang": "English",
     "back_to_home": "Back to Home",
     "loading": "Loading...",
@@ -93,7 +93,6 @@
     "draft_badge": "DRAFT",
     "published_badge": "PUBLISHED",
     "back_to_list": "Back to wiki list",
-
     "create_button": "Create wiki",
     "edit_button": "Edit",
     "delete_button": "Delete",
@@ -104,7 +103,6 @@
     "unpublish_button": "Unpublish",
     "save_draft_button": "Save as draft",
     "save_publish_button": "Save & publish",
-
     "field_title_en": "Title (English)",
     "field_title_vi": "Title (Vietnamese)",
     "field_slug_en": "Slug (English)",
@@ -112,43 +110,32 @@
     "field_summary_en": "Summary (English)",
     "field_summary_vi": "Summary (Vietnamese)",
     "field_content": "Content",
-
     "tab_en": "English",
     "tab_vi": "Vietnamese",
     "copy_from_en": "Copy from English",
     "copy_from_vi": "Copy from Vietnamese",
-
     "publish_warn_same_content": "English and Vietnamese content are identical. Are you sure both languages are translated?",
     "publish_warn_empty": "Both English and Vietnamese content must be filled to publish",
-
     "upload_uploading": "Uploading image...",
     "upload_failed": "Image upload failed",
-
     "unsaved_changes_warning": "You have unsaved changes. Leave anyway?",
-
     "edited_by": "Edited by {name} on {date}",
     "last_updated": "Updated {date}",
-
     "no_history": "No history",
     "no_previous_revision": "This is the first revision",
     "diff_unchanged_collapsed": "{count} unchanged lines",
-
     "toc_title": "On this page",
-
     "confirm_delete_title": "Delete wiki?",
     "confirm_delete_message": "This action cannot be undone. Type the slug to confirm:",
     "confirm_delete_input_hint": "Enter \"{slug}\" to confirm",
     "confirm_rollback_title": "Rollback to this revision?",
     "confirm_rollback_message": "A new revision will be created with this content. The current latest revision is preserved in history.",
-
     "conflict_title": "This wiki was edited by someone else",
     "conflict_message": "Reload to see their changes, or force overwrite to keep yours.",
     "conflict_reload": "Reload",
     "conflict_force": "Force overwrite",
-
     "viewing_revision": "Viewing revision",
     "rollback_summary_default": "Rollback to revision {id}",
-
     "reserved_slug_error": "This slug is reserved",
     "slug_taken_error": "This slug is already in use",
     "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes",
@@ -197,7 +184,6 @@
       "title_optional": "(optional)",
       "expand": "Show metadata",
       "collapse": "Hide metadata",
-
       "category_label": "Category",
       "category_none": "—",
       "category": {
@@ -208,7 +194,6 @@
         "Boss": "Boss",
         "Other": "Other"
       },
-
       "infobox_image": "Infobox image",
       "upload_button": "Upload image",
       "upload_hint": "JPG/PNG/WebP/GIF, max 5MB",
@@ -216,12 +201,10 @@
       "remove_button": "Remove",
       "uploading": "Uploading…",
       "upload_failed": "Image upload failed",
-
       "tags_en": "Tags (English)",
       "tags_vi": "Tags (Vietnamese)",
       "tag_placeholder": "Type a tag and press Enter",
       "tag_max": "Maximum 20 tags",
-
       "stats": "Stats",
       "stat_key_placeholder": "Stat name (e.g. stamina)",
       "stat_value_placeholder": "Value",
@@ -229,19 +212,16 @@
       "no_stats": "No stats. Click Add stat to define one.",
       "stat_dup_error": "Duplicate stat name",
       "stat_value_required": "Stat name and value must both be set",
-
       "location_en": "Location (English)",
       "location_vi": "Location (Vietnamese)",
-
       "related_pages": "Related pages",
       "related_search": "Search wiki…",
       "related_no_match": "No matches",
       "related_max": "Maximum 30 related pages",
-
       "infobox_label": "Infobox"
     }
   },
-    "achievements": {
+  "achievements": {
     "list_success": "Achievements retrieved successfully",
     "search_success": "Achievements search completed successfully",
     "detail_success": "Achievement details retrieved successfully",
@@ -251,8 +231,10 @@
     "update_success": "Achievement updated successfully",
     "update_failed": "Failed to update achievement",
     "delete_success": "Achievement deleted successfully",
-    "title": "Achievements",
-    "admin_panel": "Admin Panel",
+    "delete_failed": "Failed to delete achievement",
+    "not_found": "Achievement not found",
+    "already_exists": "Achievement already exists",
+    "users_success": "Users retrieved successfully",
     "management_title": "Achievement Management",
     "management_subtitle": "Create, edit, and track achievement unlocks",
     "search_placeholder": "Search by name, criteria code, or description...",
@@ -267,17 +249,13 @@
     "seasonal": "Seasonal",
     "sort_by_created": "Sort by Created",
     "sort_by_name": "Sort by Name",
-    "sort_by_most_earned": "Sort by Most Earned",
     "sort_by_type": "Sort by Type",
     "loading_achievements": "Loading achievements…",
     "no_achievements": "No achievements found.",
-    "milestone": "Milestone",
     "criteria_label": "Criteria",
     "players_earned_label": "Players earned",
-    "player_earned_label": "Player earned",
     "season_label": "Season:",
     "mastery": "Mastery",
-    "expires_label": "Expires",
     "edit_button": "Edit",
     "delete_button": "Delete",
     "view_button": "View",
@@ -291,24 +269,22 @@
     "season_month_label": "Season Month",
     "expires_at_label": "Expires At",
     "selected_label": "Selected:",
-    "users": "Users",
-    "settings": "Settings",
     "delete_confirm": "Are you sure you want to delete this achievement?",
-    "invalid_id": "Invalid achievement ID",
-    "name_required": "Achievement name is required",
-    "description_required": "Achievement description is required",
-    "criteria_required": "Achievement criteria are required",
-    "badge_required": "Badge image is required",
-    "type_required": "Achievement type is required",
-    "unauthorized": "You are not authorized to access achievements",
-    "forbidden": "You do not have permission to perform this action",
-    "user_no_profile": "User does not have a game profile",
-    "empty_list": "No achievements found",
     "loading_users": "Loading users...",
     "no_users_found": "No users found",
     "users_loaded_failed": "Failed to load users",
     "users_with": "Users with",
     "player_earned_single": "player earned this achievement",
-    "players_earned_plural": "players earned this achievement"
+    "players_earned_plural": "players earned this achievement",
+    "detail_title": "Achievement Detail",
+    "detail_subtitle": "View achievement information",
+    "total_earned_label": "Total Earned",
+    "season_title": "Season",
+    "view_users_button": "View Users",
+    "delete_achievement_title": "Delete Achievement",
+    "delete_warning": "This may remove achievement records from players. This action cannot be undone.",
+    "earned_date_label": "Earned Date",
+    "profile_id_label": "Profile ID",
+    "unknown": "Unknown"
   }
 }

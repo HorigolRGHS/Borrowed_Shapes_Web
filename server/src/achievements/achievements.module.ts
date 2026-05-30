@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { AchievementController } from './achievement.controller';
-import { AchievementService } from './achievement.service';
+import { AchievementController } from './achievements.controller';
+import { AchievementService } from './achievements.service';
 import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { AuthModule } from '../auth/auth.module';
@@ -14,4 +14,4 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [AchievementController],
   providers: [AchievementService],
 })
-export class AchievementModule {}
+export class AchievementModule { }

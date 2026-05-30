@@ -100,7 +100,7 @@ describe('AuthService', () => {
 
       await expect(
         service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1'),
-      ).rejects.toThrow('Email already in use');
+      ).rejects.toThrow('auth.email_in_use');
     });
 
     it('throws ConflictException for duplicate displayName', async () => {
@@ -111,7 +111,7 @@ describe('AuthService', () => {
 
       await expect(
         service.register({ email: 'a@b.com', password: 'password123', displayName: 'taken' }, '127.0.0.1'),
-      ).rejects.toThrow('Display name already taken');
+      ).rejects.toThrow('auth.unique_field_in_use');
     });
 
     it('throws generic conflict for unknown unique constraint', async () => {
@@ -122,7 +122,7 @@ describe('AuthService', () => {
 
       await expect(
         service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1'),
-      ).rejects.toThrow('Unique field already in use');
+      ).rejects.toThrow('auth.unique_field_in_use');
     });
   });
 

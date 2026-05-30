@@ -2,13 +2,9 @@ import { Test } from '@nestjs/testing';
 import { SessionsService } from './sessions.service';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { RedisService } from '../redis/redis.service';
-import { ConfigService } from '@nestjs/config';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 const mockRedis = {
-  hset: jest.fn(),
-  expire: jest.fn(),
-  zadd: jest.fn(),
   hgetall: jest.fn(),
   hgetallMany: jest.fn(),
   pipeline: jest.fn(),
@@ -25,13 +21,6 @@ const mockEm = {
   getReference: jest.fn((_, id) => ({ id })),
 };
 
-const mockConfig = {
-  get: jest.fn((key: string, def: any) => {
-    const map: Record<string, any> = { SESSION_TTL_SEC: 604800 };
-    return map[key] ?? def;
-  }),
-};
-
 describe('SessionsService', () => {
   let service: SessionsService;
 
@@ -41,7 +30,6 @@ describe('SessionsService', () => {
         SessionsService,
         { provide: EntityManager, useValue: mockEm },
         { provide: RedisService, useValue: mockRedis },
-        { provide: ConfigService, useValue: mockConfig },
       ],
     }).compile();
     service = module.get(SessionsService);
@@ -49,21 +37,6 @@ describe('SessionsService', () => {
     mockEm.flush.mockResolvedValue(undefined);
     mockEm.nativeUpdate.mockResolvedValue(1);
     mockEm.create.mockImplementation((_, data) => data);
-  });
-
-  describe('heartbeat', () => {
-    it('updates lastActive in Redis and resets TTL via pipeline', async () => {
-      mockRedis.pipeline.mockResolvedValue(undefined);
-
-      await service.heartbeat('user_1', 'forum');
-
-      expect(mockRedis.pipeline).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ cmd: 'hset', args: expect.arrayContaining(['rt:user_1:forum']) }),
-          expect.objectContaining({ cmd: 'expire', args: ['rt:user_1:forum', 604800] }),
-        ]),
-      );
-    });
   });
 
   describe('revoke', () => {
@@ -75,9 +48,9 @@ describe('SessionsService', () => {
     it('throws ForbiddenException when non-owner non-admin tries to revoke', async () => {
       mockEm.findOne.mockResolvedValue({
         id: 'db_id_1',
-        user: { id: 'other_user' },
+        userId: { id: 'other_user' },
         sessionId: 'sess_1',
-        platform: 'forum',
+        platform: 'web',
       });
       await expect(service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1')).rejects.toThrow(ForbiddenException);
     });
@@ -85,7 +58,7 @@ describe('SessionsService', () => {
     it('allows ADMIN to revoke any session', async () => {
       mockEm.findOne.mockResolvedValue({
         id: 'db_id_1',
-        user: { id: 'other_user' },
+        userId: { id: 'other_user' },
         sessionId: 'sess_1',
         platform: null,
       });
@@ -96,9 +69,9 @@ describe('SessionsService', () => {
     it('deletes Redis key and updates DB to REVOKED when platform matches', async () => {
       mockEm.findOne.mockResolvedValue({
         id: 'db_id_1',
-        user: { id: 'user_1' },
+        userId: { id: 'user_1' },
         sessionId: 'sess_1',
-        platform: 'forum',
+        platform: 'web',
       });
       mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
       mockRedis.del.mockResolvedValue(undefined);
@@ -106,8 +79,9 @@ describe('SessionsService', () => {
 
       await service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1');
 
-      expect(mockRedis.del).toHaveBeenCalledWith('rt:user_1:forum');
+      expect(mockRedis.del).toHaveBeenCalledWith('rt:user_1:web');
       expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_1');
+      expect(mockRedis.del).toHaveBeenCalledWith('user_session_details:sess_1');
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ id: 'db_id_1' }),

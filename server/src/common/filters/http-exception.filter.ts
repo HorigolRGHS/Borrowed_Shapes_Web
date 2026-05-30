@@ -6,11 +6,15 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import { I18nService } from '../i18n/i18n.service';
+import { ApiResponseDto } from '../dto/api-response.dto';
+import { safeStringify } from '../utils/json.util';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger('ExceptionFilter');
+
+  constructor(private readonly i18n: I18nService) {}
 
   private isInvalidJsonPayload(message: string | string[]): boolean {
     const text = Array.isArray(message) ? message.join(' ') : message;
@@ -19,31 +23,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const response = ctx.getResponse<any>();
+    const request = ctx.getRequest<any>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message: string | string[] = 'Internal server error';
-    let error: any = undefined;
+    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    let rawMessage: string | string[] = 'common.internal_server_error';
+    let extraData: Record<string, unknown> | null = null;
+    const lang = request.headers['accept-language'] as string;
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus();
+      statusCode = exception.getStatus();
       const res = exception.getResponse();
       if (typeof res === 'string') {
-        message = res;
+        rawMessage = res;
       } else if (typeof res === 'object' && res !== null) {
         const resObj = res as any;
-        message = resObj.message ?? message;
-        // Preserve validation errors array structure
-        if (Array.isArray(resObj.message)) {
-          error = resObj.message;
-        }
+        rawMessage = resObj.messageKey ?? resObj.message ?? rawMessage;
+        // Preserve structured payload (e.g. currentLatest for optimistic concurrency conflicts)
+        const { message: _m, messageKey: _mk, statusCode: _sc, error: _e, ...rest } = resObj;
+        extraData = Object.keys(rest).length > 0 ? rest : null;
       }
 
       // Body parser throws BadRequestException for malformed JSON before DTO validation runs.
-      if (status === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(message)) {
-        message = 'Invalid JSON payload';
-        error = undefined;
+      if (statusCode === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(rawMessage)) {
+        rawMessage = 'common.invalid_json_payload';
       }
     } else {
       // Unexpected error — log full stack, never expose internals to client
@@ -55,14 +58,31 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       );
     }
 
-    response.status(status).json({
-      statusCode: status,
-      success: false,
+    // Translate message
+    let message: string;
+    if (Array.isArray(rawMessage)) {
+      message = this.i18n.t(rawMessage[0], lang);
+    } else {
+      message = this.i18n.t(rawMessage, lang);
+    }
+
+    const payload = new ApiResponseDto<unknown>(
+      statusCode,
+      false,
       message,
-      data: null,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      ...(error && { error }),
-    });
+      extraData,
+      request.url,
+      new Date().toISOString(),
+    );
+
+    response.status(statusCode).json(payload);
+
+    this.logger.warn(
+      [
+        `${request.method} ${request.url}`,
+        `request:\n${safeStringify(request.body, true)}`,
+        `response:\n${safeStringify(payload, true)}`,
+      ].join('\n'),
+    );
   }
 }

@@ -1,46 +1,69 @@
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "@/lib/api/api-client";
+import { ApiResponse } from "@/models/dtos/api-response.dto";
+import { RefreshRequest, RefreshResponse } from "@/models/dtos/auth.dto";
 
-const NESTJS_URL = process.env.NESTJS_URL ?? 'http://localhost:3001';
+export async function POST(request: NextRequest) {
+  try {
+    const refreshToken = request.cookies.get("refreshToken")?.value;
+    if (!refreshToken) throw new Error("No refresh token");
 
-export async function POST() {
-  const cookieStore = await cookies();
-  const rt = cookieStore.get('rt')?.value;
+    // 1. Gọi sang Backend NestJS để đổi Token mới
+    const res: ApiResponse<RefreshResponse> = await api.post("/auth/refresh", { refreshToken });
 
-  if (!rt) {
-    return NextResponse.json({ message: 'No refresh token' }, { status: 401 });
+    if (!res || !res.success) {
+      throw new Error(res?.message || "Refresh failed");
+    }
+
+    const data = res.data;
+    const newToken = data?.accessToken ?? (data as any)?.token ?? null;
+    const newRefreshToken = data?.refreshToken ?? null;
+
+    if (!newToken) throw new Error("Missing new access token from server");
+
+    // 2. CƠ CHẾ CHẠY AUTH/ME: Gọi lấy thông tin user mới nhất bằng token vừa đổi
+    try {
+      const meRes: ApiResponse<any> = await api.get("/auth/me", {
+        headers: { Authorization: `Bearer ${newToken}` }
+      });
+      if (meRes.success) {
+        // Gộp thông tin user vào response trả về cho frontend
+        (res.data as any).user = meRes.data;
+      }
+    } catch (meErr) {
+      console.warn("[refreshRoute] Failed to fetch user profile during refresh", meErr);
+    }
+
+    // 3. Tạo NextResponse và cập nhật Cookie
+    const response = NextResponse.json(res);
+
+    response.cookies.set("accessToken", newToken, {
+      path: "/",
+      maxAge: 60 * 15, // 15 minutes
+      httpOnly: false,
+      sameSite: "lax",
+    });
+
+    if (newRefreshToken) {
+      response.cookies.set("refreshToken", newRefreshToken, {
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
+
+    return response;
+
+  } catch (err: any) {
+    const errorRes: ApiResponse<null> = {
+      statusCode: 401,
+      success: false,
+      message: err?.response?.data?.message ?? err?.message ?? "Session expired",
+      data: null,
+      path: "/api/auth/refresh",
+      timestamp: new Date().toISOString()
+    };
+    return NextResponse.json(errorRes, { status: 401 });
   }
-
-  const res = await fetch(`${NESTJS_URL}/api/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken: rt }),
-  });
-
-  if (!res.ok) {
-    cookieStore.delete('at');
-    cookieStore.delete('rt');
-    return NextResponse.json({ message: 'Session expired' }, { status: 401 });
-  }
-
-  const data = await res.json();
-  const isProd = process.env.NODE_ENV === 'production';
-
-  cookieStore.set('at', data.accessToken, {
-    httpOnly: true,
-    sameSite: 'strict',
-    path: '/',
-    maxAge: data.expiresIn,
-    secure: isProd,
-  });
-
-  cookieStore.set('rt', data.refreshToken, {
-    httpOnly: true,
-    sameSite: 'strict',
-    path: '/api/auth/refresh',
-    maxAge: 60 * 60 * 24 * 7,
-    secure: isProd,
-  });
-
-  return new NextResponse(null, { status: 204 });
 }

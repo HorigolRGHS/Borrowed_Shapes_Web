@@ -1,0 +1,8 @@
+export enum ReportType {
+  SPAM = 'SPAM',
+  HARASSMENT = 'HARASSMENT',
+  HATE_SPEECH = 'HATE_SPEECH',
+  NSFW = 'NSFW',
+  MISINFORMATION = 'MISINFORMATION',
+  OTHER = 'OTHER',
+}

@@ -1,6 +1,6 @@
 # ─── Base ────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS base
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.15.5
 
 # ─── Stage 1: Install all deps + build ───────────────────────────────────────
 FROM base AS builder

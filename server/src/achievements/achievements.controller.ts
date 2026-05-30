@@ -23,11 +23,11 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-import { AchievementService } from './achievement.service';
-import { CreateAchievementDto } from './dto/create-achievement.dto';
-import { UpdateAchievementDto } from './dto/update-achievement.dto';
-import { AchievementResponseDto } from './dto/achievement-response.dto';
-import { UserAchievementResponseDto } from './dto/user-achievement-response.dto';
+import { AchievementService } from './achievements.service';
+import { CreateAchievementDto } from './dto/create-achievements.dto';
+import { UpdateAchievementDto } from './dto/update-achievements.dto';
+import { AchievementResponseDto } from './dto/achievements-response.dto';
+import { UserAchievementResponseDto } from './dto/user-achievements-response.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
@@ -41,30 +41,44 @@ import { AuthGuard } from '../auth/auth.guard';
 export class AchievementController {
   constructor(
     private readonly achievementService: AchievementService,
-  ) {}
+  ) { }
 
   @Get()
-  @ApiOperation({ summary: 'Get all achievements' })
-  @ApiResponse({
-    status: 200,
-    type: [AchievementResponseDto],
-  })
+  @ApiOperation({ summary: 'Get all achievements (paginated)' })
   async findAll(
-    @CurrentUser() user: RequestUser,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<AchievementResponseDto[]>> {
-    const achievements = await this.achievementService.findAllWithEarnedCount();
-    const data = achievements.map((a) => ({
-      id: a.id,
-      name: a.name,
-      description: a.description,
-      criteriaCode: a.criteriaCode,
-      badgeImageUrl: a.badgeImageUrl,
-      type: a.type,
-      seasonMonth: a.seasonMonth,
-      expiresAt: a.expiresAt,
-      earnedCount: a.earnedCount,
-    }));
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('type') type?: string,
+    @Query('q') q?: string,
+    @Query('sortBy') sortBy?: string,
+  ) {
+    const result = await this.achievementService.findAllPaginated({
+      page,
+      limit,
+      type,
+      q,
+      sortBy,
+    });
+
+    const data = {
+      items: result.items.map((a) => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        criteriaCode: a.criteriaCode,
+        badgeImageUrl: a.badgeImageUrl,
+        type: a.type,
+        seasonMonth: a.seasonMonth,
+        expiresAt: a.expiresAt,
+        earnedCount: a.earnedCount,
+      })),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    };
+
     return okResponse(
       'achievements.list_success',
       data,
@@ -73,28 +87,40 @@ export class AchievementController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search achievements' })
-  @ApiResponse({
-    status: 200,
-    type: [AchievementResponseDto],
-  })
+  @ApiOperation({ summary: 'Search achievements (paginated)' })
   async search(
-    @CurrentUser() user: RequestUser,
-    @Query('q') query: string,
+    @Query('q') q: string,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<AchievementResponseDto[]>> {
-    const achievements = await this.achievementService.search(query);
-    const data = achievements.map((a) => ({
-      id: a.id,
-      name: a.name,
-      description: a.description,
-      criteriaCode: a.criteriaCode,
-      badgeImageUrl: a.badgeImageUrl,
-      type: a.type,
-      seasonMonth: a.seasonMonth,
-      expiresAt: a.expiresAt,
-      earnedCount: a.earnedCount,
-    }));
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('type') type?: string,
+    @Query('sortBy') sortBy?: string,
+  ) {
+    const result = await this.achievementService.findAllPaginated({
+      page,
+      limit,
+      type,
+      q,
+      sortBy,
+    });
+
+    const data = {
+      items: result.items.map((a) => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        criteriaCode: a.criteriaCode,
+        badgeImageUrl: a.badgeImageUrl,
+        type: a.type,
+        seasonMonth: a.seasonMonth,
+        expiresAt: a.expiresAt,
+        earnedCount: a.earnedCount,
+      })),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    };
 
     return okResponse(
       'achievements.search_success',
@@ -146,21 +172,21 @@ export class AchievementController {
       `${req.method} ${req.path}`,
     );
   }
-  
-  @Get(':id/users')
-async findUsersByAchievement(
-  @Param('id') id: string,
-  @Req() req: Request,
-) {
-  const users =
-    await this.achievementService.findUsersByAchievement(id);
 
-  return okResponse(
-    'achievements.users_success',
-    users,
-    `${req.method} ${req.path}`,
-  );
-}
+  @Get(':id/users')
+  async findUsersByAchievement(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ) {
+    const users =
+      await this.achievementService.findUsersByAchievement(id);
+
+    return okResponse(
+      'achievements.users_success',
+      users,
+      `${req.method} ${req.path}`,
+    );
+  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get achievement details' })

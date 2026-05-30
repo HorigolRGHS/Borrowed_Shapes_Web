@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { AchievementService } from './achievement.service';
+import { AchievementService } from './achievements.service';
 import { Achievement, AchievementType } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { GameProfile } from '../entities/GameProfile';

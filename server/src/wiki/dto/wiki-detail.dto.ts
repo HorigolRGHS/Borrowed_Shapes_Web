@@ -18,6 +18,24 @@ export class WikiDetailRevisionDto {
   @ApiProperty({ nullable: true, type: String })
   summary_vi!: string | null;
 
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  title_vi!: string;
+
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  slug_vi!: string;
+
+  @ApiProperty({ nullable: true, type: Object })
+  metadataJson!: Record<string, unknown> | null;
+
+  @ApiProperty()
+  isPublished!: boolean;
+
   @ApiProperty({ nullable: true, type: WikiAuthorDto })
   author!: WikiAuthorDto | null;
 

@@ -13,7 +13,8 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { Markdown } from 'tiptap-markdown';
 import { useI18n } from '@/lib/i18/i18n-context';
-import { TiptapToolbar } from './tiptap-toolbar';
+import { TiptapBubbleMenu } from './tiptap-bubble-menu';
+import { SlashCommand } from './slash-command';
 import { getMarkdown, setMarkdown } from './tiptap-markdown';
 import { attachImageDropAndPaste } from './tiptap-image-upload';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +30,11 @@ interface Props {
   onChange: (next: TiptapEditorValue) => void;
   readonly?: boolean;
   onUploadError?: (msg: string) => void;
+  // Controlled-locale mode: when provided, the parent decides which language
+  // the editor shows. Pair with hideLocaleTabs to suppress the internal tabs
+  // and let a page-level toggle drive the locale instead.
+  activeLocale?: 'en' | 'vi';
+  hideLocaleTabs?: boolean;
 }
 
 // Note: TipTap v3's StarterKit bundles Link — we disable it here so the
@@ -52,15 +58,31 @@ const EXTENSIONS = [
     linkify: true,
     breaks: false,
   }),
+  SlashCommand,
 ];
 
-export function TiptapEditor({ value, onChange, readonly = false, onUploadError }: Props) {
+export function TiptapEditor({
+  value,
+  onChange,
+  readonly = false,
+  onUploadError,
+  activeLocale,
+  hideLocaleTabs = false,
+}: Props) {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'en' | 'vi'>('en');
+  // When activeLocale is provided the parent owns the locale; otherwise fall
+  // back to internal tab state driven by the editor's own TabsList.
+  const [internalTab, setInternalTab] = useState<'en' | 'vi'>('en');
+  const activeTab = activeLocale ?? internalTab;
+  // Latest-value refs: the useEditor onUpdate closure is created once and would
+  // otherwise capture stale value/activeTab. Assigning during render keeps them
+  // current for that callback.
+  /* eslint-disable react-hooks/refs */
   const valueRef = useRef(value);
   valueRef.current = value;
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
+  /* eslint-enable react-hooks/refs */
 
   const editor = useEditor({
     extensions: EXTENSIONS,
@@ -83,7 +105,6 @@ export function TiptapEditor({ value, onChange, readonly = false, onUploadError 
     if (current !== value[activeTab]) {
       setMarkdown(editor, value[activeTab]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, activeTab, editor]);
 
   // Wire up image drop/paste once the editor is ready.
@@ -99,7 +120,7 @@ export function TiptapEditor({ value, onChange, readonly = false, onUploadError 
     if (currentMd !== valueRef.current[activeTab]) {
       onChange({ ...valueRef.current, [activeTab]: currentMd });
     }
-    setActiveTab(next);
+    setInternalTab(next);
     setMarkdown(editor, valueRef.current[next]);
   };
 
@@ -114,16 +135,20 @@ export function TiptapEditor({ value, onChange, readonly = false, onUploadError 
   return (
     <div className="rounded-md border bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
       <div className="flex items-center justify-between border-b bg-muted/30 px-2">
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => switchTab(v as "en" | "vi")}
-          className="w-auto"
-        >
-          <TabsList className="h-9 bg-transparent">
-            <TabsTrigger value="en">{t("wiki.tab_en")}</TabsTrigger>
-            <TabsTrigger value="vi">{t("wiki.tab_vi")}</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {hideLocaleTabs ? (
+          <span />
+        ) : (
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => switchTab(v as "en" | "vi")}
+            className="w-auto"
+          >
+            <TabsList className="h-9 bg-transparent">
+              <TabsTrigger value="en">{t("wiki.tab_en")}</TabsTrigger>
+              <TabsTrigger value="vi">{t("wiki.tab_vi")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -134,11 +159,11 @@ export function TiptapEditor({ value, onChange, readonly = false, onUploadError 
           {activeTab === "en" ? t("wiki.copy_from_vi") : t("wiki.copy_from_en")}
         </Button>
       </div>
-      <TiptapToolbar editor={editor} />
       <EditorContent
         editor={editor}
         className="prose prose-slate dark:prose-invert max-w-none p-4 min-h-[300px] focus:outline-none [&_.ProseMirror]:min-h-[280px] [&_.ProseMirror]:outline-none"
       />
+      <TiptapBubbleMenu editor={editor} />
     </div>
   );
 }

@@ -11,7 +11,7 @@
     "invalid_redirect_uri": "Invalid redirectUri",
     "email_already_linked": "Email already linked to another Google account",
     "login_code_expired": "Login code expired or invalid",
-    "unauthorized": "Unauthorized access, please login again",
+    "unauthorized": "Unauthorized access, please log in again",
     "unverified_email": "Your email is not verified yet",
     "invalid_credentials": "Invalid credentials",
     "email_password_required": "Email and password are required",
@@ -23,7 +23,7 @@
     "invalid_google_token": "Invalid Google token",
     "email_verify_subject": "[Borrowed Shapes] Verify your Email",
     "register_success": "Registration successful, please check your email to verify",
-    "login_success": "Login successful",
+    "login_success": "Log in successful",
     "google_exchange_success": "Google exchange successful",
     "token_refreshed": "Token refreshed successfully",
     "logout_success": "Logout successful",
@@ -36,21 +36,41 @@
     "otp_expired": "OTP expired or invalid",
     "password_not_set": "Password not set for this account",
     "current_password_incorrect": "Current password is incorrect",
+    "new_password_same_as_old": "New password cannot be the same as the current password",
     "session_not_found": "Session not found"
   },
   "game": {
     "run_initialized": "Run initialized successfully",
+    "run_ended": "Run ended successfully",
     "joined_success": "Joined run successfully",
     "session_started": "Session already started",
     "session_ended": "Session ended successfully",
     "left_lobby": "Left lobby",
     "lobby_level_not_configured": "Lobby level not configured",
     "run_not_found_for_lobby": "Run not found for this lobby",
+    "run_already_active": "Run already active for this lobby",
+    "run_locked": "Run has started and is locked",
     "lobby_session_not_found": "Lobby session not found",
     "run_not_found": "Run not found",
     "level_not_found": "Level not found",
     "session_not_found": "Session not found",
     "profile_not_found": "Game profile not found"
+  },
+  "season_team": {
+    "created_success": "Season team created successfully",
+    "joined_success": "Joined season team successfully",
+    "no_team": "You are not in a season team",
+    "current_team": "Current season team loaded successfully",
+    "already_in_team": "You are already in a season team",
+    "team_full": "This season team is full",
+    "not_found": "Season team not found",
+    "member_not_found": "Season team member not found",
+    "cannot_kick_leader": "You cannot kick the team leader",
+    "not_in_team": "You are not in this season team",
+    "leader_cannot_leave": "The team leader cannot leave the team",
+    "kicked_success": "Member kicked successfully",
+    "left_success": "Left season team successfully",
+    "deleted_success": "Season team deleted successfully"
   },
   "validation": {
     "invalid_email": "Invalid email address",
@@ -64,7 +84,9 @@
     "display_name_required": "Display name is required",
     "display_name_min_3": "Display name must be at least 3 characters",
     "display_name_max_20": "Display name must not exceed 20 characters",
-    "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens"
+    "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens",
+    "min_length_3": "Must be at least 3 characters",
+    "max_length_20": "Must not exceed 20 characters"
   },
   "achievements": {
     "list_success": "Achievements retrieved successfully",
@@ -106,5 +128,22 @@
     "upload_failed": "Upload failed",
     "related_success": "Related pages resolved",
     "too_many_related_slugs": "At most 30 related slugs may be requested at once"
+  },
+  "forum": {
+    "list_success": "Forums retrieved successfully",
+    "detail_success": "Thread details retrieved successfully",
+    "create_success": "Thread created successfully",
+    "update_success": "Thread updated successfully",
+    "delete_success": "Thread deleted successfully",
+    "vote_success": "Vote recorded successfully",
+    "thread_not_found": "Thread not found",
+    "category_not_found": "Category not found",
+    "category_required": "Category is required",
+    "title_required": "Title is required",
+    "content_required": "Content is required",
+    "invalid_author": "Author not found",
+    "invalid_user": "User not found",
+    "forbidden_update": "You don't have permission to update this thread",
+    "forbidden_delete": "You don't have permission to delete this thread"
   }
 }

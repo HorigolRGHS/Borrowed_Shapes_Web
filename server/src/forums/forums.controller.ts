@@ -58,7 +58,7 @@ export class ForumController {
     return okResponse('forum.create_success', data, 'POST /forum');
   }
 
-  // Update thread (requires auth, author or admin)
+  // Update thread (requires auth, author only)
   @UseGuards(AuthGuard)
   @Patch(':id')
   async update(
@@ -66,8 +66,7 @@ export class ForumController {
     @Body() updateForumDto: UpdateForumDto,
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const isAdmin = user.role === 'ADMIN';
-    const data = await this.forumService.update(id, updateForumDto, user.userId, isAdmin);
+    const data = await this.forumService.update(id, updateForumDto, user.userId);
     return okResponse('forum.update_success', data, `PATCH /forum/${id}`);
   }
 

@@ -73,12 +73,11 @@ export class ForumService {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
 
-    // increment viewCount
-    await this.em.nativeUpdate(ForumThread, { id }, { viewCount: thread.viewCount + 1 });
-
-    // reload
-    const reloaded = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
-    return reloaded;
+    // defensively increment viewCount on the entity and flush
+    thread.viewCount = (Number(thread.viewCount) || 0) + 1;
+    await this.em.flush();
+    // thread is already populated with authorId and categoryId
+    return thread;
   }
 
   // Create — category REQUIRED
@@ -121,18 +120,17 @@ export class ForumService {
     return thread;
   }
 
-  // Update — author only (or ADMIN)
+  // Update — author only
   async update(
     id: string,
     dto: UpdateForumDto,
     userId: string,
-    isAdmin = false,
   ) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
 
     // Check permission
-    if (!isAdmin && String(thread.authorId.id) !== String(userId)) {
+    if (String(thread.authorId.id) !== String(userId)) {
       throw new ForbiddenException('forum.forbidden_update');
     }
 

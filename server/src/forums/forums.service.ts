@@ -11,6 +11,8 @@ import { User } from '../entities/User';
 import { ForumThreadVote } from '../entities/ForumThreadVote';
 import { CreateForumDto } from './dto/create-forums.dto';
 import { UpdateForumDto } from './dto/update-forums.dto';
+import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
+import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 
 @Injectable()
 export class ForumService {
@@ -80,9 +82,12 @@ export class ForumService {
     return thread;
   }
 
-  // Create — category REQUIRED
-  async create(dto: CreateForumDto, authorId: string) {
+  // Create — auth required
+  async create(dto: CreateForumDto, authorId: string, isAdmin = false) {
     // Validate input
+    if ((dto.isPinned !== undefined || dto.isLocked !== undefined) && !isAdmin) {
+    throw new ForbiddenException('forum.forbidden_admin_only');
+    }
     if (!dto.title || !dto.title.trim()) {
       throw new BadRequestException('forum.title_required');
     }
@@ -104,14 +109,22 @@ export class ForumService {
     // Prepare thread data
     const now = new Date();
 
+    const slug = this.slugify(
+    dto.slug?.trim() || dto.title
+    );
+
     // Create thread
     const thread = this.em.create(ForumThread, {
       title: dto.title.trim(),
-      slug: dto.slug?.trim() || this.slugify(dto.title),
+      slug,
       categoryId: category,
       authorId: author,
       content: dto.content.trim(),
       imageUrl: dto.imageUrl ?? null,
+      postType: dto.postType ?? Web$46ForumPostType.GENERAL,
+      isPinned: dto.isPinned ?? false,
+      isLocked: dto.isLocked ?? false,
+      status: dto.status ?? Web$46ForumThreadStatus.OPEN,
       createdAt: now,
       updatedAt: now,
     });
@@ -121,11 +134,7 @@ export class ForumService {
   }
 
   // Update — author only
-  async update(
-    id: string,
-    dto: UpdateForumDto,
-    userId: string,
-  ) {
+  async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
 
@@ -142,7 +151,10 @@ export class ForumService {
     }
 
     if (dto.slug) {
-      thread.slug = dto.slug.trim() || this.slugify(thread.title);
+      thread.slug = this.slugify(
+      dto.slug.trim() || thread.title
+      );
+      if (!thread.slug) throw new BadRequestException('forum.slug_required');
     }
 
     if (dto.content) {
@@ -162,13 +174,29 @@ export class ForumService {
       thread.categoryId = category;
     }
 
+    if (dto.postType) {
+    thread.postType = dto.postType;
+    }
+
+    if (dto.status) {
+    thread.status = dto.status;
+    }
+
+    if (dto.isPinned !== undefined || dto.isLocked !== undefined) {
+      if (!isAdmin) {
+        throw new ForbiddenException('forum.forbidden_admin_only');
+        }
+      if (dto.isPinned !== undefined) thread.isPinned = dto.isPinned;
+      if (dto.isLocked !== undefined) thread.isLocked = dto.isLocked;
+    }
+
     thread.updatedAt = new Date();
 
     await this.em.flush();
     return thread;
   }
 
-  // Remove — author only (or ADMIN)
+  // Remove — author or ADMIN
   async remove(id: string, userId: string, isAdmin = false) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
@@ -182,7 +210,7 @@ export class ForumService {
     return { success: true };
   }
 
-  // Vote — value = 1 | -1, toggle behaviour (FIXED)
+  // Vote — value = 1 | -1, toggle behaviour
   async vote(threadId: string, userId: string, value: 1 | -1) {
     const thread = await this.em.findOne(ForumThread, { id: threadId });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
@@ -190,7 +218,7 @@ export class ForumService {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) throw new BadRequestException('forum.invalid_user');
 
-    // Use raw SQL to reliably find existing vote (composite key issue fix)
+    // Use raw SQL to reliably find existing vote
     const existingRows = await this.em.execute(
       `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
       [userId, threadId],
@@ -233,12 +261,22 @@ export class ForumService {
   }
 
   // Helper: generate slug from title
+  // I'm not using AI to comment this
   private slugify(s: string): string {
-    return s
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .slice(0, 200);
+  if (!s) return '';
+  // Normalize Unicode: NFD separates characters and diacritics into individual parts
+  const normalized = s.normalize('NFD');
+  // Remove accents using regex, also convert đ to d, Đ to D
+  const withoutAccents = normalized
+  .replace(/đ/g, 'd')
+  .replace(/Đ/g, 'd')
+  .replace(/[\u0300-\u036f]/g, '');
+  const lowercase = withoutAccents.toLowerCase();
+  // Replace whitespace with dashes
+  const withDashes = lowercase.replace(/\s+/g, '-');
+  // Remove invalid characters (keep only a-z, 0-9, dashes, underscores)
+  const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
+  const trimmed = cleaned.replace(/^-+|-+$/g, '');
+  return trimmed.slice(0, 200);
   }
 }

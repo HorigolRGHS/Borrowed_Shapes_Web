@@ -54,7 +54,8 @@ export class ForumController {
     @Body() createForumDto: CreateForumDto,
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.create(createForumDto, user.userId);
+    const isAdmin = user.role === 'ADMIN';
+    const data = await this.forumService.create(createForumDto, user.userId, isAdmin);
     return okResponse('forum.create_success', data, 'POST /forum');
   }
 
@@ -66,7 +67,8 @@ export class ForumController {
     @Body() updateForumDto: UpdateForumDto,
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.update(id, updateForumDto, user.userId);
+    const isAdmin = user.role === 'ADMIN';
+    const data = await this.forumService.update(id, updateForumDto, user.userId, isAdmin);
     return okResponse('forum.update_success', data, `PATCH /forum/${id}`);
   }
 

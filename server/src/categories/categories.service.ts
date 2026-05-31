@@ -29,8 +29,11 @@ export class CategoryService {
 
     // Sau này tạo helper rồi gọi, frontend cũng gọi helper đó để check trùng slug/name
     // Check slug uniqueness
-    const slug = dto.slug?.trim() || this.slugify(dto.name);
-    const slug_vi = dto.slug_vi?.trim() || this.slugify(dto.name_vi);
+    const slug = this.slugify(dto.slug?.trim() || dto.name);
+    const slug_vi = this.slugify(dto.slug_vi?.trim() || dto.name_vi);
+
+    if (!slug) {throw new BadRequestException('category.slug_required');}
+    if (!slug_vi) {throw new BadRequestException('category.slug_vi_required');}
 
     const existingSlug = await this.em.findOne(ForumCategory, { slug });
     if (existingSlug) throw new BadRequestException('category.slug_conflict');
@@ -62,9 +65,8 @@ export class CategoryService {
     await this.em.persist(category).flush();
     return category;
   } catch (error) {
-    // In lỗi ra terminal để biết nguyên nhân thực sự
     console.error('Error creating category:', error); 
-    throw error; // Các lỗi khác ném ra để hệ thống xử lý
+    throw error;
   }
   }
 
@@ -116,8 +118,11 @@ async update(id: string, dto: UpdateCategoryDto) {
 
   // Update slug
   if (dto.slug !== undefined) {
-    const newSlug = dto.slug?.trim() || this.slugify(category.name);
+    const newSlug = this.slugify(dto.slug.trim() || category.name);
 
+    if (!newSlug) {
+      throw new BadRequestException('category.slug_required');
+    }
     if (newSlug !== category.slug) {
       const existing = await this.em.findOne(ForumCategory, {
         slug: newSlug,
@@ -133,9 +138,11 @@ async update(id: string, dto: UpdateCategoryDto) {
 
   // Update Vietnamese slug
   if (dto.slug_vi !== undefined) {
-    const newSlugVi =
-      dto.slug_vi?.trim() || this.slugify(category.name_vi);
+    const newSlugVi = this.slugify(dto.slug_vi.trim() || category.name_vi);
 
+    if (!newSlugVi) {
+      throw new BadRequestException('category.slug_vi_required');
+    }
     if (newSlugVi !== category.slug_vi) {
       const existing = await this.em.findOne(ForumCategory, {
         slug_vi: newSlugVi,
@@ -185,12 +192,16 @@ async update(id: string, dto: UpdateCategoryDto) {
 
   // Helper: generate slug from name
   private slugify(s: string): string {
-  if (!s) return '';
-  return s
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .slice(0, 200);
-}
+    if (!s) return '';
+    const normalized = s.normalize('NFD');
+    const withoutAccents = normalized
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .replace(/[\u0300-\u036f]/g, '');
+    const lowercase = withoutAccents.toLowerCase();
+    const withDashes = lowercase.replace(/\s+/g, '-');
+    const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
+    const trimmed = cleaned.replace(/^-+|-+$/g, '');
+    return trimmed.slice(0, 200);
+  }
 }

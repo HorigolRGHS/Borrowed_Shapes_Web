@@ -144,7 +144,8 @@
     "invalid_author": "Tác giả không tồn tại",
     "invalid_user": "Người dùng không tồn tại",
     "forbidden_update": "Bạn không có quyền cập nhật bài viết này",
-    "forbidden_delete": "Bạn không có quyền xóa bài viết này"
+    "forbidden_delete": "Bạn không có quyền xóa bài viết này",
+    "forbidden_admin_only": "Chỉ quản trị viên mới có thể thực hiện hành động này"
   },
   "category": {
     "list_success": "Lấy danh sách danh mục thành công",

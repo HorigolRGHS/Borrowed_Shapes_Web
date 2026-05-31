@@ -144,7 +144,8 @@
     "invalid_author": "Author not found",
     "invalid_user": "User not found",
     "forbidden_update": "You don't have permission to update this thread",
-    "forbidden_delete": "You don't have permission to delete this thread"
+    "forbidden_delete": "You don't have permission to delete this thread",
+    "forbidden_admin_only": "Only admins can perform this action"
   },
   "category": {
     "list_success": "Categories retrieved successfully",

@@ -145,7 +145,8 @@
     "invalid_user": "Người dùng không tồn tại",
     "forbidden_update": "Bạn không có quyền cập nhật bài viết này",
     "forbidden_delete": "Bạn không có quyền xóa bài viết này",
-    "forbidden_admin_only": "Chỉ quản trị viên mới có thể thực hiện hành động này"
+    "forbidden_admin_only": "Chỉ quản trị viên mới có thể thực hiện hành động này",
+    "slug_required": "Slug là bắt buộc"
   },
   "category": {
     "list_success": "Lấy danh sách danh mục thành công",
@@ -158,6 +159,8 @@
     "name_vi_required": "Tên danh mục (Tiếng Việt) là bắt buộc",
     "name_conflict": "Tên danh mục (Tiếng Anh) đã tồn tại",
     "name_vi_conflict": "Tên danh mục (Tiếng Việt) đã tồn tại",
+    "slug_required": "Slug là bắt buộc",
+    "slug_vi_required": "Slug tiếng Việt là bắt buộc",
     "slug_conflict": "Slug tiếng Anh đã tồn tại",
     "slug_vi_conflict": "Slug tiếng Việt đã tồn tại",
     "forbidden": "Bạn không có quyền thực hiện hành động này"

@@ -263,20 +263,20 @@ export class ForumService {
   // Helper: generate slug from title
   // I'm not using AI to comment this
   private slugify(s: string): string {
-  if (!s) return '';
-  // Normalize Unicode: NFD separates characters and diacritics into individual parts
-  const normalized = s.normalize('NFD');
-  // Remove accents using regex, also convert đ to d, Đ to D
-  const withoutAccents = normalized
-  .replace(/đ/g, 'd')
-  .replace(/Đ/g, 'd')
-  .replace(/[\u0300-\u036f]/g, '');
-  const lowercase = withoutAccents.toLowerCase();
-  // Replace whitespace with dashes
-  const withDashes = lowercase.replace(/\s+/g, '-');
-  // Remove invalid characters (keep only a-z, 0-9, dashes, underscores)
-  const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
-  const trimmed = cleaned.replace(/^-+|-+$/g, '');
-  return trimmed.slice(0, 200);
+    if (!s) return '';
+    // Normalize Unicode: NFD separates characters and diacritics into individual parts
+    const normalized = s.normalize('NFD');
+    // Remove accents using regex, also convert đ to d, Đ to D
+    const withoutAccents = normalized
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .replace(/[\u0300-\u036f]/g, '');
+    const lowercase = withoutAccents.toLowerCase();
+    // Replace whitespace with dashes
+    const withDashes = lowercase.replace(/\s+/g, '-');
+    // Remove invalid characters (keep only a-z, 0-9, dashes, underscores)
+    const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
+    const trimmed = cleaned.replace(/^-+|-+$/g, '');
+    return trimmed.slice(0, 200);
   }
 }

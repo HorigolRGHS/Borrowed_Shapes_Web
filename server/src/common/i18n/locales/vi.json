@@ -145,5 +145,15 @@
     "invalid_user": "Người dùng không tồn tại",
     "forbidden_update": "Bạn không có quyền cập nhật bài viết này",
     "forbidden_delete": "Bạn không có quyền xóa bài viết này"
+  },
+  "announcements": {
+    "list_success": "Lấy danh sách thông báo thành công",
+    "detail_success": "Lấy chi tiết thông báo thành công",
+    "create_success": "Tạo thông báo thành công",
+    "update_success": "Cập nhật thông báo thành công",
+    "delete_success": "Xóa thông báo thành công",
+    "not_found": "Không tìm thấy thông báo",
+    "slug_taken": "Slug này đã được sử dụng bởi một thông báo khác",
+    "invalid_slug": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang (tối đa 200 ký tự)"
   }
 }

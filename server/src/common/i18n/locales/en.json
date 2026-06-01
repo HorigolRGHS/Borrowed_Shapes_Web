@@ -145,5 +145,15 @@
     "invalid_user": "User not found",
     "forbidden_update": "You don't have permission to update this thread",
     "forbidden_delete": "You don't have permission to delete this thread"
+  },
+  "announcements": {
+    "list_success": "Announcements retrieved successfully",
+    "detail_success": "Announcement details retrieved successfully",
+    "create_success": "Announcement created successfully",
+    "update_success": "Announcement updated successfully",
+    "delete_success": "Announcement deleted successfully",
+    "not_found": "Announcement not found",
+    "slug_taken": "This slug is already in use by another announcement",
+    "invalid_slug": "Slug must contain only lowercase letters, digits, and dashes (max 200 chars)"
   }
 }

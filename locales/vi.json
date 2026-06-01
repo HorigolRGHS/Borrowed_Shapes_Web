@@ -93,7 +93,6 @@
     "draft_badge": "BẢN NHÁP",
     "published_badge": "ĐÃ XUẤT BẢN",
     "back_to_list": "Quay lại danh sách",
-
     "create_button": "Tạo wiki",
     "edit_button": "Chỉnh sửa",
     "delete_button": "Xóa",
@@ -104,7 +103,6 @@
     "unpublish_button": "Hủy xuất bản",
     "save_draft_button": "Lưu nháp",
     "save_publish_button": "Lưu & xuất bản",
-
     "field_title_en": "Tiêu đề (Tiếng Anh)",
     "field_title_vi": "Tiêu đề (Tiếng Việt)",
     "field_slug_en": "Slug (Tiếng Anh)",
@@ -112,43 +110,32 @@
     "field_summary_en": "Tóm tắt (Tiếng Anh)",
     "field_summary_vi": "Tóm tắt (Tiếng Việt)",
     "field_content": "Nội dung",
-
     "tab_en": "Tiếng Anh",
     "tab_vi": "Tiếng Việt",
     "copy_from_en": "Sao chép từ Tiếng Anh",
     "copy_from_vi": "Sao chép từ Tiếng Việt",
-
     "publish_warn_same_content": "Nội dung Tiếng Anh và Tiếng Việt giống hệt nhau. Bạn chắc đã dịch cả hai chưa?",
     "publish_warn_empty": "Cần điền cả nội dung Tiếng Anh và Tiếng Việt để xuất bản",
-
     "upload_uploading": "Đang tải ảnh lên...",
     "upload_failed": "Tải ảnh lên thất bại",
-
     "unsaved_changes_warning": "Bạn có thay đổi chưa lưu. Vẫn rời trang?",
-
     "edited_by": "Chỉnh sửa bởi {name} vào {date}",
     "last_updated": "Cập nhật {date}",
-
     "no_history": "Chưa có lịch sử",
     "no_previous_revision": "Đây là phiên bản đầu tiên",
     "diff_unchanged_collapsed": "{count} dòng không đổi",
-
     "toc_title": "Trên trang này",
-
     "confirm_delete_title": "Xóa wiki?",
     "confirm_delete_message": "Hành động này không thể hoàn tác. Nhập slug để xác nhận:",
     "confirm_delete_input_hint": "Nhập \"{slug}\" để xác nhận",
     "confirm_rollback_title": "Khôi phục về phiên bản này?",
     "confirm_rollback_message": "Một phiên bản mới sẽ được tạo với nội dung này. Phiên bản hiện tại vẫn được giữ trong lịch sử.",
-
     "conflict_title": "Wiki vừa được chỉnh sửa bởi người khác",
     "conflict_message": "Tải lại để xem thay đổi của họ, hoặc ghi đè để giữ thay đổi của bạn.",
     "conflict_reload": "Tải lại",
     "conflict_force": "Ghi đè",
-
     "viewing_revision": "Đang xem phiên bản",
     "rollback_summary_default": "Khôi phục về phiên bản {id}",
-
     "reserved_slug_error": "Slug này đã được dành riêng",
     "slug_taken_error": "Slug này đã được sử dụng",
     "invalid_slug_error": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang",
@@ -194,7 +181,6 @@
       "title_optional": "(không bắt buộc)",
       "expand": "Hiện thông tin",
       "collapse": "Ẩn thông tin",
-
       "category_label": "Danh mục",
       "category_none": "—",
       "category": {
@@ -205,7 +191,6 @@
         "Boss": "Boss",
         "Other": "Khác"
       },
-
       "infobox_image": "Ảnh infobox",
       "upload_button": "Tải ảnh lên",
       "upload_hint": "JPG/PNG/WebP/GIF, tối đa 5MB",
@@ -213,12 +198,10 @@
       "remove_button": "Xóa",
       "uploading": "Đang tải lên…",
       "upload_failed": "Tải ảnh lên thất bại",
-
       "tags_en": "Tags (Tiếng Anh)",
       "tags_vi": "Tags (Tiếng Việt)",
       "tag_placeholder": "Gõ tag và nhấn Enter",
       "tag_max": "Tối đa 20 tag",
-
       "stats": "Chỉ số",
       "stat_key_placeholder": "Tên chỉ số (vd. stamina)",
       "stat_value_placeholder": "Giá trị",
@@ -226,15 +209,12 @@
       "no_stats": "Chưa có chỉ số. Bấm Thêm chỉ số để tạo.",
       "stat_dup_error": "Tên chỉ số bị trùng",
       "stat_value_required": "Phải nhập cả tên và giá trị",
-
       "location_en": "Vị trí (Tiếng Anh)",
       "location_vi": "Vị trí (Tiếng Việt)",
-
       "related_pages": "Trang liên quan",
       "related_search": "Tìm wiki…",
       "related_no_match": "Không tìm thấy",
       "related_max": "Tối đa 30 trang liên quan",
-
       "infobox_label": "Infobox"
     }
   },
@@ -302,6 +282,18 @@
     "delete_warning": "Hành động này có thể xóa kỷ lục thành tựu của người chơi và không thể hoàn tác.",
     "earned_date_label": "Ngày đạt",
     "profile_id_label": "ID Hồ sơ",
-    "unknown": "Không xác định"
+    "unknown": "Không xác định",
+    "validation": {
+      "name_required": "Vui lòng nhập tên thành tựu",
+      "name_min": "Tên phải có ít nhất 2 ký tự",
+      "name_max": "Tên không được quá 100 ký tự",
+      "criteria_code_required": "Vui lòng nhập mã điều kiện",
+      "criteria_code_invalid": "Chỉ cho phép chữ cái, số, gạch dưới và gạch nối",
+      "criteria_code_max": "Mã điều kiện không được quá 50 ký tự",
+      "badge_url_required": "Vui lòng nhập URL hình huy hiệu",
+      "badge_url_invalid": "URL không hợp lệ (phải bắt đầu bằng http:// hoặc https://)",
+      "description_max": "Mô tả không được quá 500 ký tự",
+      "season_month_required": "Vui lòng chọn tháng mùa cho thành tựu theo mùa"
+    }
   }
 }

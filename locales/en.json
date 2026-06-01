@@ -282,6 +282,18 @@
     "delete_warning": "This may remove achievement records from players. This action cannot be undone.",
     "earned_date_label": "Earned Date",
     "profile_id_label": "Profile ID",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "validation": {
+      "name_required": "Achievement name is required",
+      "name_min": "Name must be at least 2 characters",
+      "name_max": "Name must not exceed 100 characters",
+      "criteria_code_required": "Criteria code is required",
+      "criteria_code_invalid": "Only letters, numbers, underscores and hyphens are allowed",
+      "criteria_code_max": "Criteria code must not exceed 50 characters",
+      "badge_url_required": "Badge image URL is required",
+      "badge_url_invalid": "Please enter a valid URL (must start with http:// or https://)",
+      "description_max": "Description must not exceed 500 characters",
+      "season_month_required": "Season month is required for seasonal achievements"
+    }
   }
 }

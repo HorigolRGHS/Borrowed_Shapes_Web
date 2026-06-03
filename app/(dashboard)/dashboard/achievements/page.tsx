@@ -111,7 +111,77 @@ export default function AchievementsPage() {
     seasonMonth: "",
     expiresAt: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
   const expiresRef = useRef<HTMLInputElement | null>(null);
+
+  const validateField = (field: string, value: string, type?: string): string => {
+    switch (field) {
+      case "name":
+        if (!value.trim()) return t("achievements.validation.name_required");
+        if (value.trim().length < 2) return t("achievements.validation.name_min");
+        if (value.trim().length > 100) return t("achievements.validation.name_max");
+        return "";
+      case "criteriaCode":
+        if (!value.trim()) return t("achievements.validation.criteria_code_required");
+        if (!/^[a-zA-Z0-9_-]+$/.test(value.trim())) return t("achievements.validation.criteria_code_invalid");
+        if (value.trim().length > 50) return t("achievements.validation.criteria_code_max");
+        return "";
+      case "badgeImageUrl":
+        if (!value.trim()) return t("achievements.validation.badge_url_required");
+        if (!/^https?:\/\/.+/.test(value.trim())) return t("achievements.validation.badge_url_invalid");
+        return "";
+      case "description": {
+        const plainText = value.replace(/<[^>]*>/g, "");
+        if (plainText.length > 500) return t("achievements.validation.description_max");
+        return "";
+      }
+      case "seasonMonth":
+        if ((type ?? formData.type) === "SEASONAL" && !value.trim()) return t("achievements.validation.season_month_required");
+        return "";
+      default:
+        return "";
+    }
+  };
+
+  const validateAllFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    const touched: Record<string, boolean> = {};
+    const fields = ["name", "criteriaCode", "badgeImageUrl", "description", "seasonMonth"];
+    for (const field of fields) {
+      touched[field] = true;
+      const error = validateField(field, (formData as any)[field]);
+      if (error) errors[field] = error;
+    }
+    setFormErrors(errors);
+    setFormTouched(touched);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleFieldChange = (field: string, value: string, extra?: Partial<typeof formData>) => {
+    const next = { ...formData, [field]: value, ...extra };
+    setFormData(next);
+    if (formTouched[field]) {
+      const error = validateField(field, value, next.type);
+      setFormErrors((prev) => {
+        const copy = { ...prev };
+        if (error) copy[field] = error;
+        else delete copy[field];
+        return copy;
+      });
+    }
+  };
+
+  const handleFieldBlur = (field: string) => {
+    setFormTouched((prev) => ({ ...prev, [field]: true }));
+    const error = validateField(field, (formData as any)[field]);
+    setFormErrors((prev) => {
+      const copy = { ...prev };
+      if (error) copy[field] = error;
+      else delete copy[field];
+      return copy;
+    });
+  };
 
   useEffect(() => {
     const profile = getUserProfile();
@@ -156,6 +226,7 @@ export default function AchievementsPage() {
   };
 
   const handleCreate = async () => {
+    if (!validateAllFields()) return;
     try {
       const payload = buildPayload();
       const response = await axios.post("/api/achievements/create", payload);
@@ -178,6 +249,7 @@ export default function AchievementsPage() {
 
   const handleEdit = async () => {
     if (!editingAchievement) return;
+    if (!validateAllFields()) return;
 
     try {
       const payload = buildPayload();
@@ -266,6 +338,8 @@ export default function AchievementsPage() {
       seasonMonth: "",
       expiresAt: "",
     });
+    setFormErrors({});
+    setFormTouched({});
   };
 
   const buildPayload = () => ({
@@ -658,18 +732,26 @@ export default function AchievementsPage() {
                 <Input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
+                  onChange={(e) => handleFieldChange("name", e.target.value)}
+                  onBlur={() => handleFieldBlur("name")}
+                  className={formTouched.name && formErrors.name ? "border-rose-500 focus-visible:ring-rose-500" : ""}
                 />
+                {formTouched.name && formErrors.name && (
+                  <p className="mt-1.5 text-xs text-rose-400">{formErrors.name}</p>
+                )}
               </div>
               <div>
                 <Label className="mb-2 block text-slate-300">{t('achievements.criteria_code_label')}</Label>
                 <Input
                   type="text"
                   value={formData.criteriaCode}
-                  onChange={(e) => setFormData({ ...formData, criteriaCode: e.target.value })}
-                  required
+                  onChange={(e) => handleFieldChange("criteriaCode", e.target.value)}
+                  onBlur={() => handleFieldBlur("criteriaCode")}
+                  className={formTouched.criteriaCode && formErrors.criteriaCode ? "border-rose-500 focus-visible:ring-rose-500" : ""}
                 />
+                {formTouched.criteriaCode && formErrors.criteriaCode && (
+                  <p className="mt-1.5 text-xs text-rose-400">{formErrors.criteriaCode}</p>
+                )}
               </div>
             </div>
 
@@ -680,8 +762,9 @@ export default function AchievementsPage() {
                 data={formData.description}
                 onChange={(event: any, editor: any) => {
                   const data = editor.getData();
-                  setFormData({ ...formData, description: data });
+                  handleFieldChange("description", data);
                 }}
+                onBlur={() => handleFieldBlur("description")}
                 config={{
                   toolbar: [
                     'heading',
@@ -705,6 +788,9 @@ export default function AchievementsPage() {
                   ]
                 }}
               />
+              {formTouched.description && formErrors.description && (
+                <p className="mt-1.5 text-xs text-rose-400">{formErrors.description}</p>
+              )}
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
@@ -712,15 +798,14 @@ export default function AchievementsPage() {
                 <Input
                   type="url"
                   value={formData.badgeImageUrl}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      badgeImageUrl: e.target.value,
-                    })
-                  }
-                  required
+                  onChange={(e) => handleFieldChange("badgeImageUrl", e.target.value)}
+                  onBlur={() => handleFieldBlur("badgeImageUrl")}
+                  className={formTouched.badgeImageUrl && formErrors.badgeImageUrl ? "border-rose-500 focus-visible:ring-rose-500" : ""}
                 />
-                {formData.badgeImageUrl && (
+                {formTouched.badgeImageUrl && formErrors.badgeImageUrl && (
+                  <p className="mt-1.5 text-xs text-rose-400">{formErrors.badgeImageUrl}</p>
+                )}
+                {formData.badgeImageUrl && !formErrors.badgeImageUrl && (
                   <div className="mt-4">
                     <p className="mb-2 text-sm text-slate-400">
                       {t("achievements.preview")}
@@ -745,12 +830,23 @@ export default function AchievementsPage() {
                 <Select
                   value={formData.type}
                   onValueChange={(value) => {
-                    setFormData({
+                    const next = {
                       ...formData,
                       type: value,
                       seasonMonth: value === 'SEASONAL' ? formData.seasonMonth : '',
                       expiresAt: value === 'SEASONAL' ? formData.expiresAt : '',
-                    });
+                    };
+                    setFormData(next);
+                    if (value !== 'SEASONAL') {
+                      setFormErrors((prev) => { const copy = { ...prev }; delete copy.seasonMonth; return copy; });
+                    } else if (formTouched.seasonMonth) {
+                      const err = validateField('seasonMonth', next.seasonMonth, value);
+                      setFormErrors((prev) => {
+                        const copy = { ...prev };
+                        if (err) copy.seasonMonth = err; else delete copy.seasonMonth;
+                        return copy;
+                      });
+                    }
                   }}
                 >
                   <SelectTrigger>
@@ -771,13 +867,14 @@ export default function AchievementsPage() {
                   value={formData.seasonMonth}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setFormData({
-                      ...formData,
-                      seasonMonth: value,
-                      expiresAt: getEndOfMonthDateTime(value),
-                    });
+                    handleFieldChange("seasonMonth", value, { expiresAt: getEndOfMonthDateTime(value) });
                   }}
+                  onBlur={() => handleFieldBlur("seasonMonth")}
+                  className={formTouched.seasonMonth && formErrors.seasonMonth ? "border-rose-500 focus-visible:ring-rose-500" : ""}
                 />
+                {formTouched.seasonMonth && formErrors.seasonMonth && (
+                  <p className="mt-1.5 text-xs text-rose-400">{formErrors.seasonMonth}</p>
+                )}
                 {formData.seasonMonth && (
                   <div className="mt-2 text-sm text-slate-100">{t('achievements.selected_label')} {formatSeasonMonth(formData.seasonMonth)}</div>
                 )}
@@ -809,6 +906,7 @@ export default function AchievementsPage() {
               </Button>
               <Button
                 type="submit"
+                disabled={Object.keys(formErrors).length > 0}
               >
                 {editingAchievement
                   ? t("achievements.update_achievement")

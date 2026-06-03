@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, IsDateString, MaxLength, Matches } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, IsDateString, MaxLength, Matches, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AchievementType } from '../../entities/Achievement';
 
@@ -7,6 +7,7 @@ export class CreateAchievementDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(100)
+  @MinLength(2)
   name!: string;
 
   @ApiPropertyOptional({ example: 'Achieved your first victory' })
@@ -18,6 +19,8 @@ export class CreateAchievementDto {
   @ApiProperty({ example: 'WIN_FIRST_GAME' })
   @IsNotEmpty()
   @IsString()
+  @MaxLength(50)
+  @Matches(/^[A-Z0-9_]+$/, { message: 'Criteria code must contain only uppercase letters, numbers, and underscores' })
   criteriaCode!: string;
 
   @ApiProperty({ example: 'https://example.com/badge.png' })
@@ -27,6 +30,7 @@ export class CreateAchievementDto {
 
   @ApiProperty({ enum: AchievementType, example: AchievementType.PERMANENT })
   @IsEnum(AchievementType)
+  @IsNotEmpty()
   type!: AchievementType;
 
   @ApiPropertyOptional({ example: '2026-03-31T23:59:59.000Z' })

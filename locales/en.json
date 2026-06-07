@@ -24,6 +24,10 @@
     "google_complete_title": "Google Login Complete",
     "google_code_received": "Login Code received. Copy this code to Unity to complete login.",
     "google_code_missing": "Missing Login Code in URL.",
+    "google_deeplink_opening": "Opening game...",
+    "google_deeplink_success": "Login successful! Opening game.",
+    "google_deeplink_failed": "If the game fails to open automatically, please copy the code below into the game.",
+    "google_show_code_manually": "Show code manually",
     "copied_to_clipboard": "Copied to clipboard",
     "waiting_for_copy": "Waiting to copy...",
     "change_password": "Change Password",
@@ -43,7 +47,10 @@
     "reset_password_success": "Password reset successfully",
     "otp": "OTP",
     "otp_placeholder": "Enter 6-digit code",
-    "back_to_login": "Back to login"
+    "back_to_login": "Back to login",
+    "email_verified": "Email verified successfully!",
+    "copy": "Copy",
+    "copy_success": "Copied!"
   },
   "common": {
     "home": "Home",

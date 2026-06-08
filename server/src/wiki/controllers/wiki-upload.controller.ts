@@ -2,7 +2,7 @@ import {
   Controller, Post, UseInterceptors, UploadedFile, Req, Inject, BadRequestException, PayloadTooLargeException, UseFilters,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -19,8 +19,7 @@ import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 import { UPLOAD_MAX_SIZE } from '../dto/wiki-constants';
 import { MulterExceptionFilter } from './multer-exception.filter';
 
-@ApiTags('wiki-upload')
-@ApiBearerAuth()
+@ApiTags('Wiki Upload')
 @Roles('ADMIN')
 @UseFilters(MulterExceptionFilter)
 @Controller('wiki')

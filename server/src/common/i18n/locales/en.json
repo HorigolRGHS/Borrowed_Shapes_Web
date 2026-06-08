@@ -96,6 +96,8 @@
     "create_success": "Achievement created successfully",
     "update_success": "Achievement updated successfully",
     "delete_success": "Achievement deleted successfully",
+    "unlocked_success": "Achievement unlocked successfully",
+    "already_unlocked": "Achievement already unlocked",
     "user_list_success": "Users with this achievement retrieved successfully",
     "not_found": "Achievement not found",
     "already_exists": "Achievement with this criteria code already exists",

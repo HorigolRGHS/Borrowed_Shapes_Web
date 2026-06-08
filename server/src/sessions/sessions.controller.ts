@@ -1,13 +1,12 @@
 import { Controller, Get, Delete, Param, Req, HttpCode, HttpStatus } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { UserSessionResponseDto, SessionMeResponseDto } from './dto/sessions.dto';
 
 @ApiTags('Sessions')
-@ApiBearerAuth()
 @Controller('sessions')
 export class SessionsController {
   constructor(private sessionsService: SessionsService) {}

@@ -24,6 +24,7 @@ describe('AchievementService', () => {
             assign: jest.fn(),
             flush: jest.fn(),
             removeAndFlush: jest.fn(),
+            count: jest.fn(),
           },
         },
       ],
@@ -51,9 +52,10 @@ describe('AchievementService', () => {
     it('should return achievement if found (Normal)', async () => {
       const achievement = new Achievement();
       jest.spyOn(em, 'findOne').mockResolvedValue(achievement);
+      jest.spyOn(em, 'count').mockResolvedValue(5);
 
       const result = await service.findOne('1');
-      expect(result).toEqual(achievement);
+      expect(result).toEqual(Object.assign(achievement, { earnedCount: 5 }));
     });
 
     it('should throw NotFoundException if not found (Abnormal)', async () => {

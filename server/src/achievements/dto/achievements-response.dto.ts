@@ -28,4 +28,5 @@ export class AchievementResponseDto {
 
   @ApiPropertyOptional({ example: 12 })
   earnedCount?: number;
+
 }

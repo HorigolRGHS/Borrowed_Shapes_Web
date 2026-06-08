@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
@@ -224,5 +225,33 @@ export class AchievementService {
     console.log(rows);
 
     return rows || [];
+  }
+
+  async unlock(gameProfileId: string, criteriaCode: string): Promise<UnlockAchievementResponseDto> {
+    const achievement = await this.em.findOne(Achievement, { criteriaCode });
+    if (!achievement) throw new NotFoundException('achievements.not_found');
+
+    const existingUnlock = await this.em.findOne(UserAchievement, {
+      gameProfileId,
+      achievementId: achievement.id,
+    });
+
+    if (existingUnlock) throw new BadRequestException('achievements.already_unlocked');
+
+    const userAchievement = this.em.create(UserAchievement, {
+      gameProfileId,
+      achievementId: achievement.id,
+    });
+
+    await this.em.persistAndFlush(userAchievement);
+
+    return {
+      unlocked: true,
+      achievement: {
+        id: achievement.id,
+        name: achievement.name,
+        badgeImageUrl: achievement.badgeImageUrl,
+      }
+    };
   }
 }

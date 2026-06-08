@@ -96,6 +96,8 @@
     "create_success": "Tạo thành tựu thành công",
     "update_success": "Cập nhật thành tựu thành công",
     "delete_success": "Xóa thành tựu thành công",
+    "unlocked_success": "Mở khóa thành tựu thành công",
+    "already_unlocked": "Thành tựu này đã được mở khóa trước đó",
     "not_found": "Không tìm thấy thành tựu",
     "already_exists": "Thành tựu với mã tiêu chí này đã tồn tại"
   },

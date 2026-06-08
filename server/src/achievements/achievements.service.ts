@@ -71,7 +71,7 @@ export class AchievementService {
 
     const orderDir = query.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    let orderBy = `ORDER BY a.id ${orderDir}`; // default
+    let orderBy = `ORDER BY "earnedCount" ${orderDir}`; // default
     if (query.sortBy === 'name') {
       orderBy = `ORDER BY a.name ${orderDir}`;
     } else if (query.sortBy === 'type') {

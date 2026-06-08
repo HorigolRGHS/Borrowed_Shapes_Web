@@ -6,7 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle, ChevronDown } from "lucide-react";
+import { Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle, ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
@@ -63,6 +63,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MonthPicker } from "@/components/ui/month-picker";
 
 const BADGE_BASE_CLASS = "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
 const ITEMS_PER_PAGE = 6;
@@ -70,8 +71,8 @@ const ITEMS_PER_PAGE = 6;
 const getTypeBadgeClass = (type: string) => {
   const isPermanent = type === "PERMANENT";
   return isPermanent
-    ? `${BADGE_BASE_CLASS} border-sky-500/70 bg-sky-500/10 text-sky-300`
-    : `${BADGE_BASE_CLASS} border-amber-500/70 bg-amber-500/10 text-amber-300`;
+    ? `${BADGE_BASE_CLASS} w-28 justify-center border-sky-500/70 bg-sky-500/10 text-sky-300`
+    : `${BADGE_BASE_CLASS} w-28 justify-center border-amber-500/70 bg-amber-500/10 text-amber-300`;
 };
 
 interface Achievement {
@@ -100,7 +101,8 @@ export default function AchievementsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("created");
+  const [sortBy, setSortBy] = useState("default");
+  const [sortOrder, setSortOrder] = useState("DESC");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
   const [deleteAchievement, setDeleteAchievement] = useState<Achievement | null>(null);
@@ -108,6 +110,7 @@ export default function AchievementsPage() {
   const [showUsersModal, setShowUsersModal] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [formData, setFormData] = useState({
@@ -122,6 +125,7 @@ export default function AchievementsPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
   const expiresRef = useRef<HTMLInputElement | null>(null);
+  const isClosingRef = useRef(false);
 
   const validateField = (field: string, value: string, type?: string): string => {
     switch (field) {
@@ -132,7 +136,7 @@ export default function AchievementsPage() {
         return "";
       case "criteriaCode":
         if (!value.trim()) return t("achievements.validation.criteria_code_required");
-        if (!/^[a-zA-Z0-9_-]+$/.test(value.trim())) return t("achievements.validation.criteria_code_invalid");
+        if (!/^[A-Z0-9_]+$/.test(value.trim())) return t("achievements.validation.criteria_code_invalid");
         if (value.trim().length > 50) return t("achievements.validation.criteria_code_max");
         return "";
       case "badgeImageUrl":
@@ -181,6 +185,7 @@ export default function AchievementsPage() {
   };
 
   const handleFieldBlur = (field: string) => {
+    if (isClosingRef.current) return;
     setFormTouched((prev) => ({ ...prev, [field]: true }));
     const error = validateField(field, (formData as any)[field]);
     setFormErrors((prev) => {
@@ -199,19 +204,37 @@ export default function AchievementsPage() {
       setUser(profile);
       fetchAchievements();
     }
-  }, [router, typeFilter, sortBy, currentPage]);
+  }, [router, typeFilter, sortBy, sortOrder, currentPage]);
 
   // Handle edit query param from view-detail page
   useEffect(() => {
     const editId = searchParams.get("edit");
-    if (editId && achievements.length > 0) {
-      const achievement = achievements.find((a) => a.id === editId);
+    if (!editId) return;
+
+    const openEdit = async () => {
+      // Try to find in current page first
+      let achievement = achievements.find((a) => a.id === editId);
+
+      // If not found in current page, fetch from detail API
+      if (!achievement) {
+        try {
+          const response = await axios.get(`/api/achievements/detail/${editId}`);
+          if (response.data?.success) {
+            achievement = response.data.data;
+          }
+        } catch (error) {
+          console.error("Failed to fetch achievement for edit:", error);
+        }
+      }
+
       if (achievement) {
         openEditModal(achievement);
         // Clean the URL
         router.replace("/dashboard/achievements", { scroll: false });
       }
-    }
+    };
+
+    openEdit();
   }, [searchParams, achievements]);
 
   const fetchAchievements = async () => {
@@ -222,7 +245,8 @@ export default function AchievementsPage() {
           limit: ITEMS_PER_PAGE,
           type: typeFilter,
           q: searchQuery,
-          sortBy: sortBy,
+          sortBy: sortBy === "default" ? undefined : sortBy,
+          order: sortOrder,
         },
       });
 
@@ -526,6 +550,35 @@ export default function AchievementsPage() {
                     <SelectItem value="seasonal">{t("achievements.seasonal")}</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={sortBy} onValueChange={(val) => {
+                  setSortBy(val);
+                  setCurrentPage(1);
+                }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">{t("achievements.sort_default")}</SelectItem>
+                    <SelectItem value="name">{t("achievements.sort_by_name")}</SelectItem>
+                    <SelectItem value="date">{t("achievements.sort_by_date")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 shrink-0 text-slate-400 hover:text-white"
+                  onClick={() => {
+                    setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
+                    setCurrentPage(1);
+                  }}
+                  title={sortOrder === "ASC" ? t("achievements.sort_ascending") : t("achievements.sort_descending")}
+                >
+                  {sortOrder === "ASC" ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : (
+                    <ArrowDown className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
               <Button
                 onClick={() => {
@@ -581,11 +634,18 @@ export default function AchievementsPage() {
                               {achievement.criteriaCode}
                             </Badge>
                           </TableCell>
-                          {/* Type */}
+                          {/* Type / Season */}
                           <TableCell>
-                            <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
-                              {achievement.type}
-                            </Badge>
+                            <div className="flex flex-col items-start gap-1">
+                              <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
+                                {achievement.type}
+                              </Badge>
+                              {achievement.type === "SEASONAL" && achievement.seasonMonth && (
+                                <span className="text-xs text-slate-500 w-28 text-center">
+                                  {achievement.seasonMonth.slice(0, 10)}
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
                           {/* Expiration */}
                           <TableCell className="text-slate-400">
@@ -689,13 +749,15 @@ export default function AchievementsPage() {
         open={showCreateModal || editingAchievement !== null}
         onOpenChange={(open) => {
           if (!open) {
+            isClosingRef.current = true;
             setShowCreateModal(false);
             setEditingAchievement(null);
             resetForm();
+            setTimeout(() => { isClosingRef.current = false; }, 0);
           }
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll">
+        <DialogContent className="max-w-2xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
           <DialogHeader>
             <DialogTitle>
@@ -853,12 +915,10 @@ export default function AchievementsPage() {
             <div className="grid gap-5 sm:grid-cols-2">
               <div className={formData.type === 'SEASONAL' ? 'relative' : 'hidden'}>
                 <Label className="mb-2 block text-slate-300">{t('achievements.season_month_label')}</Label>
-                <Input
-                  type="month"
+                <MonthPicker
                   value={formData.seasonMonth}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    handleFieldChange("seasonMonth", value, { expiresAt: getEndOfMonthDateTime(value) });
+                  onChange={(val) => {
+                    handleFieldChange("seasonMonth", val, { expiresAt: getEndOfMonthDateTime(val) });
                   }}
                   onBlur={() => handleFieldBlur("seasonMonth")}
                   className={formTouched.seasonMonth && formErrors.seasonMonth ? "border-rose-500 focus-visible:ring-rose-500" : ""}
@@ -918,28 +978,50 @@ export default function AchievementsPage() {
         <AlertDialogContent>
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-rose-500 via-rose-400 to-orange-300" />
           <AlertDialogHeader>
-            <div className="flex items-start gap-5">
-              <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[16px] border border-rose-500/20 bg-rose-500/10">
-                <AlertTriangle className="h-6 w-6 text-rose-400" />
+            <div className="flex items-center gap-4">
+              <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full border border-rose-500/20 bg-rose-500/10">
+                <AlertTriangle className="h-5 w-5 text-rose-400" />
               </div>
-              <div className="flex-1">
-                <AlertDialogTitle>
-                  {t("achievements.delete_achievement_title")}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t("achievements.delete_confirm")}
-                </AlertDialogDescription>
-                <p className="mt-2 max-w-lg text-[15px] leading-7 text-slate-500">
-                  {t("achievements.delete_warning")}
-                </p>
-              </div>
+              <AlertDialogTitle className="text-rose-400">
+                {t("achievements.delete_achievement_title")}
+              </AlertDialogTitle>
             </div>
           </AlertDialogHeader>
+
+          <div className="rounded-[12px] border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+            <AlertDialogDescription>
+              {t("achievements.delete_confirm")} {t("achievements.delete_confirm_undone")}
+            </AlertDialogDescription>
+            <div className="pt-2 space-y-1.5 text-sm">
+              <div className="text-slate-400">
+                {t("achievements.delete_name_label")}{" "}
+                <span className="font-bold text-white">{deleteAchievement?.name}</span>
+              </div>
+              <div className="text-slate-400">
+                {t("achievements.delete_code_label")}{" "}
+                <code className="font-mono text-slate-200">{deleteAchievement?.criteriaCode}</code>
+              </div>
+              <div className="text-slate-400">
+                {t("achievements.delete_earned_by_label")}{" "}
+                <span className="font-bold text-white">{deleteAchievement?.earnedCount ?? 0} {t("achievements.delete_players")}</span>
+              </div>
+            </div>
+            {(deleteAchievement?.earnedCount ?? 0) > 0 && (
+              <div className="mt-3 flex items-start gap-2 rounded-[8px] border border-amber-500/20 bg-amber-500/5 px-3 py-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <p className="text-xs text-amber-300/90 leading-5">
+                  {t("achievements.delete_permanent_warning")}
+                </p>
+              </div>
+            )}
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel>
               {t("achievements.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
+              className="bg-rose-600 hover:bg-rose-700 text-white"
               onClick={() => deleteAchievement && handleDelete(deleteAchievement.id)}
             >
               {t("achievements.delete_button")}
@@ -956,81 +1038,118 @@ export default function AchievementsPage() {
             setShowUsersModal(false);
             setAchievementUsers([]);
             setSelectedAchievement(null);
+            setUserSearchQuery("");
           }
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] custom-scroll">
+        <DialogContent className="max-w-3xl max-h-[90vh] custom-scroll">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400" />
           <DialogHeader>
-            <DialogTitle>
-              {t("achievements.users_with")}{" "}
-              <span className="text-amber-300">
-                &quot;{selectedAchievement?.name}&quot;
-              </span>
-            </DialogTitle>
-            <DialogDescription>
-              {achievementUsers.length}{" "}
-              {achievementUsers.length === 1
-                ? t("achievements.player_earned_single")
-                : t("achievements.players_earned_plural")}
-            </DialogDescription>
+            <div className="flex items-center gap-3">
+              {selectedAchievement?.badgeImageUrl && (
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+                  <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                </div>
+              )}
+              <div>
+                <DialogTitle>
+                  {t("achievements.users_with")}{" "}
+                  <span className="text-amber-300">
+                    &quot;{selectedAchievement?.name}&quot;
+                  </span>
+                </DialogTitle>
+                <DialogDescription>
+                  {achievementUsers.length}{" "}
+                  {achievementUsers.length === 1
+                    ? t("achievements.player_earned_single")
+                    : t("achievements.players_earned_plural")}
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <ScrollArea className="max-h-[60vh]">
+          {/* Search */}
+          <div className="relative max-w-sm">
+            <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+              <Search className="h-4 w-4" />
+            </span>
+            <Input
+              type="text"
+              placeholder={t("achievements.users_search_placeholder")}
+              className="pl-10"
+              value={userSearchQuery}
+              onChange={(e) => setUserSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <ScrollArea className="max-h-[55vh]">
             {loadingUsers ? (
-              <div className="rounded-[16px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+              <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
                 {t("achievements.loading_users")}
               </div>
             ) : achievementUsers.length > 0 ? (
-              <div className="space-y-3">
-                {achievementUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center gap-4 rounded-[16px] border border-slate-800 bg-slate-900/30 p-4 transition hover:border-slate-700"
-                  >
-                    <div className="h-12 w-12 overflow-hidden rounded-full border border-slate-700 bg-slate-800">
-                      <img
-                        src={
-                          user.avatarUrl ||
-                          "https://placehold.co/100x100?text=User"
-                        }
-                        alt={user.displayName}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-
-                    <div className="flex flex-1 items-center justify-between gap-4">
-                      <div>
-                        <div className="text-sm font-semibold text-white">
-                          {user.displayName}
-                        </div>
-
-                        <div className="mt-1 text-xs text-slate-500">
-                          {t("achievements.profile_id_label")}: {user.id}
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                          {t("achievements.earned_date_label")}
-                        </div>
-
-                        <div className="mt-1 text-xs text-slate-300">
-                          {user.earnedAt
-                            ? new Date(user.earnedAt).toLocaleString()
-                            : t("achievements.unknown")}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="rounded-[12px] border border-slate-800 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-800 hover:bg-transparent">
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_player")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_profile_id")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_earned_date")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {achievementUsers
+                      .filter((u) => {
+                        if (!userSearchQuery) return true;
+                        const q = userSearchQuery.toLowerCase();
+                        return u.displayName.toLowerCase().includes(q);
+                      })
+                      .map((u) => {
+                        const initials = u.displayName.charAt(0).toUpperCase();
+                        return (
+                          <TableRow key={u.id} className="border-slate-800 hover:bg-slate-800/50">
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/80 text-sm font-bold text-white">
+                                  {initials}
+                                </div>
+                                <span className="font-medium text-white">{u.displayName}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm text-slate-300">{u.id}</div>
+                            </TableCell>
+                            <TableCell className="text-slate-300 text-sm">
+                              {u.earnedAt
+                                ? new Date(u.earnedAt).toLocaleDateString()
+                                : t("achievements.unknown")}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
               </div>
             ) : (
-              <div className="rounded-[16px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+              <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
                 {t("achievements.no_users_found")}
               </div>
             )}
           </ScrollArea>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowUsersModal(false);
+                setAchievementUsers([]);
+                setSelectedAchievement(null);
+                setUserSearchQuery("");
+              }}
+            >
+              {t("achievements.users_close")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

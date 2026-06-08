@@ -183,7 +183,6 @@
     "name_vi_required": "Vietnamese name is required",
     "name_conflict": "English name already exists",
     "name_vi_conflict": "Vietnamese name already exists",
-    "slug_required": "Slug is required",
     "slug_vi_required": "Vietnamese slug is required",
     "slug_conflict": "English slug already exists",
     "slug_vi_conflict": "Vietnamese slug already exists",

@@ -16,7 +16,7 @@ import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
 import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
 import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { slugRejectionReason } from '../dto/wiki-slug.validator';
-import { compactMetadata } from '../dto/wiki-metadata.dto';
+import { compactMetadata, WikiMetadataDto } from '../dto/wiki-metadata.dto';
 
 function isWikiSlugUniqueError(err: any): boolean {
   if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
@@ -28,6 +28,10 @@ function validateSlugOrThrow(slug: string): void {
   const reason = slugRejectionReason(slug);
   if (reason === 'reserved') throw new BadRequestException('wiki.reserved_slug');
   if (reason === 'invalid') throw new BadRequestException('wiki.invalid_slug');
+}
+
+function randomSlugSuffix(): string {
+  return Math.random().toString(36).slice(2, 8);
 }
 
 @Injectable()
@@ -43,40 +47,103 @@ export class WikiRevisionService {
     adminUserId: string,
     ipAddress: string,
   ): Promise<WikiDetailResponseDto> {
-    validateSlugOrThrow(dto.slug);
-    validateSlugOrThrow(dto.slug_vi);
+    const isStub = dto.stub === true;
 
-    const result = await this.em.transactional(async (em) => {
-      const page = em.create(WikiPage, {
-        slug: dto.slug,
-        slug_vi: dto.slug_vi,
-        title: dto.title,
-        title_vi: dto.title_vi,
-        metadataJson: compactMetadata(dto.metadataJson),
-        isPublished: dto.isPublished ?? false,
-      } as any);
-      try {
+    if (!isStub) {
+      if (
+        !dto.slug ||
+        !dto.slug_vi ||
+        !dto.title ||
+        !dto.title_vi ||
+        dto.content === undefined ||
+        dto.content_vi === undefined
+      ) {
+        throw new BadRequestException('wiki.invalid_input');
+      }
+      validateSlugOrThrow(dto.slug);
+      validateSlugOrThrow(dto.slug_vi);
+    }
+
+    const buildInput = () =>
+      isStub
+        ? {
+            slug: `untitled-${randomSlugSuffix()}`,
+            slug_vi: `khong-ten-${randomSlugSuffix()}`,
+            title: '',
+            title_vi: '',
+            content: '',
+            content_vi: '',
+            summary: null,
+            summary_vi: null,
+            metadataJson: null as WikiMetadataDto | null,
+            isPublished: false,
+          }
+        : {
+            slug: dto.slug!,
+            slug_vi: dto.slug_vi!,
+            title: dto.title!,
+            title_vi: dto.title_vi!,
+            content: dto.content ?? '',
+            content_vi: dto.content_vi ?? '',
+            summary: dto.summary ?? null,
+            summary_vi: dto.summary_vi ?? null,
+            metadataJson: dto.metadataJson ?? null,
+            isPublished: dto.isPublished ?? false,
+          };
+
+    const tryCreate = (input: ReturnType<typeof buildInput>) =>
+      this.em.transactional(async (em) => {
+        const page = em.create(WikiPage, {
+          slug: input.slug,
+          slug_vi: input.slug_vi,
+          title: input.title,
+          title_vi: input.title_vi,
+          metadataJson: compactMetadata(input.metadataJson),
+          isPublished: input.isPublished,
+        } as any);
+        try {
+          await em.flush();
+        } catch (err) {
+          if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+          throw err;
+        }
+
+        const revision = em.create(WikiRevision, {
+          pageId: page,
+          authorId: em.getReference(User, adminUserId),
+          content: input.content,
+          content_vi: input.content_vi,
+          summary: input.summary,
+          summary_vi: input.summary_vi,
+          title: input.title,
+          title_vi: input.title_vi,
+          slug: input.slug,
+          slug_vi: input.slug_vi,
+          metadataJson: compactMetadata(input.metadataJson),
+          isPublished: input.isPublished,
+        } as any);
         await em.flush();
+
+        page.latestRevisionId = revision;
+        await em.flush();
+
+        return { pageId: page.id, revisionId: revision.id, slug: input.slug, slug_vi: input.slug_vi, title: input.title, title_vi: input.title_vi };
+      });
+
+    const maxAttempts = isStub ? 3 : 1;
+    let result: Awaited<ReturnType<typeof tryCreate>> | undefined;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        result = await tryCreate(buildInput());
+        break;
       } catch (err) {
-        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        if (isStub && err instanceof ConflictException && attempt < maxAttempts - 1) {
+          continue;
+        }
         throw err;
       }
-
-      const revision = em.create(WikiRevision, {
-        pageId: page,
-        authorId: em.getReference(User, adminUserId),
-        content: dto.content,
-        content_vi: dto.content_vi,
-        summary: dto.summary ?? null,
-        summary_vi: dto.summary_vi ?? null,
-      } as any);
-      await em.flush();
-
-      page.latestRevisionId = revision;
-      await em.flush();
-
-      return { pageId: page.id, revisionId: revision.id };
-    });
+    }
+    if (!result) throw new ConflictException('wiki.slug_taken');
 
     await this.audit.log({
       userId: adminUserId,
@@ -84,11 +151,12 @@ export class WikiRevisionService {
       entityName: 'WikiPage',
       entityId: result.pageId,
       newValue: {
-        slug: dto.slug,
-        slug_vi: dto.slug_vi,
-        title: dto.title,
-        title_vi: dto.title_vi,
+        slug: result.slug,
+        slug_vi: result.slug_vi,
+        title: result.title,
+        title_vi: result.title_vi,
         firstRevisionId: result.revisionId,
+        stub: isStub,
       },
       ipAddress,
     });
@@ -181,8 +249,8 @@ export class WikiRevisionService {
       page.metadataJson = compactMetadata(dto.metadataJson);
       if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
 
-      let newRevisionId: string | null = currentLatestId;
-      if (contentChanged) {
+      let newRevisionId: string;
+      {
         const newRevision = em.create(WikiRevision, {
           pageId: page,
           authorId: em.getReference(User, adminUserId),
@@ -190,8 +258,19 @@ export class WikiRevisionService {
           content_vi: dto.content_vi,
           summary: dto.summary ?? null,
           summary_vi: dto.summary_vi ?? null,
+          title: dto.title,
+          title_vi: dto.title_vi,
+          slug: dto.slug,
+          slug_vi: dto.slug_vi,
+          metadataJson: compactMetadata(dto.metadataJson),
+          isPublished: dto.isPublished ?? page.isPublished,
         } as any);
-        await em.flush();
+        try {
+          await em.flush();
+        } catch (err) {
+          if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+          throw err;
+        }
         page.latestRevisionId = newRevision;
         newRevisionId = newRevision.id;
       }
@@ -280,11 +359,28 @@ export class WikiRevisionService {
         content_vi: target.content_vi,
         summary: `Rollback to revision ${target.id} (created ${target.createdAt.toISOString()})`,
         summary_vi: `Khôi phục về phiên bản ${target.id} (tạo ${target.createdAt.toISOString()})`,
+        title: target.title,
+        title_vi: target.title_vi,
+        slug: target.slug,
+        slug_vi: target.slug_vi,
+        metadataJson: target.metadataJson ?? null,
+        isPublished: target.isPublished,
       } as any);
       await em.flush();
 
       page.latestRevisionId = newRevision;
-      await em.flush();
+      page.slug = target.slug;
+      page.slug_vi = target.slug_vi;
+      page.title = target.title;
+      page.title_vi = target.title_vi;
+      page.metadataJson = target.metadataJson ?? null;
+      page.isPublished = target.isPublished;
+      try {
+        await em.flush();
+      } catch (err) {
+        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        throw err;
+      }
 
       return {
         pageId: page.id,

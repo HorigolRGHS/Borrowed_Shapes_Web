@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Settings } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { slugifyEn, slugifyVi } from "@/lib/wiki/slug";
 import {
@@ -13,7 +12,6 @@ import {
   type WikiFormValue,
 } from "@/models/dtos/wiki-form.dto";
 import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -27,8 +25,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditableTitle } from "./editable-title";
+import { EditableSummary } from "./editable-summary";
+import { LocaleToggle } from "./locale-toggle";
+import { SlugEditRow } from "./slug-edit-row";
 import { StickySaveBar } from "./sticky-save-bar";
-import { WikiSettingsSheet } from "./wiki-settings-sheet";
+import { WikiPageShell } from "./wiki-page-shell";
+import { WikiPageHeader } from "./wiki-page-header";
+import { EditableInfobox } from "./inline-infobox/editable-infobox";
 
 export type { WikiFormValue };
 export { emptyWikiFormValue };
@@ -80,9 +83,9 @@ export function WikiForm({
     mode: "onChange",
   });
 
+  const [activeLocale, setActiveLocale] = useState<"en" | "vi">(locale);
   const [warnSame, setWarnSame] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [slugEnTouched, setSlugEnTouched] = useState(isEdit);
   const [slugViTouched, setSlugViTouched] = useState(isEdit);
 
@@ -129,17 +132,15 @@ export function WikiForm({
   const submitWithMode = async (mode: "draft" | "publish") => {
     const valid = await form.trigger();
     if (!valid) {
+      // Surface the locale whose inline field is blocking, so the user can see
+      // and fix it (each locale shows one title/summary/slug at a time).
       const e = form.formState.errors;
-      if (
-        e.slug ||
-        e.slug_vi ||
-        e.summary ||
-        e.summary_vi ||
-        e.metadata ||
-        (locale === "en" && e.title_vi) ||
-        (locale === "vi" && e.title)
-      ) {
-        setSettingsOpen(true);
+      const enHasError = !!e.title || !!e.slug || !!e.summary;
+      const viHasError = !!e.title_vi || !!e.slug_vi || !!e.summary_vi;
+      if (activeLocale === "en" && !enHasError && viHasError) {
+        setActiveLocale("vi");
+      } else if (activeLocale === "vi" && !viHasError && enHasError) {
+        setActiveLocale("en");
       }
       return;
     }
@@ -185,83 +186,92 @@ export function WikiForm({
   const canPublish = canSubmitDraft && contentFilled;
 
   const errors = form.formState.errors;
-  const settingsHasError =
-    !!errors.slug ||
-    !!errors.slug_vi ||
-    !!errors.summary ||
-    !!errors.summary_vi ||
-    !!errors.metadata ||
-    (locale === "en" && !!errors.title_vi) ||
-    (locale === "vi" && !!errors.title);
-
-  const activeTitleField = locale === "vi" ? "title_vi" : "title";
-  const activeTitleValue =
-    locale === "vi" ? form.watch("title_vi") : form.watch("title");
-  const activeTitleErrorKey =
-    locale === "vi"
-      ? errors.title_vi?.message
-      : errors.title?.message;
+  const titleField = activeLocale === "vi" ? "title_vi" : "title";
+  const slugField = activeLocale === "vi" ? "slug_vi" : "slug";
+  const summaryField = activeLocale === "vi" ? "summary_vi" : "summary";
+  const titleValue =
+    activeLocale === "vi" ? form.watch("title_vi") : form.watch("title");
+  const titleErrorKey =
+    activeLocale === "vi" ? errors.title_vi?.message : errors.title?.message;
+  const summaryPlaceholder =
+    activeLocale === "vi"
+      ? t("wiki.edit.summary_placeholder_vi")
+      : t("wiki.edit.summary_placeholder_en");
 
   return (
     <Form {...form}>
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <EditableTitle
-              value={activeTitleValue}
-              onChange={(v) =>
-                form.setValue(activeTitleField, v, {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                })
-              }
-              placeholder={t("wiki.edit.title_placeholder")}
-              error={activeTitleErrorKey ? t(activeTitleErrorKey) : null}
+      <WikiPageShell
+        header={
+          <WikiPageHeader
+            mode="edit"
+            byline={headerSubtitle}
+            toolbarNode={
+              <LocaleToggle
+                value={activeLocale}
+                onChange={setActiveLocale}
+                enLabel={t("wiki.tab_en")}
+                viLabel={t("wiki.tab_vi")}
+              />
+            }
+            titleNode={
+              <div className="space-y-2">
+                <EditableTitle
+                  value={titleValue}
+                  onChange={(v) =>
+                    form.setValue(titleField, v, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  placeholder={t("wiki.edit.title_placeholder")}
+                  error={titleErrorKey ? t(titleErrorKey) : null}
+                />
+                <SlugEditRow
+                  key={activeLocale}
+                  name={slugField}
+                  onTouchedChange={
+                    activeLocale === "vi"
+                      ? setSlugViTouched
+                      : setSlugEnTouched
+                  }
+                />
+              </div>
+            }
+            summaryNode={
+              <EditableSummary
+                key={activeLocale}
+                fieldName={summaryField}
+                placeholder={summaryPlaceholder}
+              />
+            }
+          />
+        }
+        body={
+          <div className="space-y-4">
+            <Label className="sr-only">{t("wiki.field_content")}</Label>
+            <TiptapEditor
+              activeLocale={activeLocale}
+              hideLocaleTabs
+              value={{
+                en: form.watch("content"),
+                vi: form.watch("content_vi"),
+              }}
+              onChange={(next) => {
+                form.setValue("content", next.en, { shouldDirty: true });
+                form.setValue("content_vi", next.vi, { shouldDirty: true });
+              }}
             />
-            {headerSubtitle && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {headerSubtitle}
-              </p>
+            {submitError && (
+              <Alert variant="destructive">
+                <AlertDescription>{submitError}</AlertDescription>
+              </Alert>
             )}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setSettingsOpen(true)}
-            className="relative shrink-0"
-          >
-            <Settings className="h-4 w-4 mr-1" />
-            {t("wiki.edit.settings_button")}
-            {settingsHasError && (
-              <span
-                aria-hidden
-                className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive"
-              />
-            )}
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="sr-only">{t("wiki.field_content")}</Label>
-          <TiptapEditor
-            value={{
-              en: form.watch("content"),
-              vi: form.watch("content_vi"),
-            }}
-            onChange={(next) => {
-              form.setValue("content", next.en, { shouldDirty: true });
-              form.setValue("content_vi", next.vi, { shouldDirty: true });
-            }}
-          />
-        </div>
-
-        {submitError && (
-          <Alert variant="destructive">
-            <AlertDescription>{submitError}</AlertDescription>
-          </Alert>
-        )}
-      </div>
+        }
+        infobox={
+          <EditableInfobox locale={activeLocale} excludeSlug={excludeSlug} />
+        }
+      />
 
       <StickySaveBar
         isDirty={isDirty}
@@ -271,15 +281,6 @@ export function WikiForm({
         onSaveDraft={() => submitWithMode("draft")}
         onPublish={() => submitWithMode("publish")}
         onCancel={requestCancel}
-      />
-
-      <WikiSettingsSheet
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        excludeSlug={excludeSlug}
-        locale={locale}
-        onSlugEnTouched={setSlugEnTouched}
-        onSlugViTouched={setSlugViTouched}
       />
 
       <AlertDialog open={warnSame} onOpenChange={setWarnSame}>

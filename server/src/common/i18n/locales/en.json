@@ -161,7 +161,26 @@
     "invalid_author": "Author not found",
     "invalid_user": "User not found",
     "forbidden_update": "You don't have permission to update this thread",
-    "forbidden_delete": "You don't have permission to delete this thread"
+    "forbidden_delete": "You don't have permission to delete this thread",
+    "forbidden_admin_only": "Only admins can perform this action",
+    "slug_required": "Slug is required"
+  },
+  "category": {
+    "list_success": "Categories retrieved successfully",
+    "detail_success": "Category details retrieved successfully",
+    "create_success": "Category created successfully",
+    "update_success": "Category updated successfully",
+    "delete_success": "Category deleted successfully",
+    "not_found": "Category not found",
+    "name_required": "English name is required",
+    "name_vi_required": "Vietnamese name is required",
+    "name_conflict": "English name already exists",
+    "name_vi_conflict": "Vietnamese name already exists",
+    "slug_required": "Slug is required",
+    "slug_vi_required": "Vietnamese slug is required",
+    "slug_conflict": "English slug already exists",
+    "slug_vi_conflict": "Vietnamese slug already exists",
+    "forbidden": "You don't have permission to perform this action"
   },
   "announcements": {
     "list_success": "Announcements retrieved successfully",

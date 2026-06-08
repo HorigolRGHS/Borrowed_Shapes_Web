@@ -27,7 +27,7 @@ export function StickySaveBar({
 
   return (
     <div className="sticky bottom-0 z-10 border-t bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+      <div className="mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {isDirty && (
             <>

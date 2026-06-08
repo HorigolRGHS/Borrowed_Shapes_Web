@@ -116,7 +116,7 @@ export function AdminWikiListClient() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-6xl">
+    <main className="container mx-auto px-4 py-8">
       <header className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("wiki.admin_title")}</h1>

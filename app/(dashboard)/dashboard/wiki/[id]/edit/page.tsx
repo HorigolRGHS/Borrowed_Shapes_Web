@@ -55,7 +55,7 @@ export default function AdminWikiEditPage({
 
   if (loadError) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
@@ -64,7 +64,7 @@ export default function AdminWikiEditPage({
   }
   if (!detail) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-5xl space-y-4">
+      <main className="container mx-auto px-4 py-8 space-y-4">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-4 w-1/4" />
         <Skeleton className="h-96 w-full" />
@@ -137,7 +137,7 @@ export default function AdminWikiEditPage({
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-5xl">
+    <main className="container mx-auto px-4 py-8">
       <nav className="text-sm text-muted-foreground mb-6 flex items-center justify-between gap-3">
         <div className="min-w-0 truncate">
           <Link href="/dashboard/wiki" className="hover:text-foreground">

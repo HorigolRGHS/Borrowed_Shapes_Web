@@ -36,11 +36,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 
-@ApiTags('announcements')
+@ApiTags('Announcements')
 @UseGuards(AuthGuard)
 @Controller('announcements')
 export class AnnouncementController {
-  constructor(private readonly announcementService: AnnouncementService) {}
+  constructor(private readonly announcementService: AnnouncementService) { }
 
   @Public()
   @Get()

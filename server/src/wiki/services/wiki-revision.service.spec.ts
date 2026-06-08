@@ -249,6 +249,71 @@ describe('WikiRevisionService.create', () => {
   });
 });
 
+describe('WikiRevisionService.create stub mode', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    const transactionalImpl = async (cb: any) => cb(em);
+    em = {
+      create: jest.fn((_entity, data) => ({ ...data, id: data.id ?? 'new-id' })),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(transactionalImpl),
+      getReference: jest.fn((_entity, id) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('generates placeholder slug/title when stub=true', async () => {
+    await service.create({ stub: true } as any, 'admin-1', '127.0.0.1');
+
+    const page = em.create.mock.calls
+      .map((c: unknown[]) => c[1] as any)
+      .find((d: any) => typeof d?.slug === 'string');
+    expect(page).toBeDefined();
+    expect(page.slug).toMatch(/^untitled-[a-z0-9]{6}$/);
+    expect(page.slug_vi).toMatch(/^khong-ten-[a-z0-9]{6}$/);
+    expect(page.title).toBe('');
+    expect(page.title_vi).toBe('');
+    expect(page.isPublished).toBe(false);
+  });
+
+  it('rejects non-stub payload missing required fields', async () => {
+    await expect(
+      service.create({} as any, 'admin-1', '127.0.0.1'),
+    ).rejects.toThrow('wiki.invalid_input');
+  });
+
+  it('retries with a fresh slug on stub collision', async () => {
+    const uniqueErr: any = new Error('duplicate key');
+    uniqueErr.code = '23505';
+    uniqueErr.constraint = 'WikiPage_slug_key';
+    // First attempt's page flush collides; retry succeeds.
+    em.flush = jest
+      .fn()
+      .mockRejectedValueOnce(uniqueErr)
+      .mockResolvedValue(undefined);
+
+    await expect(
+      service.create({ stub: true } as any, 'admin-1', '127.0.0.1'),
+    ).resolves.toBeDefined();
+    expect(wikiSvc.getByIdForAdmin).toHaveBeenCalled();
+  });
+});
+
 describe('WikiRevisionService.update', () => {
   let service: WikiRevisionService;
   let em: any;
@@ -352,7 +417,7 @@ describe('WikiRevisionService.update', () => {
     );
   });
 
-  it('skips creating revision when content unchanged but updates metadata', async () => {
+  it('creates a snapshot revision when content unchanged but metadata changes', async () => {
     em.findOne.mockResolvedValueOnce(fakePage('r-current'));
     await service.update(
       'p1',
@@ -364,8 +429,18 @@ describe('WikiRevisionService.update', () => {
       } as any,
       'admin-1', '1.1.1.1',
     );
-    // no revision created
-    expect(em.create).not.toHaveBeenCalled();
+    // revision created with full snapshot (content from dto, slug from dto)
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        content: 'OLD',
+        content_vi: 'OLD_VI',
+        slug: 'new-slug',
+        slug_vi: 'old-vi',
+        title: 'Old',
+        title_vi: 'OldVi',
+      }),
+    );
     // page metadata changed → audit logged
     expect(audit.log).toHaveBeenCalled();
   });
@@ -411,7 +486,7 @@ describe('WikiRevisionService.update', () => {
   });
 
   describe('Boundary', () => {
-    it('updates only metadataJson — skips revision creation but logs metadataJson in changedFields', async () => {
+    it('updates only metadataJson — creates revision with new metadata snapshot and logs metadataJson in changedFields', async () => {
       em.findOne.mockResolvedValueOnce({
         ...fakePage('r-current'),
         metadataJson: { category: 'Boss' },
@@ -427,7 +502,12 @@ describe('WikiRevisionService.update', () => {
         } as any,
         'admin-1', '1.1.1.1',
       );
-      expect(em.create).not.toHaveBeenCalled();
+      expect(em.create).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          metadataJson: { category: 'Item' },
+        }),
+      );
       expect(audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
           newValue: expect.objectContaining({
@@ -477,6 +557,121 @@ describe('WikiRevisionService.update', () => {
         ),
       ).rejects.toBeInstanceOf(ConflictException);
     });
+  });
+});
+
+describe('WikiRevisionService.update writes full snapshot', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    const transactionalImpl = async (cb: any) => cb(em);
+    em = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(transactionalImpl),
+      getReference: jest.fn((_e: unknown, id: string) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('persists title/slug/metadata/isPublished onto the new revision', async () => {
+    const existingPage: any = {
+      id: 'p1',
+      slug: 'old-slug',
+      slug_vi: 'old-slug-vi',
+      title: 'Old',
+      title_vi: 'Cũ',
+      metadataJson: null,
+      isPublished: false,
+      latestRevisionId: { id: 'r1', content: '', content_vi: '', summary: null, summary_vi: null, createdAt: new Date() },
+    };
+    const created: any[] = [];
+    em.findOne = jest.fn().mockResolvedValue(existingPage);
+    em.create = jest.fn((_e: unknown, data: any) => {
+      const obj = { ...data, id: 'r2' };
+      created.push(obj);
+      return obj;
+    });
+
+    await service.update(
+      'p1',
+      {
+        slug: 'new-slug',
+        slug_vi: 'old-slug-vi',
+        title: 'New',
+        title_vi: 'Mới',
+        content: 'body',
+        content_vi: 'thân',
+        summary: 's',
+        summary_vi: 't',
+        metadataJson: { category: 'Boss' },
+        isPublished: true,
+        expectedLatestRevisionId: 'r1',
+      } as any,
+      'admin-1',
+      '127.0.0.1',
+    );
+
+    const newRev = created.find((c) => c.id === 'r2');
+    expect(newRev).toBeDefined();
+    expect(newRev.title).toBe('New');
+    expect(newRev.title_vi).toBe('Mới');
+    expect(newRev.slug).toBe('new-slug');
+    expect(newRev.slug_vi).toBe('old-slug-vi');
+    expect(newRev.metadataJson).toEqual({ category: 'Boss' });
+    expect(newRev.isPublished).toBe(true);
+  });
+
+  it('translates Postgres unique violation on slug change to ConflictException', async () => {
+    const existingPage: any = {
+      id: 'p1',
+      slug: 'old-slug',
+      slug_vi: 'old-slug-vi',
+      title: 'Old',
+      title_vi: 'Cũ',
+      metadataJson: null,
+      isPublished: false,
+      latestRevisionId: { id: 'r1', content: '', content_vi: '', summary: null, summary_vi: null, createdAt: new Date() },
+    };
+    em.findOne = jest.fn().mockResolvedValue(existingPage);
+    em.create = jest.fn((_e: unknown, data: any) => ({ ...data, id: 'r2' }));
+    const uniqueErr: any = new Error('duplicate key value violates unique constraint');
+    uniqueErr.code = '23505';
+    uniqueErr.constraint = 'WikiPage_slug_key';
+    em.flush = jest.fn().mockRejectedValueOnce(uniqueErr);
+
+    await expect(
+      service.update(
+        'p1',
+        {
+          slug: 'taken-slug',
+          slug_vi: 'old-slug-vi',
+          title: 'Old',
+          title_vi: 'Cũ',
+          content: '',
+          content_vi: '',
+          metadataJson: null,
+          expectedLatestRevisionId: 'r1',
+        } as any,
+        'admin-1',
+        '127.0.0.1',
+      ),
+    ).rejects.toThrow('wiki.slug_taken');
   });
 });
 
@@ -615,6 +810,131 @@ describe('WikiRevisionService.rollback', () => {
         ),
       ).rejects.toThrow('wiki.revision_not_found');
     });
+  });
+});
+
+describe('WikiRevisionService.rollback applies full snapshot', () => {
+  let service: WikiRevisionService;
+  let em: any;
+  let audit: { log: jest.Mock };
+  let wikiSvc: { getByIdForAdmin: jest.Mock };
+
+  beforeEach(async () => {
+    const transactionalImpl = async (cb: any) => cb(em);
+    em = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      flush: jest.fn().mockResolvedValue(undefined),
+      transactional: jest.fn(transactionalImpl),
+      getReference: jest.fn((_e: unknown, id: string) => ({ id })),
+    };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any) };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiRevisionService,
+        { provide: EntityManager, useValue: em },
+        { provide: WikiAuditService, useValue: audit },
+        { provide: WikiService, useValue: wikiSvc },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiRevisionService);
+  });
+
+  it('restores title/slug/metadata/isPublished from target revision', async () => {
+    const page: any = {
+      id: 'p1',
+      slug: 'now-slug', slug_vi: 'now-slug-vi',
+      title: 'Now', title_vi: 'Bây giờ',
+      metadataJson: { category: 'Item' },
+      isPublished: true,
+      latestRevisionId: { id: 'r3' },
+    };
+    const target: any = {
+      id: 'r2',
+      content: 'old body', content_vi: 'thân cũ',
+      summary: 'old', summary_vi: 'cũ',
+      title: 'Old', title_vi: 'Cũ',
+      slug: 'old-slug', slug_vi: 'old-slug-vi',
+      metadataJson: { category: 'Boss' },
+      isPublished: false,
+      createdAt: new Date('2026-05-01'),
+    };
+    const created: any[] = [];
+    em.findOne = jest.fn()
+      .mockResolvedValueOnce(page)
+      .mockResolvedValueOnce(target);
+    em.create = jest.fn((_e: unknown, data: any) => {
+      const obj = { ...data, id: 'r4' };
+      created.push(obj);
+      return obj;
+    });
+
+    await service.rollback(
+      'p1',
+      { targetRevisionId: 'r2', expectedLatestRevisionId: 'r3' } as any,
+      'admin-1',
+      '127.0.0.1',
+    );
+
+    const restored = created.find((c) => c.id === 'r4');
+    expect(restored.title).toBe('Old');
+    expect(restored.title_vi).toBe('Cũ');
+    expect(restored.slug).toBe('old-slug');
+    expect(restored.slug_vi).toBe('old-slug-vi');
+    expect(restored.content).toBe('old body');
+    expect(restored.metadataJson).toEqual({ category: 'Boss' });
+    expect(restored.isPublished).toBe(false);
+    expect(page.title).toBe('Old');
+    expect(page.title_vi).toBe('Cũ');
+    expect(page.slug).toBe('old-slug');
+    expect(page.slug_vi).toBe('old-slug-vi');
+    expect(page.metadataJson).toEqual({ category: 'Boss' });
+    expect(page.isPublished).toBe(false);
+    expect(page.latestRevisionId).toBe(restored);
+  });
+
+  it('translates slug-conflict on rollback page flush to ConflictException', async () => {
+    const page: any = {
+      id: 'p1',
+      slug: 'now-slug', slug_vi: 'now-slug-vi',
+      title: 'Now', title_vi: 'Bây giờ',
+      metadataJson: null,
+      isPublished: true,
+      latestRevisionId: { id: 'r3' },
+    };
+    const target: any = {
+      id: 'r2',
+      content: 'old', content_vi: 'cũ',
+      summary: null, summary_vi: null,
+      title: 'Old', title_vi: 'Cũ',
+      slug: 'taken-slug', slug_vi: 'old-slug-vi',
+      metadataJson: null,
+      isPublished: false,
+      createdAt: new Date('2026-05-01'),
+    };
+    em.findOne = jest.fn()
+      .mockResolvedValueOnce(page)
+      .mockResolvedValueOnce(target);
+    em.create = jest.fn((_e: unknown, data: any) => ({ ...data, id: 'r4' }));
+    const uniqueErr: any = new Error('duplicate key value violates unique constraint');
+    uniqueErr.code = '23505';
+    uniqueErr.constraint = 'WikiPage_slug_key';
+    // First flush (revision insert) succeeds; second flush (page mutation) collides.
+    em.flush = jest
+      .fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(uniqueErr);
+
+    await expect(
+      service.rollback(
+        'p1',
+        { targetRevisionId: 'r2', expectedLatestRevisionId: 'r3' } as any,
+        'admin-1',
+        '127.0.0.1',
+      ),
+    ).rejects.toThrow('wiki.slug_taken');
   });
 });
 

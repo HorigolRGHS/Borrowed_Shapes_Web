@@ -54,11 +54,12 @@ export class ForumController {
     @Body() createForumDto: CreateForumDto,
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.create(createForumDto, user.userId);
+    const isAdmin = user.role === 'ADMIN';
+    const data = await this.forumService.create(createForumDto, user.userId, isAdmin);
     return okResponse('forum.create_success', data, 'POST /forum');
   }
 
-  // Update thread (requires auth, author or admin)
+  // Update thread (requires auth, author only)
   @UseGuards(AuthGuard)
   @Patch(':id')
   async update(

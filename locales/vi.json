@@ -24,6 +24,10 @@
     "google_complete_title": "Hoàn tất đăng nhập Google",
     "google_code_received": "Đã nhận được Mã đăng nhập. Copy mã này vào Unity để hoàn tất đăng nhập.",
     "google_code_missing": "Thiếu Mã đăng nhập trên URL.",
+    "google_deeplink_opening": "Đang mở game...",
+    "google_deeplink_success": "Đăng nhập thành công! Game đang được mở.",
+    "google_deeplink_failed": "Nếu không thể mở game tự động, vui lòng copy mã dưới đây vào game.",
+    "google_show_code_manually": "Hiển thị mã thủ công",
     "copied_to_clipboard": "Đã copy vào clipboard",
     "waiting_for_copy": "Đang chờ copy...",
     "change_password": "Đổi mật khẩu",
@@ -43,7 +47,10 @@
     "reset_password_success": "Đặt lại mật khẩu thành công",
     "otp": "Mã OTP",
     "otp_placeholder": "Nhập mã 6 chữ số",
-    "back_to_login": "Quay lại đăng nhập"
+    "back_to_login": "Quay lại đăng nhập",
+    "email_verified": "Xác thực email thành công!",
+    "copy": "Sao chép",
+    "copy_success": "Đã sao chép!"
   },
   "common": {
     "home": "Trang chủ",
@@ -161,6 +168,9 @@
       "cancel_confirm_leave": "Rời trang",
       "cancel_confirm_stay": "Ở lại",
       "title_placeholder": "Nhập tiêu đề...",
+      "untitled_placeholder": "Chưa đặt tên",
+      "summary_placeholder_en": "Thêm tóm tắt ngắn…",
+      "summary_placeholder_vi": "Thêm tóm tắt ngắn…",
       "save_draft_success": "Đã lưu nháp",
       "save_publish_success": "Đã lưu và xuất bản"
     },

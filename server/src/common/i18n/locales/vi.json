@@ -199,5 +199,25 @@
     "content_vi_required": "Nội dung tiếng Việt là bắt buộc",
     "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự",
     "content_vi_max_length": "Nội dung tiếng Việt quá dài"
+    "forbidden_delete": "Bạn không có quyền xóa bài viết này",
+    "forbidden_admin_only": "Chỉ quản trị viên mới có thể thực hiện hành động này",
+    "slug_required": "Slug là bắt buộc"
+  },
+  "category": {
+    "list_success": "Lấy danh sách danh mục thành công",
+    "detail_success": "Lấy chi tiết danh mục thành công",
+    "create_success": "Tạo danh mục thành công",
+    "update_success": "Cập nhật danh mục thành công",
+    "delete_success": "Xóa danh mục thành công",
+    "not_found": "Danh mục không tồn tại",
+    "name_required": "Tên danh mục (Tiếng Anh) là bắt buộc",
+    "name_vi_required": "Tên danh mục (Tiếng Việt) là bắt buộc",
+    "name_conflict": "Tên danh mục (Tiếng Anh) đã tồn tại",
+    "name_vi_conflict": "Tên danh mục (Tiếng Việt) đã tồn tại",
+    "slug_required": "Slug là bắt buộc",
+    "slug_vi_required": "Slug tiếng Việt là bắt buộc",
+    "slug_conflict": "Slug tiếng Anh đã tồn tại",
+    "slug_vi_conflict": "Slug tiếng Việt đã tồn tại",
+    "forbidden": "Bạn không có quyền thực hiện hành động này"
   }
 }

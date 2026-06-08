@@ -21,6 +21,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 import { AchievementService } from './achievements.service';
@@ -34,7 +35,7 @@ import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 
-@ApiTags('achievements')
+@ApiTags('Achievements')
 @UseGuards(AuthGuard)
 @Roles('USER', 'ADMIN')
 @Controller('achievements')
@@ -44,7 +45,14 @@ export class AchievementController {
   ) { }
 
   @Get()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all achievements (paginated)' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({ name: 'type', required: false, example: 'PERMANENT' })
+  @ApiQuery({ name: 'q', required: false, example: 'win' })
+  @ApiQuery({ name: 'sortBy', required: false, example: 'name' })
+  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], example: 'desc' })
   async findAll(
     @Req() req: Request,
     @Query('page') page?: number,
@@ -52,6 +60,7 @@ export class AchievementController {
     @Query('type') type?: string,
     @Query('q') q?: string,
     @Query('sortBy') sortBy?: string,
+    @Query('order') order?: string,
   ) {
     const result = await this.achievementService.findAllPaginated({
       page,
@@ -59,6 +68,7 @@ export class AchievementController {
       type,
       q,
       sortBy,
+      order,
     });
 
     const data = {
@@ -87,6 +97,7 @@ export class AchievementController {
   }
 
   @Get('search')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Search achievements (paginated)' })
   async search(
     @Query('q') q: string,
@@ -95,6 +106,7 @@ export class AchievementController {
     @Query('limit') limit?: number,
     @Query('type') type?: string,
     @Query('sortBy') sortBy?: string,
+    @Query('order') order?: string,
   ) {
     const result = await this.achievementService.findAllPaginated({
       page,
@@ -102,6 +114,7 @@ export class AchievementController {
       type,
       q,
       sortBy,
+      order,
     });
 
     const data = {
@@ -130,6 +143,7 @@ export class AchievementController {
   }
 
   @Get('user/me')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user achievements' })
   @ApiResponse({
     status: 200,
@@ -174,6 +188,7 @@ export class AchievementController {
   }
 
   @Get(':id/users')
+  @ApiBearerAuth()
   async findUsersByAchievement(
     @Param('id') id: string,
     @Req() req: Request,
@@ -189,6 +204,7 @@ export class AchievementController {
   }
 
   @Get(':id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get achievement details' })
   @ApiResponse({
     status: 200,
@@ -209,6 +225,7 @@ export class AchievementController {
       type: achievement.type,
       seasonMonth: achievement.seasonMonth,
       expiresAt: achievement.expiresAt,
+      earnedCount: achievement.earnedCount,
     };
 
     return okResponse(
@@ -220,6 +237,7 @@ export class AchievementController {
 
   @Post()
   @Roles('ADMIN')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create achievement' })
   @ApiBody({ type: CreateAchievementDto })
@@ -244,6 +262,7 @@ export class AchievementController {
       type: achievement.type,
       seasonMonth: achievement.seasonMonth,
       expiresAt: achievement.expiresAt,
+      earnedCount: 0,
     };
 
     return okResponse(
@@ -254,6 +273,7 @@ export class AchievementController {
   }
 
   @Put(':id')
+  @ApiBearerAuth()
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update achievement' })
@@ -280,6 +300,7 @@ export class AchievementController {
       type: achievement.type,
       seasonMonth: achievement.seasonMonth,
       expiresAt: achievement.expiresAt,
+      earnedCount: (achievement as any).earnedCount,
     };
 
     return okResponse(
@@ -291,6 +312,7 @@ export class AchievementController {
 
   @Delete(':id')
   @Roles('ADMIN')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete achievement' })
   @ApiResponse({ status: 200 })

@@ -1,6 +1,6 @@
 import { Controller, Get, Put, Param, ForbiddenException, HttpCode, HttpStatus } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,7 +10,6 @@ import { User } from '../entities/User';
 import { PresenceResponseDto } from './dto/presence.dto';
 
 @ApiTags('Presence')
-@ApiBearerAuth()
 @Controller('presence')
 export class PresenceController {
   constructor(

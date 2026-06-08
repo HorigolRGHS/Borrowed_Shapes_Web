@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 
 import type { Request } from 'express';
@@ -29,6 +30,7 @@ import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
 import { AchievementResponseDto } from './dto/achievements-response.dto';
 import { UserAchievementResponseDto } from './dto/user-achievements-response.dto';
+import { UnlockAchievementDto, UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
@@ -233,6 +235,23 @@ export class AchievementController {
       data,
       `${req.method} ${req.path}`,
     );
+  }
+
+  @Post('unlock')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Unlock achievement by criteria code' })
+  @ApiBody({ type: UnlockAchievementDto })
+  @ApiResponse({
+    status: 200,
+    type: UnlockAchievementResponseDto,
+  })
+  async unlock(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: UnlockAchievementDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<UnlockAchievementResponseDto>> {
+    const data = await this.achievementService.unlock(user.gameProfileId, dto.criteriaCode);
+    return okResponse('achievements.unlocked_success', data, `${req.method} ${req.path}`);
   }
 
   @Post()

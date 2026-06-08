@@ -14,7 +14,7 @@ import {
 import { RelatedPageDto } from '../dto/wiki-metadata.dto';
 import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 
-@ApiTags('wiki')
+@ApiTags('Wiki')
 @Controller('wiki')
 export class WikiController {
   constructor(private wikiService: WikiService) {}

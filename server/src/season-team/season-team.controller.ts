@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from '../common/dto/api-response.dto';
 import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
 import { SeasonTeamService } from './season-team.service';
@@ -21,7 +21,6 @@ import { KickSeasonTeamMemberDto } from './dto/kick-season-team-member.dto';
 import { SeasonTeamResponseDto } from './dto/season-team-response.dto';
 
 @ApiTags('Season Team')
-@ApiBearerAuth()
 @Controller('season-team')
 export class SeasonTeamController {
   constructor(private readonly seasonTeamService: SeasonTeamService) {}

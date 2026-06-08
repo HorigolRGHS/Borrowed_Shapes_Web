@@ -3,10 +3,10 @@
 import { useI18n } from "@/lib/i18/i18n-context";
 import { getUserProfile } from "@/lib/api/api-client";
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { RotateCcw, Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle, ChevronDown } from "lucide-react";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -50,20 +49,29 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const BADGE_BASE_CLASS = "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
 const ITEMS_PER_PAGE = 6;
 
-const getTypeBadgeClass = (type: string, variant: "primary" | "secondary" = "primary") => {
+const getTypeBadgeClass = (type: string) => {
   const isPermanent = type === "PERMANENT";
-  if (variant === "primary") {
-    return isPermanent
-      ? `${BADGE_BASE_CLASS} border-sky-500/70 bg-sky-500/10 text-sky-300`
-      : `${BADGE_BASE_CLASS} border-amber-500/70 bg-amber-500/10 text-amber-300`;
-  }
   return isPermanent
-    ? `${BADGE_BASE_CLASS} border-sky-500/60 bg-sky-500/5 text-sky-200`
-    : `${BADGE_BASE_CLASS} border-amber-500/60 bg-amber-500/5 text-amber-200`;
+    ? `${BADGE_BASE_CLASS} border-sky-500/70 bg-sky-500/10 text-sky-300`
+    : `${BADGE_BASE_CLASS} border-amber-500/70 bg-amber-500/10 text-amber-300`;
 };
 
 interface Achievement {
@@ -86,6 +94,7 @@ interface AchievementUser {
 export default function AchievementsPage() {
   const { t } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +102,6 @@ export default function AchievementsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("created");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [viewAchievement, setViewAchievement] = useState<Achievement | null>(null);
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
   const [deleteAchievement, setDeleteAchievement] = useState<Achievement | null>(null);
   const [achievementUsers, setAchievementUsers] = useState<AchievementUser[]>([]);
@@ -192,6 +200,19 @@ export default function AchievementsPage() {
       fetchAchievements();
     }
   }, [router, typeFilter, sortBy, currentPage]);
+
+  // Handle edit query param from view-detail page
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId && achievements.length > 0) {
+      const achievement = achievements.find((a) => a.id === editId);
+      if (achievement) {
+        openEditModal(achievement);
+        // Clean the URL
+        router.replace("/dashboard/achievements", { scroll: false });
+      }
+    }
+  }, [searchParams, achievements]);
 
   const fetchAchievements = async () => {
     try {
@@ -384,24 +405,6 @@ export default function AchievementsPage() {
 
     return localDate.toISOString().slice(0, 16);
   };
-  const formatSeasonMonth = (val?: string) => {
-    if (!val) return "";
-    // Accept YYYY-MM or YYYY-MM-DD / ISO string and format to 'Month YYYY'
-    const monthOnlyMatch = /^\d{4}-\d{2}$/.test(val);
-    const dateMatch = /^\d{4}-\d{2}-\d{2}/.test(val);
-    if (monthOnlyMatch || dateMatch) {
-      const [year, month] = val.split("-");
-      const d = new Date(Number(year), Number(month) - 1, 1);
-      if (!Number.isNaN(d.getTime())) {
-        try {
-          return d.toLocaleString(undefined, { month: "long", year: "numeric" });
-        } catch {
-          return val;
-        }
-      }
-    }
-    return val;
-  };
   const formatDateTimeLocal = (value?: string) => {
     if (!value) return "";
 
@@ -497,19 +500,32 @@ export default function AchievementsPage() {
               <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
             </div>
 
+            {/* Filter bar: Search + Type filter + Create button */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative flex-1">
-                <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
-                  <Search className="h-4 w-4" />
-                </span>
-                <Input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyUp={handleSearch}
-                  placeholder={t("achievements.search_placeholder")}
-                  className="pl-10"
-                />
+              <div className="flex flex-1 items-center gap-3">
+                <div className="relative flex-1 max-w-lg">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+                    <Search className="h-4 w-4" />
+                  </span>
+                  <Input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyUp={handleSearch}
+                    placeholder={t("achievements.search_placeholder")}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("achievements.all_types")}</SelectItem>
+                    <SelectItem value="permanent">{t("achievements.permanent")}</SelectItem>
+                    <SelectItem value="seasonal">{t("achievements.seasonal")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <Button
                 onClick={() => {
@@ -517,44 +533,10 @@ export default function AchievementsPage() {
                   setEditingAchievement(null);
                   setShowCreateModal(true);
                 }}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
               >
                 <Plus className="h-4 w-4" />
                 {t("achievements.create_achievement")}
-              </Button>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:w-[640px]">
-              <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("achievements.all_types")}</SelectItem>
-                  <SelectItem value="permanent">{t("achievements.permanent")}</SelectItem>
-                  <SelectItem value="seasonal">{t("achievements.seasonal")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortBy} onValueChange={(val) => { setSortBy(val); setCurrentPage(1); }}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created">{t("achievements.sort_by_created")}</SelectItem>
-                  <SelectItem value="name">{t("achievements.sort_by_name")}</SelectItem>
-                  <SelectItem value="type">{t("achievements.sort_by_type")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  setSearchQuery("");
-                  setTypeFilter("all");
-                  setSortBy("created");
-                  setCurrentPage(1);
-                }}
-              >
-                <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -563,100 +545,109 @@ export default function AchievementsPage() {
             <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">{t("achievements.loading_achievements")}</div>
           ) : (
             <>
-              <div className="grid gap-6 sm:grid-cols-2 items-stretch">
-                {paginatedAchievements.length > 0 ? (
-                  paginatedAchievements.map((achievement) => (
-                    <Card key={achievement.id} className="group flex flex-col h-full overflow-hidden rounded-[12px] border-slate-700 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.5)] transition hover:-translate-y-1">
-                      <CardHeader className="flex-row items-start gap-4 space-y-0 p-3 pb-0">
-                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[12px] border border-slate-700 bg-slate-950">
-                          <img
-                            src={achievement.badgeImageUrl}
-                            alt={achievement.name}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white">{achievement.name}</h3>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <Badge className={getTypeBadgeClass(achievement.type)} variant="outline">
+              {/* Table */}
+              <div className="rounded-[12px] border border-slate-800 bg-slate-900/60 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-800 hover:bg-transparent">
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_achievement")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_criteria_code")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_type_season")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_expiration")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("achievements.col_total_earned")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("achievements.col_actions")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedAchievements.length > 0 ? (
+                      paginatedAchievements.map((achievement) => (
+                        <TableRow key={achievement.id} className="border-slate-800 hover:bg-slate-800/50">
+                          {/* Achievement: image + name */}
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+                                <img
+                                  src={achievement.badgeImageUrl}
+                                  alt={achievement.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <span className="font-medium text-white">{achievement.name}</span>
+                            </div>
+                          </TableCell>
+                          {/* Criteria Code */}
+                          <TableCell>
+                            <Badge variant="outline" className={`${BADGE_BASE_CLASS} border-amber-500/60 bg-amber-500/10 text-amber-300`}>
+                              {achievement.criteriaCode}
+                            </Badge>
+                          </TableCell>
+                          {/* Type */}
+                          <TableCell>
+                            <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
                               {achievement.type}
                             </Badge>
-                            <Badge className={getTypeBadgeClass(achievement.type, "secondary")} variant="outline">
-                              {achievement.type === "PERMANENT"
-                                ? t("achievements.mastery")
-                                : t("achievements.seasonal")}
-                            </Badge>
-                          </div>
-                          <p className="mt-3 text-sm leading-6 text-slate-400">
-                            {achievement.description
-                              ? achievement.description.replace(/<[^>]*>/g, "")
-                              : t("achievements.no_description")}
-                          </p>
-                          {achievement.type === 'SEASONAL' && achievement.seasonMonth ? (
-                            <p className="mt-3 text-sm text-amber-300">
-                              {t('achievements.season_label')} {formatSeasonMonth(achievement.seasonMonth)}
-                            </p>
-                          ) : (
-                            <p className="mt-3 text-sm invisible select-none" aria-hidden="true">
-                              &nbsp;
-                            </p>
-                          )}
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="px-3 pt-6 pb-2 flex-grow">
-                        <div className="rounded-3xl border border-slate-700 bg-slate-950 p-4 text-sm text-slate-300 shadow-inner shadow-slate-950/20">
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <div>
-                              <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500">{t('achievements.criteria_label')}</div>
-                              <div className="mt-1 text-sm text-slate-100">#{achievement.criteriaCode}</div>
-                            </div>
-                            <div>
-                              <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500">{t('achievements.players_earned_label')}</div>
-                              <div className="mt-1 flex items-center gap-2 text-sm text-slate-100">
-                                <Users className="h-4 w-4 text-cyan-400" />
-                                <span>{achievement.earnedCount ?? 0} {t('achievements.players_earned_label')}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-
-                      <CardFooter className="mt-auto flex-wrap justify-center gap-3 px-3 pb-3 pt-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setViewAchievement(achievement)}
-                        >
-                          <Eye />
-                          {t('achievements.view_button')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleViewUsers(achievement)}
-                        >
-                          <Users />
-                          {t('achievements.users_button')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => openEditModal(achievement)}
-                        >
-                          <Pencil />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setDeleteAchievement(achievement)}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">{t('achievements.no_achievements')}</div>
-                )}
+                          </TableCell>
+                          {/* Expiration */}
+                          <TableCell className="text-slate-400">
+                            {achievement.expiresAt
+                              ? new Date(achievement.expiresAt).toLocaleDateString()
+                              : "—"}
+                          </TableCell>
+                          {/* Total earned */}
+                          <TableCell className="text-center font-semibold text-white">
+                            {achievement.earnedCount ?? 0}
+                          </TableCell>
+                          {/* Actions dropdown */}
+                          <TableCell className="text-center">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white">
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem
+                                  onClick={() => router.push(`/dashboard/achievements/view-detail?id=${achievement.id}`)}
+                                  className="cursor-pointer"
+                                >
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  {t("achievements.action_view_detail")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleViewUsers(achievement)}
+                                  className="cursor-pointer"
+                                >
+                                  <Users className="mr-2 h-4 w-4" />
+                                  {t("achievements.action_view_users")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => openEditModal(achievement)}
+                                  className="cursor-pointer"
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  {t("achievements.edit_button")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteAchievement(achievement)}
+                                  className="cursor-pointer text-rose-400 focus:text-rose-400"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  {t("achievements.delete_button")}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                          {t('achievements.no_achievements')}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
 
               {achievements.length > 0 && (
@@ -876,7 +867,7 @@ export default function AchievementsPage() {
                   <p className="mt-1.5 text-xs text-rose-400">{formErrors.seasonMonth}</p>
                 )}
                 {formData.seasonMonth && (
-                  <div className="mt-2 text-sm text-slate-100">{t('achievements.selected_label')} {formatSeasonMonth(formData.seasonMonth)}</div>
+                  <div className="mt-2 text-sm text-slate-100">{t('achievements.selected_label')} {formData.seasonMonth}</div>
                 )}
               </div>
               {formData.type === 'SEASONAL' && (
@@ -914,107 +905,6 @@ export default function AchievementsPage() {
               </Button>
             </DialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Modal */}
-      <Dialog
-        open={viewAchievement !== null}
-        onOpenChange={(open) => {
-          if (!open) setViewAchievement(null);
-        }}
-      >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-          <DialogHeader>
-            <DialogTitle className="text-white">{t("achievements.detail_title")}</DialogTitle>
-            <DialogDescription className="text-slate-400">{t("achievements.detail_subtitle")}</DialogDescription>
-          </DialogHeader>
-          {viewAchievement && (
-            <>
-              {/* IMAGE + NAME */}
-              <div className="flex items-start gap-4">
-                <div className="h-20 w-20 overflow-hidden rounded-[12px] border border-slate-700 bg-slate-900">
-                  <img
-                    src={viewAchievement.badgeImageUrl}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-white">
-                    {viewAchievement.name}
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Badge variant="outline" className={getTypeBadgeClass(viewAchievement.type)}>
-                      {viewAchievement.type}
-                    </Badge>
-                    <Badge variant="outline" className={getTypeBadgeClass(viewAchievement.type, "secondary")}>
-                      {viewAchievement.type === "PERMANENT" ? t("achievements.mastery") : t("achievements.seasonal")}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              {/* DESCRIPTION */}
-              <div className="text-sm text-slate-300 leading-6">
-                {viewAchievement.description
-                  ? viewAchievement.description.replace(/<[^>]*>/g, "")
-                  : t("achievements.no_description")}
-              </div>
-              {/* CRITERIA + EARNED */}
-              <div className="grid gap-3 sm:grid-cols-2 text-sm">
-                <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-3">
-                  <div className="text-[11px] uppercase text-slate-500">
-                    {t("achievements.criteria_code_label")}
-                  </div>
-                  <div className="mt-1 text-slate-100">
-                    #{viewAchievement.criteriaCode}
-                  </div>
-                </div>
-                <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-3">
-                  <div className="text-[11px] uppercase text-slate-500">
-                    {t("achievements.total_earned_label")}
-                  </div>
-                  <div className="mt-1 text-slate-100">
-                    {viewAchievement.earnedCount ?? 0}
-                  </div>
-                </div>
-              </div>
-              {/* SEASON (SPECIAL BOX) */}
-              {viewAchievement.type === "SEASONAL" && viewAchievement.seasonMonth && (
-                <div className="rounded-[14px] border border-amber-500/40 bg-amber-500/5 p-4 backdrop-blur-md">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-amber-300">
-                    {t("achievements.season_title")}
-                  </div>
-                  <div className="mt-1 text-amber-100 font-medium">
-                    {formatSeasonMonth(viewAchievement.seasonMonth)}
-                  </div>
-                </div>
-              )}
-              <DialogFooter>
-                {/* VIEW USERS */}
-                <Button
-                  variant="outline"
-                  onClick={() => handleViewUsers(viewAchievement)}
-                >
-                  <Users />
-                  {t("achievements.view_users_button")}
-                </Button>
-                {/* EDIT */}
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (viewAchievement) {
-                      setViewAchievement(null);
-                      openEditModal(viewAchievement);
-                    }
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                  {t("achievements.edit_button")}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
         </DialogContent>
       </Dialog>
 

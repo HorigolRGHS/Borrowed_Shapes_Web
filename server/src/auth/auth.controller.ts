@@ -1,6 +1,6 @@
 import { Controller, Post, Delete, Body, Req, HttpCode, HttpStatus, UseGuards, Query, Get } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import {
@@ -31,7 +31,7 @@ import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from './decorators/roles.decorator';
 
 @Controller('auth')
-@ApiTags('auth')
+@ApiTags('Auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -190,10 +190,11 @@ export class AuthController {
   }
 
   @Get('me')
+  @ApiQuery({ name: 'include', required: false, type: String })
   async me(
     @CurrentUser() user: RequestUser,
-    @Query('include') include: string,
     @Req() req: Request,
+    @Query('include') include?: string,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.authService.me(user.userId, user.platform, include);
     return okResponse('auth.current_user', data, `${req.method} ${req.path}`);
@@ -203,10 +204,11 @@ export class AuthController {
   /// Tesst check role
    @Get('me-admin')
    @Roles('ADMIN')
+   @ApiQuery({ name: 'include', required: false, type: String })
   async meAdmin(
     @CurrentUser() user: RequestUser,
-    @Query('include') include: string,
     @Req() req: Request,
+    @Query('include') include?: string,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.authService.me(user.userId, user.platform, include);
     return okResponse('auth.current_user', data, `${req.method} ${req.path}`);

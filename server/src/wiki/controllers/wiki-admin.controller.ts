@@ -2,7 +2,7 @@ import {
   Controller, Get, Post, Put, Delete, Body, Param, Query, Req, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../../auth/decorators/current-user.decorator';
@@ -15,8 +15,7 @@ import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
 import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
 import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 
-@ApiTags('wiki-admin')
-@ApiBearerAuth()
+@ApiTags('Wiki Admin')
 @Roles('ADMIN')
 @Controller('wiki')
 export class WikiAdminController {

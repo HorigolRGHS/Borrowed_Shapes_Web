@@ -1,0 +1,68 @@
+/* Map CKEditor 5 variables sang token shadcn cua app.
+   Scope bang .wiki-ck-editor (container boc ben ngoai) de khong ro ra app khac.
+   LUU Y: token cua app la HSL triplet (vd "222 84% 5%"), phai boc hsl(var(--x)). */
+.wiki-ck-editor {
+  --ck-color-base-background: hsl(var(--background));
+  --ck-color-base-foreground: hsl(var(--foreground));
+  --ck-color-base-border: hsl(var(--border));
+  --ck-color-base-text: hsl(var(--foreground));
+
+  --ck-color-text: hsl(var(--foreground));
+  --ck-color-shadow-drop: transparent;
+  --ck-color-shadow-inner: transparent;
+
+  /* Toolbar */
+  --ck-color-toolbar-background: hsl(var(--muted));
+  --ck-color-toolbar-border: hsl(var(--border));
+
+  /* Buttons */
+  --ck-color-button-default-background: transparent;
+  --ck-color-button-default-hover-background: hsl(var(--accent));
+  --ck-color-button-default-active-background: hsl(var(--accent));
+  --ck-color-button-on-background: hsl(var(--accent));
+  --ck-color-button-on-hover-background: hsl(var(--accent));
+  --ck-color-button-on-color: hsl(var(--accent-foreground));
+
+  /* Dropdown / panel / popover */
+  --ck-color-dropdown-panel-background: hsl(var(--popover));
+  --ck-color-dropdown-panel-border: hsl(var(--border));
+  --ck-color-panel-background: hsl(var(--popover));
+  --ck-color-panel-border: hsl(var(--border));
+
+  /* Inputs */
+  --ck-color-input-background: hsl(var(--background));
+  --ck-color-input-border: hsl(var(--border));
+  --ck-color-input-text: hsl(var(--foreground));
+
+  /* Focus ring + radius */
+  --ck-color-focus-border: hsl(var(--ring));
+  --ck-border-radius: var(--radius);
+}
+
+/* Editor khong tu ve border/shadow rieng - container ngoai lo viec do.
+   Mau nen/chu cua editable duoc xu ly trong app/globals.css (@layer components,
+   scope .wiki-ck-editor) vi override mac dinh cua CKEditor cung nam o layer do
+   — unlayered o file nay se thua layered !important du specificity cao hon. */
+.wiki-ck-editor .ck.ck-editor__main > .ck-editor__editable {
+  border: none;
+  box-shadow: none;
+}
+
+.wiki-ck-editor .ck.ck-editor__editable.ck-focused {
+  border: none;
+  box-shadow: none;
+}
+
+/* Toolbar dinh lien, bo border-radius goc duoi de khop container. */
+.wiki-ck-editor .ck.ck-toolbar {
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-radius: 0;
+}
+
+/* Dam bao dark mode: icon CKEditor dung currentColor nen theo --foreground. */
+.wiki-ck-editor .ck.ck-icon,
+.wiki-ck-editor .ck.ck-button {
+  color: hsl(var(--foreground));
+}

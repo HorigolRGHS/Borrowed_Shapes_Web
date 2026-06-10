@@ -36,8 +36,8 @@ import { EditableInfobox } from "./inline-infobox/editable-infobox";
 export type { WikiFormValue };
 export { emptyWikiFormValue };
 
-const TiptapEditor = dynamic(
-  () => import("./editor/tiptap-editor").then((m) => m.TiptapEditor),
+const WikiEditor = dynamic(
+  () => import("./editor/ckeditor").then((m) => m.WikiEditor),
   {
     ssr: false,
     loading: () => (
@@ -249,7 +249,7 @@ export function WikiForm({
         body={
           <div className="space-y-4">
             <Label className="sr-only">{t("wiki.field_content")}</Label>
-            <TiptapEditor
+            <WikiEditor
               activeLocale={activeLocale}
               hideLocaleTabs
               value={{

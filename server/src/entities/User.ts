@@ -20,8 +20,8 @@ export class User {
   @Property({ type: 'text', nullable: true })
   imgUrl?: string;
 
-  @Property({ type: 'text', nullable: true })
-  displayName?: unknown;
+  @Property({ type: 'text' })
+  displayName!: string;
 
   @Enum({ items: () => Auth$46Role, nativeEnumName: 'auth.Role' })
   role: Auth$46Role & Opt = Auth$46Role.USER;

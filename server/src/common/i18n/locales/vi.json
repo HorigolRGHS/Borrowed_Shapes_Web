@@ -200,10 +200,9 @@
     "summary_vi_max_length": "Tóm tắt tiếng Việt không được vượt quá 500 ký tự",
     "content_vi_required": "Nội dung tiếng Việt là bắt buộc",
     "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự",
-    "content_vi_max_length": "Nội dung tiếng Việt quá dài"
+    "content_vi_max_length": "Nội dung tiếng Việt quá dài",
     "forbidden_delete": "Bạn không có quyền xóa bài viết này",
-    "forbidden_admin_only": "Chỉ quản trị viên mới có thể thực hiện hành động này",
-    "slug_required": "Slug là bắt buộc"
+    "forbidden_admin_only": "Chỉ quản trị viên mới có thể thực hiện hành động này"
   },
   "category": {
     "list_success": "Lấy danh sách danh mục thành công",

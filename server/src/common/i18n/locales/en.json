@@ -220,7 +220,6 @@
     "summary_max_length": "Summary must not exceed 500 characters",
     "content_required": "Content is required",
     "content_must_be_string": "Content must be a string",
-    "content_max_length": "Content is too long",
     "invalid_type": "Invalid announcement type",
     "is_pinned_must_be_boolean": "isPinned must be a boolean",
     "is_published_must_be_boolean": "isPublished must be a boolean",
@@ -235,27 +234,6 @@
     "summary_vi_must_be_string": "Vietnamese summary must be a string",
     "summary_vi_max_length": "Vietnamese summary must not exceed 500 characters",
     "content_vi_required": "Vietnamese content is required",
-    "content_vi_must_be_string": "Vietnamese content must be a string",
-    "content_vi_max_length": "Vietnamese content is too long",
-    "forbidden_delete": "You don't have permission to delete this thread",
-    "forbidden_admin_only": "Only admins can perform this action"
-  },
-  "category": {
-    "list_success": "Categories retrieved successfully",
-    "detail_success": "Category details retrieved successfully",
-    "create_success": "Category created successfully",
-    "update_success": "Category updated successfully",
-    "delete_success": "Category deleted successfully",
-    "not_found": "Category not found",
-    "name_required": "English name is required",
-    "name_vi_required": "Vietnamese name is required",
-    "name_conflict": "English name already exists",
-    "name_vi_conflict": "Vietnamese name already exists",
-    "slug_required": "Slug is required",
-    "slug_vi_required": "Vietnamese slug is required",
-    "slug_conflict": "English slug already exists",
-    "slug_vi_conflict": "Vietnamese slug already exists",
-    "forbidden": "You don't have permission to perform this action"
-    "content_vi_max_length": "Vietnamese content is too long"
+    "content_vi_must_be_string": "Vietnamese content must be a string"
   }
 }

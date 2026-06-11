@@ -42,6 +42,7 @@ export class AchievementService {
     type?: string;
     q?: string;
     sortBy?: string;
+    order?: string;
   }): Promise<{
     items: Array<Achievement & { earnedCount: number }>;
     total: number;
@@ -69,11 +70,15 @@ export class AchievementService {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    let orderBy = 'ORDER BY a.id DESC'; // default
+    const orderDir = query.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    let orderBy = `ORDER BY "earnedCount" ${orderDir}`; // default
     if (query.sortBy === 'name') {
-      orderBy = 'ORDER BY a.name ASC';
+      orderBy = `ORDER BY a.name ${orderDir}`;
     } else if (query.sortBy === 'type') {
-      orderBy = 'ORDER BY a.type ASC';
+      orderBy = `ORDER BY a.type ${orderDir}`;
+    } else if (query.sortBy === 'date') {
+      orderBy = `ORDER BY a."expiresAt" ${orderDir}`;
     }
 
     // 1. Get total count
@@ -119,12 +124,13 @@ export class AchievementService {
     };
   }
 
-  async findOne(id: string): Promise<Achievement> {
+  async findOne(id: string): Promise<Achievement & { earnedCount: number }> {
     const achievement = await this.em.findOne(Achievement, { id });
     if (!achievement) {
       throw new NotFoundException('achievements.not_found');
     }
-    return achievement;
+    const earnedCount = await this.em.count(UserAchievement, { achievementId: id });
+    return Object.assign(achievement, { earnedCount });
   }
 
   async findByUser(gameProfileId: string): Promise<UserAchievement[]> {

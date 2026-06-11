@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
 import { User } from './User';
 import type { WikiPage } from './WikiPage';
 
@@ -10,7 +10,7 @@ export class WikiRevision {
   id!: string & Opt;
 
   @ManyToOne({ entity: 'WikiPage', fieldName: 'pageId', deleteRule: 'cascade' })
-  pageId!: WikiPage;
+  pageId!: Rel<WikiPage>;
 
   @Index({ name: 'WikiRevision_authorId_idx', expression: 'CREATE INDEX "WikiRevision_authorId_idx" ON web."WikiRevision" USING btree ("authorId")' })
   @ManyToOne({ entity: () => User, fieldName: 'authorId', deleteRule: 'set null' })
@@ -19,32 +19,14 @@ export class WikiRevision {
   @Property({ type: 'text' })
   content!: string;
 
-  @Property({ type: 'text' })
-  content_vi!: string;
+  @Property({ fieldName: 'content_vi', type: 'text' })
+  contentVi!: string;
 
   @Property({ type: 'text', nullable: true })
   summary?: string;
 
-  @Property({ type: 'text', nullable: true })
-  summary_vi?: string;
-
-  @Property({ type: 'text' })
-  title!: string;
-
-  @Property({ type: 'text' })
-  title_vi!: string;
-
-  @Property({ type: 'text' })
-  slug!: string;
-
-  @Property({ type: 'text' })
-  slug_vi!: string;
-
-  @Property({ type: 'jsonb', nullable: true })
-  metadataJson?: Record<string, unknown>;
-
-  @Property({ type: 'boolean', default: false })
-  isPublished!: boolean;
+  @Property({ fieldName: 'summary_vi', type: 'text', nullable: true })
+  summaryVi?: string;
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;

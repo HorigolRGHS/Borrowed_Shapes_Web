@@ -13,8 +13,8 @@ import { HeartbeatInterceptor } from './common/interceptors/heartbeat.intercepto
 import { SeasonTeamModule } from './season-team/season-team.module';
 import { WikiModule } from './wiki/wiki.module';
 import { ForumModule } from './forums/forums.module';
-import { AnnouncementModule } from './announcements/announcements.module';
 import { CategoryModule } from './categories/categories.module';
+import { AnnouncementModule } from './announcements/announcements.module';
 import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
@@ -31,8 +31,8 @@ import mikroOrmConfig from './mikro-orm.config';
     SeasonTeamModule,
     WikiModule,
     ForumModule,
-    AnnouncementModule,
     CategoryModule,
+    AnnouncementModule,
   ],
   providers: [
     {

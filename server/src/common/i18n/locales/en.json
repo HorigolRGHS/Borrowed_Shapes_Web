@@ -220,7 +220,6 @@
     "summary_max_length": "Summary must not exceed 500 characters",
     "content_required": "Content is required",
     "content_must_be_string": "Content must be a string",
-    "content_max_length": "Content is too long",
     "invalid_type": "Invalid announcement type",
     "is_pinned_must_be_boolean": "isPinned must be a boolean",
     "is_published_must_be_boolean": "isPublished must be a boolean",
@@ -235,7 +234,6 @@
     "summary_vi_must_be_string": "Vietnamese summary must be a string",
     "summary_vi_max_length": "Vietnamese summary must not exceed 500 characters",
     "content_vi_required": "Vietnamese content is required",
-    "content_vi_must_be_string": "Vietnamese content must be a string",
-    "content_vi_max_length": "Vietnamese content is too long"
+    "content_vi_must_be_string": "Vietnamese content must be a string"
   }
 }

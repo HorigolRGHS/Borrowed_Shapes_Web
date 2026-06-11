@@ -220,7 +220,6 @@
     "summary_max_length": "Tóm tắt không được vượt quá 500 ký tự",
     "content_required": "Nội dung là bắt buộc",
     "content_must_be_string": "Nội dung phải là chuỗi ký tự",
-    "content_max_length": "Nội dung quá dài",
     "invalid_type": "Loại thông báo không hợp lệ",
     "is_pinned_must_be_boolean": "isPinned phải là boolean",
     "is_published_must_be_boolean": "isPublished phải là boolean",
@@ -235,7 +234,6 @@
     "summary_vi_must_be_string": "Tóm tắt tiếng Việt phải là chuỗi ký tự",
     "summary_vi_max_length": "Tóm tắt tiếng Việt không được vượt quá 500 ký tự",
     "content_vi_required": "Nội dung tiếng Việt là bắt buộc",
-    "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự",
-    "content_vi_max_length": "Nội dung tiếng Việt quá dài"
+    "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự"
   }
 }

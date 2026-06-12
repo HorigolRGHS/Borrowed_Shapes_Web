@@ -43,9 +43,9 @@ export class AnnouncementService {
       const pattern = `%${escapeLike(query.q.trim())}%`;
       where.$or = [
         { title: { $ilike: pattern } },
-        { title_vi: { $ilike: pattern } },
+        { titleVi: { $ilike: pattern } },
         { summary: { $ilike: pattern } },
-        { summary_vi: { $ilike: pattern } },
+        { summaryVi: { $ilike: pattern } },
       ];
     }
 
@@ -83,7 +83,7 @@ export class AnnouncementService {
       $or: [
         { id: idOrSlug },
         { slug: idOrSlug },
-        { slug_vi: idOrSlug },
+        { slugVi: idOrSlug },
       ],
     };
 
@@ -111,7 +111,7 @@ export class AnnouncementService {
     const existing = await this.em.findOne(Announcement, {
       $or: [
         { slug: dto.slug },
-        { slug_vi: dto.slug_vi },
+        { slugVi: dto.slug_vi },
       ],
     });
 
@@ -128,7 +128,17 @@ export class AnnouncementService {
     }
 
     const announcement = this.em.create(Announcement, {
-      ...dto,
+      title: dto.title,
+      titleVi: dto.title_vi,
+      slug: dto.slug,
+      slugVi: dto.slug_vi,
+      summary: dto.summary,
+      summaryVi: dto.summary_vi,
+      content: dto.content,
+      contentVi: dto.content_vi,
+      type: dto.type,
+      isPinned: dto.isPinned,
+      isPublished: dto.isPublished,
       authorId: author,
       publishedAt,
     });
@@ -154,7 +164,7 @@ export class AnnouncementService {
     if (dto.slug || dto.slug_vi) {
       const conditions: FilterQuery<Announcement>[] = [];
       if (dto.slug) conditions.push({ slug: dto.slug });
-      if (dto.slug_vi) conditions.push({ slug_vi: dto.slug_vi });
+      if (dto.slug_vi) conditions.push({ slugVi: dto.slug_vi });
 
       const existing = await this.em.findOne(Announcement, {
         $and: [
@@ -176,10 +186,21 @@ export class AnnouncementService {
       publishedAt = new Date();
     }
 
-    this.em.assign(announcement, {
-      ...dto,
-      publishedAt,
-    });
+    const updateData: Partial<Announcement> = {};
+    if (dto.title !== undefined) updateData.title = dto.title;
+    if (dto.title_vi !== undefined) updateData.titleVi = dto.title_vi;
+    if (dto.slug !== undefined) updateData.slug = dto.slug;
+    if (dto.slug_vi !== undefined) updateData.slugVi = dto.slug_vi;
+    if (dto.summary !== undefined) updateData.summary = dto.summary;
+    if (dto.summary_vi !== undefined) updateData.summaryVi = dto.summary_vi;
+    if (dto.content !== undefined) updateData.content = dto.content;
+    if (dto.content_vi !== undefined) updateData.contentVi = dto.content_vi;
+    if (dto.type !== undefined) updateData.type = dto.type;
+    if (dto.isPinned !== undefined) updateData.isPinned = dto.isPinned;
+    if (dto.isPublished !== undefined) updateData.isPublished = dto.isPublished;
+    updateData.publishedAt = publishedAt;
+
+    this.em.assign(announcement, updateData);
 
     await this.em.flush();
 
@@ -199,13 +220,13 @@ export class AnnouncementService {
     return {
       id: a.id,
       slug: a.slug,
-      slug_vi: a.slug_vi,
+      slug_vi: a.slugVi,
       title: a.title,
-      title_vi: a.title_vi,
+      title_vi: a.titleVi,
       summary: a.summary,
-      summary_vi: a.summary_vi,
+      summary_vi: a.summaryVi,
       content: a.content,
-      content_vi: a.content_vi,
+      content_vi: a.contentVi,
       type: a.type,
       isPinned: a.isPinned,
       isPublished: a.isPublished,

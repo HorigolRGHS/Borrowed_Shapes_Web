@@ -102,7 +102,7 @@ export class AuthService {
     private config: ConfigService,
     private jwt: JwtService,
     private email: EmailService,
-  ) {}
+  ) { }
 
   private async fetchGoogleUserInfo(code: string, codeVerifier: string, redirectUri: string) {
     const clientId = this.config.get<string>('GOOGLE_CLIENT_ID');
@@ -362,9 +362,9 @@ export class AuthService {
 
         const constraint = String(
           e.constraint
-            ?? e.cause?.constraint
-            ?? e.cause?.cause?.constraint
-            ?? '',
+          ?? e.cause?.constraint
+          ?? e.cause?.cause?.constraint
+          ?? '',
         );
         const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
 
@@ -435,7 +435,7 @@ export class AuthService {
       }
 
       const created = !found;
-        
+
       const finalDisplayName = (name ? name.trim().replace(/\s+/g, ' ') : 'User').slice(0, 24);
 
       const user = found
@@ -818,7 +818,7 @@ export class AuthService {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) throw new UnauthorizedException('auth.user_not_found');
 
-    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id }, { populate: ['equippedAchievement'] });
+    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id }, { populate: ['equippedAchievementId'] });
 
     const base = {
       id: user.id,
@@ -831,26 +831,26 @@ export class AuthService {
       bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
       banReason: user.banReason ?? null,
       banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
-      equippedAchievement: gameProfile?.equippedAchievement ? {
-        id: gameProfile.equippedAchievement.id,
-        name: gameProfile.equippedAchievement.name,
-        badgeImageUrl: gameProfile.equippedAchievement.badgeImageUrl,
+      equippedAchievementId: gameProfile?.equippedAchievementId ? {
+        id: gameProfile.equippedAchievementId.id,
+        name: gameProfile.equippedAchievementId.name,
+        badgeImageUrl: gameProfile.equippedAchievementId.badgeImageUrl,
       } : null,
     };
 
     const result: any = { ...base };
 
     const includes = (includeCsv ?? '').split(',').map(s => s.trim()).filter(Boolean);
-       if (includes.includes('gameProfile') && gameProfile) {
-         result.gameProfile = {
-           id: gameProfile.id,
-           totalPlayTime: gameProfile.totalPlayTime,
-           totalSessions: gameProfile.totalSessions,
-           totalWins: gameProfile.totalWins,
-           totalLosses: gameProfile.totalLosses,
-           totalAbandoned: gameProfile.totalAbandoned
-         };
-       }
+    if (includes.includes('gameProfile') && gameProfile) {
+      result.gameProfile = {
+        id: gameProfile.id,
+        totalPlayTime: gameProfile.totalPlayTime,
+        totalSessions: gameProfile.totalSessions,
+        totalWins: gameProfile.totalWins,
+        totalLosses: gameProfile.totalLosses,
+        totalAbandoned: gameProfile.totalAbandoned
+      };
+    }
     if (includes.includes('achievements') && gameProfile) {
       // load user's achievements (lightweight)
       const rows = await this.em.execute(

@@ -18,7 +18,7 @@ const TEAM_MAX_MEMBERS = 5; // Leader + tối đa 4 người join
 
 @Injectable()
 export class SeasonTeamService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager) { }
 
   async createTeam(userId: string, dto: CreateSeasonTeamDto, path: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
@@ -227,7 +227,7 @@ export class SeasonTeamService {
     const members = await this.em.find(
       SeasonTeamMember,
       { seasonMonth, teamId: team.id },
-      { populate: ['gameProfileId', 'gameProfileId.userId', 'gameProfileId.equippedAchievement'], orderBy: { joinedAt: 'asc' } },
+      { populate: ['gameProfileId', 'gameProfileId.userId', 'gameProfileId.equippedAchievementId'], orderBy: { joinedAt: 'asc' } },
     );
 
     return {
@@ -242,7 +242,7 @@ export class SeasonTeamService {
         gameProfileId: m.gameProfileId.id,
         displayName: m.gameProfileId.userId?.displayName ? String(m.gameProfileId.userId.displayName) : null,
         imgUrl: m.gameProfileId.userId?.imgUrl ?? null,
-        badgeImageUrl: m.gameProfileId.equippedAchievement?.badgeImageUrl ?? null,
+        badgeImageUrl: m.gameProfileId.equippedAchievementId?.badgeImageUrl ?? null,
         joinedAt: m.joinedAt,
         isLeader: m.gameProfileId.id === team.leaderId.id,
       })),

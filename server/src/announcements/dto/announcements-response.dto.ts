@@ -29,10 +29,10 @@ export class ListAnnouncementsQueryDto {
   @IsEnum(AnnouncementType)
   type?: AnnouncementType;
 
-  @ApiPropertyOptional({ enum: ['createdAt', 'publishedAt', 'title'], default: 'publishedAt' })
+  @ApiPropertyOptional({ enum: ['createdAt', 'publishedAt', 'updatedAt', 'title'], default: 'publishedAt' })
   @IsOptional()
-  @IsIn(['createdAt', 'publishedAt', 'title'])
-  sortBy?: 'createdAt' | 'publishedAt' | 'title' = 'publishedAt';
+  @IsIn(['createdAt', 'publishedAt', 'updatedAt', 'title'])
+  sortBy?: 'createdAt' | 'publishedAt' | 'updatedAt' | 'title' = 'publishedAt';
 
   @ApiPropertyOptional({ enum: ['asc', 'desc'], default: 'desc' })
   @IsOptional()
@@ -56,25 +56,25 @@ export class AnnouncementResponseDto {
   slug!: string;
 
   @ApiProperty()
-  slug_vi!: string;
+  slugVi!: string;
 
   @ApiProperty()
   title!: string;
 
   @ApiProperty()
-  title_vi!: string;
+  titleVi!: string;
 
   @ApiPropertyOptional()
   summary?: string;
 
   @ApiPropertyOptional()
-  summary_vi?: string;
+  summaryVi?: string;
 
   @ApiProperty()
   content!: string;
 
   @ApiProperty()
-  content_vi!: string;
+  contentVi!: string;
 
   @ApiProperty({ enum: AnnouncementType })
   type!: AnnouncementType;

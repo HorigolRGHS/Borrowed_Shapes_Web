@@ -22,7 +22,7 @@ export class CreateAnnouncementDto {
   @IsNotEmpty({ message: 'announcements.title_vi_required' })
   @IsString({ message: 'announcements.title_vi_must_be_string' })
   @MaxLength(300, { message: 'announcements.title_vi_max_length' })
-  title_vi!: string;
+  titleVi!: string;
 
   @ApiProperty({ maxLength: 200, example: 'new-season-update' })
   @IsNotEmpty({ message: 'announcements.slug_required' })
@@ -36,7 +36,7 @@ export class CreateAnnouncementDto {
   @IsString({ message: 'announcements.slug_vi_must_be_string' })
   @MaxLength(200, { message: 'announcements.slug_vi_max_length' })
   @Matches(/^[a-z0-9-]+$/, { message: 'announcements.invalid_slug_vi' })
-  slug_vi!: string;
+  slugVi!: string;
 
   @ApiPropertyOptional({ maxLength: 500, example: 'A brief summary of the announcement' })
   @IsOptional()
@@ -48,19 +48,17 @@ export class CreateAnnouncementDto {
   @IsOptional()
   @IsString({ message: 'announcements.summary_vi_must_be_string' })
   @MaxLength(500, { message: 'announcements.summary_vi_max_length' })
-  summary_vi?: string;
+  summaryVi?: string;
 
-  @ApiProperty({ maxLength: 1_000_000, example: '<p>Full announcement content in HTML</p>' })
+  @ApiProperty({ example: '<p>Full announcement content in HTML</p>' })
   @IsNotEmpty({ message: 'announcements.content_required' })
   @IsString({ message: 'announcements.content_must_be_string' })
-  @MaxLength(1_000_000, { message: 'announcements.content_max_length' })
   content!: string;
 
-  @ApiProperty({ maxLength: 1_000_000, example: '<p>Nội dung thông báo đầy đủ</p>' })
+  @ApiProperty({ example: '<p>Nội dung thông báo đầy đủ</p>' })
   @IsNotEmpty({ message: 'announcements.content_vi_required' })
   @IsString({ message: 'announcements.content_vi_must_be_string' })
-  @MaxLength(1_000_000, { message: 'announcements.content_vi_max_length' })
-  content_vi!: string;
+  contentVi!: string;
 
   @ApiPropertyOptional({ enum: AnnouncementType, default: AnnouncementType.NEWS, example: 'NEWS' })
   @IsOptional()

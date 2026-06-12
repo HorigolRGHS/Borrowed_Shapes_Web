@@ -44,11 +44,11 @@ describe('AnnouncementService', () => {
     const mockAnnouncement = {
       id: 'a1',
       slug: 'test-slug',
-      slug_vi: 'vi-test-slug',
+      slugVi: 'vi-test-slug',
       title: 'Title',
-      title_vi: 'Title VI',
+      titleVi: 'Title VI',
       content: 'Content',
-      content_vi: 'Content VI',
+      contentVi: 'Content VI',
       type: AnnouncementType.NEWS,
       isPinned: false,
       isPublished: true,
@@ -129,11 +129,11 @@ describe('AnnouncementService', () => {
     const mockAnnouncement = {
       id: 'a1',
       slug: 'test-slug',
-      slug_vi: 'vi-test-slug',
+      slugVi: 'vi-test-slug',
       title: 'Title',
-      title_vi: 'Title VI',
+      titleVi: 'Title VI',
       content: 'Content',
-      content_vi: 'Content VI',
+      contentVi: 'Content VI',
       type: AnnouncementType.NEWS,
       isPinned: false,
       isPublished: true,
@@ -155,7 +155,7 @@ describe('AnnouncementService', () => {
           $or: expect.arrayContaining([
             { id: 'test-slug' },
             { slug: 'test-slug' },
-            { slug_vi: 'test-slug' },
+            { slugVi: 'test-slug' },
           ]),
         }),
         expect.any(Object),
@@ -199,11 +199,11 @@ describe('AnnouncementService', () => {
   describe('create', () => {
     const dto = {
       title: 'New Ann',
-      title_vi: 'New Ann VI',
+      titleVi: 'New Ann VI',
       slug: 'new-ann',
-      slug_vi: 'new-ann-vi',
+      slugVi: 'new-ann-vi',
       content: 'Content text',
-      content_vi: 'Content text VI',
+      contentVi: 'Content text VI',
       isPublished: true,
     };
 
@@ -268,11 +268,11 @@ describe('AnnouncementService', () => {
     const existingAnn = {
       id: 'a1',
       slug: 'old-slug',
-      slug_vi: 'vi-old-slug',
+      slugVi: 'vi-old-slug',
       title: 'Old Title',
-      title_vi: 'Old Title VI',
+      titleVi: 'Old Title VI',
       content: 'Old Content',
-      content_vi: 'Old Content VI',
+      contentVi: 'Old Content VI',
       isPublished: false,
       publishedAt: undefined,
     } as unknown as Announcement;

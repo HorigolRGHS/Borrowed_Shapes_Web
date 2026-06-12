@@ -15,7 +15,7 @@ function clamp(n: number, min: number, max: number): number {
 
 @Injectable()
 export class AnnouncementService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager) { }
 
   async findAllPaginated(
     query: ListAnnouncementsQueryDto,
@@ -111,7 +111,7 @@ export class AnnouncementService {
     const existing = await this.em.findOne(Announcement, {
       $or: [
         { slug: dto.slug },
-        { slugVi: dto.slug_vi },
+        { slugVi: dto.slugVi },
       ],
     });
 
@@ -128,17 +128,7 @@ export class AnnouncementService {
     }
 
     const announcement = this.em.create(Announcement, {
-      title: dto.title,
-      titleVi: dto.title_vi,
-      slug: dto.slug,
-      slugVi: dto.slug_vi,
-      summary: dto.summary,
-      summaryVi: dto.summary_vi,
-      content: dto.content,
-      contentVi: dto.content_vi,
-      type: dto.type,
-      isPinned: dto.isPinned,
-      isPublished: dto.isPublished,
+      ...dto,
       authorId: author,
       publishedAt,
     });
@@ -161,10 +151,10 @@ export class AnnouncementService {
     }
 
     // Check slug uniqueness if updated
-    if (dto.slug || dto.slug_vi) {
+    if (dto.slug || dto.slugVi) {
       const conditions: FilterQuery<Announcement>[] = [];
       if (dto.slug) conditions.push({ slug: dto.slug });
-      if (dto.slug_vi) conditions.push({ slugVi: dto.slug_vi });
+      if (dto.slugVi) conditions.push({ slugVi: dto.slugVi });
 
       const existing = await this.em.findOne(Announcement, {
         $and: [
@@ -186,21 +176,10 @@ export class AnnouncementService {
       publishedAt = new Date();
     }
 
-    const updateData: Partial<Announcement> = {};
-    if (dto.title !== undefined) updateData.title = dto.title;
-    if (dto.title_vi !== undefined) updateData.titleVi = dto.title_vi;
-    if (dto.slug !== undefined) updateData.slug = dto.slug;
-    if (dto.slug_vi !== undefined) updateData.slugVi = dto.slug_vi;
-    if (dto.summary !== undefined) updateData.summary = dto.summary;
-    if (dto.summary_vi !== undefined) updateData.summaryVi = dto.summary_vi;
-    if (dto.content !== undefined) updateData.content = dto.content;
-    if (dto.content_vi !== undefined) updateData.contentVi = dto.content_vi;
-    if (dto.type !== undefined) updateData.type = dto.type;
-    if (dto.isPinned !== undefined) updateData.isPinned = dto.isPinned;
-    if (dto.isPublished !== undefined) updateData.isPublished = dto.isPublished;
-    updateData.publishedAt = publishedAt;
-
-    this.em.assign(announcement, updateData);
+    this.em.assign(announcement, {
+      ...dto,
+      publishedAt,
+    });
 
     await this.em.flush();
 
@@ -220,13 +199,13 @@ export class AnnouncementService {
     return {
       id: a.id,
       slug: a.slug,
-      slug_vi: a.slugVi,
+      slugVi: a.slugVi,
       title: a.title,
-      title_vi: a.titleVi,
+      titleVi: a.titleVi,
       summary: a.summary,
-      summary_vi: a.summaryVi,
+      summaryVi: a.summaryVi,
       content: a.content,
-      content_vi: a.contentVi,
+      contentVi: a.contentVi,
       type: a.type,
       isPinned: a.isPinned,
       isPublished: a.isPublished,

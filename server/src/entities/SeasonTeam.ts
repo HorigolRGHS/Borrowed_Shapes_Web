@@ -13,6 +13,9 @@ export class SeasonTeam {
   seasonMonth!: string;
 
   @Property({ type: 'text', nullable: true })
+  code?: string;
+
+  @Property({ type: 'text', nullable: true })
   name?: string;
 
   @ManyToOne({ entity: () => GameProfile, fieldName: 'leaderId', deleteRule: 'cascade' })
@@ -20,8 +23,5 @@ export class SeasonTeam {
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;
-
-  @Property({ type: 'text', nullable: true })
-  code?: string;
 
 }

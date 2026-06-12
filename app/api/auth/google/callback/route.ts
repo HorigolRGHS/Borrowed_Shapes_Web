@@ -97,50 +97,13 @@ export async function GET(req: Request) {
       }
     }
 
+    // --- Xử lý cho Game/Desktop ---
+    const redirectUrl = new URL('/auth/google/finish', req.url);
+    redirectUrl.searchParams.set('loginCode', loginCode);
     if (returnTo) {
-      try {
-        const parsed = new URL(returnTo);
-        parsed.searchParams.set('loginCode', loginCode);
-        return NextResponse.redirect(parsed.toString());
-      } catch {
-        const html = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sign-in successful</title>
-  </head>
-  <body>
-    <h1>Sign-in successful</h1>
-    <p>Signing you into the app...</p>
-    <pre id="code" style="font-size:18px">${loginCode}</pre>
-    <script>
-      (function(){
-        const code = '${loginCode}';
-        const target = '${returnTo}';
-        try {
-          const next = target + (target.includes('?') ? '&' : '?') + 'loginCode=' + encodeURIComponent(code);
-          window.location.href = next;
-        } catch(e) {}
-        try {
-          if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({ type: 'google-login', loginCode: code }, '*');
-            window.close();
-            return;
-          }
-        } catch(e) {}
-        try { navigator.clipboard.writeText(code); } catch(e) {}
-      })();
-    </script>
-    <p>If nothing happened, copy the code above into the game client.</p>
-  </body>
-</html>`;
-        return new NextResponse(html, { status: 200, headers: { 'Content-Type': 'text/html' } });
-      }
+      redirectUrl.searchParams.set('returnTo', returnTo);
     }
-
-    const html = `<!doctype html><html><body><h1>Sign-in successful</h1><p>Copy this code into your game client:</p><pre style="font-size:18px">${loginCode}</pre><p>You may now close this window.</p><script>navigator.clipboard?.writeText('${loginCode}');</script></body></html>`;
-    return new NextResponse(html, { status: 200, headers: { 'Content-Type': 'text/html' } });
+    return NextResponse.redirect(redirectUrl);
   } catch {
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }

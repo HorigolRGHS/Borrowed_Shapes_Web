@@ -60,6 +60,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: t("common.dashboard") },
     { href: "/dashboard/wiki", label: "Wiki" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
+    { href: "/dashboard/announcements", label: t("common.announcements") },
   ];
 
   const isActive = (href: string) =>

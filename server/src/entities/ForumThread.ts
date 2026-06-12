@@ -20,8 +20,8 @@ export class ForumThread {
   @Property({ type: 'text', unique: 'ForumThread_slug_key' })
   slug!: string;
 
-  @ManyToOne({ entity: () => ForumCategory, fieldName: 'categoryId', updateRule: 'cascade', deleteRule: 'set null', nullable: true })
-  categoryId?: ForumCategory;
+  @ManyToOne({ entity: () => ForumCategory, fieldName: 'categoryId', updateRule: 'cascade', deleteRule: 'cascade' })
+  categoryId!: ForumCategory;
 
   @ManyToOne({ entity: () => User, fieldName: 'authorId', deleteRule: 'cascade' })
   authorId!: User;

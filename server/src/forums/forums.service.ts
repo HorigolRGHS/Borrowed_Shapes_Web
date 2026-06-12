@@ -72,7 +72,7 @@ export class ForumService {
     const rows = await this.em.execute(
       `
       select t."id", t."title", t."slug", t."content", t."imageUrl", t."score", 
-             t."viewCount", t."isPinned", t."isLocked", t."postType", t."status",
+             t."viewCount", t."isPinned", t."postType", t."status",
              t."createdAt", t."updatedAt",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
              a."badgeImageUrl" as "authorBadgeImageUrl",
@@ -114,7 +114,7 @@ export class ForumService {
     const gp = await this.em.findOne(
       GameProfile,
       { userId: thread.authorId },
-      { populate: ['equippedAchievement'] },
+      { populate: ['equippedAchievementId'] },
     );
 
     const badgeImageUrl =
@@ -144,7 +144,6 @@ export class ForumService {
       score: thread.score,
       viewCount: thread.viewCount,
       isPinned: thread.isPinned,
-      isLocked: thread.isLocked,
       postType: thread.postType,
       status: thread.status,
       createdAt: thread.createdAt,
@@ -157,7 +156,7 @@ export class ForumService {
   // Create — auth required
   async create(dto: CreateForumDto, authorId: string, isAdmin = false) {
     // Validate input
-    if ((dto.isPinned !== undefined || dto.isLocked !== undefined) && !isAdmin) {
+    if ((dto.isPinned !== undefined) && !isAdmin) {
       throw new ForbiddenException('forum.forbidden_admin_only');
     }
     if (!dto.title || !dto.title.trim()) {
@@ -199,7 +198,6 @@ export class ForumService {
       imageUrl: dto.imageUrl ?? null,
       postType: dto.postType ?? Web$46ForumPostType.GENERAL,
       isPinned: dto.isPinned ?? false,
-      isLocked: dto.isLocked ?? false,
       status: dto.status ?? Web$46ForumThreadStatus.OPEN,
       createdAt: now,
       updatedAt: now,
@@ -268,12 +266,11 @@ export class ForumService {
       thread.status = dto.status;
     }
 
-    if (dto.isPinned !== undefined || dto.isLocked !== undefined) {
+    if (dto.isPinned !== undefined) {
       if (!isAdmin) {
         throw new ForbiddenException('forum.forbidden_admin_only');
       }
       if (dto.isPinned !== undefined) thread.isPinned = dto.isPinned;
-      if (dto.isLocked !== undefined) thread.isLocked = dto.isLocked;
     }
 
     thread.updatedAt = new Date();

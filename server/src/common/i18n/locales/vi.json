@@ -37,7 +37,8 @@
     "password_not_set": "Tài khoản này chưa thiết lập mật khẩu",
     "current_password_incorrect": "Mật khẩu hiện tại không chính xác",
     "new_password_same_as_old": "Mật khẩu mới không được trùng với mật khẩu hiện tại",
-    "session_not_found": "Không tìm thấy phiên làm việc"
+    "session_not_found": "Không tìm thấy phiên làm việc",
+    "unverified_email_ban_reason": "Tài khoản đang chờ xác thực email"
   },
   "game": {
     "run_initialized": "Khởi tạo lượt chơi thành công",

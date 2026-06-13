@@ -297,14 +297,45 @@ export class AuthService {
 
     try {
       const result = await this.em.transactional(async (em) => {
+        let user = await em.findOne(User, { email });
+
+        if (user) {
+          if (user.isBanned && user.banReason === 'auth.unverified_email_ban_reason') {
+            user.passwordHash = passwordHash;
+            user.displayName = dto.displayName ?? email.split('@')[0];
+            user.bannedAt = new Date();
+            
+            const auditLog = em.create(AuditLog, {
+              userId: user,
+              actionType: AuditActionType.UPDATE,
+              entityName: 'User',
+              entityId: user.id,
+              newValue: { email: user.email, note: 'Re-registration before email verify' },
+              ipAddress,
+            });
+            await em.flush();
+            void auditLog;
+
+            let gameProfile = await em.findOne(GameProfile, { userId: user.id });
+            if (!gameProfile) {
+              gameProfile = em.create(GameProfile, { userId: user });
+              await em.flush();
+            }
+
+            return { user, gameProfile };
+          } else {
+            throw new ConflictException('auth.email_in_use');
+          }
+        }
+
         const created = em.create(User, {
           email,
           passwordHash,
-          displayName: dto.displayName ?? null,
+          displayName: dto.displayName ?? email.split('@')[0],
           role: Role.USER,
           isBanned: true, // Auto-ban until email is verified
           bannedAt: new Date(),
-          banReason: 'Unverified email',
+          banReason: 'auth.unverified_email_ban_reason',
         });
 
         await em.flush();
@@ -320,6 +351,7 @@ export class AuthService {
         });
         await em.flush();
         void auditLog;
+
         return {
           user: created,
           gameProfile,

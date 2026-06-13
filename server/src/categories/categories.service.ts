@@ -99,7 +99,7 @@ export class CategoryService {
 
     try {
     await this.em.persist(category).flush();
-    return category;
+    return null;
   } catch (error) {
     console.error('Error creating category:', error); 
     throw error;
@@ -216,14 +216,15 @@ async update(id: string, dto: UpdateCategoryDto) {
   }
 
   await this.em.flush();
-  return category;
+  return null;
   }
 
   // Delete category
   async remove(id: string) {
-    const category = await this.findOne(id);
-    await this.em.removeAndFlush(category);
-    return { success: true };
+    const category = await this.em.findOne(ForumCategory, { id });
+    if (!category) throw new NotFoundException('category.not_found');
+    await this.em.remove(category).flush();
+    return null;
   }
 
   // Helper: generate slug from name

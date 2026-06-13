@@ -30,7 +30,6 @@ export class CategoryController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List all forum categories' })
-  @ApiResponse({ status: 200, description: 'Category list retrieved successfully' })
   async findAll(@Req() req: Request): Promise<ApiResponseDto<any>> {
     const data = await this.categoryService.findAll();
     return okResponse('category.list_success', data, 'GET /category');
@@ -41,8 +40,6 @@ export class CategoryController {
   @Get(':id')
   @ApiOperation({ summary: 'Get category detail' })
   @ApiParam({ name: 'id', description: 'Category ID' })
-  @ApiResponse({ status: 200, description: 'Category detail retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'Category not found' })
   async findOne(
     @Param('id') id: string,
     @Req() req: Request,
@@ -52,25 +49,7 @@ export class CategoryController {
   }
 
   // Create category
-  @UseGuards(AuthGuard)
   @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiResponse({
-    status: 201,
-    description: 'Category created successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid category data',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Admin permission required',
-  })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
@@ -82,29 +61,7 @@ export class CategoryController {
   }
 
   // Update category (admin only)
-  @UseGuards(AuthGuard)
   @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiResponse({
-    status: 200,
-    description: 'Category updated successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid category data',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Admin permission required',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Category not found',
-  })
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -116,25 +73,7 @@ export class CategoryController {
   }
 
   // Delete category (admin only)
-  @UseGuards(AuthGuard)
   @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiResponse({
-    status: 200,
-    description: 'Category deleted successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Admin permission required',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Category not found',
-  })
   @Delete(':id')
   async remove(
     @Param('id') id: string,

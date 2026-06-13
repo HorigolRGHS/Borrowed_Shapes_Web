@@ -37,7 +37,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Announcements')
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Controller('announcements')
 export class AnnouncementController {
   constructor(private readonly announcementService: AnnouncementService) { }
@@ -55,7 +55,7 @@ export class AnnouncementController {
   }
 
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @Get('admin')
   @ApiOperation({ summary: 'Admin: List all announcements (including drafts/scheduled)' })
   @ApiResponse({ status: 200, type: AnnouncementListResponseDto })
@@ -80,7 +80,7 @@ export class AnnouncementController {
   }
 
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @Get('admin/:id')
   @ApiOperation({ summary: 'Admin: Get details of any announcement by ID' })
   @ApiResponse({ status: 200, type: AnnouncementResponseDto })
@@ -94,7 +94,7 @@ export class AnnouncementController {
 
   @Post()
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create announcement' })
   @ApiBody({ type: CreateAnnouncementDto })
@@ -110,7 +110,7 @@ export class AnnouncementController {
 
   @Put(':id')
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update announcement' })
   @ApiBody({ type: UpdateAnnouncementDto })
@@ -126,7 +126,7 @@ export class AnnouncementController {
 
   @Delete(':id')
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete announcement' })
   @ApiResponse({ status: 200 })

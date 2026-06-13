@@ -129,9 +129,9 @@ export class ForumService {
     };
 
     const sanitizedCategory = {
-      id: thread.categoryId.id,
-      name: thread.categoryId.name,
-      slug: thread.categoryId.slug,
+      id: thread.categoryId?.id,
+      name: thread.categoryId?.name,
+      slug: thread.categoryId?.slug,
     };
 
     // Return sanitized thread

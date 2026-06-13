@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -16,7 +15,6 @@ import { CreateForumDto } from './dto/create-forums.dto';
 import { UpdateForumDto } from './dto/update-forums.dto';
 import { ListForumsDto } from './dto/list-forums.dto';
 import { VoteDto } from './dto/vote.dto';
-import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
@@ -25,7 +23,6 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
@@ -39,7 +36,6 @@ export class ForumController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List forum threads list' })
-  @ApiResponse({ status: 200, description: 'Forum threads list retrieved successfully' })
   async findAll(
     @Query() query: ListForumsDto,
   ): Promise<ApiResponseDto<any>> {
@@ -57,14 +53,6 @@ export class ForumController {
     name: 'id',
     description: 'Thread ID',
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Forum thread detail',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Thread not found',
-  })
   async findOne(
     @Param('id') id: string,
   ): Promise<ApiResponseDto<any>> {
@@ -73,19 +61,9 @@ export class ForumController {
   }
 
   // Create thread (requires auth)
-  @UseGuards(AuthGuard)
   @Post()
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create a forum thread',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Thread created successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
   })
   @HttpCode(HttpStatus.CREATED)
   async create(
@@ -98,27 +76,13 @@ export class ForumController {
   }
 
   // Update thread (requires auth, author only)
-  @UseGuards(AuthGuard)
   @Patch(':id')
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update a forum thread',
   })
   @ApiParam({
     name: 'id',
     description: 'Thread ID',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Thread updated successfully',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Thread not found',
   })
   async update(
     @Param('id') id: string,
@@ -131,27 +95,13 @@ export class ForumController {
   }
 
   // Delete thread (requires auth, author or admin)
-  @UseGuards(AuthGuard)
   @Delete(':id')
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete a forum thread',
   })
   @ApiParam({
     name: 'id',
     description: 'Thread ID',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Thread deleted successfully',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Thread not found',
   })
   async remove(
     @Param('id') id: string,
@@ -163,23 +113,13 @@ export class ForumController {
   }
 
   // Vote on thread (requires auth, value = 1 | -1)
-  @UseGuards(AuthGuard)
   @Post(':id/vote')
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Vote a forum thread',
   })
   @ApiParam({
     name: 'id',
     description: 'Thread ID',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Vote submitted successfully',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Thread not found',
   })
   @HttpCode(HttpStatus.OK)
   async vote(

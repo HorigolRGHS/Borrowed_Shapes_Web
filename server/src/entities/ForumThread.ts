@@ -1,4 +1,4 @@
-import { Entity, Enum, Index, ManyToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, Enum, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 import { ForumCategory } from './ForumCategory';
 import { User } from './User';
 import { Web$46ForumPostType } from './Web$46ForumPostType';
@@ -9,7 +9,6 @@ import { Web$46ForumThreadStatus } from './Web$46ForumThreadStatus';
 @Index({ name: 'ForumThread_categoryId_createdAt_idx', expression: 'CREATE INDEX "ForumThread_categoryId_createdAt_idx" ON web."ForumThread" USING btree ("categoryId", "createdAt" DESC)', properties: ['categoryId', 'createdAt'] })
 @Index({ name: 'ForumThread_categoryId_score_idx', expression: 'CREATE INDEX "ForumThread_categoryId_score_idx" ON web."ForumThread" USING btree ("categoryId", score DESC)', properties: ['categoryId', 'score'] })
 @Index({ name: 'ForumThread_fts_idx', expression: 'CREATE INDEX "ForumThread_fts_idx" ON web."ForumThread" USING gin (to_tsvector(\'simple\'::regconfig, ((title || \' \'::text) || content)))' })
-@Unique({ name: 'ForumThread_categoryId_slug_key', expression: 'CREATE UNIQUE INDEX "ForumThread_categoryId_slug_key" ON web."ForumThread" USING btree ("categoryId", slug)', properties: ['categoryId', 'slug'] })
 export class ForumThread {
 
   @PrimaryKey({ type: 'text', defaultRaw: `(gen_random_uuid())::text` })
@@ -18,10 +17,10 @@ export class ForumThread {
   @Property({ type: 'text' })
   title!: string;
 
-  @Property({ type: 'text' })
+  @Property({ type: 'text', unique: 'ForumThread_slug_key' })
   slug!: string;
 
-  @ManyToOne({ entity: () => ForumCategory, fieldName: 'categoryId' })
+  @ManyToOne({ entity: () => ForumCategory, fieldName: 'categoryId', updateRule: 'cascade', deleteRule: 'cascade' })
   categoryId!: ForumCategory;
 
   @ManyToOne({ entity: () => User, fieldName: 'authorId', deleteRule: 'cascade' })
@@ -47,9 +46,6 @@ export class ForumThread {
 
   @Property({ type: 'boolean' })
   isPinned: boolean & Opt = false;
-
-  @Property({ type: 'boolean' })
-  isLocked: boolean & Opt = false;
 
   @Enum({ items: () => Web$46ForumThreadStatus, nativeEnumName: 'web.ForumThreadStatus' })
   status: Web$46ForumThreadStatus & Opt = Web$46ForumThreadStatus.OPEN;

@@ -15,7 +15,7 @@ function clamp(n: number, min: number, max: number): number {
 
 @Injectable()
 export class AnnouncementService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager) { }
 
   async findAllPaginated(
     query: ListAnnouncementsQueryDto,
@@ -43,9 +43,9 @@ export class AnnouncementService {
       const pattern = `%${escapeLike(query.q.trim())}%`;
       where.$or = [
         { title: { $ilike: pattern } },
-        { title_vi: { $ilike: pattern } },
+        { titleVi: { $ilike: pattern } },
         { summary: { $ilike: pattern } },
-        { summary_vi: { $ilike: pattern } },
+        { summaryVi: { $ilike: pattern } },
       ];
     }
 
@@ -83,7 +83,7 @@ export class AnnouncementService {
       $or: [
         { id: idOrSlug },
         { slug: idOrSlug },
-        { slug_vi: idOrSlug },
+        { slugVi: idOrSlug },
       ],
     };
 
@@ -111,7 +111,7 @@ export class AnnouncementService {
     const existing = await this.em.findOne(Announcement, {
       $or: [
         { slug: dto.slug },
-        { slug_vi: dto.slug_vi },
+        { slugVi: dto.slugVi },
       ],
     });
 
@@ -151,10 +151,10 @@ export class AnnouncementService {
     }
 
     // Check slug uniqueness if updated
-    if (dto.slug || dto.slug_vi) {
+    if (dto.slug || dto.slugVi) {
       const conditions: FilterQuery<Announcement>[] = [];
       if (dto.slug) conditions.push({ slug: dto.slug });
-      if (dto.slug_vi) conditions.push({ slug_vi: dto.slug_vi });
+      if (dto.slugVi) conditions.push({ slugVi: dto.slugVi });
 
       const existing = await this.em.findOne(Announcement, {
         $and: [
@@ -199,13 +199,13 @@ export class AnnouncementService {
     return {
       id: a.id,
       slug: a.slug,
-      slug_vi: a.slug_vi,
+      slugVi: a.slugVi,
       title: a.title,
-      title_vi: a.title_vi,
+      titleVi: a.titleVi,
       summary: a.summary,
-      summary_vi: a.summary_vi,
+      summaryVi: a.summaryVi,
       content: a.content,
-      content_vi: a.content_vi,
+      contentVi: a.contentVi,
       type: a.type,
       isPinned: a.isPinned,
       isPublished: a.isPublished,

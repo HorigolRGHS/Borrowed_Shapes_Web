@@ -73,13 +73,6 @@ export class CreateForumDto {
   isPinned?: boolean;
 
   @ApiPropertyOptional({
-    example: false,
-  })
-  @IsOptional()
-  @IsBoolean({ message: 'forum.is_locked_must_be_boolean' })
-  isLocked?: boolean;
-
-  @ApiPropertyOptional({
     example: 'OPEN',
     enum: ForumThreadStatus,
   })

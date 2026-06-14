@@ -15,26 +15,26 @@ export class Announcement {
   @Property({ type: 'text', unique: 'Announcement_slug_key' })
   slug!: string;
 
-  @Property({ type: 'text', unique: 'Announcement_slug_vi_key' })
-  slug_vi!: string;
+  @Property({ fieldName: 'slug_vi', type: 'text', unique: 'Announcement_slug_vi_key' })
+  slugVi!: string;
 
   @Property({ type: 'text' })
   title!: string;
 
-  @Property({ type: 'text' })
-  title_vi!: string;
+  @Property({ fieldName: 'title_vi', type: 'text' })
+  titleVi!: string;
 
   @Property({ type: 'text', nullable: true })
   summary?: string;
 
-  @Property({ type: 'text', nullable: true })
-  summary_vi?: string;
+  @Property({ fieldName: 'summary_vi', type: 'text', nullable: true })
+  summaryVi?: string;
 
   @Property({ type: 'text' })
   content!: string;
 
-  @Property({ type: 'text' })
-  content_vi!: string;
+  @Property({ fieldName: 'content_vi', type: 'text' })
+  contentVi!: string;
 
   @Enum({ items: () => Web$46AnnouncementType, nativeEnumName: 'web.AnnouncementType', index: 'Announcement_type_idx' })
   type: Web$46AnnouncementType & Opt = Web$46AnnouncementType.NEWS;

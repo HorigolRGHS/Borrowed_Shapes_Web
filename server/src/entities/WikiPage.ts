@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, type Opt, PrimaryKey, Property, type Rel } from '@mikro-orm/core';
 import type { WikiRevision } from './WikiRevision';
 
 @Entity({ schema: 'web' })
@@ -10,14 +10,14 @@ export class WikiPage {
   @Property({ type: 'text', unique: 'WikiPage_slug_key' })
   slug!: string;
 
-  @Property({ type: 'text', unique: 'WikiPage_slug_vi_key' })
-  slug_vi!: string;
+  @Property({ fieldName: 'slug_vi', type: 'text', unique: 'WikiPage_slug_vi_key' })
+  slugVi!: string;
 
   @Property({ type: 'text', index: 'WikiPage_title_idx' })
   title!: string;
 
-  @Property({ type: 'text' })
-  title_vi!: string;
+  @Property({ fieldName: 'title_vi', type: 'text' })
+  titleVi!: string;
 
   @Index({ name: 'WikiPage_metadata_gin_idx', expression: 'CREATE INDEX "WikiPage_metadata_gin_idx" ON web."WikiPage" USING gin ("metadataJson")' })
   @Property({ type: 'json', nullable: true })
@@ -28,7 +28,7 @@ export class WikiPage {
   isPublished: boolean & Opt = false;
 
   @ManyToOne({ entity: 'WikiRevision', fieldName: 'latestRevisionId', deleteRule: 'set null', nullable: true })
-  latestRevisionId?: WikiRevision;
+  latestRevisionId?: Rel<WikiRevision>;
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   createdAt!: Date & Opt;

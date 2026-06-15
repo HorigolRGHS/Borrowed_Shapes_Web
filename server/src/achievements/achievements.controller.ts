@@ -10,7 +10,6 @@ import {
   Req,
   HttpCode,
   HttpStatus,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 
@@ -34,10 +33,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('Achievements')
-// @UseGuards(AuthGuard)
 @Roles('USER', 'ADMIN')
 @Controller('achievements')
 export class AchievementController {
@@ -46,7 +43,6 @@ export class AchievementController {
   ) { }
 
   @Get()
-  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all achievements (paginated)' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
@@ -98,7 +94,6 @@ export class AchievementController {
   }
 
   @Get('search')
-  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Search achievements (paginated)' })
   async search(
     @Query('q') q: string,
@@ -144,7 +139,6 @@ export class AchievementController {
   }
 
   @Get('user/me')
-  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user achievements' })
   @ApiResponse({
     status: 200,
@@ -189,7 +183,6 @@ export class AchievementController {
   }
 
   @Get(':id/users')
-  // @ApiBearerAuth()
   async findUsersByAchievement(
     @Param('id') id: string,
     @Req() req: Request,
@@ -205,7 +198,6 @@ export class AchievementController {
   }
 
   @Get(':id')
-  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Get achievement details' })
   @ApiResponse({
     status: 200,
@@ -255,7 +247,6 @@ export class AchievementController {
 
   @Post()
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create achievement' })
   @ApiBody({ type: CreateAchievementDto })
@@ -273,7 +264,6 @@ export class AchievementController {
   }
 
   @Put(':id')
-  // @ApiBearerAuth()
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update achievement' })
@@ -294,7 +284,6 @@ export class AchievementController {
 
   @Delete(':id')
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete achievement' })
   async delete(

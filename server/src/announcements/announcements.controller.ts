@@ -11,14 +11,12 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
 
@@ -36,11 +34,9 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { AuthGuard } from '../auth/auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Announcements')
-// @UseGuards(AuthGuard)
 @Controller('announcements')
 export class AnnouncementController {
   constructor(private readonly announcementService: AnnouncementService) { }
@@ -59,7 +55,6 @@ export class AnnouncementController {
   }
 
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @Get('admin')
   @ApiOperation({ summary: 'Admin: List all announcements (including drafts/scheduled, no content)' })
   @ApiResponse({ status: 200, type: AnnouncementAdminListResponseDto })
@@ -85,7 +80,6 @@ export class AnnouncementController {
   }
 
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @Get('admin/:id')
   @ApiOperation({ summary: 'Admin: Get full details of any announcement by ID' })
   @ApiResponse({ status: 200, type: AnnouncementAdminDetailDto })
@@ -99,7 +93,6 @@ export class AnnouncementController {
 
   @Post()
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create announcement' })
   @ApiBody({ type: CreateAnnouncementDto })
@@ -114,7 +107,6 @@ export class AnnouncementController {
 
   @Put(':id')
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update announcement' })
   @ApiBody({ type: UpdateAnnouncementDto })
@@ -129,7 +121,6 @@ export class AnnouncementController {
 
   @Delete(':id')
   @Roles('ADMIN')
-  // @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete announcement' })
   async delete(

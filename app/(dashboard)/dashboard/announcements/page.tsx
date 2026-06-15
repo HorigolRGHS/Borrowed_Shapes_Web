@@ -83,13 +83,13 @@ const STATUS_BADGE_STYLES: Record<string, string> = {
 interface Announcement {
   id: string;
   slug: string;
-  slug_vi: string;
+  slugVi: string;
   title: string;
-  title_vi: string;
+  titleVi: string;
   summary?: string;
-  summary_vi?: string;
+  summaryVi?: string;
   content: string;
-  content_vi: string;
+  contentVi: string;
   type: string;
   isPinned: boolean;
   isPublished: boolean;
@@ -124,7 +124,7 @@ export default function AnnouncementsPage() {
   const [user, setUser] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pinnedFilter, setPinnedFilter] = useState("all");
@@ -263,7 +263,7 @@ export default function AnnouncementsPage() {
           page: currentPage,
           limit: ITEMS_PER_PAGE,
           type: typeFilter === "all" ? undefined : typeFilter,
-          q: searchQuery || undefined,
+          // q: searchQuery || undefined,
           sortBy: sortBy,
           order: "desc",
         },
@@ -281,13 +281,13 @@ export default function AnnouncementsPage() {
     }
   };
 
-  const handleSearch = () => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    } else {
-      fetchAnnouncements();
-    }
-  };
+  // const handleSearch = () => {
+  //   if (currentPage !== 1) {
+  //     setCurrentPage(1);
+  //   } else {
+  //     fetchAnnouncements();
+  //   }
+  // };
 
   const handleCreate = async () => {
     if (!validateAllFields()) return;
@@ -382,13 +382,13 @@ export default function AnnouncementsPage() {
     if (formData.isPublished) {
       return {
         title: formData.title,
-        title_vi: formData.titleVi,
+        titleVi: formData.titleVi,
         slug: formData.slug,
-        slug_vi: formData.slugVi,
+        slugVi: formData.slugVi,
         summary: formData.summary || undefined,
-        summary_vi: formData.summaryVi || undefined,
+        summaryVi: formData.summaryVi || undefined,
         content: formData.content,
-        content_vi: formData.contentVi,
+        contentVi: formData.contentVi,
         type: formData.type,
         isPinned: formData.isPinned,
         isPublished: true,
@@ -399,13 +399,13 @@ export default function AnnouncementsPage() {
     const scheduledDate = formData.publishedAt ? new Date(formData.publishedAt) : null;
     return {
       title: formData.title,
-      title_vi: formData.titleVi,
+      titleVi: formData.titleVi,
       slug: formData.slug,
-      slug_vi: formData.slugVi,
+      slugVi: formData.slugVi,
       summary: formData.summary || undefined,
-      summary_vi: formData.summaryVi || undefined,
+      summaryVi: formData.summaryVi || undefined,
       content: formData.content,
-      content_vi: formData.contentVi,
+      contentVi: formData.contentVi,
       type: formData.type,
       isPinned: formData.isPinned,
       isPublished: true,
@@ -421,13 +421,13 @@ export default function AnnouncementsPage() {
     const isScheduled = a.publishedAt && new Date(a.publishedAt) > new Date();
     setFormData({
       title: a.title,
-      titleVi: a.title_vi,
+      titleVi: a.titleVi,
       slug: a.slug || slugify(a.title),
-      slugVi: a.slug_vi || slugify(a.title_vi),
+      slugVi: a.slugVi || slugify(a.titleVi),
       summary: a.summary || "",
-      summaryVi: a.summary_vi || "",
+      summaryVi: a.summaryVi || "",
       content: a.content,
-      contentVi: a.content_vi,
+      contentVi: a.contentVi,
       type: a.type,
       isPinned: a.isPinned,
       isPublished: !isScheduled,
@@ -526,7 +526,7 @@ export default function AnnouncementsPage() {
             {/* Search + Create */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative flex-1 max-w-lg">
-                <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+                {/* <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
                   <Search className="h-4 w-4" />
                 </span>
                 <Input
@@ -536,7 +536,7 @@ export default function AnnouncementsPage() {
                   onKeyUp={handleSearch}
                   placeholder={t("announcements.search_placeholder")}
                   className="pl-10"
-                />
+                /> */}
               </div>
               <Button
                 onClick={() => {
@@ -1082,7 +1082,7 @@ export default function AnnouncementsPage() {
               {/* Title & Metadata */}
               <div>
                 <h2 className="text-2xl font-bold text-white">
-                  {locale === "vi" ? viewingAnnouncement.title_vi : viewingAnnouncement.title}
+                  {locale === "vi" ? viewingAnnouncement.titleVi : viewingAnnouncement.title}
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   <Badge variant="outline" className={TYPE_BADGE_STYLES[viewingAnnouncement.type] || BADGE_BASE_CLASS}>
@@ -1138,18 +1138,18 @@ export default function AnnouncementsPage() {
                   {t("announcements.url_slug")}
                 </span>
                 <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 px-4 py-2.5 font-mono text-sm text-slate-300 max-w-fit">
-                  {locale === "vi" ? viewingAnnouncement.slug_vi : viewingAnnouncement.slug}
+                  {locale === "vi" ? viewingAnnouncement.slugVi : viewingAnnouncement.slug}
                 </div>
               </div>
 
               {/* Summary */}
-              {((locale === "vi" && viewingAnnouncement.summary_vi) || (locale === "en" && viewingAnnouncement.summary)) && (
+              {((locale === "vi" && viewingAnnouncement.summaryVi) || (locale === "en" && viewingAnnouncement.summary)) && (
                 <div className="space-y-1.5">
                   <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block">
                     {t("announcements.summary")}
                   </span>
                   <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300 leading-relaxed">
-                    {locale === "vi" ? viewingAnnouncement.summary_vi : viewingAnnouncement.summary}
+                    {locale === "vi" ? viewingAnnouncement.summaryVi : viewingAnnouncement.summary}
                   </div>
                 </div>
               )}
@@ -1162,7 +1162,7 @@ export default function AnnouncementsPage() {
                 <div
                   className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-5 text-sm text-slate-300 leading-relaxed ck-content ck-editor__editable"
                   dangerouslySetInnerHTML={{
-                    __html: locale === "vi" ? viewingAnnouncement.content_vi : viewingAnnouncement.content
+                    __html: locale === "vi" ? viewingAnnouncement.contentVi : viewingAnnouncement.content
                   }}
                 />
               </div>

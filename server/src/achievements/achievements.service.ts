@@ -137,7 +137,7 @@ export class AchievementService {
     return this.em.find(UserAchievement, { gameProfileId }, { populate: ['achievementId'] });
   }
 
-  async create(dto: CreateAchievementDto): Promise<Achievement> {
+  async create(dto: CreateAchievementDto): Promise<null> {
     const existing = await this.em.findOne(Achievement, { criteriaCode: dto.criteriaCode });
     if (existing) {
       throw new BadRequestException('achievements.already_exists');
@@ -150,10 +150,10 @@ export class AchievementService {
         : null,
     });
     await this.em.persistAndFlush(achievement);
-    return achievement;
+    return null;
   }
 
-  async update(id: string, dto: UpdateAchievementDto): Promise<Achievement> {
+  async update(id: string, dto: UpdateAchievementDto): Promise<null> {
     const achievement = await this.findOne(id);
     if (dto.criteriaCode) {
       const existing = await this.em.findOne(Achievement, { criteriaCode: dto.criteriaCode, id: { $ne: id } });
@@ -168,7 +168,7 @@ export class AchievementService {
         : null,
     });
     await this.em.flush();
-    return achievement;
+    return null;
   }
 
   async delete(id: string): Promise<void> {

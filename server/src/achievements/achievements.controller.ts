@@ -38,7 +38,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('Achievements')
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Roles('USER', 'ADMIN')
 @Controller('achievements')
 export class AchievementController {
@@ -47,7 +47,7 @@ export class AchievementController {
   ) { }
 
   @Get()
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all achievements (paginated)' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
@@ -99,7 +99,7 @@ export class AchievementController {
   }
 
   @Get('search')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Search achievements (paginated)' })
   async search(
     @Query('q') q: string,
@@ -145,7 +145,7 @@ export class AchievementController {
   }
 
   @Get('user/me')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user achievements' })
   @ApiResponse({
     status: 200,
@@ -190,7 +190,7 @@ export class AchievementController {
   }
 
   @Get(':id/users')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async findUsersByAchievement(
     @Param('id') id: string,
     @Req() req: Request,
@@ -206,7 +206,7 @@ export class AchievementController {
   }
 
   @Get(':id')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOperation({ summary: 'Get achievement details' })
   @ApiResponse({
     status: 200,
@@ -256,92 +256,54 @@ export class AchievementController {
 
   @Post()
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create achievement' })
   @ApiBody({ type: CreateAchievementDto })
-  @ApiResponse({
-    status: 201,
-    type: AchievementResponseDto,
-  })
   async create(
     @CurrentUser() user: RequestUser,
     @Body() dto: CreateAchievementDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<AchievementResponseDto>> {
-    const achievement =
-      await this.achievementService.create(dto);
-
-    const data: AchievementResponseDto = {
-      id: achievement.id,
-      name: achievement.name,
-      description: achievement.description,
-      criteriaCode: achievement.criteriaCode,
-      badgeImageUrl: achievement.badgeImageUrl,
-      type: achievement.type,
-      seasonMonth: achievement.seasonMonth,
-      expiresAt: achievement.expiresAt,
-      earnedCount: 0,
-    };
-
+  ): Promise<ApiResponseDto<null>> {
+    await this.achievementService.create(dto);
     return okResponse(
       'achievements.create_success',
-      data,
+      null,
       `${req.method} ${req.path}`,
     );
   }
 
   @Put(':id')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update achievement' })
   @ApiBody({ type: UpdateAchievementDto })
-  @ApiResponse({
-    status: 200,
-    type: AchievementResponseDto,
-  })
   async update(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
     @Body() dto: UpdateAchievementDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<AchievementResponseDto>> {
-    const achievement =
-      await this.achievementService.update(id, dto);
-
-    const data: AchievementResponseDto = {
-      id: achievement.id,
-      name: achievement.name,
-      description: achievement.description,
-      criteriaCode: achievement.criteriaCode,
-      badgeImageUrl: achievement.badgeImageUrl,
-      type: achievement.type,
-      seasonMonth: achievement.seasonMonth,
-      expiresAt: achievement.expiresAt,
-      earnedCount: (achievement as any).earnedCount,
-    };
-
+  ): Promise<ApiResponseDto<null>> {
+    await this.achievementService.update(id, dto);
     return okResponse(
       'achievements.update_success',
-      data,
+      null,
       `${req.method} ${req.path}`,
     );
   }
 
   @Delete(':id')
   @Roles('ADMIN')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete achievement' })
-  @ApiResponse({ status: 200 })
   async delete(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.achievementService.delete(id);
-
     return okResponse(
       'achievements.delete_success',
       null,

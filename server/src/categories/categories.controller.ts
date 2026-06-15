@@ -19,24 +19,27 @@ import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, } from '@nestjs/swagger';
 
+@ApiTags('Category')
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   // List all categories
-  @UseGuards(AuthGuard)
-  @Roles('ADMIN')
+  @Public()
   @Get()
+  @ApiOperation({ summary: 'List all forum categories' })
   async findAll(@Req() req: Request): Promise<ApiResponseDto<any>> {
     const data = await this.categoryService.findAll();
     return okResponse('category.list_success', data, 'GET /category');
   }
 
   // Get category detail
-  @UseGuards(AuthGuard)
-  @Roles('ADMIN')
+  @Public()
   @Get(':id')
+  @ApiOperation({ summary: 'Get category detail' })
+  @ApiParam({ name: 'id', description: 'Category ID' })
   async findOne(
     @Param('id') id: string,
     @Req() req: Request,
@@ -46,7 +49,6 @@ export class CategoryController {
   }
 
   // Create category
-  @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -59,7 +61,6 @@ export class CategoryController {
   }
 
   // Update category (admin only)
-  @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Patch(':id')
   async update(
@@ -72,7 +73,6 @@ export class CategoryController {
   }
 
   // Delete category (admin only)
-  @UseGuards(AuthGuard)
   @Roles('ADMIN')
   @Delete(':id')
   async remove(

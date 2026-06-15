@@ -10,52 +10,88 @@ export class CategoryService {
 
   // List all categories, sorted by displayOrder
   async findAll() {
-    const categories = await this.em.find(ForumCategory, {}, { orderBy: { displayOrder: 'asc' } });
-    return categories;
+    const rows = await this.em.execute(
+      `
+      select c."id", c."name", c."name_vi", c."slug", c."slug_vi",
+             c."description", c."description_vi", c."iconUrl",
+             c."isOfficial", c."displayOrder",
+             count(t."id") as "threadCount"
+      from web."ForumCategory" c
+      left join web."ForumThread" t on t."categoryId" = c."id"
+      group by c."id"
+      order by c."displayOrder" asc
+      `,
+      [],
+    );
+
+    return rows.map((row: any) => ({
+      ...row,
+      threadCount: Number(row.threadCount || 0),
+    }));
   }
 
   // Get category by ID
   async findOne(id: string) {
-    const category = await this.em.findOne(ForumCategory, { id });
-    if (!category) throw new NotFoundException('category.not_found');
-    return category;
-  }
+  const category = await this.em.findOne(ForumCategory, { id });
+  if (!category) throw new NotFoundException('category.not_found');
+
+  const countRes = await this.em.execute(
+    `select count(1) as cnt from web."ForumThread" where "categoryId" = ?`,
+    [id],
+  );
+
+  const threadCount = Number(countRes?.[0]?.cnt || 0);
+
+  return {
+    id: category.id,
+    name: category.name,
+    name_vi: category.nameVi,
+    slug: category.slug,
+    slug_vi: category.slugVi,
+    description: category.description,
+    description_vi: category.descriptionVi,
+    iconUrl: category.iconUrl,
+    isOfficial: category.isOfficial,
+    displayOrder: category.displayOrder,
+    threadCount,
+  };
+}
 
   // Create category
   async create(dto: CreateCategoryDto) {
     // Validate required fields
     if (!dto.name?.trim()) throw new BadRequestException('category.name_required');
-    if (!dto.name_vi?.trim()) throw new BadRequestException('category.name_vi_required');
+    if (!dto.nameVi?.trim()) throw new BadRequestException('category.name_vi_required');
 
     // Sau này tạo helper rồi gọi, frontend cũng gọi helper đó để check trùng slug/name
     // Check slug uniqueness
     const slug = this.slugify(dto.slug?.trim() || dto.name);
-    const slug_vi = this.slugify(dto.slug_vi?.trim() || dto.name_vi);
+    const slugVi = this.slugify(dto.slugVi?.trim() || dto.nameVi);
 
     if (!slug) {throw new BadRequestException('category.slug_required');}
-    if (!slug_vi) {throw new BadRequestException('category.slug_vi_required');}
+    if (!slugVi) {throw new BadRequestException('category.slug_vi_required');}
 
     const existingSlug = await this.em.findOne(ForumCategory, { slug });
     if (existingSlug) throw new BadRequestException('category.slug_conflict');
 
-    const existingSlugVi = await this.em.findOne(ForumCategory, { slug_vi });
+    const existingSlugVi = await this.em.findOne(ForumCategory, { slugVi });
     if (existingSlugVi) throw new BadRequestException('category.slug_vi_conflict');
 
     // Check name uniqueness
     const existingName = await this.em.findOne(ForumCategory, { name: dto.name.trim() });
     if (existingName) throw new BadRequestException('category.name_conflict');
 
-    const existingNameVi = await this.em.findOne(ForumCategory, { name_vi: dto.name_vi.trim() });
+    const existingNameVi = await this.em.findOne(ForumCategory, { nameVi: dto.nameVi.trim() });
     if (existingNameVi) throw new BadRequestException('category.name_vi_conflict');
 
     // Create category
     const category = this.em.create(ForumCategory, {
       name: dto.name.trim(),
-      name_vi: dto.name_vi.trim(),
+      nameVi: dto.nameVi.trim(),
       slug,
-      slug_vi,
+      slugVi,
       description: dto.description?.trim() ?? null,
-      description_vi: dto.description_vi?.trim() ?? null,
+      descriptionVi: dto.descriptionVi?.trim() ?? null,
       iconUrl: dto.iconUrl ?? null,
       isOfficial: dto.isOfficial ?? false,
       displayOrder: dto.displayOrder ?? 0,
@@ -63,7 +99,7 @@ export class CategoryService {
 
     try {
     await this.em.persist(category).flush();
-    return category;
+    return null;
   } catch (error) {
     console.error('Error creating category:', error); 
     throw error;
@@ -96,8 +132,8 @@ async update(id: string, dto: UpdateCategoryDto) {
   }
 
   // Update Vietnamese name
-  if (dto.name_vi !== undefined) {
-    const trimmed = dto.name_vi.trim();
+  if (dto.nameVi !== undefined) {
+    const trimmed = dto.nameVi.trim();
 
     if (!trimmed) {
       throw new BadRequestException('category.name_vi_required');
@@ -105,7 +141,7 @@ async update(id: string, dto: UpdateCategoryDto) {
 
     if (trimmed !== category.name_vi) {
       const existing = await this.em.findOne(ForumCategory, {
-        name_vi: trimmed,
+        nameVi: trimmed,
       });
 
       if (existing && existing.id !== category.id) {
@@ -137,15 +173,15 @@ async update(id: string, dto: UpdateCategoryDto) {
   }
 
   // Update Vietnamese slug
-  if (dto.slug_vi !== undefined) {
-    const newSlugVi = this.slugify(dto.slug_vi.trim() || category.name_vi);
+  if (dto.slugVi !== undefined) {
+    const newSlugVi = this.slugify(dto.slugVi.trim() || category.name_vi);
 
     if (!newSlugVi) {
       throw new BadRequestException('category.slug_vi_required');
     }
     if (newSlugVi !== category.slug_vi) {
       const existing = await this.em.findOne(ForumCategory, {
-        slug_vi: newSlugVi,
+        slugVi: newSlugVi,
       });
 
       if (existing && existing.id !== category.id) {
@@ -161,8 +197,8 @@ async update(id: string, dto: UpdateCategoryDto) {
     category.description = dto.description?.trim() ?? null;
   }
 
-  if (dto.description_vi !== undefined) {
-    category.description_vi = dto.description_vi?.trim() ?? null;
+  if (dto.descriptionVi !== undefined) {
+    category.description_vi = dto.descriptionVi?.trim() ?? null;
   }
 
   // Update icon
@@ -180,14 +216,15 @@ async update(id: string, dto: UpdateCategoryDto) {
   }
 
   await this.em.flush();
-  return category;
+  return null;
   }
 
   // Delete category
   async remove(id: string) {
-    const category = await this.findOne(id);
-    await this.em.removeAndFlush(category);
-    return { success: true };
+    const category = await this.em.findOne(ForumCategory, { id });
+    if (!category) throw new NotFoundException('category.not_found');
+    await this.em.remove(category).flush();
+    return null;
   }
 
   // Helper: generate slug from name

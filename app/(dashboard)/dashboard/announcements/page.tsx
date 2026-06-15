@@ -135,6 +135,7 @@ export default function AnnouncementsPage() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [deleteAnnouncement, setDeleteAnnouncement] = useState<Announcement | null>(null);
   const [viewingAnnouncement, setViewingAnnouncement] = useState<Announcement | null>(null);
+  const [fetchingDetailId, setFetchingDetailId] = useState<string | null>(null);
   const isClosingRef = useRef(false);
 
   const [formData, setFormData] = useState({
@@ -279,6 +280,23 @@ export default function AnnouncementsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAnnouncementDetail = async (id: string): Promise<Announcement | null> => {
+    setFetchingDetailId(id);
+    try {
+      const response = await axios.get(`/api/announcements/admin/${id}`);
+      if (response.data?.success) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch announcement detail:", error);
+      const message = error.response?.data?.message || "Failed to fetch details";
+      toast.error(t(message) || message);
+    } finally {
+      setFetchingDetailId(null);
+    }
+    return null;
   };
 
   // const handleSearch = () => {
@@ -676,14 +694,26 @@ export default function AnnouncementsPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40">
                                   <DropdownMenuItem
-                                    onClick={() => setViewingAnnouncement(a)}
+                                    onClick={async () => {
+                                      const detail = await fetchAnnouncementDetail(a.id);
+                                      if (detail) {
+                                        setViewingAnnouncement(detail);
+                                      }
+                                    }}
+                                    disabled={fetchingDetailId !== null}
                                     className="cursor-pointer"
                                   >
                                     <Eye className="mr-2 h-4 w-4" />
                                     {t("announcements.action_view")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => openEditModal(a)}
+                                    onClick={async () => {
+                                      const detail = await fetchAnnouncementDetail(a.id);
+                                      if (detail) {
+                                        openEditModal(detail);
+                                      }
+                                    }}
+                                    disabled={fetchingDetailId !== null}
                                     className="cursor-pointer"
                                   >
                                     <Pencil className="mr-2 h-4 w-4" />
@@ -691,6 +721,7 @@ export default function AnnouncementsPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => setDeleteAnnouncement(a)}
+                                    disabled={fetchingDetailId !== null}
                                     className="cursor-pointer text-rose-400 focus:text-rose-400"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />

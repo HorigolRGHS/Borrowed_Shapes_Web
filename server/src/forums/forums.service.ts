@@ -14,6 +14,7 @@ import { UpdateForumDto } from './dto/update-forums.dto';
 import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
 import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 import { GameProfile } from '../entities/GameProfile';
+import { previewText } from '../common/utils/strip-markdown';
 
 @Injectable()
 export class ForumService {
@@ -96,8 +97,13 @@ export class ForumService {
 
     const total = Number(countRes?.[0]?.cnt || 0);
 
+    const items = (rows || []).map((row: any) => ({
+      ...row,
+      content: previewText(row.content ?? '', 100),
+    }));
+
     return {
-      items: rows || [],
+      items,
       meta: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }

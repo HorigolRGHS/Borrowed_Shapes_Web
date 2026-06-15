@@ -9,7 +9,7 @@ interface Props {
 
 export function WikiPageShell({ header, body, infobox, toc }: Props) {
   return (
-    <div className="flex gap-8">
+    <div className="flex gap-8 pb-4">
       <div className="flex-1 min-w-0">
         {infobox && <div className="lg:hidden mb-6">{infobox}</div>}
         {header}

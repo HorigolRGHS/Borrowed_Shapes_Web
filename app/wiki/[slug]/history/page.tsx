@@ -37,7 +37,7 @@ export default async function WikiHistoryPage({
   }
 
   const history = await fetchWikiHistory(detail.id, page, 20);
-  const title = detail.matchedSlugLocale === 'vi' ? detail.title_vi : detail.title;
+  const title = detail.matchedSlugLocale === 'vi' ? detail.titleVi : detail.title;
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">

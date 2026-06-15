@@ -52,9 +52,9 @@ export default function AdminWikiNewPage() {
   });
 
   const title = form.watch("title");
-  const title_vi = form.watch("title_vi");
+  const titleVi = form.watch("titleVi");
   const slug = form.watch("slug");
-  const slug_vi = form.watch("slug_vi");
+  const slugVi = form.watch("slugVi");
 
   // Auto-slug from title (300ms debounce).
   useEffect(() => {
@@ -72,36 +72,36 @@ export default function AdminWikiNewPage() {
 
   useEffect(() => {
     if (slugViTouched) return;
-    if (!title_vi) return;
+    if (!titleVi) return;
     const handle = setTimeout(() => {
-      const next = slugifyVi(title_vi);
-      if (next !== form.getValues("slug_vi")) {
-        form.setValue("slug_vi", next, { shouldValidate: true });
+      const next = slugifyVi(titleVi);
+      if (next !== form.getValues("slugVi")) {
+        form.setValue("slugVi", next, { shouldValidate: true });
       }
     }, 300);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title_vi, slugViTouched]);
+  }, [titleVi, slugViTouched]);
 
   // Availability check (500ms after slug settles). Auto-bumps when slugs
   // were auto-generated. When user pencil-edited, surfaces the bump as a
   // suggestion but does not overwrite their value.
   const lastCheckedRef = useRef<string>("");
   useEffect(() => {
-    if (!slug && !slug_vi) return;
-    const key = `${slug}|${slug_vi}`;
+    if (!slug && !slugVi) return;
+    const key = `${slug}|${slugVi}`;
     if (key === lastCheckedRef.current) return;
 
     const handle = setTimeout(async () => {
       lastCheckedRef.current = key;
       try {
-        const result = await findAvailableSlugs(slug, slug_vi);
+        const result = await findAvailableSlugs(slug, slugVi);
         if (!result.bumped) {
           setBumped(null);
           return;
         }
         const enChanged = result.slug !== slug;
-        const viChanged = result.slug_vi !== slug_vi;
+        const viChanged = result.slugVi !== slugVi;
         let notice: BumpedNotice | null = null;
 
         if (enChanged) {
@@ -112,12 +112,12 @@ export default function AdminWikiNewPage() {
         }
         if (viChanged) {
           if (!slugViTouched) {
-            form.setValue("slug_vi", result.slug_vi, { shouldValidate: true });
+            form.setValue("slugVi", result.slugVi, { shouldValidate: true });
           }
           // Prefer the EN notice when both collided (single bumped notice
           // slot in the UI). VI surfaces only when EN didn't change.
           if (!notice) {
-            notice = { original: slug_vi, final: result.slug_vi };
+            notice = { original: slugVi, final: result.slugVi };
           }
         }
         setBumped(notice);
@@ -127,7 +127,7 @@ export default function AdminWikiNewPage() {
     }, 500);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, slug_vi]);
+  }, [slug, slugVi]);
 
   const onSubmit = async (value: Step1FormValue) => {
     setSubmitting(true);
@@ -135,11 +135,11 @@ export default function AdminWikiNewPage() {
     try {
       const detail = await createWiki({
         slug: value.slug,
-        slug_vi: value.slug_vi,
+        slugVi: value.slugVi,
         title: value.title,
-        title_vi: value.title_vi,
+        titleVi: value.titleVi,
         content: "",
-        content_vi: "",
+        contentVi: "",
         isPublished: false,
       });
       router.replace(`/dashboard/wiki/${detail.id}/edit`);
@@ -152,17 +152,17 @@ export default function AdminWikiNewPage() {
 
       if (status === 409) {
         try {
-          const recheck = await findAvailableSlugs(value.slug, value.slug_vi);
+          const recheck = await findAvailableSlugs(value.slug, value.slugVi);
           if (recheck.bumped) {
             form.setValue("slug", recheck.slug);
-            form.setValue("slug_vi", recheck.slug_vi);
+            form.setValue("slugVi", recheck.slugVi);
             const detail = await createWiki({
               slug: recheck.slug,
-              slug_vi: recheck.slug_vi,
+              slugVi: recheck.slugVi,
               title: value.title,
-              title_vi: value.title_vi,
+              titleVi: value.titleVi,
               content: "",
-              content_vi: "",
+              contentVi: "",
               isPublished: false,
             });
             router.replace(`/dashboard/wiki/${detail.id}/edit`);
@@ -188,9 +188,9 @@ export default function AdminWikiNewPage() {
     }
   };
 
-  const titlesFilled = !!title?.trim() && !!title_vi?.trim();
+  const titlesFilled = !!title?.trim() && !!titleVi?.trim();
   const slugsValid =
-    !form.formState.errors.slug && !form.formState.errors.slug_vi;
+    !form.formState.errors.slug && !form.formState.errors.slugVi;
   const canSubmit = titlesFilled && slugsValid && !submitting;
 
   return (
@@ -234,11 +234,11 @@ export default function AdminWikiNewPage() {
 
               <FormField
                 control={form.control}
-                name="title_vi"
+                name="titleVi"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("wiki.new.title_field")} ({t("wiki.tab_vi")})
+                      {t("wiki.new.title_field")} ({t("wiki.tabVi")})
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />
@@ -248,7 +248,7 @@ export default function AdminWikiNewPage() {
                 )}
               />
 
-              <SlugEditRow name="slug_vi" onTouchedChange={setSlugViTouched} />
+              <SlugEditRow name="slugVi" onTouchedChange={setSlugViTouched} />
 
               {bumped && (
                 <p className="text-xs text-muted-foreground">

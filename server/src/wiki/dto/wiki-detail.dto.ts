@@ -10,31 +10,13 @@ export class WikiDetailRevisionDto {
   content!: string;
 
   @ApiProperty()
-  content_vi!: string;
+  contentVi!: string;
 
   @ApiProperty({ nullable: true, type: String })
   summary!: string | null;
 
   @ApiProperty({ nullable: true, type: String })
-  summary_vi!: string | null;
-
-  @ApiProperty()
-  title!: string;
-
-  @ApiProperty()
-  title_vi!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty()
-  slug_vi!: string;
-
-  @ApiProperty({ nullable: true, type: Object })
-  metadataJson!: Record<string, unknown> | null;
-
-  @ApiProperty()
-  isPublished!: boolean;
+  summaryVi!: string | null;
 
   @ApiProperty({ nullable: true, type: WikiAuthorDto })
   author!: WikiAuthorDto | null;
@@ -51,13 +33,13 @@ export class WikiDetailResponseDto {
   slug!: string;
 
   @ApiProperty()
-  slug_vi!: string;
+  slugVi!: string;
 
   @ApiProperty()
   title!: string;
 
   @ApiProperty()
-  title_vi!: string;
+  titleVi!: string;
 
   @ApiProperty({ type: WikiMetadataDto, nullable: true })
   metadataJson!: WikiMetadataDto | null;

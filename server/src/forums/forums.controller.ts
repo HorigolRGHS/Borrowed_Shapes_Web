@@ -35,7 +35,10 @@ export class ForumController {
   // List threads (public)
   @Public()
   @Get()
-  @ApiOperation({ summary: 'List forum threads list' })
+  @ApiOperation({
+    summary: 'List forum threads',
+    description: 'Thread `content` is a ~100-character plaintext preview (markdown stripped). Full content is available via GET /forum/:id.',
+  })
   async findAll(
     @Query() query: ListForumsDto,
   ): Promise<ApiResponseDto<any>> {

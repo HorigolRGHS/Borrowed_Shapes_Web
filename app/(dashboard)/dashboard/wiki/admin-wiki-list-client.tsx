@@ -197,7 +197,7 @@ export function AdminWikiListClient() {
             )}
             {!loading &&
               data?.items.map((item) => {
-                const title = locale === "vi" ? item.title_vi : item.title;
+                const title = locale === "vi" ? item.titleVi : item.title;
                 return (
                   <TableRow key={item.id}>
                     <TableCell>
@@ -231,7 +231,7 @@ export function AdminWikiListClient() {
                           <DropdownMenuItem asChild>
                             <Link
                               href={`/wiki/${encodeURIComponent(
-                                locale === "vi" ? item.slug_vi : item.slug,
+                                locale === "vi" ? item.slugVi : item.slug,
                               )}`}
                               className="gap-2"
                             >

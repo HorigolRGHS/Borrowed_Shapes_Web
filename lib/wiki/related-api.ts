@@ -4,7 +4,7 @@ import { bffFetchJson } from "@/lib/wiki/bff-fetch";
 export interface RelatedPageEntry {
   slug: string;
   title?: string;
-  title_vi?: string;
+  titleVi?: string;
   exists: boolean;
 }
 

@@ -90,7 +90,7 @@ export function WikiForm({
   const [slugViTouched, setSlugViTouched] = useState(isEdit);
 
   const title = useWatch({ control: form.control, name: "title" });
-  const title_vi = useWatch({ control: form.control, name: "title_vi" });
+  const titleVi = useWatch({ control: form.control, name: "titleVi" });
   const isDirty = form.formState.isDirty;
 
   useEffect(() => {
@@ -110,13 +110,13 @@ export function WikiForm({
 
   useEffect(() => {
     if (slugViTouched) return;
-    if (!title_vi) return;
-    const next = slugifyVi(title_vi);
-    if (next !== form.getValues("slug_vi")) {
-      form.setValue("slug_vi", next, { shouldValidate: true });
+    if (!titleVi) return;
+    const next = slugifyVi(titleVi);
+    if (next !== form.getValues("slugVi")) {
+      form.setValue("slugVi", next, { shouldValidate: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title_vi, slugViTouched]);
+  }, [titleVi, slugViTouched]);
 
   // Beforeunload warning while dirty.
   useEffect(() => {
@@ -136,7 +136,7 @@ export function WikiForm({
       // and fix it (each locale shows one title/summary/slug at a time).
       const e = form.formState.errors;
       const enHasError = !!e.title || !!e.slug || !!e.summary;
-      const viHasError = !!e.title_vi || !!e.slug_vi || !!e.summary_vi;
+      const viHasError = !!e.titleVi || !!e.slugVi || !!e.summaryVi;
       if (activeLocale === "en" && !enHasError && viHasError) {
         setActiveLocale("vi");
       } else if (activeLocale === "vi" && !viHasError && enHasError) {
@@ -148,7 +148,7 @@ export function WikiForm({
     if (
       mode === "publish" &&
       value.content.trim().length > 0 &&
-      value.content.trim() === value.content_vi.trim()
+      value.content.trim() === value.contentVi.trim()
     ) {
       setWarnSame(true);
       return;
@@ -177,22 +177,22 @@ export function WikiForm({
   };
 
   const titlesFilled =
-    !!form.watch("title")?.trim() && !!form.watch("title_vi")?.trim();
+    !!form.watch("title")?.trim() && !!form.watch("titleVi")?.trim();
   const contentFilled =
-    !!form.watch("content")?.trim() && !!form.watch("content_vi")?.trim();
+    !!form.watch("content")?.trim() && !!form.watch("contentVi")?.trim();
   const slugsValid =
-    !form.formState.errors.slug && !form.formState.errors.slug_vi;
+    !form.formState.errors.slug && !form.formState.errors.slugVi;
   const canSubmitDraft = titlesFilled && slugsValid && !saving;
   const canPublish = canSubmitDraft && contentFilled;
 
   const errors = form.formState.errors;
-  const titleField = activeLocale === "vi" ? "title_vi" : "title";
-  const slugField = activeLocale === "vi" ? "slug_vi" : "slug";
-  const summaryField = activeLocale === "vi" ? "summary_vi" : "summary";
+  const titleField = activeLocale === "vi" ? "titleVi" : "title";
+  const slugField = activeLocale === "vi" ? "slugVi" : "slug";
+  const summaryField = activeLocale === "vi" ? "summaryVi" : "summary";
   const titleValue =
-    activeLocale === "vi" ? form.watch("title_vi") : form.watch("title");
+    activeLocale === "vi" ? form.watch("titleVi") : form.watch("title");
   const titleErrorKey =
-    activeLocale === "vi" ? errors.title_vi?.message : errors.title?.message;
+    activeLocale === "vi" ? errors.titleVi?.message : errors.title?.message;
   const summaryPlaceholder =
     activeLocale === "vi"
       ? t("wiki.edit.summary_placeholder_vi")
@@ -254,11 +254,11 @@ export function WikiForm({
               hideLocaleTabs
               value={{
                 en: form.watch("content"),
-                vi: form.watch("content_vi"),
+                vi: form.watch("contentVi"),
               }}
               onChange={(next) => {
                 form.setValue("content", next.en, { shouldDirty: true });
-                form.setValue("content_vi", next.vi, { shouldDirty: true });
+                form.setValue("contentVi", next.vi, { shouldDirty: true });
               }}
             />
             {submitError && (

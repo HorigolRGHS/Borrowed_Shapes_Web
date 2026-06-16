@@ -108,7 +108,8 @@ export class CategoryService {
 
   // Update category
 async update(id: string, dto: UpdateCategoryDto) {
-  const category = await this.findOne(id);
+  const category = await this.em.findOne(ForumCategory, { id });
+  if (!category) throw new NotFoundException('category.not_found');
 
   // Update name
   if (dto.name !== undefined) {
@@ -139,7 +140,7 @@ async update(id: string, dto: UpdateCategoryDto) {
       throw new BadRequestException('category.name_vi_required');
     }
 
-    if (trimmed !== category.name_vi) {
+    if (trimmed !== category.nameVi) {
       const existing = await this.em.findOne(ForumCategory, {
         nameVi: trimmed,
       });
@@ -149,7 +150,7 @@ async update(id: string, dto: UpdateCategoryDto) {
       }
     }
 
-    category.name_vi = trimmed;
+    category.nameVi = trimmed;
   }
 
   // Update slug
@@ -174,12 +175,12 @@ async update(id: string, dto: UpdateCategoryDto) {
 
   // Update Vietnamese slug
   if (dto.slugVi !== undefined) {
-    const newSlugVi = this.slugify(dto.slugVi.trim() || category.name_vi);
+    const newSlugVi = this.slugify(dto.slugVi.trim() || category.nameVi);
 
     if (!newSlugVi) {
       throw new BadRequestException('category.slug_vi_required');
     }
-    if (newSlugVi !== category.slug_vi) {
+    if (newSlugVi !== category.slugVi) {
       const existing = await this.em.findOne(ForumCategory, {
         slugVi: newSlugVi,
       });
@@ -188,7 +189,7 @@ async update(id: string, dto: UpdateCategoryDto) {
         throw new BadRequestException('category.slug_vi_conflict');
       }
 
-      category.slug_vi = newSlugVi;
+      category.slugVi = newSlugVi;
     }
   }
 
@@ -198,7 +199,7 @@ async update(id: string, dto: UpdateCategoryDto) {
   }
 
   if (dto.descriptionVi !== undefined) {
-    category.description_vi = dto.descriptionVi?.trim() ?? null;
+    category.descriptionVi = dto.descriptionVi?.trim() ?? null;
   }
 
   // Update icon

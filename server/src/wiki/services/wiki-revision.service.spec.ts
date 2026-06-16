@@ -45,9 +45,9 @@ describe('WikiRevisionService.create', () => {
       service.create(
         {
           slug: 'Invalid Slug!',
-          slug_vi: 'ok-slug',
-          title: 'A', title_vi: 'B',
-          content: '', content_vi: '',
+          slugVi: 'ok-slug',
+          title: 'A', titleVi: 'B',
+          content: '', contentVi: '',
         } as any,
         'admin-1',
         '127.0.0.1',
@@ -59,9 +59,9 @@ describe('WikiRevisionService.create', () => {
     await expect(
       service.create(
         {
-          slug: 'admin', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: '', content_vi: '',
+          slug: 'admin', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: '', contentVi: '',
         } as any,
         'admin-1',
         '127.0.0.1',
@@ -74,9 +74,9 @@ describe('WikiRevisionService.create', () => {
     await expect(
       service.create(
         {
-          slug: 'ok-slug', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: 'a', content_vi: 'b',
+          slug: 'ok-slug', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: 'a', contentVi: 'b',
         } as any,
         'admin-1',
         '127.0.0.1',
@@ -87,10 +87,10 @@ describe('WikiRevisionService.create', () => {
   it('creates page, revision, and links latestRevisionId', async () => {
     await service.create(
       {
-        slug: 'ok-slug', slug_vi: 'ok-vi',
-        title: 'A', title_vi: 'B',
-        content: 'c', content_vi: 'd',
-        summary: 's', summary_vi: 'sv',
+        slug: 'ok-slug', slugVi: 'ok-vi',
+        title: 'A', titleVi: 'B',
+        content: 'c', contentVi: 'd',
+        summary: 's', summaryVi: 'sv',
         isPublished: false,
       } as any,
       'admin-1',
@@ -110,9 +110,9 @@ describe('WikiRevisionService.create', () => {
     it('creates a draft with empty content', async () => {
       await service.create(
         {
-          slug: 'ok-slug', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: '', content_vi: '',
+          slug: 'ok-slug', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: '', contentVi: '',
         } as any,
         'admin-1',
         '127.0.0.1',
@@ -125,9 +125,9 @@ describe('WikiRevisionService.create', () => {
       const big = 'a'.repeat(1_000_000);
       await service.create(
         {
-          slug: 'ok-slug', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: big, content_vi: big,
+          slug: 'ok-slug', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: big, contentVi: big,
         } as any,
         'admin-1',
         '127.0.0.1',
@@ -138,9 +138,9 @@ describe('WikiRevisionService.create', () => {
     it('creates a page when metadataJson is null', async () => {
       await service.create(
         {
-          slug: 'ok-slug', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: 'a', content_vi: 'b',
+          slug: 'ok-slug', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: 'a', contentVi: 'b',
           metadataJson: null,
         } as any,
         'admin-1',
@@ -152,9 +152,9 @@ describe('WikiRevisionService.create', () => {
     it('strips empty metadata arrays before persisting', async () => {
       await service.create(
         {
-          slug: 'ok-slug', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: 'a', content_vi: 'b',
+          slug: 'ok-slug', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: 'a', contentVi: 'b',
           metadataJson: { tags: [], tags_vi: [], stats: {}, relatedPages: [] },
         } as any,
         'admin-1',
@@ -170,9 +170,9 @@ describe('WikiRevisionService.create', () => {
     it('keeps non-empty metadata fields on persist', async () => {
       await service.create(
         {
-          slug: 'ok-slug', slug_vi: 'ok-vi',
-          title: 'A', title_vi: 'B',
-          content: 'a', content_vi: 'b',
+          slug: 'ok-slug', slugVi: 'ok-vi',
+          title: 'A', titleVi: 'B',
+          content: 'a', contentVi: 'b',
           metadataJson: { category: 'Boss', tags: ['legendary'], tags_vi: [], stats: {}, relatedPages: [] },
         } as any,
         'admin-1',
@@ -190,17 +190,17 @@ describe('WikiRevisionService.create', () => {
   });
 
   describe('Abnormal', () => {
-    it('translates Postgres unique violation on slug_vi to ConflictException', async () => {
+    it('translates Postgres unique violation on slugVi to ConflictException', async () => {
       const err: any = new Error('duplicate key value violates unique constraint');
       err.code = '23505';
-      err.constraint = 'WikiPage_slug_vi_key';
+      err.constraint = 'WikiPage_slugVi_key';
       em.flush.mockRejectedValueOnce(err);
       await expect(
         service.create(
           {
-            slug: 'ok-slug', slug_vi: 'ok-vi',
-            title: 'A', title_vi: 'B',
-            content: 'a', content_vi: 'b',
+            slug: 'ok-slug', slugVi: 'ok-vi',
+            title: 'A', titleVi: 'B',
+            content: 'a', contentVi: 'b',
           } as any,
           'admin-1', '127.0.0.1',
         ),
@@ -215,9 +215,9 @@ describe('WikiRevisionService.create', () => {
       await expect(
         service.create(
           {
-            slug: 'ok-slug', slug_vi: 'ok-vi',
-            title: 'A', title_vi: 'B',
-            content: 'a', content_vi: 'b',
+            slug: 'ok-slug', slugVi: 'ok-vi',
+            title: 'A', titleVi: 'B',
+            content: 'a', contentVi: 'b',
           } as any,
           'admin-1', '127.0.0.1',
         ),
@@ -231,9 +231,9 @@ describe('WikiRevisionService.create', () => {
       await expect(
         service.create(
           {
-            slug: 'partial-slug', slug_vi: 'partial-vi',
-            title: 'P', title_vi: 'P',
-            content: 'a', content_vi: 'b',
+            slug: 'partial-slug', slugVi: 'partial-vi',
+            title: 'P', titleVi: 'P',
+            content: 'a', contentVi: 'b',
             metadataJson: { category: 'Boss' },
           } as any,
           'admin-1',
@@ -285,9 +285,9 @@ describe('WikiRevisionService.create stub mode', () => {
       .find((d: any) => typeof d?.slug === 'string');
     expect(page).toBeDefined();
     expect(page.slug).toMatch(/^untitled-[a-z0-9]{6}$/);
-    expect(page.slug_vi).toMatch(/^khong-ten-[a-z0-9]{6}$/);
+    expect(page.slugVi).toMatch(/^khong-ten-[a-z0-9]{6}$/);
     expect(page.title).toBe('');
-    expect(page.title_vi).toBe('');
+    expect(page.titleVi).toBe('');
     expect(page.isPublished).toBe(false);
   });
 
@@ -345,14 +345,14 @@ describe('WikiRevisionService.update', () => {
   function fakePage(latestId: string) {
     return {
       id: 'p1',
-      slug: 'old-slug', slug_vi: 'old-vi',
-      title: 'Old', title_vi: 'OldVi',
+      slug: 'old-slug', slugVi: 'old-vi',
+      title: 'Old', titleVi: 'OldVi',
       metadataJson: null,
       isPublished: false,
       latestRevisionId: {
         id: latestId,
-        content: 'OLD', content_vi: 'OLD_VI',
-        summary: null, summary_vi: null,
+        content: 'OLD', contentVi: 'OLDVI',
+        summary: null, summaryVi: null,
       },
     };
   }
@@ -364,8 +364,8 @@ describe('WikiRevisionService.update', () => {
         'p1',
         {
           expectedLatestRevisionId: 'r1',
-          slug: 'a', slug_vi: 'b', title: 't', title_vi: 'tv',
-          content: 'c', content_vi: 'cv',
+          slug: 'a', slugVi: 'b', title: 't', titleVi: 'tv',
+          content: 'c', contentVi: 'cv',
         } as any,
         'admin-1', '1.1.1.1',
       ),
@@ -380,8 +380,8 @@ describe('WikiRevisionService.update', () => {
         'p1',
         {
           expectedLatestRevisionId: 'r-stale',
-          slug: 'a', slug_vi: 'b', title: 't', title_vi: 'tv',
-          content: 'c', content_vi: 'cv',
+          slug: 'a', slugVi: 'b', title: 't', titleVi: 'tv',
+          content: 'c', contentVi: 'cv',
         } as any,
         'admin-1', '1.1.1.1',
       );
@@ -394,7 +394,7 @@ describe('WikiRevisionService.update', () => {
     expect(body.currentLatest).toBeDefined();
     expect(body.currentLatest.id).toBe('r-current');
     expect(body.currentLatest.content).toBe('OLD');
-    expect(body.currentLatest.content_vi).toBe('OLD_VI');
+    expect(body.currentLatest.contentVi).toBe('OLDVI');
   });
 
   it('proceeds when forceOverwrite is true even with mismatch', async () => {
@@ -404,9 +404,9 @@ describe('WikiRevisionService.update', () => {
       {
         expectedLatestRevisionId: 'r-stale',
         forceOverwrite: true,
-        slug: 'old-slug', slug_vi: 'old-vi',
-        title: 'Old', title_vi: 'OldVi',
-        content: 'NEW', content_vi: 'NEW_VI',
+        slug: 'old-slug', slugVi: 'old-vi',
+        title: 'Old', titleVi: 'OldVi',
+        content: 'NEW', contentVi: 'NEWVI',
       } as any,
       'admin-1', '1.1.1.1',
     );
@@ -423,25 +423,21 @@ describe('WikiRevisionService.update', () => {
       'p1',
       {
         expectedLatestRevisionId: 'r-current',
-        slug: 'new-slug', slug_vi: 'old-vi',
-        title: 'Old', title_vi: 'OldVi',
-        content: 'OLD', content_vi: 'OLD_VI',  // unchanged
+        slug: 'new-slug', slugVi: 'old-vi',
+        title: 'Old', titleVi: 'OldVi',
+        content: 'OLD', contentVi: 'OLDVI',  // unchanged
       } as any,
       'admin-1', '1.1.1.1',
     );
-    // revision created with full snapshot (content from dto, slug from dto)
+    // revision carries content snapshot only (entity has no slug/title columns)
     expect(em.create).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         content: 'OLD',
-        content_vi: 'OLD_VI',
-        slug: 'new-slug',
-        slug_vi: 'old-vi',
-        title: 'Old',
-        title_vi: 'OldVi',
+        contentVi: 'OLDVI',
       }),
     );
-    // page metadata changed → audit logged
+    // page slug changed → audit logged
     expect(audit.log).toHaveBeenCalled();
   });
 
@@ -451,9 +447,9 @@ describe('WikiRevisionService.update', () => {
       'p1',
       {
         expectedLatestRevisionId: 'r-current',
-        slug: 'old-slug', slug_vi: 'old-vi',
-        title: 'Old', title_vi: 'OldVi',
-        content: 'OLD', content_vi: 'OLD_VI',
+        slug: 'old-slug', slugVi: 'old-vi',
+        title: 'Old', titleVi: 'OldVi',
+        content: 'OLD', contentVi: 'OLDVI',
       } as any,
       'admin-1', '1.1.1.1',
     );
@@ -466,8 +462,8 @@ describe('WikiRevisionService.update', () => {
     em.findOne.mockResolvedValueOnce({
       ...fakePage('r-current'),
       latestRevisionId: {
-        id: 'r-current', content: '', content_vi: '',
-        summary: null, summary_vi: null,
+        id: 'r-current', content: '', contentVi: '',
+        summary: null, summaryVi: null,
       },
     });
     await expect(
@@ -475,9 +471,9 @@ describe('WikiRevisionService.update', () => {
         'p1',
         {
           expectedLatestRevisionId: 'r-current',
-          slug: 'old-slug', slug_vi: 'old-vi',
-          title: 'Old', title_vi: 'OldVi',
-          content: '', content_vi: '',
+          slug: 'old-slug', slugVi: 'old-vi',
+          title: 'Old', titleVi: 'OldVi',
+          content: '', contentVi: '',
           isPublished: true,
         } as any,
         'admin-1', '1.1.1.1',
@@ -495,17 +491,19 @@ describe('WikiRevisionService.update', () => {
         'p1',
         {
           expectedLatestRevisionId: 'r-current',
-          slug: 'old-slug', slug_vi: 'old-vi',
-          title: 'Old', title_vi: 'OldVi',
-          content: 'OLD', content_vi: 'OLD_VI',
+          slug: 'old-slug', slugVi: 'old-vi',
+          title: 'Old', titleVi: 'OldVi',
+          content: 'OLD', contentVi: 'OLDVI',
           metadataJson: { category: 'Item', tags: [], tags_vi: [], stats: {}, relatedPages: [] },
         } as any,
         'admin-1', '1.1.1.1',
       );
+      // revision carries only content/summary; metadata lives on the page
       expect(em.create).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          metadataJson: { category: 'Item' },
+          content: 'OLD',
+          contentVi: 'OLDVI',
         }),
       );
       expect(audit.log).toHaveBeenCalledWith(
@@ -524,9 +522,9 @@ describe('WikiRevisionService.update', () => {
           'p1',
           {
             expectedLatestRevisionId: 'r-current',
-            slug: 'old-slug', slug_vi: 'old-vi',
-            title: 'Old', title_vi: 'OldVi',
-            content: 'NEW', content_vi: 'NEW_VI',
+            slug: 'old-slug', slugVi: 'old-vi',
+            title: 'Old', titleVi: 'OldVi',
+            content: 'NEW', contentVi: 'NEWVI',
           } as any,
           'admin-1', '1.1.1.1',
         ),
@@ -538,8 +536,8 @@ describe('WikiRevisionService.update', () => {
     it('throws conflict when latestRevisionId is null but expectedLatestRevisionId is non-empty', async () => {
       em.findOne.mockResolvedValueOnce({
         id: 'p1',
-        slug: 'old-slug', slug_vi: 'old-vi',
-        title: 'Old', title_vi: 'OldVi',
+        slug: 'old-slug', slugVi: 'old-vi',
+        title: 'Old', titleVi: 'OldVi',
         metadataJson: null,
         isPublished: false,
         latestRevisionId: null,
@@ -549,9 +547,9 @@ describe('WikiRevisionService.update', () => {
           'p1',
           {
             expectedLatestRevisionId: 'r-anything',
-            slug: 'old-slug', slug_vi: 'old-vi',
-            title: 'Old', title_vi: 'OldVi',
-            content: 'NEW', content_vi: 'NEW_VI',
+            slug: 'old-slug', slugVi: 'old-vi',
+            title: 'Old', titleVi: 'OldVi',
+            content: 'NEW', contentVi: 'NEWVI',
           } as any,
           'admin-1', '1.1.1.1',
         ),
@@ -589,16 +587,16 @@ describe('WikiRevisionService.update writes full snapshot', () => {
     service = moduleRef.get(WikiRevisionService);
   });
 
-  it('persists title/slug/metadata/isPublished onto the new revision', async () => {
+  it('persists content/summary onto the new revision and slug/title/metadata/isPublished onto the page', async () => {
     const existingPage: any = {
       id: 'p1',
       slug: 'old-slug',
-      slug_vi: 'old-slug-vi',
+      slugVi: 'old-slug-vi',
       title: 'Old',
-      title_vi: 'Cũ',
+      titleVi: 'Cũ',
       metadataJson: null,
       isPublished: false,
-      latestRevisionId: { id: 'r1', content: '', content_vi: '', summary: null, summary_vi: null, createdAt: new Date() },
+      latestRevisionId: { id: 'r1', content: '', contentVi: '', summary: null, summaryVi: null, createdAt: new Date() },
     };
     const created: any[] = [];
     em.findOne = jest.fn().mockResolvedValue(existingPage);
@@ -612,13 +610,13 @@ describe('WikiRevisionService.update writes full snapshot', () => {
       'p1',
       {
         slug: 'new-slug',
-        slug_vi: 'old-slug-vi',
+        slugVi: 'old-slug-vi',
         title: 'New',
-        title_vi: 'Mới',
+        titleVi: 'Mới',
         content: 'body',
-        content_vi: 'thân',
+        contentVi: 'thân',
         summary: 's',
-        summary_vi: 't',
+        summaryVi: 't',
         metadataJson: { category: 'Boss' },
         isPublished: true,
         expectedLatestRevisionId: 'r1',
@@ -627,26 +625,32 @@ describe('WikiRevisionService.update writes full snapshot', () => {
       '127.0.0.1',
     );
 
+    // Revision snapshots content/summary only (entity has no title/slug/metadata columns).
     const newRev = created.find((c) => c.id === 'r2');
     expect(newRev).toBeDefined();
-    expect(newRev.title).toBe('New');
-    expect(newRev.title_vi).toBe('Mới');
-    expect(newRev.slug).toBe('new-slug');
-    expect(newRev.slug_vi).toBe('old-slug-vi');
-    expect(newRev.metadataJson).toEqual({ category: 'Boss' });
-    expect(newRev.isPublished).toBe(true);
+    expect(newRev.content).toBe('body');
+    expect(newRev.contentVi).toBe('thân');
+    expect(newRev.summary).toBe('s');
+    expect(newRev.summaryVi).toBe('t');
+    // Slug/title/metadata/isPublished live on the page.
+    expect(existingPage.slug).toBe('new-slug');
+    expect(existingPage.slugVi).toBe('old-slug-vi');
+    expect(existingPage.title).toBe('New');
+    expect(existingPage.titleVi).toBe('Mới');
+    expect(existingPage.metadataJson).toEqual({ category: 'Boss' });
+    expect(existingPage.isPublished).toBe(true);
   });
 
   it('translates Postgres unique violation on slug change to ConflictException', async () => {
     const existingPage: any = {
       id: 'p1',
       slug: 'old-slug',
-      slug_vi: 'old-slug-vi',
+      slugVi: 'old-slug-vi',
       title: 'Old',
-      title_vi: 'Cũ',
+      titleVi: 'Cũ',
       metadataJson: null,
       isPublished: false,
-      latestRevisionId: { id: 'r1', content: '', content_vi: '', summary: null, summary_vi: null, createdAt: new Date() },
+      latestRevisionId: { id: 'r1', content: '', contentVi: '', summary: null, summaryVi: null, createdAt: new Date() },
     };
     em.findOne = jest.fn().mockResolvedValue(existingPage);
     em.create = jest.fn((_e: unknown, data: any) => ({ ...data, id: 'r2' }));
@@ -660,11 +664,11 @@ describe('WikiRevisionService.update writes full snapshot', () => {
         'p1',
         {
           slug: 'taken-slug',
-          slug_vi: 'old-slug-vi',
+          slugVi: 'old-slug-vi',
           title: 'Old',
-          title_vi: 'Cũ',
+          titleVi: 'Cũ',
           content: '',
-          content_vi: '',
+          contentVi: '',
           metadataJson: null,
           expectedLatestRevisionId: 'r1',
         } as any,
@@ -752,7 +756,7 @@ describe('WikiRevisionService.rollback', () => {
       .mockResolvedValueOnce({
         id: 'r-target',
         pageId: { id: 'p1' },
-        content: 'OLD', content_vi: 'OLD_VI',
+        content: 'OLD', contentVi: 'OLDVI',
         createdAt: new Date('2026-04-01'),
       });
     await service.rollback(
@@ -780,7 +784,7 @@ describe('WikiRevisionService.rollback', () => {
         .mockResolvedValueOnce({
           id: 'r-oldest',
           pageId: { id: 'p1' },
-          content: '', content_vi: '',
+          content: '', contentVi: '',
           createdAt: new Date('2026-01-01'),
         });
       await service.rollback(
@@ -790,7 +794,7 @@ describe('WikiRevisionService.rollback', () => {
       );
       expect(em.create).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({ content: '', content_vi: '' }),
+        expect.objectContaining({ content: '', contentVi: '' }),
       );
     });
   });
@@ -813,7 +817,7 @@ describe('WikiRevisionService.rollback', () => {
   });
 });
 
-describe('WikiRevisionService.rollback applies full snapshot', () => {
+describe('WikiRevisionService.rollback content restore', () => {
   let service: WikiRevisionService;
   let em: any;
   let audit: { log: jest.Mock };
@@ -842,23 +846,19 @@ describe('WikiRevisionService.rollback applies full snapshot', () => {
     service = moduleRef.get(WikiRevisionService);
   });
 
-  it('restores title/slug/metadata/isPublished from target revision', async () => {
+  it('copies target content into a new revision and links it as latest', async () => {
     const page: any = {
       id: 'p1',
-      slug: 'now-slug', slug_vi: 'now-slug-vi',
-      title: 'Now', title_vi: 'Bây giờ',
+      slug: 'now-slug', slugVi: 'now-slug-vi',
+      title: 'Now', titleVi: 'Bây giờ',
       metadataJson: { category: 'Item' },
       isPublished: true,
       latestRevisionId: { id: 'r3' },
     };
     const target: any = {
       id: 'r2',
-      content: 'old body', content_vi: 'thân cũ',
-      summary: 'old', summary_vi: 'cũ',
-      title: 'Old', title_vi: 'Cũ',
-      slug: 'old-slug', slug_vi: 'old-slug-vi',
-      metadataJson: { category: 'Boss' },
-      isPublished: false,
+      content: 'old body', contentVi: 'thân cũ',
+      summary: 'old', summaryVi: 'cũ',
       createdAt: new Date('2026-05-01'),
     };
     const created: any[] = [];
@@ -879,37 +879,32 @@ describe('WikiRevisionService.rollback applies full snapshot', () => {
     );
 
     const restored = created.find((c) => c.id === 'r4');
-    expect(restored.title).toBe('Old');
-    expect(restored.title_vi).toBe('Cũ');
-    expect(restored.slug).toBe('old-slug');
-    expect(restored.slug_vi).toBe('old-slug-vi');
     expect(restored.content).toBe('old body');
-    expect(restored.metadataJson).toEqual({ category: 'Boss' });
-    expect(restored.isPublished).toBe(false);
-    expect(page.title).toBe('Old');
-    expect(page.title_vi).toBe('Cũ');
-    expect(page.slug).toBe('old-slug');
-    expect(page.slug_vi).toBe('old-slug-vi');
-    expect(page.metadataJson).toEqual({ category: 'Boss' });
-    expect(page.isPublished).toBe(false);
+    expect(restored.contentVi).toBe('thân cũ');
+    // Revision entity has no title/slug/metadata/isPublished columns — not copied.
+    expect(restored.title).toBeUndefined();
+    expect(restored.slug).toBeUndefined();
+    // Page identity fields are untouched by rollback (only content is restored).
+    expect(page.slug).toBe('now-slug');
+    expect(page.title).toBe('Now');
     expect(page.latestRevisionId).toBe(restored);
   });
 
   it('translates slug-conflict on rollback page flush to ConflictException', async () => {
     const page: any = {
       id: 'p1',
-      slug: 'now-slug', slug_vi: 'now-slug-vi',
-      title: 'Now', title_vi: 'Bây giờ',
+      slug: 'now-slug', slugVi: 'now-slug-vi',
+      title: 'Now', titleVi: 'Bây giờ',
       metadataJson: null,
       isPublished: true,
       latestRevisionId: { id: 'r3' },
     };
     const target: any = {
       id: 'r2',
-      content: 'old', content_vi: 'cũ',
-      summary: null, summary_vi: null,
-      title: 'Old', title_vi: 'Cũ',
-      slug: 'taken-slug', slug_vi: 'old-slug-vi',
+      content: 'old', contentVi: 'cũ',
+      summary: null, summaryVi: null,
+      title: 'Old', titleVi: 'Cũ',
+      slug: 'taken-slug', slugVi: 'old-slug-vi',
       metadataJson: null,
       isPublished: false,
       createdAt: new Date('2026-05-01'),
@@ -968,12 +963,12 @@ describe('WikiRevisionService.delete', () => {
 
   it('snapshots page + latest revision into audit oldValue', async () => {
     em.findOne.mockResolvedValueOnce({
-      id: 'p1', slug: 's', slug_vi: 'sv', title: 't', title_vi: 'tv',
+      id: 'p1', slug: 's', slugVi: 'sv', title: 't', titleVi: 'tv',
       metadataJson: null, isPublished: false,
       createdAt: new Date(), updatedAt: new Date(),
       latestRevisionId: {
-        id: 'r1', content: 'c', content_vi: 'cv',
-        summary: null, summary_vi: null,
+        id: 'r1', content: 'c', contentVi: 'cv',
+        summary: null, summaryVi: null,
         authorId: { id: 'u1' },
         createdAt: new Date(),
       },
@@ -994,7 +989,7 @@ describe('WikiRevisionService.delete', () => {
   describe('Boundary', () => {
     it('audit log includes latestRevision=null when page has no revisions', async () => {
       em.findOne.mockResolvedValueOnce({
-        id: 'p1', slug: 's', slug_vi: 'sv', title: 't', title_vi: 'tv',
+        id: 'p1', slug: 's', slugVi: 'sv', title: 't', titleVi: 'tv',
         metadataJson: null, isPublished: false,
         createdAt: new Date(), updatedAt: new Date(),
         latestRevisionId: null,
@@ -1039,15 +1034,15 @@ describe('WikiRevisionService.publish/unpublish', () => {
   it('rejects publish with empty content', async () => {
     em.findOne.mockResolvedValueOnce({
       id: 'p1', isPublished: false,
-      latestRevisionId: { id: 'r1', content: '', content_vi: '' },
+      latestRevisionId: { id: 'r1', content: '', contentVi: '' },
     });
     await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_empty');
   });
 
-  it('rejects publish with empty content_vi', async () => {
+  it('rejects publish with empty contentVi', async () => {
     em.findOne.mockResolvedValueOnce({
       id: 'p1', isPublished: false,
-      latestRevisionId: { id: 'r1', content: 'a', content_vi: '' },
+      latestRevisionId: { id: 'r1', content: 'a', contentVi: '' },
     });
     await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_empty');
   });
@@ -1055,7 +1050,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
   it('publishes when content non-empty', async () => {
     const page: any = {
       id: 'p1', isPublished: false,
-      latestRevisionId: { id: 'r1', content: 'a', content_vi: 'b' },
+      latestRevisionId: { id: 'r1', content: 'a', contentVi: 'b' },
     };
     em.findOne.mockResolvedValueOnce(page);
     await service.publish('p1', 'admin-1', '1.1.1.1');
@@ -1070,7 +1065,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
   it('unpublishes regardless of content', async () => {
     const page: any = {
       id: 'p1', isPublished: true,
-      latestRevisionId: { id: 'r1', content: '', content_vi: '' },
+      latestRevisionId: { id: 'r1', content: '', contentVi: '' },
     };
     em.findOne.mockResolvedValueOnce(page);
     await service.unpublish('p1', 'admin-1', '1.1.1.1');
@@ -1085,7 +1080,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
   it('publish on already-published page is a no-op (no flush, no audit)', async () => {
     const page: any = {
       id: 'p1', isPublished: true,
-      latestRevisionId: { id: 'r1', content: 'a', content_vi: 'b' },
+      latestRevisionId: { id: 'r1', content: 'a', contentVi: 'b' },
     };
     em.findOne.mockResolvedValueOnce(page);
     await service.publish('p1', 'admin-1', '1.1.1.1');
@@ -1116,17 +1111,17 @@ describe('WikiRevisionService.publish/unpublish', () => {
     it('publishes when content is a single space (truthy, non-empty)', async () => {
       const page: any = {
         id: 'p1', isPublished: false,
-        latestRevisionId: { id: 'r1', content: ' ', content_vi: ' ' },
+        latestRevisionId: { id: 'r1', content: ' ', contentVi: ' ' },
       };
       em.findOne.mockResolvedValueOnce(page);
       await service.publish('p1', 'admin-1', '1.1.1.1');
       expect(page.isPublished).toBe(true);
     });
 
-    it('publishes when both content and content_vi are minimum non-empty (single char)', async () => {
+    it('publishes when both content and contentVi are minimum non-empty (single char)', async () => {
       const page: any = {
         id: 'p1', isPublished: false,
-        latestRevisionId: { id: 'r1', content: 'a', content_vi: 'a' },
+        latestRevisionId: { id: 'r1', content: 'a', contentVi: 'a' },
       };
       em.findOne.mockResolvedValueOnce(page);
       await service.publish('p1', 'admin-1', '1.1.1.1');
@@ -1135,11 +1130,11 @@ describe('WikiRevisionService.publish/unpublish', () => {
   });
 
   describe('Abnormal', () => {
-    it('rejects publish when content is 1MB but content_vi is empty', async () => {
+    it('rejects publish when content is 1MB but contentVi is empty', async () => {
       const big = 'a'.repeat(1_000_000);
       em.findOne.mockResolvedValueOnce({
         id: 'p1', isPublished: false,
-        latestRevisionId: { id: 'r1', content: big, content_vi: '' },
+        latestRevisionId: { id: 'r1', content: big, contentVi: '' },
       });
       await expect(service.publish('p1', 'admin-1', '1.1.1.1')).rejects.toThrow('wiki.cannot_publish_empty');
     });

@@ -14,6 +14,7 @@ import { UpdateForumDto } from './dto/update-forums.dto';
 import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
 import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 import { GameProfile } from '../entities/GameProfile';
+import { previewText } from '../common/utils/strip-markdown';
 
 @Injectable()
 export class ForumService {
@@ -29,7 +30,7 @@ export class ForumService {
     order = 'desc',
     month,
     year,
-  }: any) {
+  }: any, user?: { userId?: string; role?: string }) {
     const offset = (page - 1) * limit;
     const clauses: string[] = [];
     const params: any[] = [];
@@ -58,6 +59,19 @@ export class ForumService {
       clauses.push(`t."createdAt" >= ? and t."createdAt" < ?`);
       params.push(startDate, endDate);
     }
+
+    // ARCHIVED visibility:
+  // - Admin sees all
+  // - Authenticated non-admin sees ARCHIVED only when they are the author
+  // - Unauthenticated users or others don't see ARCHIVED
+  if (!(user && user.role === 'ADMIN')) {
+    if (user && user.userId) {
+      clauses.push(`(t."status" <> 'ARCHIVED' OR t."authorId" = ?)`);
+      params.push(user.userId);
+    } else {
+      clauses.push(`t."status" <> 'ARCHIVED'`);
+    }
+  }
 
     const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
 
@@ -96,16 +110,30 @@ export class ForumService {
 
     const total = Number(countRes?.[0]?.cnt || 0);
 
+    const items = (rows || []).map((row: any) => ({
+      ...row,
+      content: previewText(row.content ?? '', 100),
+    }));
+
     return {
-      items: rows || [],
+      items,
       meta: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
 
   // Detail + increment viewCount + sanitize author data
-  async findOne(id: string) {
+  async findOne(id: string, user?: { userId?: string; role?: string }) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
+
+    // ARCHIVED visibility check before exposing or incrementing views
+  if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
+    const isAdmin = user && user.role === 'ADMIN';
+    const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
+    if (!isAdmin && !isAuthor) {
+      throw new NotFoundException('forum.thread_not_found');
+    }
+  }
 
     // defensively increment viewCount on the entity and flush
     thread.viewCount = (Number(thread.viewCount) || 0) + 1;
@@ -128,11 +156,12 @@ export class ForumService {
       badgeImageUrl,
     };
 
-    const sanitizedCategory = {
-      id: thread.categoryId?.id,
-      name: thread.categoryId?.name,
-      slug: thread.categoryId?.slug,
-    };
+    const sanitizedCategory = thread.categoryId
+    ? {
+      id: thread.categoryId.id,
+      name: thread.categoryId.name,
+      slug: thread.categoryId.slug
+    } : null;
 
     // Return sanitized thread
     return {

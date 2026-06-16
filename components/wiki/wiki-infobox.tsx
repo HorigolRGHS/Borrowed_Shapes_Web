@@ -166,7 +166,7 @@ export function WikiInfobox({
                     if (entry?.exists) {
                       const lbl =
                         locale === "vi"
-                          ? entry.title_vi || entry.title || slug
+                          ? entry.titleVi || entry.title || slug
                           : entry.title || slug;
                       return (
                         <li key={slug}>

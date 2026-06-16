@@ -26,7 +26,7 @@ export function EditableInfobox({ locale, excludeSlug }: Props) {
   const title =
     useWatch({
       control: form.control,
-      name: locale === "vi" ? "title_vi" : "title",
+      name: locale === "vi" ? "titleVi" : "title",
     }) ?? "";
 
   const dict = locale === "vi" ? viDict : enDict;

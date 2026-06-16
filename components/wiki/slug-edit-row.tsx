@@ -14,7 +14,7 @@ import { I18nFormMessage } from "@/components/ui/i18n-form-message";
 import { useI18n } from "@/lib/i18/i18n-context";
 
 interface Props {
-  name: "slug" | "slug_vi";
+  name: "slug" | "slugVi";
   prefix?: string;
   onTouchedChange?: (touched: boolean) => void;
 }

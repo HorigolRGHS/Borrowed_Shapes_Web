@@ -104,7 +104,7 @@ export class RelatedPageDto {
   title?: string;
 
   @ApiPropertyOptional()
-  title_vi?: string;
+  titleVi?: string;
 
   @ApiProperty()
   exists!: boolean;

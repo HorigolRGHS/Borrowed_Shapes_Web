@@ -35,11 +35,15 @@ export class ForumController {
   // List threads (public)
   @Public()
   @Get()
-  @ApiOperation({ summary: 'List forum threads list' })
+  @ApiOperation({
+    summary: 'List forum threads',
+    description: 'Thread `content` is a ~100-character plaintext preview (markdown stripped). Full content is available via GET /forum/:id.',
+  })
   async findAll(
     @Query() query: ListForumsDto,
+    @CurrentUser() user?: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.list(query);
+    const data = await this.forumService.list(query, user);
     return okResponse('forum.list_success', data, 'GET /forum');
   }
 
@@ -55,8 +59,9 @@ export class ForumController {
   })
   async findOne(
     @Param('id') id: string,
+    @CurrentUser() user?: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.findOne(id);
+    const data = await this.forumService.findOne(id, user);
     return okResponse('forum.detail_success', data, `GET /forum/${id}`);
   }
 

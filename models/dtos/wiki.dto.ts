@@ -8,7 +8,7 @@ export interface WikiAuthor {
 export interface WikiListItemRevision {
   id: string;
   summary: string | null;
-  summary_vi: string | null;
+  summaryVi: string | null;
   author: WikiAuthor | null;
   createdAt: string;
 }
@@ -16,9 +16,9 @@ export interface WikiListItemRevision {
 export interface WikiListItem {
   id: string;
   slug: string;
-  slug_vi: string;
+  slugVi: string;
   title: string;
-  title_vi: string;
+  titleVi: string;
   isPublished: boolean;
   updatedAt: string;
   latestRevision: WikiListItemRevision | null;
@@ -35,9 +35,9 @@ export interface WikiListResponse {
 export interface WikiDetailRevision {
   id: string;
   content: string;
-  content_vi: string;
+  contentVi: string;
   summary: string | null;
-  summary_vi: string | null;
+  summaryVi: string | null;
   author: WikiAuthor | null;
   createdAt: string;
 }
@@ -45,9 +45,9 @@ export interface WikiDetailRevision {
 export interface WikiDetail {
   id: string;
   slug: string;
-  slug_vi: string;
+  slugVi: string;
   title: string;
-  title_vi: string;
+  titleVi: string;
   metadataJson: WikiMetadata | null;
   isPublished: boolean;
   createdAt: string;
@@ -59,7 +59,7 @@ export interface WikiDetail {
 export interface WikiHistoryItem {
   id: string;
   summary: string | null;
-  summary_vi: string | null;
+  summaryVi: string | null;
   author: WikiAuthor | null;
   createdAt: string;
   isLatest: boolean;
@@ -88,13 +88,13 @@ export interface WikiRevisionDiffResponse {
 
 export interface WikiCreateRequest {
   slug: string;
-  slug_vi: string;
+  slugVi: string;
   title: string;
-  title_vi: string;
+  titleVi: string;
   content: string;
-  content_vi: string;
+  contentVi: string;
   summary?: string;
-  summary_vi?: string;
+  summaryVi?: string;
   metadataJson?: WikiMetadata | null;
   isPublished?: boolean;
 }

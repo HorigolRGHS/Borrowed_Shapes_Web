@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { WikiFormValue } from "@/models/dtos/wiki-form.dto";
 
 interface Props {
-  fieldName: "summary" | "summary_vi";
+  fieldName: "summary" | "summaryVi";
   placeholder: string;
 }
 

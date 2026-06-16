@@ -47,7 +47,7 @@ export class WikiCreateRequestDto {
   @IsOptional()
   @IsString()
   @Validate(WikiSlugConstraint)
-  slug_vi?: string;
+  slugVi?: string;
 
   @ApiPropertyOptional({ maxLength: WIKI_TITLE_MAX_LENGTH })
   @IsOptional()
@@ -59,7 +59,7 @@ export class WikiCreateRequestDto {
   @IsOptional()
   @IsString()
   @MaxLength(WIKI_TITLE_MAX_LENGTH)
-  title_vi?: string;
+  titleVi?: string;
 
   @ApiPropertyOptional({ maxLength: WIKI_CONTENT_MAX_LENGTH })
   @IsOptional()
@@ -71,7 +71,7 @@ export class WikiCreateRequestDto {
   @IsOptional()
   @IsString()
   @MaxLength(WIKI_CONTENT_MAX_LENGTH)
-  content_vi?: string;
+  contentVi?: string;
 
   @ApiPropertyOptional({ maxLength: WIKI_SUMMARY_MAX_LENGTH })
   @IsOptional()
@@ -83,7 +83,7 @@ export class WikiCreateRequestDto {
   @IsOptional()
   @IsString()
   @MaxLength(WIKI_SUMMARY_MAX_LENGTH)
-  summary_vi?: string;
+  summaryVi?: string;
 
   @ApiPropertyOptional({ type: WikiMetadataDto, nullable: true })
   @IsOptional()

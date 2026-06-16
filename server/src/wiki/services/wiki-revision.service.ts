@@ -21,7 +21,7 @@ import { compactMetadata, WikiMetadataDto } from '../dto/wiki-metadata.dto';
 function isWikiSlugUniqueError(err: any): boolean {
   if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
   const constraint = err?.constraint ?? err?.driverError?.constraint ?? '';
-  return constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slug_vi_key';
+  return constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slugVi_key';
 }
 
 function validateSlugOrThrow(slug: string): void {
@@ -52,41 +52,41 @@ export class WikiRevisionService {
     if (!isStub) {
       if (
         !dto.slug ||
-        !dto.slug_vi ||
+        !dto.slugVi ||
         !dto.title ||
-        !dto.title_vi ||
+        !dto.titleVi ||
         dto.content === undefined ||
-        dto.content_vi === undefined
+        dto.contentVi === undefined
       ) {
         throw new BadRequestException('wiki.invalid_input');
       }
       validateSlugOrThrow(dto.slug);
-      validateSlugOrThrow(dto.slug_vi);
+      validateSlugOrThrow(dto.slugVi);
     }
 
     const buildInput = () =>
       isStub
         ? {
             slug: `untitled-${randomSlugSuffix()}`,
-            slug_vi: `khong-ten-${randomSlugSuffix()}`,
+            slugVi: `khong-ten-${randomSlugSuffix()}`,
             title: '',
-            title_vi: '',
+            titleVi: '',
             content: '',
-            content_vi: '',
+            contentVi: '',
             summary: null,
-            summary_vi: null,
+            summaryVi: null,
             metadataJson: null as WikiMetadataDto | null,
             isPublished: false,
           }
         : {
             slug: dto.slug!,
-            slug_vi: dto.slug_vi!,
+            slugVi: dto.slugVi!,
             title: dto.title!,
-            title_vi: dto.title_vi!,
+            titleVi: dto.titleVi!,
             content: dto.content ?? '',
-            content_vi: dto.content_vi ?? '',
+            contentVi: dto.contentVi ?? '',
             summary: dto.summary ?? null,
-            summary_vi: dto.summary_vi ?? null,
+            summaryVi: dto.summaryVi ?? null,
             metadataJson: dto.metadataJson ?? null,
             isPublished: dto.isPublished ?? false,
           };
@@ -95,9 +95,9 @@ export class WikiRevisionService {
       this.em.transactional(async (em) => {
         const page = em.create(WikiPage, {
           slug: input.slug,
-          slug_vi: input.slug_vi,
+          slugVi: input.slugVi,
           title: input.title,
-          title_vi: input.title_vi,
+          titleVi: input.titleVi,
           metadataJson: compactMetadata(input.metadataJson),
           isPublished: input.isPublished,
         } as any);
@@ -112,22 +112,16 @@ export class WikiRevisionService {
           pageId: page,
           authorId: em.getReference(User, adminUserId),
           content: input.content,
-          content_vi: input.content_vi,
+          contentVi: input.contentVi,
           summary: input.summary,
-          summary_vi: input.summary_vi,
-          title: input.title,
-          title_vi: input.title_vi,
-          slug: input.slug,
-          slug_vi: input.slug_vi,
-          metadataJson: compactMetadata(input.metadataJson),
-          isPublished: input.isPublished,
+          summaryVi: input.summaryVi,
         } as any);
         await em.flush();
 
         page.latestRevisionId = revision;
         await em.flush();
 
-        return { pageId: page.id, revisionId: revision.id, slug: input.slug, slug_vi: input.slug_vi, title: input.title, title_vi: input.title_vi };
+        return { pageId: page.id, revisionId: revision.id, slug: input.slug, slugVi: input.slugVi, title: input.title, titleVi: input.titleVi };
       });
 
     const maxAttempts = isStub ? 3 : 1;
@@ -152,9 +146,9 @@ export class WikiRevisionService {
       entityId: result.pageId,
       newValue: {
         slug: result.slug,
-        slug_vi: result.slug_vi,
+        slugVi: result.slugVi,
         title: result.title,
-        title_vi: result.title_vi,
+        titleVi: result.titleVi,
         firstRevisionId: result.revisionId,
         stub: isStub,
       },
@@ -190,9 +184,9 @@ export class WikiRevisionService {
             ? {
                 id: latest.id,
                 content: latest.content,
-                content_vi: latest.content_vi,
+                contentVi: latest.contentVi,
                 summary: latest.summary ?? null,
-                summary_vi: latest.summary_vi ?? null,
+                summaryVi: latest.summaryVi ?? null,
                 createdAt: latest.createdAt,
               }
             : null,
@@ -200,20 +194,20 @@ export class WikiRevisionService {
       }
 
       if (dto.slug !== page.slug) validateSlugOrThrow(dto.slug);
-      if (dto.slug_vi !== page.slug_vi) validateSlugOrThrow(dto.slug_vi);
+      if (dto.slugVi !== page.slugVi) validateSlugOrThrow(dto.slugVi);
 
       const willPublish = dto.isPublished === true && page.isPublished === false;
       const effectiveContent = dto.content;
-      const effectiveContentVi = dto.content_vi;
+      const effectiveContentVi = dto.contentVi;
       if (willPublish && (effectiveContent === '' || effectiveContentVi === '')) {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
 
       const metadataDiff: string[] = [];
       if (dto.slug !== page.slug) metadataDiff.push('slug');
-      if (dto.slug_vi !== page.slug_vi) metadataDiff.push('slug_vi');
+      if (dto.slugVi !== page.slugVi) metadataDiff.push('slugVi');
       if (dto.title !== page.title) metadataDiff.push('title');
-      if (dto.title_vi !== page.title_vi) metadataDiff.push('title_vi');
+      if (dto.titleVi !== page.titleVi) metadataDiff.push('titleVi');
       if (
         JSON.stringify(compactMetadata(dto.metadataJson)) !==
         JSON.stringify(page.metadataJson ?? null)
@@ -226,9 +220,9 @@ export class WikiRevisionService {
       const contentChanged =
         !latest ||
         dto.content !== latest.content ||
-        dto.content_vi !== latest.content_vi ||
+        dto.contentVi !== latest.contentVi ||
         (dto.summary ?? null) !== (latest.summary ?? null) ||
-        (dto.summary_vi ?? null) !== (latest.summary_vi ?? null);
+        (dto.summaryVi ?? null) !== (latest.summaryVi ?? null);
 
       if (!contentChanged && metadataDiff.length === 0) {
         return {
@@ -243,9 +237,9 @@ export class WikiRevisionService {
       }
 
       page.slug = dto.slug;
-      page.slug_vi = dto.slug_vi;
+      page.slugVi = dto.slugVi;
       page.title = dto.title;
-      page.title_vi = dto.title_vi;
+      page.titleVi = dto.titleVi;
       page.metadataJson = compactMetadata(dto.metadataJson);
       if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
 
@@ -255,15 +249,9 @@ export class WikiRevisionService {
           pageId: page,
           authorId: em.getReference(User, adminUserId),
           content: dto.content,
-          content_vi: dto.content_vi,
+          contentVi: dto.contentVi,
           summary: dto.summary ?? null,
-          summary_vi: dto.summary_vi ?? null,
-          title: dto.title,
-          title_vi: dto.title_vi,
-          slug: dto.slug,
-          slug_vi: dto.slug_vi,
-          metadataJson: compactMetadata(dto.metadataJson),
-          isPublished: dto.isPublished ?? page.isPublished,
+          summaryVi: dto.summaryVi ?? null,
         } as any);
         try {
           await em.flush();
@@ -356,25 +344,13 @@ export class WikiRevisionService {
         pageId: page,
         authorId: em.getReference(User, adminUserId),
         content: target.content,
-        content_vi: target.content_vi,
+        contentVi: target.contentVi,
         summary: `Rollback to revision ${target.id} (created ${target.createdAt.toISOString()})`,
-        summary_vi: `Khôi phục về phiên bản ${target.id} (tạo ${target.createdAt.toISOString()})`,
-        title: target.title,
-        title_vi: target.title_vi,
-        slug: target.slug,
-        slug_vi: target.slug_vi,
-        metadataJson: target.metadataJson ?? null,
-        isPublished: target.isPublished,
+        summaryVi: `Khôi phục về phiên bản ${target.id} (tạo ${target.createdAt.toISOString()})`,
       } as any);
       await em.flush();
 
       page.latestRevisionId = newRevision;
-      page.slug = target.slug;
-      page.slug_vi = target.slug_vi;
-      page.title = target.title;
-      page.title_vi = target.title_vi;
-      page.metadataJson = target.metadataJson ?? null;
-      page.isPublished = target.isPublished;
       try {
         await em.flush();
       } catch (err) {
@@ -425,9 +401,9 @@ export class WikiRevisionService {
         page: {
           id: page.id,
           slug: page.slug,
-          slug_vi: page.slug_vi,
+          slugVi: page.slugVi,
           title: page.title,
-          title_vi: page.title_vi,
+          titleVi: page.titleVi,
           metadataJson: page.metadataJson ?? null,
           isPublished: page.isPublished,
           createdAt: page.createdAt,
@@ -437,9 +413,9 @@ export class WikiRevisionService {
           ? {
               id: latest.id,
               content: latest.content,
-              content_vi: latest.content_vi,
+              contentVi: latest.contentVi,
               summary: latest.summary ?? null,
-              summary_vi: latest.summary_vi ?? null,
+              summaryVi: latest.summaryVi ?? null,
               authorId: author?.id ?? null,
               createdAt: latest.createdAt,
             }
@@ -472,7 +448,7 @@ export class WikiRevisionService {
       const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
       // TODO: Phase 5 i18n — `wiki.cannot_publish_no_revision` is added to backend locales now
       if (!latest) throw new BadRequestException('wiki.cannot_publish_no_revision');
-      if (latest.content === '' || latest.content_vi === '') {
+      if (latest.content === '' || latest.contentVi === '') {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
       page.isPublished = true;

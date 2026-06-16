@@ -32,10 +32,10 @@ export async function generateMetadata({
       title: detail.title,
       description: detail.latestRevision.summary ?? undefined,
       alternates: {
-        canonical: `/wiki/${detail.matchedSlugLocale === "en" ? detail.slug : detail.slug_vi}`,
+        canonical: `/wiki/${detail.matchedSlugLocale === "en" ? detail.slug : detail.slugVi}`,
         languages: {
           en: `/wiki/${detail.slug}`,
-          vi: `/wiki/${detail.slug_vi}`,
+          vi: `/wiki/${detail.slugVi}`,
         },
       },
     };
@@ -60,9 +60,9 @@ export default async function WikiDetailPage({
   }
 
   const isVi = detail.matchedSlugLocale === "vi";
-  const title = isVi ? detail.title_vi : detail.title;
+  const title = isVi ? detail.titleVi : detail.title;
   const content = isVi
-    ? detail.latestRevision.content_vi
+    ? detail.latestRevision.contentVi
     : detail.latestRevision.content;
   const author = detail.latestRevision.author?.displayName ?? "—";
   const updated = new Date(detail.updatedAt);
@@ -118,7 +118,7 @@ export default async function WikiDetailPage({
             title={title}
             summary={
               isVi
-                ? detail.latestRevision.summary_vi
+                ? detail.latestRevision.summaryVi
                 : detail.latestRevision.summary
             }
             isDraft={!detail.isPublished}

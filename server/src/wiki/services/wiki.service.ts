@@ -21,6 +21,12 @@ import {
 import { RelatedPageDto } from '../dto/wiki-metadata.dto';
 import { diffLines } from 'diff';
 import { escapeLike } from '../../common/utils/sql-like';
+import type { Locale } from '../../common/utils/resolve-locale';
+import {
+  WikiPublicListItemDto,
+  WikiPublicListResponseDto,
+  WikiPublicDetailDto,
+} from '../dto/wiki-public.dto';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -33,8 +39,19 @@ export class WikiService {
 
   async list(
     query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
+    includeAll: true,
+    locale?: Locale,
+  ): Promise<WikiListResponseDto>;
+  async list(
+    query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
+    includeAll: false,
+    locale?: Locale,
+  ): Promise<WikiPublicListResponseDto>;
+  async list(
+    query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
     includeAll: boolean,
-  ): Promise<WikiListResponseDto> {
+    locale: Locale = 'en',
+  ): Promise<WikiListResponseDto | WikiPublicListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
     const offset = (page - 1) * limit;
@@ -46,7 +63,7 @@ export class WikiService {
       const pattern = `%${escapeLike(query.q.trim())}%`;
       (where as Record<string, unknown>).$or = [
         { title: { $ilike: pattern } },
-        { title_vi: { $ilike: pattern } },
+        { titleVi: { $ilike: pattern } },
       ];
     }
 
@@ -64,13 +81,23 @@ export class WikiService {
       },
     );
 
-    const items: WikiListItemDto[] = pages.map((p) => this.toListItem(p));
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    if (includeAll) {
+      return {
+        items: pages.map((p) => this.toListItem(p)),
+        total,
+        page,
+        limit,
+        totalPages,
+      };
+    }
     return {
-      items,
+      items: pages.map((p) => this.toPublicListItem(p, locale)),
       total,
       page,
       limit,
-      totalPages: Math.max(1, Math.ceil(total / limit)),
+      totalPages,
     };
   }
 
@@ -84,16 +111,16 @@ export class WikiService {
     return {
       id: p.id,
       slug: p.slug,
-      slug_vi: p.slug_vi,
+      slugVi: p.slugVi,
       title: p.title,
-      title_vi: p.title_vi,
+      titleVi: p.titleVi,
       isPublished: p.isPublished,
       updatedAt: p.updatedAt,
       latestRevision: rev
         ? {
             id: rev.id,
             summary: rev.summary ?? null,
-            summary_vi: rev.summary_vi ?? null,
+            summaryVi: rev.summaryVi ?? null,
             author: this.toAuthor(rev.authorId),
             createdAt: rev.createdAt,
           }
@@ -101,19 +128,38 @@ export class WikiService {
     };
   }
 
-  async getBySlug(slug: string): Promise<WikiDetailResponseDto> {
+  private toPublicListItem(p: WikiPage, locale: Locale): WikiPublicListItemDto {
+    const rev = p.latestRevisionId;
+    return {
+      id: p.id,
+      slug: locale === 'vi' ? p.slugVi : p.slug,
+      title: locale === 'vi' ? p.titleVi : p.title,
+      isPublished: p.isPublished,
+      updatedAt: p.updatedAt,
+      latestRevision: rev
+        ? {
+            id: rev.id,
+            summary: (locale === 'vi' ? rev.summaryVi : rev.summary) ?? null,
+            author: this.toAuthor(rev.authorId),
+            createdAt: rev.createdAt,
+          }
+        : null,
+    };
+  }
+
+  async getBySlug(slug: string, locale: Locale = 'en'): Promise<WikiPublicDetailDto> {
     if (!isValidSlug(slug)) {
       throw new BadRequestException('wiki.invalid_slug');
     }
     const page = await this.em.findOne(
       WikiPage,
-      { $or: [{ slug }, { slug_vi: slug }], isPublished: true },
+      { $or: [{ slug }, { slugVi: slug }], isPublished: true },
       { populate: ['latestRevisionId.authorId'] },
     );
     if (!page || !page.latestRevisionId) {
       throw new NotFoundException('wiki.not_found');
     }
-    return this.toDetail(page, slug);
+    return this.toPublicDetail(page, slug, locale);
   }
 
   async getByIdForAdmin(id: string): Promise<WikiDetailResponseDto> {
@@ -133,17 +179,17 @@ export class WikiService {
 
     const rows = await this.em.find(
       WikiPage,
-      { $or: [{ slug: { $in: slugs } }, { slug_vi: { $in: slugs } }] },
-      { fields: ['id', 'slug', 'slug_vi', 'title', 'title_vi'] },
+      { $or: [{ slug: { $in: slugs } }, { slugVi: { $in: slugs } }] },
+      { fields: ['id', 'slug', 'slugVi', 'title', 'titleVi'] },
     );
 
     return slugs.map((s) => {
-      const row = rows.find((r) => r.slug === s || r.slug_vi === s);
+      const row = rows.find((r) => r.slug === s || r.slugVi === s);
       if (!row) return { slug: s, exists: false };
       return {
         slug: s,
         title: row.title,
-        title_vi: row.title_vi,
+        titleVi: row.titleVi,
         exists: true,
       };
     });
@@ -154,24 +200,18 @@ export class WikiService {
     const detailRev: WikiDetailRevisionDto = {
       id: rev.id,
       content: rev.content,
-      content_vi: rev.content_vi,
+      contentVi: rev.contentVi,
       summary: rev.summary ?? null,
-      summary_vi: rev.summary_vi ?? null,
-      title: rev.title,
-      title_vi: rev.title_vi,
-      slug: rev.slug,
-      slug_vi: rev.slug_vi,
-      metadataJson: (rev.metadataJson as Record<string, unknown> | undefined) ?? null,
-      isPublished: rev.isPublished,
+      summaryVi: rev.summaryVi ?? null,
       author: this.toAuthor(rev.authorId),
       createdAt: rev.createdAt,
     };
     return {
       id: page.id,
       slug: page.slug,
-      slug_vi: page.slug_vi,
+      slugVi: page.slugVi,
       title: page.title,
-      title_vi: page.title_vi,
+      titleVi: page.titleVi,
       metadataJson: page.metadataJson ?? null,
       isPublished: page.isPublished,
       createdAt: page.createdAt,
@@ -181,31 +221,51 @@ export class WikiService {
     };
   }
 
+  private toPublicDetail(page: WikiPage, requestedSlug: string, locale: Locale): WikiPublicDetailDto {
+    const rev = page.latestRevisionId as WikiRevision;
+    return {
+      id: page.id,
+      slug: locale === 'vi' ? page.slugVi : page.slug,
+      title: locale === 'vi' ? page.titleVi : page.title,
+      metadataJson: (page.metadataJson as Record<string, unknown> | undefined) ?? null,
+      isPublished: page.isPublished,
+      createdAt: page.createdAt,
+      updatedAt: page.updatedAt,
+      latestRevision: {
+        id: rev.id,
+        content: locale === 'vi' ? rev.contentVi : rev.content,
+        summary: (locale === 'vi' ? rev.summaryVi : rev.summary) ?? null,
+        author: this.toAuthor(rev.authorId),
+        createdAt: rev.createdAt,
+      },
+      matchedSlugLocale: requestedSlug === page.slug ? 'en' : 'vi',
+    };
+  }
+
   async search(
     query: { q: string; page?: number; limit?: number },
     includeAll: boolean,
-  ): Promise<WikiListResponseDto> {
+    locale: Locale = 'en',
+  ): Promise<WikiPublicListResponseDto> {
     if (query.q.length > WIKI_SEARCH_MAX_LENGTH) {
       throw new BadRequestException('wiki.invalid_input');
     }
-    const trimmed = query.q.trim();
-    if (trimmed.length === 0) {
-      return this.list({ page: query.page, limit: query.limit }, includeAll);
-    }
-
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
     const offset = (page - 1) * limit;
 
-    const pattern = `%${escapeLike(trimmed)}%`;
+    const trimmed = query.q.trim();
 
     const where: FilterQuery<WikiPage> = {
-      $or: [
-        { title: { $ilike: pattern } },
-        { title_vi: { $ilike: pattern } },
-      ],
       ...(includeAll ? {} : { isPublished: true }),
     };
+    if (trimmed.length > 0) {
+      const pattern = `%${escapeLike(trimmed)}%`;
+      (where as Record<string, unknown>).$or = [
+        { title: { $ilike: pattern } },
+        { titleVi: { $ilike: pattern } },
+      ];
+    }
 
     // Note: relevance ordering via SQL CASE was attempted but MikroORM 6's
     // orderBy key-based API does not safely accept a raw CASE expression
@@ -224,7 +284,7 @@ export class WikiService {
     );
 
     return {
-      items: pages.map((p) => this.toListItem(p)),
+      items: pages.map((p) => this.toPublicListItem(p, locale)),
       total,
       page,
       limit,
@@ -260,14 +320,8 @@ export class WikiService {
 
     const items: WikiHistoryItemDto[] = revisions.map((r) => ({
       id: r.id,
-      title: r.title,
-      title_vi: r.title_vi,
-      slug: r.slug,
-      slug_vi: r.slug_vi,
-      metadataJson: (r.metadataJson as Record<string, unknown> | undefined) ?? null,
-      isPublished: r.isPublished,
       summary: r.summary ?? null,
-      summary_vi: r.summary_vi ?? null,
+      summaryVi: r.summaryVi ?? null,
       author: this.toAuthor(r.authorId),
       createdAt: r.createdAt,
       isLatest: r.id === latestId,
@@ -322,7 +376,7 @@ export class WikiService {
       md.replace(/!\[[^\]]*\]\(data:[^)]+\)/g, '![image](data-url-stripped)');
 
     const enChunks = this.toDiffChunks(diffLines(stripImageData(previous.content), stripImageData(current.content)));
-    const viChunks = this.toDiffChunks(diffLines(stripImageData(previous.content_vi), stripImageData(current.content_vi)));
+    const viChunks = this.toDiffChunks(diffLines(stripImageData(previous.contentVi), stripImageData(current.contentVi)));
 
     return {
       current: this.toDetailRevision(current),
@@ -336,15 +390,9 @@ export class WikiService {
     return {
       id: rev.id,
       content: rev.content,
-      content_vi: rev.content_vi,
+      contentVi: rev.contentVi,
       summary: rev.summary ?? null,
-      summary_vi: rev.summary_vi ?? null,
-      title: rev.title,
-      title_vi: rev.title_vi,
-      slug: rev.slug,
-      slug_vi: rev.slug_vi,
-      metadataJson: (rev.metadataJson as Record<string, unknown> | undefined) ?? null,
-      isPublished: rev.isPublished,
+      summaryVi: rev.summaryVi ?? null,
       author: this.toAuthor(rev.authorId),
       createdAt: rev.createdAt,
     };

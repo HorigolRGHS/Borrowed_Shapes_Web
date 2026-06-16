@@ -108,6 +108,25 @@ html {
   .ck.ck-editor__editable_inline.ck-placeholder::before {
     color: #666 !important;
   }
+
+  /* Wiki editor (.wiki-ck-editor) phai theo theme app, KHONG bi ep trang/den
+     nhu override mac dinh o tren (vốn danh cho editor achievements). Rule nay
+     nam cung @layer components va specific hon nen thang cho rieng wiki. */
+  .wiki-ck-editor .ck-editor__editable,
+  .wiki-ck-editor .ck.ck-editor__editable_inline {
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .wiki-ck-editor .ck-editor__editable p,
+  .wiki-ck-editor .ck-editor__editable span,
+  .wiki-ck-editor .ck-editor__editable li {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .wiki-ck-editor .ck.ck-editor__editable_inline.ck-placeholder::before {
+    color: hsl(var(--muted-foreground)) !important;
+  }
 }
 
 /* =========================

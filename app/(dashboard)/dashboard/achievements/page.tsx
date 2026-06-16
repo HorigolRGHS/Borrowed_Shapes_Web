@@ -7,8 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle, ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { AchievementDescriptionEditor } from "@/components/achievements/achievement-description-editor";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -810,36 +809,10 @@ export default function AchievementsPage() {
 
             <div>
               <Label className="mb-2 block text-slate-300">{t('achievements.description_label')}</Label>
-              <CKEditor
-                editor={ClassicEditor as any}
+              <AchievementDescriptionEditor
                 data={formData.description}
-                onChange={(event: any, editor: any) => {
-                  const data = editor.getData();
-                  handleFieldChange("description", data);
-                }}
+                onChange={(data) => handleFieldChange("description", data)}
                 onBlur={() => handleFieldBlur("description")}
-                config={{
-                  toolbar: [
-                    'heading',
-                    '|',
-                    'bold',
-                    'italic',
-                    'underline',
-                    'strikethrough',
-                    'link',
-                    'blockQuote',
-                    'insertTable',
-                    'bulletedList',
-                    'numberedList',
-                    '|',
-                    'outdent',
-                    'indent',
-                    '|',
-                    'undo',
-                    'redo',
-                    'removeFormat'
-                  ]
-                }}
               />
               {formTouched.description && formErrors.description && (
                 <p className="mt-1.5 text-xs text-rose-400">{formErrors.description}</p>

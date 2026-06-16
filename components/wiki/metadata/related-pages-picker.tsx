@@ -59,8 +59,8 @@ export function RelatedPagesPicker({
         if (cancelled) return;
         const items: Result[] = resp.items
           .map((it) => ({
-            slug: locale === "vi" ? it.slug_vi : it.slug,
-            title: locale === "vi" ? it.title_vi : it.title,
+            slug: locale === "vi" ? it.slugVi : it.slug,
+            title: locale === "vi" ? it.titleVi : it.title,
           }))
           .filter((r) => r.slug !== excludeSlug && !value.includes(r.slug));
         setResults(items);

@@ -55,7 +55,7 @@ export default function AdminWikiEditPage({
 
   if (loadError) {
     return (
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto">
         <Alert variant="destructive">
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
@@ -64,7 +64,7 @@ export default function AdminWikiEditPage({
   }
   if (!detail) {
     return (
-      <main className="container mx-auto px-4 py-8 space-y-4">
+      <main className="container mx-auto space-y-4">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-4 w-1/4" />
         <Skeleton className="h-96 w-full" />
@@ -74,13 +74,13 @@ export default function AdminWikiEditPage({
 
   const initial: WikiFormValue = {
     title: detail.title,
-    title_vi: detail.title_vi,
+    titleVi: detail.titleVi,
     slug: detail.slug,
-    slug_vi: detail.slug_vi,
+    slugVi: detail.slugVi,
     summary: detail.latestRevision.summary ?? "",
-    summary_vi: detail.latestRevision.summary_vi ?? "",
+    summaryVi: detail.latestRevision.summaryVi ?? "",
     content: detail.latestRevision.content,
-    content_vi: detail.latestRevision.content_vi,
+    contentVi: detail.latestRevision.contentVi,
     isPublished: detail.isPublished,
     metadata: detail.metadataJson ?? emptyWikiMetadata,
   };
@@ -98,13 +98,13 @@ export default function AdminWikiEditPage({
     try {
       const updated = await updateWiki(id, {
         slug: value.slug,
-        slug_vi: value.slug_vi,
+        slugVi: value.slugVi,
         title: value.title,
-        title_vi: value.title_vi,
+        titleVi: value.titleVi,
         content: value.content,
-        content_vi: value.content_vi,
+        contentVi: value.contentVi,
         summary: value.summary || undefined,
-        summary_vi: value.summary_vi || undefined,
+        summaryVi: value.summaryVi || undefined,
         metadataJson: value.metadata,
         isPublished: mode === "publish",
         expectedLatestRevisionId: detail.latestRevision.id,
@@ -137,7 +137,7 @@ export default function AdminWikiEditPage({
   };
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto py-8">
       <nav className="text-sm text-muted-foreground mb-6 flex items-center justify-between gap-3">
         <div className="min-w-0 truncate">
           <Link href="/dashboard/wiki" className="hover:text-foreground">

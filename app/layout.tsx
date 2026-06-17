@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Orbitron, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/providers/toast";
 import { I18nProvider } from "@/lib/i18/i18n-context";
@@ -10,6 +10,8 @@ import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" });
+const rajdhani = Rajdhani({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-rajdhani" });
 
 export const metadata: Metadata = {
   title: "Borrowed Shapes Wiki",
@@ -29,6 +31,8 @@ export default async function RootLayout({
       <body
         className={cn(
           inter.variable,
+          orbitron.variable,
+          rajdhani.variable,
           "min-h-screen bg-background text-foreground font-sans antialiased",
         )}
       >

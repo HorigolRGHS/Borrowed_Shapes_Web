@@ -24,7 +24,7 @@ function VerifyEmailContent() {
       if (!token) {
         if (!active) return;
         setState("error");
-        setMessage("Missing verification token.");
+        setMessage(t("auth.missing_token"));
         return;
       }
       try {
@@ -36,15 +36,15 @@ function VerifyEmailContent() {
         if (!active) return;
         if (res.ok) {
           setState("success");
-          setMessage(data?.message ?? "Email verified successfully. You can now login.");
+          setMessage(data?.message ?? t("auth.email_verified_successfully"));
         } else {
           setState("error");
-          setMessage(data?.message ?? "Verification failed or link expired.");
+          setMessage(data?.message ?? t("auth.verification_failed_expired"));
         }
       } catch {
         if (!active) return;
         setState("error");
-        setMessage("Cannot connect to server. Please try again.");
+        setMessage(t("auth.cannot_connect_server"));
       }
     };
     run();
@@ -64,25 +64,25 @@ function VerifyEmailContent() {
   };
 
   return (
-    <AuthCard title="Email Verification">
+    <AuthCard title={t("auth.email_verification_title")}>
       {state === "loading" && (
         <Alert>
           <Loader2 className="h-4 w-4 animate-spin" />
-          <AlertTitle>Verifying...</AlertTitle>
-          <AlertDescription>Please wait...</AlertDescription>
+          <AlertTitle>{t("auth.verifying")}</AlertTitle>
+          <AlertDescription>{t("auth.please_wait")}</AlertDescription>
         </Alert>
       )}
       {state === "success" && (
         <Alert>
           <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Verified</AlertTitle>
+          <AlertTitle>{t("auth.verified")}</AlertTitle>
           <AlertDescription>{getDisplayMessage(message)}</AlertDescription>
         </Alert>
       )}
       {state === "error" && (
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
-          <AlertTitle>Verification failed</AlertTitle>
+          <AlertTitle>{t("auth.verification_failed")}</AlertTitle>
           <AlertDescription>{getDisplayMessage(message)}</AlertDescription>
         </Alert>
       )}
@@ -93,7 +93,7 @@ function VerifyEmailContent() {
           </Button>
           {state === "error" && (
             <Button asChild variant="outline">
-              <Link href="/auth/reset-password">Open Reset Page</Link>
+              <Link href="/auth/reset-password">{t("auth.open_reset_page")}</Link>
             </Button>
           )}
         </div>
@@ -103,11 +103,12 @@ function VerifyEmailContent() {
 }
 
 export default function VerifyEmailPage() {
+  const { t } = useI18n();
   return (
     <Suspense
       fallback={
-        <AuthCard title="Email Verification">
-          <p className="text-muted-foreground">Loading...</p>
+        <AuthCard title={t("auth.email_verification_title")}>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </AuthCard>
       }
     >

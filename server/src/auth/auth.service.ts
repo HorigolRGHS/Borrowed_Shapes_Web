@@ -367,13 +367,17 @@ export class AuthService {
       const verifyLink = `${appUrl}/auth/verify-email?token=${verifyToken}`;
       const name = result.user.displayName ? String(result.user.displayName) : email.split('@')[0];
       const verifyHtml = `
-      <h2>Verify Your Email - Borrowed Shapes</h2>
-      <p>Hello ${name},</p>
-      <p>Thank you for registering. Please verify your email to activate your account:</p>
-      <p><a href="${verifyLink}" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
-      <p>Or copy this link: ${verifyLink}</p>
-      <p>This link expires in 24 hours.</p>
-      <p>If you didn't create this account, please ignore this email.</p>
+      <div style="font-family: 'Arial', sans-serif; background-color: #0a0a15; color: #e2e8f0; padding: 40px 20px; border: 1px solid #1e1e3a; border-radius: 12px; max-width: 500px; margin: 0 auto; text-align: center;">
+        <h2 style="color: #22d3ee; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Verify Your Email</h2>
+        <p style="font-size: 16px; margin-bottom: 20px;">Hello <span style="color: #fbbf24; font-weight: bold;">${name}</span>,</p>
+        <p style="font-size: 14px; margin-bottom: 30px; color: #94a3b8; line-height: 1.5;">Thank you for registering to <strong>Borrowed Shapes</strong>. Please verify your email to activate your account:</p>
+        <p>
+          <a href="${verifyLink}" style="display: inline-block; padding: 14px 28px; background: linear-gradient(90deg, #7c3aed, #06b6d4); background-color: #7c3aed; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">VERIFY EMAIL</a>
+        </p>
+        <p style="font-size: 12px; color: #64748b; margin-top: 30px; line-height: 1.5;">Or copy this link:<br/><a href="${verifyLink}" style="color: #22d3ee; word-break: break-all;">${verifyLink}</a></p>
+        <p style="font-size: 12px; color: #64748b;">This link expires in 24 hours.</p>
+        <p style="font-size: 12px; color: #64748b; margin-top: 20px;">If you didn't create this account, please safely ignore this email.</p>
+      </div>
     `;
 
       await this.email.sendMail(email, '[Borrowed Shapes] Verify Your Email', verifyHtml);
@@ -764,13 +768,17 @@ export class AuthService {
     // Send OTP email (compose template here; EmailService only sends)
     const name = user.displayName ? String(user.displayName) : String(user.email).split('@')[0];
     const otpHtml = `
-      <h2>Forgot Password OTP - Borrowed Shapes</h2>
-      <p>Hello ${name},</p>
-      <p>We received a request to reset your password.</p>
-      <p>Your OTP code is:</p>
-      <p style="font-size: 28px; letter-spacing: 6px; font-weight: 700; color: #0f172a;">${otp}</p>
-      <p>This OTP expires in ${Math.ceil(otpTtl / 60)} minutes.</p>
-      <p>If you didn't request this, please ignore this email.</p>
+      <div style="font-family: 'Arial', sans-serif; background-color: #0a0a15; color: #e2e8f0; padding: 40px 20px; border: 1px solid #1e1e3a; border-radius: 12px; max-width: 500px; margin: 0 auto; text-align: center;">
+        <h2 style="color: #22d3ee; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Password Reset Request</h2>
+        <p style="font-size: 16px; margin-bottom: 20px;">Hello <span style="color: #fbbf24; font-weight: bold;">${name}</span>,</p>
+        <p style="font-size: 14px; margin-bottom: 10px; color: #94a3b8; line-height: 1.5;">We received a request to reset your password for <strong>Borrowed Shapes</strong>.</p>
+        <p style="font-size: 14px; margin-bottom: 30px; color: #94a3b8;">Your Verification Code is:</p>
+        <div style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #7c3aed; padding: 20px; border-radius: 8px; margin: 0 auto; width: fit-content; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);">
+          <p style="font-size: 32px; letter-spacing: 8px; font-weight: bold; color: #fbbf24; margin: 0; padding-left: 8px;">${otp}</p>
+        </div>
+        <p style="font-size: 12px; color: #64748b; margin-top: 30px;">This code expires in ${Math.ceil(otpTtl / 60)} minutes.</p>
+        <p style="font-size: 12px; color: #64748b; margin-top: 20px;">If you didn't request this, please safely ignore this email.</p>
+      </div>
     `;
 
     await this.email.sendMail(String(user.email), '[Borrowed Shapes] Forgot Password OTP', otpHtml);

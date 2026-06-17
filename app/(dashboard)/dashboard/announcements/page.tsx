@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Search, Pencil, Trash2, AlertTriangle, ChevronDown, Eye } from "lucide-react";
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { AnnouncementContentEditor } from '@/components/announcements/announcement-content-editor';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -646,7 +645,7 @@ export default function AnnouncementsPage() {
                             {/* Title + Author */}
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="font-medium text-white truncate max-w-[280px]">{a.title}</span>
+                                <span className="font-medium text-white truncate max-w-[280px]">{locale === "vi" ? a.titleVi : a.title}</span>
                                 <span className="text-xs text-slate-500">
                                   {t("announcements.by_author")} {a.author?.displayName || "Unknown"}
                                 </span>
@@ -906,22 +905,10 @@ export default function AnnouncementsPage() {
             {/* Content EN */}
             <div>
               <Label className="mb-2 block text-slate-300">{t("announcements.form_content_en")}</Label>
-              <CKEditor
-                editor={ClassicEditor as any}
+              <AnnouncementContentEditor
                 data={formData.content}
-                onChange={(_event: any, editor: any) => {
-                  handleFieldChange("content", editor.getData());
-                }}
+                onChange={(html) => handleFieldChange("content", html)}
                 onBlur={() => handleFieldBlur("content")}
-                config={{
-                  toolbar: [
-                    'heading', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', 'link', 'blockQuote',
-                    'insertTable', 'bulletedList', 'numberedList', '|',
-                    'outdent', 'indent', '|',
-                    'undo', 'redo', 'removeFormat'
-                  ]
-                }}
               />
               {formTouched.content && formErrors.content && (
                 <p className="mt-1.5 text-xs text-rose-400">{formErrors.content}</p>
@@ -931,22 +918,10 @@ export default function AnnouncementsPage() {
             {/* Content VI */}
             <div>
               <Label className="mb-2 block text-slate-300">{t("announcements.form_content_vi")}</Label>
-              <CKEditor
-                editor={ClassicEditor as any}
+              <AnnouncementContentEditor
                 data={formData.contentVi}
-                onChange={(_event: any, editor: any) => {
-                  handleFieldChange("contentVi", editor.getData());
-                }}
+                onChange={(html) => handleFieldChange("contentVi", html)}
                 onBlur={() => handleFieldBlur("contentVi")}
-                config={{
-                  toolbar: [
-                    'heading', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', 'link', 'blockQuote',
-                    'insertTable', 'bulletedList', 'numberedList', '|',
-                    'outdent', 'indent', '|',
-                    'undo', 'redo', 'removeFormat'
-                  ]
-                }}
               />
               {formTouched.contentVi && formErrors.contentVi && (
                 <p className="mt-1.5 text-xs text-rose-400">{formErrors.contentVi}</p>

@@ -39,7 +39,7 @@ describe('AnnouncementService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('findAllPaginated', () => {
+  describe('findAllPublic', () => {
     const mockAuthor = { id: 'u1', displayName: 'Admin' } as User;
     const mockAnnouncement = {
       id: 'a1',
@@ -47,6 +47,8 @@ describe('AnnouncementService', () => {
       slugVi: 'vi-test-slug',
       title: 'Title',
       titleVi: 'Title VI',
+      summary: 'Summary EN',
+      summaryVi: 'Summary VI',
       content: 'Content',
       contentVi: 'Content VI',
       type: AnnouncementType.NEWS,
@@ -58,29 +60,45 @@ describe('AnnouncementService', () => {
       authorId: mockAuthor,
     } as unknown as Announcement;
 
-    it('should retrieve list for public view containing only published items (Normal)', async () => {
+    it('should return public list with English fields when lang is en (Normal)', async () => {
       jest.spyOn(em, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
 
-      const result = await service.findAllPaginated({ page: 1, limit: 10 }, false);
+      const result = await service.findAllPublic({ page: 1, limit: 10 }, 'en');
 
       expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
       expect(result.items[0].slug).toBe('test-slug');
+      expect(result.items[0].title).toBe('Title');
+      expect(result.items[0].summary).toBe('Summary EN');
       expect(result.items[0].author?.id).toBe('u1');
+      // Public list should NOT have content
+      expect((result.items[0] as any).content).toBeUndefined();
+      // Public list should NOT have id
+      expect((result.items[0] as any).id).toBeUndefined();
       expect(em.findAndCount).toHaveBeenCalledWith(
         Announcement,
         expect.objectContaining({
           isPublished: true,
-          publishedAt: expect.any(Object), // $lte check
+          publishedAt: expect.any(Object),
         }),
         expect.any(Object),
       );
     });
 
+    it('should return public list with Vietnamese fields when lang is vi (Normal)', async () => {
+      jest.spyOn(em, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+
+      const result = await service.findAllPublic({ page: 1, limit: 10 }, 'vi');
+
+      expect(result.items[0].slug).toBe('vi-test-slug');
+      expect(result.items[0].title).toBe('Title VI');
+      expect(result.items[0].summary).toBe('Summary VI');
+    });
+
     it('should clamp invalid negative pagination queries to valid bounds (Boundary)', async () => {
       jest.spyOn(em, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
 
-      const result = await service.findAllPaginated({ page: -5, limit: -10 }, false);
+      const result = await service.findAllPublic({ page: -5, limit: -10 }, 'en');
 
       expect(result.page).toBe(1);
       expect(result.limit).toBe(1); // negative limit clamped to min=1
@@ -97,7 +115,7 @@ describe('AnnouncementService', () => {
     it('should clamp extremely large limit query to maximum allowed limit (Boundary)', async () => {
       jest.spyOn(em, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
 
-      const result = await service.findAllPaginated({ limit: 100 }, false);
+      const result = await service.findAllPublic({ limit: 100 }, 'en');
 
       expect(result.limit).toBe(50); // limit 100 clamped to max=50
       expect(em.findAndCount).toHaveBeenCalledWith(
@@ -108,23 +126,9 @@ describe('AnnouncementService', () => {
         }),
       );
     });
-
-    it('should allow admin to query non-published/scheduled items (Normal)', async () => {
-      jest.spyOn(em, 'findAndCount').mockResolvedValue([[], 0]);
-
-      await service.findAllPaginated({ page: 1, limit: 10 }, true);
-
-      expect(em.findAndCount).toHaveBeenCalledWith(
-        Announcement,
-        expect.not.objectContaining({
-          isPublished: true,
-        }),
-        expect.any(Object),
-      );
-    });
   });
 
-  describe('findOne', () => {
+  describe('findAllAdmin', () => {
     const mockAuthor = { id: 'u1', displayName: 'Admin' } as User;
     const mockAnnouncement = {
       id: 'a1',
@@ -132,6 +136,8 @@ describe('AnnouncementService', () => {
       slugVi: 'vi-test-slug',
       title: 'Title',
       titleVi: 'Title VI',
+      summary: 'Summary EN',
+      summaryVi: 'Summary VI',
       content: 'Content',
       contentVi: 'Content VI',
       type: AnnouncementType.NEWS,
@@ -143,29 +149,94 @@ describe('AnnouncementService', () => {
       authorId: mockAuthor,
     } as unknown as Announcement;
 
-    it('should return announcement detail for public view if published (Normal)', async () => {
+    it('should return admin list with both languages and no content (Normal)', async () => {
+      jest.spyOn(em, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+
+      const result = await service.findAllAdmin({ page: 1, limit: 10 });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].id).toBe('a1');
+      expect(result.items[0].title).toBe('Title');
+      expect(result.items[0].titleVi).toBe('Title VI');
+      expect(result.items[0].slug).toBe('test-slug');
+      expect(result.items[0].slugVi).toBe('vi-test-slug');
+      // Admin list should NOT have content
+      expect((result.items[0] as any).content).toBeUndefined();
+      expect((result.items[0] as any).contentVi).toBeUndefined();
+    });
+
+    it('should allow admin to query non-published/scheduled items (Normal)', async () => {
+      jest.spyOn(em, 'findAndCount').mockResolvedValue([[], 0]);
+
+      await service.findAllAdmin({ page: 1, limit: 10 });
+
+      expect(em.findAndCount).toHaveBeenCalledWith(
+        Announcement,
+        expect.not.objectContaining({
+          isPublished: true,
+        }),
+        expect.any(Object),
+      );
+    });
+  });
+
+  describe('findOnePublic', () => {
+    const mockAuthor = { id: 'u1', displayName: 'Admin' } as User;
+    const mockAnnouncement = {
+      id: 'a1',
+      slug: 'test-slug',
+      slugVi: 'vi-test-slug',
+      title: 'Title',
+      titleVi: 'Title VI',
+      summary: 'Summary EN',
+      summaryVi: 'Summary VI',
+      content: 'Content',
+      contentVi: 'Content VI',
+      type: AnnouncementType.NEWS,
+      isPinned: false,
+      isPublished: true,
+      publishedAt: new Date(Date.now() - 10000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      authorId: mockAuthor,
+    } as unknown as Announcement;
+
+    it('should return public detail with English content by slug (Normal)', async () => {
       jest.spyOn(em, 'findOne').mockResolvedValue(mockAnnouncement);
 
-      const result = await service.findOne('test-slug', false);
+      const result = await service.findOnePublic('test-slug', 'en');
 
       expect(result.slug).toBe('test-slug');
+      expect(result.title).toBe('Title');
+      expect(result.content).toBe('Content');
+      // Public detail should NOT have id
+      expect((result as any).id).toBeUndefined();
       expect(em.findOne).toHaveBeenCalledWith(
         Announcement,
         expect.objectContaining({
-          $or: expect.arrayContaining([
-            { id: 'test-slug' },
+          $or: [
             { slug: 'test-slug' },
             { slugVi: 'test-slug' },
-          ]),
+          ],
         }),
         expect.any(Object),
       );
     });
 
+    it('should return public detail with Vietnamese content when lang is vi (Normal)', async () => {
+      jest.spyOn(em, 'findOne').mockResolvedValue(mockAnnouncement);
+
+      const result = await service.findOnePublic('vi-test-slug', 'vi');
+
+      expect(result.slug).toBe('vi-test-slug');
+      expect(result.title).toBe('Title VI');
+      expect(result.content).toBe('Content VI');
+    });
+
     it('should throw NotFoundException if announcement does not exist (Abnormal)', async () => {
       jest.spyOn(em, 'findOne').mockResolvedValue(null);
 
-      await expect(service.findOne('missing-slug', false)).rejects.toThrow(
+      await expect(service.findOnePublic('missing-slug', 'en')).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -174,7 +245,7 @@ describe('AnnouncementService', () => {
       const draftAnnouncement = { ...mockAnnouncement, isPublished: false } as unknown as Announcement;
       jest.spyOn(em, 'findOne').mockResolvedValue(draftAnnouncement);
 
-      await expect(service.findOne('test-slug', false)).rejects.toThrow(
+      await expect(service.findOnePublic('test-slug', 'en')).rejects.toThrow(
         NotFoundException,
       );
 
@@ -182,17 +253,66 @@ describe('AnnouncementService', () => {
       const scheduledAnnouncement = { ...mockAnnouncement, isPublished: true, publishedAt: futureDate } as unknown as Announcement;
       jest.spyOn(em, 'findOne').mockResolvedValue(scheduledAnnouncement);
 
-      await expect(service.findOne('test-slug', false)).rejects.toThrow(
+      await expect(service.findOnePublic('test-slug', 'en')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('findOneAdmin', () => {
+    const mockAuthor = { id: 'u1', displayName: 'Admin' } as User;
+    const mockAnnouncement = {
+      id: 'a1',
+      slug: 'test-slug',
+      slugVi: 'vi-test-slug',
+      title: 'Title',
+      titleVi: 'Title VI',
+      summary: 'Summary EN',
+      summaryVi: 'Summary VI',
+      content: 'Content',
+      contentVi: 'Content VI',
+      type: AnnouncementType.NEWS,
+      isPinned: false,
+      isPublished: false,
+      publishedAt: undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      authorId: mockAuthor,
+    } as unknown as Announcement;
+
+    it('should return full admin detail with all fields by id (Normal)', async () => {
+      jest.spyOn(em, 'findOne').mockResolvedValue(mockAnnouncement);
+
+      const result = await service.findOneAdmin('a1');
+
+      expect(result.id).toBe('a1');
+      expect(result.title).toBe('Title');
+      expect(result.titleVi).toBe('Title VI');
+      expect(result.content).toBe('Content');
+      expect(result.contentVi).toBe('Content VI');
+      expect(result.slug).toBe('test-slug');
+      expect(result.slugVi).toBe('vi-test-slug');
+      expect(em.findOne).toHaveBeenCalledWith(
+        Announcement,
+        { id: 'a1' },
+        expect.any(Object),
+      );
+    });
+
+    it('should throw NotFoundException if announcement does not exist (Abnormal)', async () => {
+      jest.spyOn(em, 'findOne').mockResolvedValue(null);
+
+      await expect(service.findOneAdmin('missing-id')).rejects.toThrow(
         NotFoundException,
       );
     });
 
-    it('should allow admin to view draft/scheduled announcement (Normal)', async () => {
-      const draftAnnouncement = { ...mockAnnouncement, isPublished: false } as unknown as Announcement;
-      jest.spyOn(em, 'findOne').mockResolvedValue(draftAnnouncement);
+    it('should allow admin to view draft/scheduled announcement (Boundary)', async () => {
+      jest.spyOn(em, 'findOne').mockResolvedValue(mockAnnouncement);
 
-      const result = await service.findOne('test-slug', true);
+      const result = await service.findOneAdmin('a1');
       expect(result.id).toBe('a1');
+      expect(result.isPublished).toBe(false);
     });
   });
 
@@ -207,7 +327,7 @@ describe('AnnouncementService', () => {
       isPublished: true,
     };
 
-    it('should create and return the new announcement (Normal)', async () => {
+    it('should create and return null (Normal)', async () => {
       jest.spyOn(em, 'findOne').mockResolvedValue(null);
       const createdEntity = {
         ...dto,
@@ -219,11 +339,10 @@ describe('AnnouncementService', () => {
 
       jest.spyOn(em, 'create').mockReturnValue(createdEntity);
       jest.spyOn(em, 'persistAndFlush').mockResolvedValue();
-      jest.spyOn(em, 'populate').mockResolvedValue(createdEntity as any);
 
       const result = await service.create(dto, 'u1');
 
-      expect(result.id).toBe('new-id');
+      expect(result).toBeNull();
       expect(em.create).toHaveBeenCalledWith(
         Announcement,
         expect.objectContaining({
@@ -241,7 +360,7 @@ describe('AnnouncementService', () => {
       );
     });
 
-    it('should fallback to current date for publishedAt if isPublished is true but publishedAt is omitted (Boundary)', async () => {
+    it('should fallback to current date for publishedAt if isPublished is true but publishedAt is omitted and return null (Boundary)', async () => {
       jest.spyOn(em, 'findOne').mockResolvedValue(null);
       const createdEntity = {
         ...dto,
@@ -253,8 +372,9 @@ describe('AnnouncementService', () => {
       jest.spyOn(em, 'create').mockReturnValue(createdEntity);
       jest.spyOn(em, 'persistAndFlush').mockResolvedValue();
 
-      await service.create({ ...dto, publishedAt: undefined }, 'u1');
+      const result = await service.create({ ...dto, publishedAt: undefined }, 'u1');
 
+      expect(result).toBeNull();
       expect(em.create).toHaveBeenCalledWith(
         Announcement,
         expect.objectContaining({
@@ -277,7 +397,7 @@ describe('AnnouncementService', () => {
       publishedAt: undefined,
     } as unknown as Announcement;
 
-    it('should assign and update properties on existing announcement (Normal)', async () => {
+    it('should assign, update properties on existing announcement, and return null (Normal)', async () => {
       jest.spyOn(em, 'findOne')
         .mockResolvedValueOnce(existingAnn) // for checking existence
         .mockResolvedValueOnce(null); // for checking slug collision
@@ -290,9 +410,7 @@ describe('AnnouncementService', () => {
 
       const result = await service.update('a1', { title: 'Updated Title', isPublished: true });
 
-      expect(result.title).toBe('Updated Title');
-      expect(result.isPublished).toBe(true);
-      expect(result.publishedAt).toBeDefined(); // defaults to now
+      expect(result).toBeNull();
       expect(em.flush).toHaveBeenCalled();
     });
 

@@ -1,0 +1,20 @@
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "@/lib/api/api-client";
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = request.nextUrl;
+    const res = await api.get("/game-results", {
+      params: Object.fromEntries(searchParams.entries()),
+    });
+
+    return NextResponse.json(res);
+
+  } catch (err: any) {
+    const backendMessage = err.response?.data?.message || err.message;
+    return NextResponse.json(
+      { success: false, message: backendMessage },
+      { status: err.response?.status || 500 }
+    );
+  }
+}

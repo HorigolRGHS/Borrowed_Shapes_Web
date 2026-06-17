@@ -236,5 +236,13 @@
     "summary_vi_max_length": "Vietnamese summary must not exceed 500 characters",
     "content_vi_required": "Vietnamese content is required",
     "content_vi_must_be_string": "Vietnamese content must be a string"
+  },
+  "game_results": {
+    "list_success": "Game results retrieved successfully",
+    "detail_success": "Game result details retrieved successfully",
+    "leaderboard_success": "Leaderboard retrieved successfully",
+    "delete_success": "Game result deleted successfully",
+    "not_found": "Game result not found",
+    "player_not_found": "Player not found"
   }
 }

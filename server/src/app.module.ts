@@ -19,6 +19,7 @@ import { AccountModule } from './account/account.module';
 import { AnnouncementModule } from './announcements/announcements.module';
 import { DownloadsModule } from './downloads/downloads.module';
 import mikroOrmConfig from './mikro-orm.config';
+import { GameResultModule } from './game-results/game-results.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import mikroOrmConfig from './mikro-orm.config';
     ForumModule,
     CategoryModule,
     AnnouncementModule,
+    GameResultModule,
     DownloadsModule,
   ],
   providers: [
@@ -46,4 +48,4 @@ import mikroOrmConfig from './mikro-orm.config';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

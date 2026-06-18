@@ -10,7 +10,6 @@ import {
   Req,
   HttpCode,
   HttpStatus,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 
@@ -34,7 +33,6 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('Achievements')
 @Roles('USER', 'ADMIN')
@@ -252,33 +250,15 @@ export class AchievementController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create achievement' })
   @ApiBody({ type: CreateAchievementDto })
-  @ApiResponse({
-    status: 201,
-    type: AchievementResponseDto,
-  })
   async create(
     @CurrentUser() user: RequestUser,
     @Body() dto: CreateAchievementDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<AchievementResponseDto>> {
-    const achievement =
-      await this.achievementService.create(dto);
-
-    const data: AchievementResponseDto = {
-      id: achievement.id,
-      name: achievement.name,
-      description: achievement.description,
-      criteriaCode: achievement.criteriaCode,
-      badgeImageUrl: achievement.badgeImageUrl,
-      type: achievement.type,
-      seasonMonth: achievement.seasonMonth,
-      expiresAt: achievement.expiresAt,
-      earnedCount: 0,
-    };
-
+  ): Promise<ApiResponseDto<null>> {
+    await this.achievementService.create(dto);
     return okResponse(
       'achievements.create_success',
-      data,
+      null,
       `${req.method} ${req.path}`,
     );
   }
@@ -288,34 +268,16 @@ export class AchievementController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update achievement' })
   @ApiBody({ type: UpdateAchievementDto })
-  @ApiResponse({
-    status: 200,
-    type: AchievementResponseDto,
-  })
   async update(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
     @Body() dto: UpdateAchievementDto,
     @Req() req: Request,
-  ): Promise<ApiResponseDto<AchievementResponseDto>> {
-    const achievement =
-      await this.achievementService.update(id, dto);
-
-    const data: AchievementResponseDto = {
-      id: achievement.id,
-      name: achievement.name,
-      description: achievement.description,
-      criteriaCode: achievement.criteriaCode,
-      badgeImageUrl: achievement.badgeImageUrl,
-      type: achievement.type,
-      seasonMonth: achievement.seasonMonth,
-      expiresAt: achievement.expiresAt,
-      earnedCount: (achievement as any).earnedCount,
-    };
-
+  ): Promise<ApiResponseDto<null>> {
+    await this.achievementService.update(id, dto);
     return okResponse(
       'achievements.update_success',
-      data,
+      null,
       `${req.method} ${req.path}`,
     );
   }
@@ -324,14 +286,12 @@ export class AchievementController {
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete achievement' })
-  @ApiResponse({ status: 200 })
   async delete(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.achievementService.delete(id);
-
     return okResponse(
       'achievements.delete_success',
       null,

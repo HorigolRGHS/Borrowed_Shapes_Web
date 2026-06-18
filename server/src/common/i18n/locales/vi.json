@@ -237,6 +237,14 @@
     "content_vi_required": "Nội dung tiếng Việt là bắt buộc",
     "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự"
   },
+  "game_results": {
+    "list_success": "Lấy danh sách kết quả game thành công",
+    "detail_success": "Lấy chi tiết kết quả game thành công",
+    "leaderboard_success": "Lấy bảng xếp hạng thành công",
+    "delete_success": "Xóa kết quả game thành công",
+    "not_found": "Không tìm thấy kết quả game",
+    "player_not_found": "Không tìm thấy người chơi"
+  },
   "downloads": {
     "list_versions_success": "Lấy danh sách phiên bản game thành công",
     "download_url_created": "Tạo liên kết tải xuống thành công",

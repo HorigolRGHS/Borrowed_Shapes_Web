@@ -48,7 +48,126 @@ export class AnnouncementAuthorDto {
   displayName!: string;
 }
 
-export class AnnouncementResponseDto {
+// --- Public DTOs (single-language based on Accept-Language) ---
+
+/** Public list item: no content, no id, single-language */
+export class AnnouncementPublicListItemDto {
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiPropertyOptional()
+  summary?: string;
+
+  @ApiProperty({ enum: AnnouncementType })
+  type!: AnnouncementType;
+
+  @ApiProperty()
+  isPinned!: boolean;
+
+  @ApiProperty()
+  isPublished!: boolean;
+
+  @ApiPropertyOptional()
+  publishedAt?: Date;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
+  @ApiProperty({ nullable: true })
+  author!: AnnouncementAuthorDto | null;
+}
+
+/** Public detail: has content, no id, single-language */
+export class AnnouncementPublicDetailDto {
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiPropertyOptional()
+  summary?: string;
+
+  @ApiProperty()
+  content!: string;
+
+  @ApiProperty({ enum: AnnouncementType })
+  type!: AnnouncementType;
+
+  @ApiProperty()
+  isPinned!: boolean;
+
+  @ApiProperty()
+  isPublished!: boolean;
+
+  @ApiPropertyOptional()
+  publishedAt?: Date;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
+  @ApiProperty({ nullable: true })
+  author!: AnnouncementAuthorDto | null;
+}
+
+// --- Admin DTOs (dual-language, full data) ---
+
+/** Admin list item: no content, has id, dual-language */
+export class AnnouncementAdminListItemDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  slugVi!: string;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  titleVi!: string;
+
+  @ApiPropertyOptional()
+  summary?: string;
+
+  @ApiPropertyOptional()
+  summaryVi?: string;
+
+  @ApiProperty({ enum: AnnouncementType })
+  type!: AnnouncementType;
+
+  @ApiProperty()
+  isPinned!: boolean;
+
+  @ApiProperty()
+  isPublished!: boolean;
+
+  @ApiPropertyOptional()
+  publishedAt?: Date;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
+  @ApiProperty({ nullable: true })
+  author!: AnnouncementAuthorDto | null;
+}
+
+/** Admin detail: full data, has id, dual-language, includes content */
+export class AnnouncementAdminDetailDto {
   @ApiProperty()
   id!: string;
 
@@ -98,9 +217,28 @@ export class AnnouncementResponseDto {
   author!: AnnouncementAuthorDto | null;
 }
 
-export class AnnouncementListResponseDto {
-  @ApiProperty({ type: [AnnouncementResponseDto] })
-  items!: AnnouncementResponseDto[];
+// --- List response wrappers ---
+
+export class AnnouncementPublicListResponseDto {
+  @ApiProperty({ type: [AnnouncementPublicListItemDto] })
+  items!: AnnouncementPublicListItemDto[];
+
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+
+  @ApiProperty()
+  totalPages!: number;
+}
+
+export class AnnouncementAdminListResponseDto {
+  @ApiProperty({ type: [AnnouncementAdminListItemDto] })
+  items!: AnnouncementAdminListItemDto[];
 
   @ApiProperty()
   total!: number;

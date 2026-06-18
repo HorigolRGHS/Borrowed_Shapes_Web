@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Search, Pencil, Trash2, AlertTriangle, ChevronDown, Eye } from "lucide-react";
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { AnnouncementContentEditor } from '@/components/announcements/announcement-content-editor';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,13 +82,13 @@ const STATUS_BADGE_STYLES: Record<string, string> = {
 interface Announcement {
   id: string;
   slug: string;
-  slug_vi: string;
+  slugVi: string;
   title: string;
-  title_vi: string;
+  titleVi: string;
   summary?: string;
-  summary_vi?: string;
+  summaryVi?: string;
   content: string;
-  content_vi: string;
+  contentVi: string;
   type: string;
   isPinned: boolean;
   isPublished: boolean;
@@ -124,7 +123,7 @@ export default function AnnouncementsPage() {
   const [user, setUser] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pinnedFilter, setPinnedFilter] = useState("all");
@@ -135,6 +134,7 @@ export default function AnnouncementsPage() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [deleteAnnouncement, setDeleteAnnouncement] = useState<Announcement | null>(null);
   const [viewingAnnouncement, setViewingAnnouncement] = useState<Announcement | null>(null);
+  const [fetchingDetailId, setFetchingDetailId] = useState<string | null>(null);
   const isClosingRef = useRef(false);
 
   const [formData, setFormData] = useState({
@@ -263,7 +263,7 @@ export default function AnnouncementsPage() {
           page: currentPage,
           limit: ITEMS_PER_PAGE,
           type: typeFilter === "all" ? undefined : typeFilter,
-          q: searchQuery || undefined,
+          // q: searchQuery || undefined,
           sortBy: sortBy,
           order: "desc",
         },
@@ -281,13 +281,30 @@ export default function AnnouncementsPage() {
     }
   };
 
-  const handleSearch = () => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    } else {
-      fetchAnnouncements();
+  const fetchAnnouncementDetail = async (id: string): Promise<Announcement | null> => {
+    setFetchingDetailId(id);
+    try {
+      const response = await axios.get(`/api/announcements/admin/${id}`);
+      if (response.data?.success) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch announcement detail:", error);
+      const message = error.response?.data?.message || "Failed to fetch details";
+      toast.error(t(message) || message);
+    } finally {
+      setFetchingDetailId(null);
     }
+    return null;
   };
+
+  // const handleSearch = () => {
+  //   if (currentPage !== 1) {
+  //     setCurrentPage(1);
+  //   } else {
+  //     fetchAnnouncements();
+  //   }
+  // };
 
   const handleCreate = async () => {
     if (!validateAllFields()) return;
@@ -382,13 +399,13 @@ export default function AnnouncementsPage() {
     if (formData.isPublished) {
       return {
         title: formData.title,
-        title_vi: formData.titleVi,
+        titleVi: formData.titleVi,
         slug: formData.slug,
-        slug_vi: formData.slugVi,
+        slugVi: formData.slugVi,
         summary: formData.summary || undefined,
-        summary_vi: formData.summaryVi || undefined,
+        summaryVi: formData.summaryVi || undefined,
         content: formData.content,
-        content_vi: formData.contentVi,
+        contentVi: formData.contentVi,
         type: formData.type,
         isPinned: formData.isPinned,
         isPublished: true,
@@ -399,13 +416,13 @@ export default function AnnouncementsPage() {
     const scheduledDate = formData.publishedAt ? new Date(formData.publishedAt) : null;
     return {
       title: formData.title,
-      title_vi: formData.titleVi,
+      titleVi: formData.titleVi,
       slug: formData.slug,
-      slug_vi: formData.slugVi,
+      slugVi: formData.slugVi,
       summary: formData.summary || undefined,
-      summary_vi: formData.summaryVi || undefined,
+      summaryVi: formData.summaryVi || undefined,
       content: formData.content,
-      content_vi: formData.contentVi,
+      contentVi: formData.contentVi,
       type: formData.type,
       isPinned: formData.isPinned,
       isPublished: true,
@@ -421,13 +438,13 @@ export default function AnnouncementsPage() {
     const isScheduled = a.publishedAt && new Date(a.publishedAt) > new Date();
     setFormData({
       title: a.title,
-      titleVi: a.title_vi,
+      titleVi: a.titleVi,
       slug: a.slug || slugify(a.title),
-      slugVi: a.slug_vi || slugify(a.title_vi),
+      slugVi: a.slugVi || slugify(a.titleVi),
       summary: a.summary || "",
-      summaryVi: a.summary_vi || "",
+      summaryVi: a.summaryVi || "",
       content: a.content,
-      contentVi: a.content_vi,
+      contentVi: a.contentVi,
       type: a.type,
       isPinned: a.isPinned,
       isPublished: !isScheduled,
@@ -526,7 +543,7 @@ export default function AnnouncementsPage() {
             {/* Search + Create */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative flex-1 max-w-lg">
-                <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+                {/* <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
                   <Search className="h-4 w-4" />
                 </span>
                 <Input
@@ -536,7 +553,7 @@ export default function AnnouncementsPage() {
                   onKeyUp={handleSearch}
                   placeholder={t("announcements.search_placeholder")}
                   className="pl-10"
-                />
+                /> */}
               </div>
               <Button
                 onClick={() => {
@@ -628,7 +645,7 @@ export default function AnnouncementsPage() {
                             {/* Title + Author */}
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="font-medium text-white truncate max-w-[280px]">{a.title}</span>
+                                <span className="font-medium text-white truncate max-w-[280px]">{locale === "vi" ? a.titleVi : a.title}</span>
                                 <span className="text-xs text-slate-500">
                                   {t("announcements.by_author")} {a.author?.displayName || "Unknown"}
                                 </span>
@@ -676,14 +693,26 @@ export default function AnnouncementsPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40">
                                   <DropdownMenuItem
-                                    onClick={() => setViewingAnnouncement(a)}
+                                    onClick={async () => {
+                                      const detail = await fetchAnnouncementDetail(a.id);
+                                      if (detail) {
+                                        setViewingAnnouncement(detail);
+                                      }
+                                    }}
+                                    disabled={fetchingDetailId !== null}
                                     className="cursor-pointer"
                                   >
                                     <Eye className="mr-2 h-4 w-4" />
                                     {t("announcements.action_view")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => openEditModal(a)}
+                                    onClick={async () => {
+                                      const detail = await fetchAnnouncementDetail(a.id);
+                                      if (detail) {
+                                        openEditModal(detail);
+                                      }
+                                    }}
+                                    disabled={fetchingDetailId !== null}
                                     className="cursor-pointer"
                                   >
                                     <Pencil className="mr-2 h-4 w-4" />
@@ -691,6 +720,7 @@ export default function AnnouncementsPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => setDeleteAnnouncement(a)}
+                                    disabled={fetchingDetailId !== null}
                                     className="cursor-pointer text-rose-400 focus:text-rose-400"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -875,22 +905,10 @@ export default function AnnouncementsPage() {
             {/* Content EN */}
             <div>
               <Label className="mb-2 block text-slate-300">{t("announcements.form_content_en")}</Label>
-              <CKEditor
-                editor={ClassicEditor as any}
+              <AnnouncementContentEditor
                 data={formData.content}
-                onChange={(_event: any, editor: any) => {
-                  handleFieldChange("content", editor.getData());
-                }}
+                onChange={(html) => handleFieldChange("content", html)}
                 onBlur={() => handleFieldBlur("content")}
-                config={{
-                  toolbar: [
-                    'heading', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', 'link', 'blockQuote',
-                    'insertTable', 'bulletedList', 'numberedList', '|',
-                    'outdent', 'indent', '|',
-                    'undo', 'redo', 'removeFormat'
-                  ]
-                }}
               />
               {formTouched.content && formErrors.content && (
                 <p className="mt-1.5 text-xs text-rose-400">{formErrors.content}</p>
@@ -900,22 +918,10 @@ export default function AnnouncementsPage() {
             {/* Content VI */}
             <div>
               <Label className="mb-2 block text-slate-300">{t("announcements.form_content_vi")}</Label>
-              <CKEditor
-                editor={ClassicEditor as any}
+              <AnnouncementContentEditor
                 data={formData.contentVi}
-                onChange={(_event: any, editor: any) => {
-                  handleFieldChange("contentVi", editor.getData());
-                }}
+                onChange={(html) => handleFieldChange("contentVi", html)}
                 onBlur={() => handleFieldBlur("contentVi")}
-                config={{
-                  toolbar: [
-                    'heading', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', 'link', 'blockQuote',
-                    'insertTable', 'bulletedList', 'numberedList', '|',
-                    'outdent', 'indent', '|',
-                    'undo', 'redo', 'removeFormat'
-                  ]
-                }}
               />
               {formTouched.contentVi && formErrors.contentVi && (
                 <p className="mt-1.5 text-xs text-rose-400">{formErrors.contentVi}</p>
@@ -1082,7 +1088,7 @@ export default function AnnouncementsPage() {
               {/* Title & Metadata */}
               <div>
                 <h2 className="text-2xl font-bold text-white">
-                  {locale === "vi" ? viewingAnnouncement.title_vi : viewingAnnouncement.title}
+                  {locale === "vi" ? viewingAnnouncement.titleVi : viewingAnnouncement.title}
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   <Badge variant="outline" className={TYPE_BADGE_STYLES[viewingAnnouncement.type] || BADGE_BASE_CLASS}>
@@ -1138,18 +1144,18 @@ export default function AnnouncementsPage() {
                   {t("announcements.url_slug")}
                 </span>
                 <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 px-4 py-2.5 font-mono text-sm text-slate-300 max-w-fit">
-                  {locale === "vi" ? viewingAnnouncement.slug_vi : viewingAnnouncement.slug}
+                  {locale === "vi" ? viewingAnnouncement.slugVi : viewingAnnouncement.slug}
                 </div>
               </div>
 
               {/* Summary */}
-              {((locale === "vi" && viewingAnnouncement.summary_vi) || (locale === "en" && viewingAnnouncement.summary)) && (
+              {((locale === "vi" && viewingAnnouncement.summaryVi) || (locale === "en" && viewingAnnouncement.summary)) && (
                 <div className="space-y-1.5">
                   <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block">
                     {t("announcements.summary")}
                   </span>
                   <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300 leading-relaxed">
-                    {locale === "vi" ? viewingAnnouncement.summary_vi : viewingAnnouncement.summary}
+                    {locale === "vi" ? viewingAnnouncement.summaryVi : viewingAnnouncement.summary}
                   </div>
                 </div>
               )}
@@ -1162,7 +1168,7 @@ export default function AnnouncementsPage() {
                 <div
                   className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-5 text-sm text-slate-300 leading-relaxed ck-content ck-editor__editable"
                   dangerouslySetInnerHTML={{
-                    __html: locale === "vi" ? viewingAnnouncement.content_vi : viewingAnnouncement.content
+                    __html: locale === "vi" ? viewingAnnouncement.contentVi : viewingAnnouncement.content
                   }}
                 />
               </div>

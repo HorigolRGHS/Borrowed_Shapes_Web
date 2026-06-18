@@ -40,17 +40,6 @@ export class AuthGuard implements CanActivate {
     const token = this.extractToken(request);
     if (!token) throw new UnauthorizedException('auth.unauthorized');
 
-    // TODO: Bỏ phần này khi lên production. Đây là token fake để test.
-    if (token === '123456') {
-      request.user = {
-        userId: 'admin-mock-id-123456',
-        role: 'ADMIN',
-        platform: 'web',
-        sessionId: 'mock-session-id',
-        gameProfileId: null,
-      };
-      return true;
-    }
 
     try {
       const payload = await this.jwt.verifyAsync(token, {

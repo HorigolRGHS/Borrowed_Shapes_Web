@@ -158,15 +158,13 @@ export class DownloadsService {
     if (existing) {
       // downloadCount and totalBytesSent represent request counts and
       // estimated total requested download size — NOT actual R2 bandwidth.
-      existing.downloadCount = BigInt(Number(existing.downloadCount) + 1);
-      existing.totalBytesSent = BigInt(
-        Number(existing.totalBytesSent) + Number(file.fileSize),
-      );
+      existing.downloadCount = existing.downloadCount + 1n;
+      existing.totalBytesSent = existing.totalBytesSent + file.fileSize;
     } else {
       const stats = this.em.create(DownloadStats, {
         fileAssetId: this.em.getReference(FileAsset, file.id),
         date: today,
-        downloadCount: BigInt(1),
+        downloadCount: 1n,
         totalBytesSent: file.fileSize,
       });
       this.em.persist(stats);
@@ -284,7 +282,7 @@ export class DownloadsService {
       throw new BadRequestException('downloads.invalid_file_name');
     }
 
-    const key = `game/windows/${dto.fileVersion}/${safeFileName}`;
+    const key = `game/windows/${fileVersion}/${safeFileName}`;
 
     const uploadUrl = await this.r2.createUploadUrl({
       key,
@@ -307,6 +305,11 @@ export class DownloadsService {
     const fileVersion = dto.fileVersion?.trim();
     if (!fileVersion) {
       throw new BadRequestException('Invalid version');
+    }
+
+    const expectedPrefix = `game/windows/${fileVersion}/`;
+    if (!dto.filePath.startsWith(expectedPrefix)) {
+      throw new BadRequestException('downloads.invalid_file_path');
     }
 
     // Check version uniqueness

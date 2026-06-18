@@ -110,7 +110,7 @@ export default function LoginPage() {
       }
     >
       <GoogleButton href="/api/auth/google/start?platform=web" className="mb-3">
-        Continue with Google
+        {t("auth.continue_with_google")}
       </GoogleButton>
 
       <div className="flex items-center gap-3 mb-4">

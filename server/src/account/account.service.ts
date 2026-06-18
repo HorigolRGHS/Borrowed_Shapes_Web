@@ -22,6 +22,30 @@ export class AccountService {
     private configService: ConfigService,
   ) {}
 
+  private getPublicBaseUrl(): string {
+    return this.configService
+      .get<string>(
+        'R2_PUBLIC_DEV_URL',
+        'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev',
+      )
+      .replace(/\/+$/, '');
+  }
+
+  private isValidAvatarPublicUrl(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url);
+      const parsedBase = new URL(this.getPublicBaseUrl());
+
+      if (parsedUrl.origin !== parsedBase.origin) return false;
+
+      const key = decodeURIComponent(parsedUrl.pathname.replace(/^\/+/, ''));
+
+      return key.startsWith('avatars/');
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Derive the R2 object key from a public avatar URL.
    * Returns null if the URL does not belong to this project's R2 avatars.
@@ -29,14 +53,9 @@ export class AccountService {
   private getR2KeyFromPublicUrl(url?: string | null): string | null {
     if (!url) return null;
 
-    const publicBaseUrl = this.configService.get<string>(
-      'R2_PUBLIC_DEV_URL',
-      'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev',
-    );
-
     try {
       const parsedUrl = new URL(url);
-      const parsedBase = new URL(publicBaseUrl);
+      const parsedBase = new URL(this.getPublicBaseUrl());
 
       if (parsedUrl.origin !== parsedBase.origin) return null;
 
@@ -70,14 +89,8 @@ export class AccountService {
     }
 
     if (dto.imgUrl !== undefined && dto.imgUrl !== user.imgUrl) {
-      if (dto.imgUrl !== null) {
-        const publicUrlBase = this.configService.get(
-          'R2_PUBLIC_DEV_URL',
-          'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev',
-        );
-        if (!dto.imgUrl.startsWith(publicUrlBase)) {
-          throw new BadRequestException('Invalid image URL');
-        }
+      if (dto.imgUrl !== null && !this.isValidAvatarPublicUrl(dto.imgUrl)) {
+        throw new BadRequestException('Invalid image URL');
       }
       user.imgUrl = dto.imgUrl;
       updated = true;
@@ -185,7 +198,13 @@ export class AccountService {
       throw new BadRequestException('profile.edit.validation.avatar_invalid_type');
     }
 
-    const ext = dto.fileName.split('.').pop() || 'png';
+    const extByMime: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+
+    const ext = extByMime[dto.mimeType] ?? 'png';
     const uniqueId = randomUUID();
     const key = `avatars/${userId}/${uniqueId}.${ext}`;
 
@@ -194,10 +213,7 @@ export class AccountService {
       contentType: dto.mimeType,
     });
 
-    const publicUrlBase = this.configService.get(
-      'R2_PUBLIC_DEV_URL',
-      'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev',
-    );
+    const publicUrlBase = this.getPublicBaseUrl();
 
     return {
       uploadUrl,

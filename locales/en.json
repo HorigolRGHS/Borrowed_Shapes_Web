@@ -429,5 +429,260 @@
       "summary_max": "Summary must not exceed 500 characters",
       "summary_vi_max": "Vietnamese summary must not exceed 500 characters"
     }
+  },
+  "download": {
+    "title": "Download",
+    "free_to_play": "FREE TO PLAY",
+    "download_now": "Download Now",
+    "download_for_windows": "DOWNLOAD FOR WINDOWS",
+    "downloading": "DOWNLOADING...",
+    "downloaded": "DOWNLOADED!",
+    "view_older_versions": "VIEW OLDER VERSIONS",
+    "latest": "Latest",
+    "version": "Version",
+    "type": "Type",
+    "date": "Date",
+    "notes": "Notes",
+    "action": "Action",
+    "coming_soon": "Coming Soon",
+    "download_fail": "Download failed",
+    "no_versions": "No versions available yet.",
+    "cta_tag": "SEASON 2 — THE HEXAGON EXPANSION",
+    "cta_title": "Ready to Play?",
+    "cta_button": "DOWNLOAD",
+    "description": "Experience the ultimate adventure. Download the latest version of Borrowed Shapes and start your journey today."
+  },
+  "profile": {
+    "title": "Profile",
+    "download_history": {
+      "tab": "Download History",
+      "loading": "Loading download history...",
+      "empty_title": "No downloads yet.",
+      "empty_description": "Head over to the download page to get the latest version of Borrowed Shapes.",
+      "error": "Failed to load download history.",
+      "retry": "Retry",
+      "columns": {
+        "file_name": "File Name",
+        "version": "Version",
+        "download_date": "Download Date",
+        "actions": "Actions"
+      },
+      "actions": {
+        "details": "Details",
+        "redownload": "Redownload",
+        "download_again": "Download Again",
+        "close": "Close",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "status": {
+        "latest": "Latest",
+        "completed": "Completed"
+      },
+      "pagination": {
+        "showing": "Showing {from}–{to} of {total} records"
+      },
+      "detail": {
+        "title": "Download Details",
+        "description": "Review file and download information",
+        "file_information": "File Information",
+        "download_information": "Download Information",
+        "file_name": "File Name",
+        "version": "Version",
+        "file_size": "File Size",
+        "download_size": "Download Size",
+        "file_type": "File Type",
+        "mime_type": "MIME Type",
+        "date_time": "Date & Time",
+        "status": "Status"
+      }
+    },
+    "edit": {
+      "button": "Edit Profile",
+      "title": "Edit Profile",
+      "description": "Update your display name, avatar, and profile frame.",
+      "display_name": "Display Name",
+      "display_name_placeholder": "Enter your display name",
+      "avatar": "Avatar",
+      "change_avatar": "Change Avatar",
+      "remove_avatar": "Remove Avatar",
+      "avatar_hint": "PNG, JPG, or WEBP up to 2MB.",
+      "frame": "Profile Frame",
+      "no_frame": "No Frame",
+      "no_frames_title": "No unlocked frames yet.",
+      "no_frames_description": "Unlock achievements to decorate your profile.",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "uploading": "Uploading avatar...",
+      "success": "Profile updated successfully.",
+      "error": "Failed to update profile.",
+      "validation": {
+        "display_name_required": "Display name is required.",
+        "display_name_too_short": "Display name must be at least 2 characters.",
+        "display_name_too_long": "Display name must be at most 50 characters.",
+        "avatar_invalid_type": "Avatar must be a PNG, JPG, or WEBP image.",
+        "avatar_too_large": "Avatar must be smaller than 2MB."
+      }
+    },
+    "total_downloads": "Total Downloads",
+    "unique_versions": "Unique Versions",
+    "latest_download": "Latest Download",
+    "file_name": "File Name",
+    "file_size": "File Size",
+    "downloaded_size": "Downloaded Size",
+    "download_date": "Download Date",
+    "actions": "Actions",
+    "details": "Details",
+    "redownload": "Redownload",
+    "file_information": "File Information",
+    "download_information": "Download Information",
+    "close": "Close",
+    "download_again": "Download Again",
+    "search_placeholder": "Search file or version...",
+    "play_history": "Play History",
+    "reports": "Reports"
+  },
+  "header": {
+    "home": "Home",
+    "wiki": "Wiki",
+    "forum": "Forum",
+    "leaderboard": "Leaderboard",
+    "download": "Download",
+    "join_now": "Join Now"
+  },
+  "footer": {
+    "description": "A cooperative household adventure where every shape matters.",
+    "nav_title": "Navigation",
+    "support_title": "Support",
+    "home": "Home",
+    "wiki": "Wiki",
+    "forum": "Forum",
+    "leaderboard": "Leaderboard",
+    "download": "Download",
+    "about": "About Us",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "© 2026 Borrowed Shapes. All rights reserved.",
+    "tagline": "Made for players who solve together."
+  },
+  "home": {
+    "hero": {
+      "title_line_1": "Borrowed",
+      "title_line_2": "Shapes",
+      "subtitle": "Borrow shapes, solve together, and rediscover the joy of family.",
+      "play_free_now": "Play Free Now",
+      "explore_wiki": "Explore Wiki",
+      "stats": {
+        "active_players": "Active Players",
+        "current_season": "Current Season",
+        "latest_patch": "Latest Patch"
+      },
+      "season_live": "SEASON 2 — LIVE NOW"
+    },
+    "intro": {
+      "label": "// ABOUT THE GAME",
+      "title": "What is Borrowed Shapes?",
+      "paragraph_1": "Borrowed Shapes is a 3D cooperative household adventure about a family trying to spend one meaningful Sunday together after years of drifting apart.",
+      "paragraph_2": "Players take the shapes of everyday objects representing David, Sarah, Alex, Lily, and their loyal dog Buddy. Each object has different strengths, speed, size, and weight, so every room asks the team to switch roles, plan together, and help one another.",
+      "paragraph_3": "The journey moves through familiar spaces such as the Kitchen, Bedroom, Bathroom, Basement, and Living Room. Simple household activities — cleaning, cooking, repairing, organizing, and finding a way forward — become cooperative challenges. After each room’s main tasks, the space shifts into a chaotic final challenge before the next door can be unlocked.",
+      "info": {
+        "genre_label": "Genre",
+        "genre_value": "3D Co-op Adventure",
+        "mode_label": "Mode",
+        "mode_value": "Co-op 2–5",
+        "platform_label": "Platform",
+        "platform_value": "Windows PC",
+        "price_label": "Price",
+        "price_value": "Free to Play"
+      },
+      "images": {
+        "home_label": "THE FAMILY HOME",
+        "kitchen_label": "KITCHEN",
+        "bathroom_label": "BATHROOM",
+        "home_alt": "Family living room",
+        "kitchen_alt": "Kitchen level",
+        "bathroom_alt": "Bathroom level"
+      }
+    },
+    "download_cta": {
+      "label": "CO-OP HOUSEHOLD ADVENTURE",
+      "title": "Ready to Borrow Your Shape?",
+      "description": "Download Borrowed Shapes for free and team up with 2–5 players to solve household challenges, switch between familiar objects, and unlock the next room together.",
+      "platform_note": "Available for Windows PC.",
+      "download": "Download",
+      "create_account": "Create Account"
+    }
+  },
+  "admin": {
+    "download": {
+      "nav_label": "Download",
+      "title": "Download Management",
+      "subtitle": "Manage game files and upload new versions.",
+      "upload": "Upload",
+      "version_list_placeholder": "Version list will be added later.",
+      "upload_dialog": {
+        "title": "Upload Game File",
+        "description": "Upload a new version of the game to R2 storage.",
+        "file": "Game File",
+        "version": "Version",
+        "cancel": "Cancel",
+        "submit": "Upload",
+        "uploading": "Uploading...",
+        "success": "Upload successful!",
+        "error": "Upload failed",
+        "select_file": "Select File",
+        "file_size": "File Size",
+        "mime_type": "MIME Type",
+        "test_file_note": "Test files such as .txt will be uploaded as application/octet-stream.",
+        "errors": {
+          "generic": "Upload failed. Please try again.",
+          "version_exists": "Version {version} already exists. Please use another version.",
+          "invalid_version": "Please enter a valid version.",
+          "invalid_file": "Please choose a valid file."
+        }
+      },
+      "versions": {
+        "title": "Version List",
+        "description": "Manage uploaded game versions.",
+        "loading": "Loading versions...",
+        "empty": "No game versions uploaded yet.",
+        "error": "Failed to load game versions.",
+        "total": "Total versions",
+        "columns": {
+          "version": "Version",
+          "file_name": "File Name",
+          "file_size": "File Size",
+          "mime_type": "MIME Type",
+          "uploaded_at": "Uploaded At",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "status": {
+          "latest": "Latest",
+          "older": "Older"
+        },
+        "actions": {
+          "details": "Details",
+          "refresh": "Refresh",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "details": {
+          "title": "Version Details",
+          "id": "ID",
+          "file_name": "File Name",
+          "version": "Version",
+          "file_path": "File Path",
+          "file_size": "File Size",
+          "mime_type": "MIME Type",
+          "uploaded_at": "Uploaded At",
+          "updated_at": "Updated At",
+          "latest_status": "Latest Status",
+          "close": "Close"
+        }
+      }
+    }
   }
 }

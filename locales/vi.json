@@ -429,5 +429,257 @@
       "summary_max": "Tóm tắt không được quá 500 ký tự",
       "summary_vi_max": "Tóm tắt tiếng Việt không được quá 500 ký tự"
     }
+  },
+  "download": {
+    "title": "Tải xuống",
+    "free_to_play": "CHƠI MIỄN PHÍ",
+    "download_now": "Tải Xuống Ngay",
+    "download_for_windows": "TẢI VỀ CHO WINDOWS",
+    "downloading": "ĐANG TẢI...",
+    "downloaded": "ĐÃ TẢI XONG!",
+    "view_older_versions": "XEM CÁC PHIÊN BẢN CŨ HƠN",
+    "latest": "Mới nhất",
+    "version": "Phiên bản",
+    "type": "Loại",
+    "date": "Ngày",
+    "notes": "Ghi chú",
+    "action": "Thao tác",
+    "coming_soon": "Sắp ra mắt",
+    "download_fail": "Tải thất bại",
+    "no_versions": "Chưa có phiên bản nào.",
+    "cta_tag": "MÙA 2 — BẢN MỞ RỘNG LỤC GIÁC",
+    "cta_title": "Sẵn sàng chơi?",
+    "cta_button": "TẢI XUỐNG",
+    "description": "Trải nghiệm cuộc phiêu lưu đỉnh cao. Tải xuống phiên bản mới nhất của Borrowed Shapes và bắt đầu hành trình của bạn ngay hôm nay."
+  },
+  "profile": {
+    "title": "Hồ sơ",
+    "download_history": {
+      "tab": "Lịch sử tải xuống",
+      "loading": "Đang tải lịch sử tải xuống...",
+      "empty_title": "Chưa có lượt tải nào.",
+      "empty_description": "Hãy đến trang tải game để nhận phiên bản mới nhất của Borrowed Shapes.",
+      "error": "Không thể tải lịch sử tải xuống.",
+      "retry": "Thử lại",
+      "columns": {
+        "file_name": "Tên file",
+        "version": "Phiên bản",
+        "download_date": "Ngày tải",
+        "actions": "Hành động"
+      },
+      "actions": {
+        "details": "Chi tiết",
+        "redownload": "Tải lại",
+        "download_again": "Tải lại",
+        "close": "Đóng",
+        "previous": "Trước",
+        "next": "Tiếp"
+      },
+      "status": {
+        "latest": "Mới nhất",
+        "completed": "Hoàn tất"
+      },
+      "detail": {
+        "title": "Chi tiết lượt tải",
+        "description": "Xem thông tin file và lượt tải xuống",
+        "file_information": "Thông tin file",
+        "download_information": "Thông tin tải xuống",
+        "file_name": "Tên file",
+        "version": "Phiên bản",
+        "file_size": "Dung lượng file",
+        "download_size": "Dung lượng tải",
+        "file_type": "Loại file",
+        "mime_type": "MIME Type",
+        "date_time": "Ngày & giờ",
+        "status": "Trạng thái"
+      }
+    },
+    "edit": {
+      "button": "Chỉnh sửa hồ sơ",
+      "title": "Chỉnh sửa hồ sơ",
+      "description": "Cập nhật tên hiển thị, ảnh đại diện và khung hồ sơ.",
+      "display_name": "Tên hiển thị",
+      "display_name_placeholder": "Nhập tên hiển thị",
+      "avatar": "Ảnh đại diện",
+      "change_avatar": "Đổi ảnh",
+      "remove_avatar": "Gỡ ảnh",
+      "avatar_hint": "PNG, JPG hoặc WEBP, tối đa 2MB.",
+      "frame": "Khung hồ sơ",
+      "no_frame": "Không dùng khung",
+      "no_frames_title": "Chưa có khung nào được mở khóa.",
+      "no_frames_description": "Hãy mở khóa achievement để trang trí hồ sơ.",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu...",
+      "cancel": "Hủy",
+      "uploading": "Đang tải ảnh lên...",
+      "success": "Cập nhật hồ sơ thành công.",
+      "error": "Không thể cập nhật hồ sơ.",
+      "validation": {
+        "display_name_required": "Tên hiển thị không được để trống.",
+        "display_name_too_short": "Tên hiển thị phải có ít nhất 2 ký tự.",
+        "display_name_too_long": "Tên hiển thị tối đa 50 ký tự.",
+        "avatar_invalid_type": "Ảnh đại diện phải là PNG, JPG hoặc WEBP.",
+        "avatar_too_large": "Ảnh đại diện phải nhỏ hơn 2MB."
+      }
+    },
+    "total_downloads": "Tổng số lượt tải",
+    "unique_versions": "Số phiên bản",
+    "latest_download": "Tải gần nhất",
+    "file_name": "Tên file",
+    "file_size": "Dung lượng file",
+    "downloaded_size": "Dung lượng đã tải",
+    "download_date": "Ngày tải",
+    "actions": "Thao tác",
+    "details": "Chi tiết",
+    "redownload": "Tải lại",
+    "file_information": "Thông tin File",
+    "download_information": "Thông tin Tải xuống",
+    "close": "Đóng",
+    "download_again": "Tải lại",
+    "search_placeholder": "Tìm kiếm file hoặc phiên bản...",
+    "play_history": "Lịch sử chơi",
+    "reports": "Báo cáo"
+  },
+  "header": {
+    "home": "Trang chủ",
+    "wiki": "Từ điển",
+    "forum": "Diễn đàn",
+    "leaderboard": "Bảng xếp hạng",
+    "download": "Tải Game",
+    "join_now": "Tham gia ngay"
+  },
+  "footer": {
+    "description": "Một chuyến phiêu lưu gia đình co-op, nơi mỗi hình dạng đều quan trọng.",
+    "nav_title": "Điều hướng",
+    "support_title": "Hỗ trợ",
+    "home": "Trang chủ",
+    "wiki": "Từ điển",
+    "forum": "Diễn đàn",
+    "leaderboard": "Bảng xếp hạng",
+    "download": "Tải Game",
+    "about": "Về chúng tôi",
+    "contact": "Liên hệ",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản dịch vụ",
+    "copyright": "© 2026 Borrowed Shapes. Đã đăng ký bản quyền.",
+    "tagline": "Dành cho những người chơi cùng nhau giải quyết thử thách."
+  },
+  "home": {
+    "hero": {
+      "title_line_1": "Borrowed",
+      "title_line_2": "Shapes",
+      "subtitle": "Mượn hình khối, cùng giải đố, và tìm lại niềm vui gia đình.",
+      "play_free_now": "Chơi miễn phí ngay",
+      "explore_wiki": "Khám phá Wiki",
+      "stats": {
+        "active_players": "Người chơi",
+        "current_season": "Mùa hiện tại",
+        "latest_patch": "Bản vá mới nhất"
+      },
+      "season_live": "MÙA 2 — ĐANG DIỄN RA"
+    },
+    "intro": {
+      "label": "// VỀ TRÒ CHƠI",
+      "title": "Borrowed Shapes là gì?",
+      "paragraph_1": "Borrowed Shapes là một game phiêu lưu gia đình co-op 3D kể về một gia đình đang cố gắng dành lại một ngày Chủ nhật thật ý nghĩa sau nhiều năm dần xa cách.",
+      "paragraph_2": "Người chơi sẽ hóa thân thành những đồ vật quen thuộc đại diện cho David, Sarah, Alex, Lily và chú chó trung thành Buddy. Mỗi đồ vật có chỉ số thể lực, tốc độ, kích thước và cân nặng khác nhau, vì vậy mỗi căn phòng đều yêu cầu cả đội đổi vai, phối hợp và hỗ trợ lẫn nhau.",
+      "paragraph_3": "Hành trình diễn ra qua những không gian quen thuộc trong nhà như Nhà bếp, Phòng ngủ, Phòng tắm, Tầng hầm và Phòng khách. Các hoạt động đời thường như dọn dẹp, nấu ăn, sửa chữa, sắp xếp và tìm đường đi tiếp sẽ trở thành những thử thách co-op. Sau các nhiệm vụ chính, căn phòng sẽ chuyển sang trạng thái hỗn độn với thử thách cuối trước khi mở khóa cánh cửa kế tiếp.",
+      "info": {
+        "genre_label": "Thể loại",
+        "genre_value": "Phiêu lưu co-op 3D",
+        "mode_label": "Chế độ",
+        "mode_value": "Co-op 2–5",
+        "platform_label": "Nền tảng",
+        "platform_value": "Windows PC",
+        "price_label": "Giá",
+        "price_value": "Miễn phí"
+      },
+      "images": {
+        "home_label": "MÁI ẤM GIA ĐÌNH",
+        "kitchen_label": "NHÀ BẾP",
+        "bathroom_label": "PHÒNG TẮM",
+        "home_alt": "Phòng khách gia đình",
+        "kitchen_alt": "Màn Nhà bếp",
+        "bathroom_alt": "Màn Phòng tắm"
+      }
+    },
+    "download_cta": {
+      "label": "PHIÊU LƯU GIA ĐÌNH CO-OP",
+      "title": "Sẵn sàng mượn hình chưa?",
+      "description": "Tải Borrowed Shapes miễn phí và phối hợp cùng 2–5 người chơi để vượt qua các thử thách trong nhà, chuyển đổi giữa những đồ vật quen thuộc và cùng nhau mở khóa căn phòng tiếp theo.",
+      "platform_note": "Hiện hỗ trợ Windows PC.",
+      "download": "Tải game",
+      "create_account": "Tạo tài khoản"
+    }
+  },
+  "admin": {
+    "download": {
+      "nav_label": "Tải xuống",
+      "title": "Quản lý tải xuống",
+      "subtitle": "Quản lý file game và tải lên phiên bản mới.",
+      "upload": "Tải lên",
+      "version_list_placeholder": "Danh sách phiên bản sẽ được bổ sung sau.",
+      "upload_dialog": {
+        "title": "Tải lên file game",
+        "description": "Tải lên phiên bản mới của game lên R2.",
+        "file": "File game",
+        "version": "Phiên bản",
+        "cancel": "Hủy",
+        "submit": "Tải lên",
+        "uploading": "Đang tải lên...",
+        "success": "Tải lên thành công!",
+        "error": "Tải lên thất bại",
+        "select_file": "Chọn File",
+        "file_size": "Dung lượng",
+        "mime_type": "Loại MIME",
+        "test_file_note": "File test như .txt sẽ được tải lên dưới dạng application/octet-stream.",
+        "errors": {
+          "generic": "Tải lên thất bại. Vui lòng thử lại.",
+          "version_exists": "Phiên bản {version} đã tồn tại. Vui lòng dùng phiên bản khác.",
+          "invalid_version": "Vui lòng nhập phiên bản hợp lệ.",
+          "invalid_file": "Vui lòng chọn file hợp lệ."
+        }
+      },
+      "versions": {
+        "title": "Danh sách phiên bản",
+        "description": "Quản lý các phiên bản game đã tải lên.",
+        "loading": "Đang tải phiên bản...",
+        "empty": "Chưa có phiên bản game nào được tải lên.",
+        "error": "Không thể tải danh sách phiên bản.",
+        "total": "Tổng số phiên bản",
+        "columns": {
+          "version": "Phiên bản",
+          "file_name": "Tên file",
+          "file_size": "Dung lượng",
+          "mime_type": "MIME Type",
+          "uploaded_at": "Ngày tải lên",
+          "status": "Trạng thái",
+          "actions": "Hành động"
+        },
+        "status": {
+          "latest": "Mới nhất",
+          "older": "Cũ hơn"
+        },
+        "actions": {
+          "details": "Chi tiết",
+          "refresh": "Làm mới",
+          "previous": "Trước",
+          "next": "Tiếp"
+        },
+        "details": {
+          "title": "Chi tiết phiên bản",
+          "id": "ID",
+          "file_name": "Tên file",
+          "version": "Phiên bản",
+          "file_path": "Đường dẫn file",
+          "file_size": "Dung lượng",
+          "mime_type": "MIME Type",
+          "uploaded_at": "Ngày tải lên",
+          "updated_at": "Ngày cập nhật",
+          "latest_status": "Trạng thái",
+          "close": "Đóng"
+        }
+      }
+    }
   }
 }

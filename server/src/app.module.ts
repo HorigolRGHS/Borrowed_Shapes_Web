@@ -14,7 +14,10 @@ import { SeasonTeamModule } from './season-team/season-team.module';
 import { WikiModule } from './wiki/wiki.module';
 import { ForumModule } from './forums/forums.module';
 import { CategoryModule } from './categories/categories.module';
+import { StorageModule } from './storage/storage.module';
+import { AccountModule } from './account/account.module';
 import { AnnouncementModule } from './announcements/announcements.module';
+import { DownloadsModule } from './downloads/downloads.module';
 import mikroOrmConfig from './mikro-orm.config';
 
 @Module({
@@ -24,15 +27,17 @@ import mikroOrmConfig from './mikro-orm.config';
     RedisModule,
     AuthModule,
     SessionsModule,
+    AccountModule,
+    WikiModule,
     PresenceModule,
     GameModule,
     AchievementModule,
     I18nModule,
     SeasonTeamModule,
-    WikiModule,
     ForumModule,
     CategoryModule,
     AnnouncementModule,
+    DownloadsModule,
   ],
   providers: [
     {

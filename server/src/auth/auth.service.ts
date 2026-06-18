@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
-import { init } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
@@ -21,14 +21,8 @@ import {
   GoogleCompleteRequestDto,
   GoogleCompleteResponseDto,
 } from './dto/google.dto';
-import {
-  RefreshRequestDto,
-  RefreshResponseDto,
-} from './dto/refresh.dto';
-import {
-  RegisterRequestDto,
-  RegisterResponseDto,
-} from './dto/register.dto';
+import { RefreshRequestDto, RefreshResponseDto } from './dto/refresh.dto';
+import { RegisterRequestDto, RegisterResponseDto } from './dto/register.dto';
 import {
   VerifyEmailRequestDto,
   ForgotPasswordRequestDto,
@@ -43,11 +37,12 @@ import { Role } from '../entities/Role';
 import { SessionStatus } from '../entities/SessionStatus';
 import { AuditActionType } from '../entities/AuditActionType';
 
-const createId = init({ length: 24 });
+const createId = () => randomUUID();
 
 /** Redis key for a user's active session on a given platform. */
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
-const presenceDetailsKey = (sessionId: string) => `user_session_details:${sessionId}`;
+const presenceDetailsKey = (sessionId: string) =>
+  `user_session_details:${sessionId}`;
 const onlineZsetKey = 'online_users_by_last_active';
 
 /** Redis key for email verification token. */
@@ -57,9 +52,13 @@ const emailVerifyTokenKey = (token: string) => `email_verify:${token}`;
 const forgotOtpKey = (email: string) => `forgot_otp:${email.toLowerCase()}`;
 
 /** Redis key for one-time google login codes. */
-const googleLoginCodeKey = (loginCode: string) => `google_login_code:${loginCode}`;
+const googleLoginCodeKey = (loginCode: string) =>
+  `google_login_code:${loginCode}`;
 
-function parseDurationSeconds(input: string | undefined, fallbackSeconds: number): number {
+function parseDurationSeconds(
+  input: string | undefined,
+  fallbackSeconds: number,
+): number {
   if (!input) return fallbackSeconds;
   const raw = String(input).trim();
   if (!raw) return fallbackSeconds;
@@ -102,9 +101,13 @@ export class AuthService {
     private config: ConfigService,
     private jwt: JwtService,
     private email: EmailService,
-  ) { }
+  ) {}
 
-  private async fetchGoogleUserInfo(code: string, codeVerifier: string, redirectUri: string) {
+  private async fetchGoogleUserInfo(
+    code: string,
+    codeVerifier: string,
+    redirectUri: string,
+  ) {
     const clientId = this.config.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = this.config.get<string>('GOOGLE_CLIENT_SECRET');
     if (!clientId || !clientSecret) {
@@ -133,12 +136,17 @@ export class AuthService {
     } = await tokenRes.json().catch(() => ({}));
 
     if (!tokenRes.ok || !tokenJson.access_token) {
-      throw new UnauthorizedException(tokenJson.error_description ?? 'auth.google_exchange_failed');
+      throw new UnauthorizedException(
+        tokenJson.error_description ?? 'auth.google_exchange_failed',
+      );
     }
 
-    const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${tokenJson.access_token}` },
-    });
+    const infoRes = await fetch(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+      },
+    );
 
     const infoJson: {
       sub?: string;
@@ -202,8 +210,14 @@ export class AuthService {
     deviceInfo: string | undefined,
     ipAddress: string,
   ): Promise<LoginResponseDto> {
-    const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
-    const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
+    const sessionTtl = parseInt(
+      this.config.get('SESSION_TTL_SEC', '604800'),
+      10,
+    );
+    const accessTtl = parseInt(
+      this.config.get('ACCESS_TOKEN_TTL_SEC', '900'),
+      10,
+    );
     const loginTime = new Date().toISOString();
     const expiresAt = new Date(Date.now() + sessionTtl * 1000).toISOString();
 
@@ -225,7 +239,13 @@ export class AuthService {
     const refreshToken = `${user.id}:${platform}:${sessionId}`;
     const tokenHash = hashToken(refreshToken);
     const accessToken = this.jwt.sign(
-      { sub: user.id, sid: sessionId, role: user.role, pf: platform, gp: gameProfile.id },
+      {
+        sub: user.id,
+        sid: sessionId,
+        role: user.role,
+        pf: platform,
+        gp: gameProfile.id,
+      },
       { expiresIn: accessTtl },
     );
 
@@ -248,7 +268,10 @@ export class AuthService {
       { cmd: 'expire', args: [rtKey(user.id, platform), sessionTtl] },
       {
         cmd: 'hset',
-        args: [presenceDetailsKey(sessionId), { userId: user.id, platform, lastActive: loginTime }],
+        args: [
+          presenceDetailsKey(sessionId),
+          { userId: user.id, platform, lastActive: loginTime },
+        ],
       },
       { cmd: 'expire', args: [presenceDetailsKey(sessionId), sessionTtl] },
       { cmd: 'zadd', args: [onlineZsetKey, Date.now(), sessionId] },
@@ -283,7 +306,9 @@ export class AuthService {
   }
 
   async register(
-    dto: Pick<RegisterRequestDto, 'email' | 'password' | 'displayName'> & { deviceInfo?: string },
+    dto: Pick<RegisterRequestDto, 'email' | 'password' | 'displayName'> & {
+      deviceInfo?: string;
+    },
     ipAddress: string,
   ): Promise<RegisterResponseDto> {
     if (!dto.email || !dto.password) {
@@ -300,23 +325,31 @@ export class AuthService {
         let user = await em.findOne(User, { email });
 
         if (user) {
-          if (user.isBanned && user.banReason === 'auth.unverified_email_ban_reason') {
+          if (
+            user.isBanned &&
+            user.banReason === 'auth.unverified_email_ban_reason'
+          ) {
             user.passwordHash = passwordHash;
             user.displayName = dto.displayName ?? email.split('@')[0];
             user.bannedAt = new Date();
-            
+
             const auditLog = em.create(AuditLog, {
               userId: user,
               actionType: AuditActionType.UPDATE,
               entityName: 'User',
               entityId: user.id,
-              newValue: { email: user.email, note: 'Re-registration before email verify' },
+              newValue: {
+                email: user.email,
+                note: 'Re-registration before email verify',
+              },
               ipAddress,
             });
             await em.flush();
             void auditLog;
 
-            let gameProfile = await em.findOne(GameProfile, { userId: user.id });
+            let gameProfile = await em.findOne(GameProfile, {
+              userId: user.id,
+            });
             if (!gameProfile) {
               gameProfile = em.create(GameProfile, { userId: user });
               await em.flush();
@@ -361,11 +394,15 @@ export class AuthService {
       // Generate verification token and send email
       const verifyToken = generateToken();
       const verifyTtl = 24 * 60 * 60; // 24 hours
-      await this.redis.hset(emailVerifyTokenKey(verifyToken), { userId: result.user.id });
+      await this.redis.hset(emailVerifyTokenKey(verifyToken), {
+        userId: result.user.id,
+      });
       await this.redis.expire(emailVerifyTokenKey(verifyToken), verifyTtl);
       const appUrl = this.config.get('WEB_URL', 'http://localhost:3000');
       const verifyLink = `${appUrl}/auth/verify-email?token=${verifyToken}`;
-      const name = result.user.displayName ? String(result.user.displayName) : email.split('@')[0];
+      const name = result.user.displayName
+        ? String(result.user.displayName)
+        : email.split('@')[0];
       const verifyHtml = `
       <h2>Verify Your Email - Borrowed Shapes</h2>
       <p>Hello ${name},</p>
@@ -376,29 +413,40 @@ export class AuthService {
       <p>If you didn't create this account, please ignore this email.</p>
     `;
 
-      await this.email.sendMail(email, '[Borrowed Shapes] Verify Your Email', verifyHtml);
+      await this.email.sendMail(
+        email,
+        '[Borrowed Shapes] Verify Your Email',
+        verifyHtml,
+      );
 
       return {
         userId: result.user.id,
         gameProfileId: result.gameProfile.id,
         email: String(result.user.email),
-        displayName: result.user.displayName ? String(result.user.displayName) : null,
+        displayName: result.user.displayName
+          ? String(result.user.displayName)
+          : null,
         role: result.user.role,
       };
     } catch (err) {
       if (err instanceof UniqueConstraintViolationException) {
         const e = err as UniqueConstraintViolationException & {
           constraint?: unknown;
-          cause?: { constraint?: unknown; cause?: { constraint?: unknown }; message?: string };
+          cause?: {
+            constraint?: unknown;
+            cause?: { constraint?: unknown };
+            message?: string;
+          };
         };
 
         const constraint = String(
-          e.constraint
-          ?? e.cause?.constraint
-          ?? e.cause?.cause?.constraint
-          ?? '',
+          e.constraint ??
+            e.cause?.constraint ??
+            e.cause?.cause?.constraint ??
+            '',
         );
-        const details = `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
+        const details =
+          `${constraint} ${err.message ?? ''} ${e.cause?.message ?? ''}`.toLowerCase();
 
         if (details.includes('user_email_key')) {
           throw new ConflictException('auth.email_in_use');
@@ -410,7 +458,10 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginRequestDto, ipAddress: string): Promise<LoginResponseDto> {
+  async login(
+    dto: LoginRequestDto,
+    ipAddress: string,
+  ): Promise<LoginResponseDto> {
     if (!dto.email || !dto.password || !dto.platform) {
       throw new UnauthorizedException('auth.invalid_credentials');
     }
@@ -430,7 +481,13 @@ export class AuthService {
       : false;
     if (!valid) throw new UnauthorizedException('auth.invalid_credentials');
 
-    return this.issueLoginTokens(user, gameProfile, platform, dto.deviceInfo, ipAddress);
+    return this.issueLoginTokens(
+      user,
+      gameProfile,
+      platform,
+      dto.deviceInfo,
+      ipAddress,
+    );
   }
 
   async googleExchange(
@@ -446,7 +503,11 @@ export class AuthService {
       throw new BadRequestException('auth.invalid_redirect_uri');
     }
 
-    const payload = await this.fetchGoogleUserInfo(dto.code, dto.codeVerifier, dto.redirectUri);
+    const payload = await this.fetchGoogleUserInfo(
+      dto.code,
+      dto.codeVerifier,
+      dto.redirectUri,
+    );
 
     const { user, gameProfile } = await this.em.transactional(async (em) => {
       const googleId = String(payload.sub);
@@ -468,10 +529,13 @@ export class AuthService {
 
       const created = !found;
 
-      const finalDisplayName = (name ? name.trim().replace(/\s+/g, ' ') : 'User').slice(0, 24);
+      const finalDisplayName = (
+        name ? name.trim().replace(/\s+/g, ' ') : 'User'
+      ).slice(0, 24);
 
-      const user = found
-        ?? em.create(User, {
+      const user =
+        found ??
+        em.create(User, {
           email,
           googleId,
           imgUrl: picture,
@@ -522,7 +586,11 @@ export class AuthService {
           actionType: AuditActionType.CREATE,
           entityName: 'User',
           entityId: user.id,
-          newValue: { email: user.email, role: user.role, googleId: user.googleId },
+          newValue: {
+            email: user.email,
+            role: user.role,
+            googleId: user.googleId,
+          },
           ipAddress,
         });
         await em.flush();
@@ -580,7 +648,8 @@ export class AuthService {
     // Parse: {userId}:{platform}:{sessionId}
     const firstColon = incomingRefreshToken.indexOf(':');
     const secondColon = incomingRefreshToken.indexOf(':', firstColon + 1);
-    if (firstColon === -1 || secondColon === -1) throw new UnauthorizedException('auth.unauthorized');
+    if (firstColon === -1 || secondColon === -1)
+      throw new UnauthorizedException('auth.unauthorized');
 
     const userId = incomingRefreshToken.slice(0, firstColon);
     const platform = incomingRefreshToken.slice(firstColon + 1, secondColon);
@@ -588,7 +657,8 @@ export class AuthService {
     const stored = await this.redis.hgetall(rtKey(userId, platform));
     if (!stored) throw new UnauthorizedException('auth.unauthorized');
 
-    if (stored.tokenHash !== hashToken(incomingRefreshToken)) throw new UnauthorizedException('auth.unauthorized');
+    if (stored.tokenHash !== hashToken(incomingRefreshToken))
+      throw new UnauthorizedException('auth.unauthorized');
     if (new Date(stored.expiresAt) <= new Date()) {
       await this.redis.del(rtKey(userId, platform));
       throw new UnauthorizedException('auth.unauthorized');
@@ -610,11 +680,21 @@ export class AuthService {
       }
     }
 
-    const user = await this.em.findOne(User, { id: userId }, { fields: ['role'] });
+    const user = await this.em.findOne(
+      User,
+      { id: userId },
+      { fields: ['role'] },
+    );
     if (!user) throw new UnauthorizedException('auth.unauthorized');
 
-    const sessionTtl = parseInt(this.config.get('SESSION_TTL_SEC', '604800'), 10);
-    const accessTtl = parseInt(this.config.get('ACCESS_TOKEN_TTL_SEC', '900'), 10);
+    const sessionTtl = parseInt(
+      this.config.get('SESSION_TTL_SEC', '604800'),
+      10,
+    );
+    const accessTtl = parseInt(
+      this.config.get('ACCESS_TOKEN_TTL_SEC', '900'),
+      10,
+    );
     const now = new Date().toISOString();
 
     // Rotate refresh token
@@ -622,23 +702,48 @@ export class AuthService {
     const newRefreshToken = `${userId}:${platform}:${newSessionId}`;
     const newTokenHash = hashToken(newRefreshToken);
     // Fetch gameProfile id for embedding in token
-    const gpRecord = await this.em.findOne(GameProfile, { userId }, { fields: ['id'] });
+    const gpRecord = await this.em.findOne(
+      GameProfile,
+      { userId },
+      { fields: ['id'] },
+    );
     const gpId = gpRecord ? gpRecord.id : null;
 
     const newAccessToken = this.jwt.sign(
-      { sub: userId, sid: newSessionId, role: user.role, pf: platform, gp: gpId },
+      {
+        sub: userId,
+        sid: newSessionId,
+        role: user.role,
+        pf: platform,
+        gp: gpId,
+      },
       { expiresIn: accessTtl },
     );
 
     const commands: Array<{ cmd: string; args: any[] }> = [];
     if (stored.sessionId) {
       commands.push({ cmd: 'zrem', args: [onlineZsetKey, stored.sessionId] });
-      commands.push({ cmd: 'del', args: [presenceDetailsKey(stored.sessionId)] });
+      commands.push({
+        cmd: 'del',
+        args: [presenceDetailsKey(stored.sessionId)],
+      });
     }
     commands.push(
-      { cmd: 'hset', args: [rtKey(userId, platform), { tokenHash: newTokenHash, sessionId: newSessionId, lastActive: now }] },
+      {
+        cmd: 'hset',
+        args: [
+          rtKey(userId, platform),
+          { tokenHash: newTokenHash, sessionId: newSessionId, lastActive: now },
+        ],
+      },
       { cmd: 'expire', args: [rtKey(userId, platform), sessionTtl] },
-      { cmd: 'hset', args: [presenceDetailsKey(newSessionId), { userId, platform, lastActive: now }] },
+      {
+        cmd: 'hset',
+        args: [
+          presenceDetailsKey(newSessionId),
+          { userId, platform, lastActive: now },
+        ],
+      },
       { cmd: 'expire', args: [presenceDetailsKey(newSessionId), sessionTtl] },
       { cmd: 'zadd', args: [onlineZsetKey, Date.now(), newSessionId] },
     );
@@ -651,10 +756,18 @@ export class AuthService {
       { sessionId: newSessionId },
     );
 
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresIn: accessTtl };
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      expiresIn: accessTtl,
+    };
   }
 
-  async logout(userId: string, platform: string, ipAddress: string): Promise<void> {
+  async logout(
+    userId: string,
+    platform: string,
+    ipAddress: string,
+  ): Promise<void> {
     const stored = await this.redis.hgetall(rtKey(userId, platform));
 
     await this.redis.del(rtKey(userId, platform));
@@ -690,7 +803,10 @@ export class AuthService {
   ): Promise<void> {
     const sessions = await this.em.find(
       UserSession,
-      { userId: this.em.getReference(User, userId), status: SessionStatus.ACTIVE },
+      {
+        userId: this.em.getReference(User, userId),
+        status: SessionStatus.ACTIVE,
+      },
       { fields: ['id', 'sessionId', 'platform'] },
     );
 
@@ -699,7 +815,10 @@ export class AuthService {
     const now = new Date();
 
     for (const session of sessions) {
-      if (options?.excludePlatform && session.platform === options.excludePlatform) {
+      if (
+        options?.excludePlatform &&
+        session.platform === options.excludePlatform
+      ) {
         continue;
       }
 
@@ -723,7 +842,9 @@ export class AuthService {
   }
 
   async verifyEmail(dto: VerifyEmailRequestDto): Promise<void> {
-    const verificationRecord = await this.redis.hgetall(emailVerifyTokenKey(dto.token));
+    const verificationRecord = await this.redis.hgetall(
+      emailVerifyTokenKey(dto.token),
+    );
     const userId = verificationRecord?.userId;
     if (!userId) {
       throw new BadRequestException('auth.verification_link_expired');
@@ -755,14 +876,19 @@ export class AuthService {
     // Generate OTP and store hashed value in Redis
     const otp = generateOtp(6);
     const otpHash = hashToken(otp);
-    const otpTtl = parseInt(this.config.get('FORGOT_PASSWORD_OTP_TTL_SEC', '600'), 10);
+    const otpTtl = parseInt(
+      this.config.get('FORGOT_PASSWORD_OTP_TTL_SEC', '600'),
+      10,
+    );
     const key = forgotOtpKey(String(user.email));
 
     await this.redis.hset(key, { userId: user.id, otpHash });
     await this.redis.expire(key, otpTtl);
 
     // Send OTP email (compose template here; EmailService only sends)
-    const name = user.displayName ? String(user.displayName) : String(user.email).split('@')[0];
+    const name = user.displayName
+      ? String(user.displayName)
+      : String(user.email).split('@')[0];
     const otpHtml = `
       <h2>Forgot Password OTP - Borrowed Shapes</h2>
       <p>Hello ${name},</p>
@@ -773,7 +899,11 @@ export class AuthService {
       <p>If you didn't request this, please ignore this email.</p>
     `;
 
-    await this.email.sendMail(String(user.email), '[Borrowed Shapes] Forgot Password OTP', otpHtml);
+    await this.email.sendMail(
+      String(user.email),
+      '[Borrowed Shapes] Forgot Password OTP',
+      otpHtml,
+    );
   }
 
   async resetPassword(dto: ResetPasswordRequestDto): Promise<void> {
@@ -794,7 +924,10 @@ export class AuthService {
 
     // Check if new password is the same as current password
     if (user.passwordHash) {
-      const isSameAsOld = await bcrypt.compare(dto.newPassword, user.passwordHash);
+      const isSameAsOld = await bcrypt.compare(
+        dto.newPassword,
+        user.passwordHash,
+      );
       if (isSameAsOld) {
         throw new BadRequestException('auth.new_password_same_as_old');
       }
@@ -830,7 +963,10 @@ export class AuthService {
     }
 
     // Check if new password is the same as old password
-    const isSameAsOld = await bcrypt.compare(dto.newPassword, user.passwordHash);
+    const isSameAsOld = await bcrypt.compare(
+      dto.newPassword,
+      user.passwordHash,
+    );
     if (isSameAsOld) {
       throw new BadRequestException('auth.new_password_same_as_old');
     }
@@ -850,7 +986,11 @@ export class AuthService {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) throw new UnauthorizedException('auth.user_not_found');
 
-    const gameProfile = await this.em.findOne(GameProfile, { userId: user.id }, { populate: ['equippedAchievementId'] });
+    const gameProfile = await this.em.findOne(
+      GameProfile,
+      { userId: user.id },
+      { populate: ['equippedAchievementId'] },
+    );
 
     const base = {
       id: user.id,
@@ -863,16 +1003,21 @@ export class AuthService {
       bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
       banReason: user.banReason ?? null,
       banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
-      equippedAchievementId: gameProfile?.equippedAchievementId ? {
-        id: gameProfile.equippedAchievementId.id,
-        name: gameProfile.equippedAchievementId.name,
-        badgeImageUrl: gameProfile.equippedAchievementId.badgeImageUrl,
-      } : null,
+      equippedAchievementId: gameProfile?.equippedAchievementId
+        ? {
+            id: gameProfile.equippedAchievementId.id,
+            name: gameProfile.equippedAchievementId.name,
+            badgeImageUrl: gameProfile.equippedAchievementId.badgeImageUrl,
+          }
+        : null,
     };
 
     const result: any = { ...base };
 
-    const includes = (includeCsv ?? '').split(',').map(s => s.trim()).filter(Boolean);
+    const includes = (includeCsv ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (includes.includes('gameProfile') && gameProfile) {
       result.gameProfile = {
         id: gameProfile.id,
@@ -880,7 +1025,7 @@ export class AuthService {
         totalSessions: gameProfile.totalSessions,
         totalWins: gameProfile.totalWins,
         totalLosses: gameProfile.totalLosses,
-        totalAbandoned: gameProfile.totalAbandoned
+        totalAbandoned: gameProfile.totalAbandoned,
       };
     }
     if (includes.includes('achievements') && gameProfile) {
@@ -889,10 +1034,16 @@ export class AuthService {
         `select ua."achievementId" as id, a.name, a."badgeImageUrl" as "badgeImageUrl", ua."achievedAt" as "achievedAt"
          from game."UserAchievement" ua
          join game."Achievement" a on a.id = ua."achievementId"
-         where ua."gameProfileId" = ?`, [gameProfile.id],
+         where ua."gameProfileId" = ?`,
+        [gameProfile.id],
       );
 
-      result.achievements = (rows || []).map((r: any) => ({ id: r.id, name: r.name, badgeImageUrl: r.badgeImageUrl, achievedAt: r.achievedAt }));
+      result.achievements = (rows || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        badgeImageUrl: r.badgeImageUrl,
+        achievedAt: r.achievedAt,
+      }));
     }
 
     return result;

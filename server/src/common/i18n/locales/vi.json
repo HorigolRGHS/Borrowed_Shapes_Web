@@ -236,5 +236,26 @@
     "summary_vi_max_length": "Tóm tắt tiếng Việt không được vượt quá 500 ký tự",
     "content_vi_required": "Nội dung tiếng Việt là bắt buộc",
     "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự"
+  },
+  "downloads": {
+    "list_versions_success": "Lấy danh sách phiên bản game thành công",
+    "download_url_created": "Tạo liên kết tải xuống thành công",
+    "history_success": "Lấy lịch sử tải xuống thành công",
+    "upload_url_created": "Tạo liên kết upload thành công",
+    "upload_confirmed": "Xác nhận upload thành công, phiên bản đã được đăng ký",
+    "version_not_found": "Không tìm thấy phiên bản game",
+    "version_already_exists": "Phiên bản này đã tồn tại",
+    "file_not_found_on_storage": "Không tìm thấy file trên bộ nhớ; file có thể đã bị xóa",
+    "file_name_required": "Tên file là bắt buộc",
+    "file_version_required": "Phiên bản file là bắt buộc",
+    "file_size_invalid": "Kích thước file phải lớn hơn 0",
+    "file_path_required": "Đường dẫn file (R2 key) là bắt buộc",
+    "mime_type_required": "Loại MIME là bắt buộc",
+    "mime_type_invalid": "Loại MIME không được phép; sử dụng application/octet-stream, application/x-msdownload, hoặc application/zip",
+    "invalid_file_name": "Tên file chứa ký tự không hợp lệ hoặc path traversal"
+  },
+  "account": {
+    "profile_updated": "Cập nhật hồ sơ thành công",
+    "avatar_upload_url_created": "Tạo liên kết upload ảnh đại diện thành công"
   }
 }

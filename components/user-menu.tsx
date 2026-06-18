@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, KeyRound, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, Lock, LogOut, User, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,44 +10,89 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { handleLogout } from "@/lib/api/api-client";
+import { handleLogout, getUserProfile } from "@/lib/api/api-client";
 import { useI18n } from "@/lib/i18/i18n-context";
 
 interface Props {
   displayName: string;
   role?: string;
+  imgUrl?: string;
 }
 
-export function UserMenu({ displayName, role }: Props) {
+export function UserMenu({ displayName, role, imgUrl }: Props) {
   const { t } = useI18n();
+  const initials = displayName
+    ? displayName.substring(0, 2).toUpperCase()
+    : "US";
+
+  // For email display, let's try to get from local user profile if available
+  let email = "";
+  if (typeof window !== "undefined") {
+    const p = getUserProfile();
+    if (p && p.email) {
+      email = p.email;
+    }
+  }
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="gap-2">
-          <span className="max-w-[12ch] truncate">{displayName}</span>
-          <ChevronDown className="h-4 w-4 opacity-60" />
-        </Button>
+      <DropdownMenuTrigger className="flex items-center gap-2 group p-1 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+        <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-xs shadow-md overflow-hidden">
+          {imgUrl ? (
+            <img src={imgUrl} alt={displayName} className="w-full h-full object-cover" />
+          ) : (
+            initials
+          )}
+        </div>
+        <span className="max-w-[12ch] truncate text-sm font-medium text-foreground hidden sm:block">
+          {displayName}
+        </span>
+        <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          <div className="flex flex-col">
-            <span className="font-medium">{displayName}</span>
-            {role && (
-              <span className="text-xs text-muted-foreground">{role}</span>
-            )}
-          </div>
+      
+      <DropdownMenuContent align="end" className="w-64 bg-card border-border dark:bg-[#0f0f1a] dark:border-[#1e1e3a] text-foreground dark:text-white rounded-xl shadow-2xl p-2 mt-2">
+        <DropdownMenuLabel className="px-2 py-3 flex flex-col gap-1">
+          <span className="font-bold truncate">{displayName}</span>
+          {email && (
+            <span className="text-xs text-muted-foreground dark:text-gray-400 truncate">{email}</span>
+          )}
+          {role && (
+            <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider mt-1">
+              {role}
+            </span>
+          )}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/auth/change-password" className="gap-2">
-            <KeyRound className="h-4 w-4" />
-            {t("auth.change_password")}
+        <DropdownMenuSeparator className="bg-border dark:bg-[#1e1e3a]" />
+        
+        <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mt-1">
+          <Link href="/profile" className="flex items-center gap-3">
+            <User className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+            {t("profile.title") || "Profile"}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => handleLogout()} className="gap-2 text-destructive focus:text-destructive">
-          <LogOut className="h-4 w-4" />
-          {t("common.logout")}
+
+        <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5">
+          <Link href="/download" className="flex items-center gap-3">
+            <Download className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+            {t("header.download") || "Download"}
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mb-1">
+          <Link href="/auth/change-password" className="flex items-center gap-3">
+            <Lock className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+            {t("auth.change_password") || "Change Password"}
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator className="bg-border dark:bg-[#1e1e3a]" />
+        
+        <DropdownMenuItem 
+          onClick={() => handleLogout()} 
+          className="cursor-pointer focus:bg-destructive/10 focus:text-destructive dark:focus:bg-red-500/10 dark:focus:text-red-400 text-destructive dark:text-red-500 rounded-lg px-3 py-2.5 mt-1"
+        >
+          <LogOut className="h-4 w-4 mr-3" />
+          {t("common.logout") || "Log out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

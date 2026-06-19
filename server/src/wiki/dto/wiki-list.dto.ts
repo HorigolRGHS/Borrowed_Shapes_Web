@@ -56,7 +56,7 @@ export class WikiListItemRevisionDto {
   summary!: string | null;
 
   @ApiProperty({ nullable: true, type: String })
-  summary_vi!: string | null;
+  summaryVi!: string | null;
 
   @ApiProperty({ nullable: true, type: WikiAuthorDto })
   author!: WikiAuthorDto | null;
@@ -73,13 +73,13 @@ export class WikiListItemDto {
   slug!: string;
 
   @ApiProperty()
-  slug_vi!: string;
+  slugVi!: string;
 
   @ApiProperty()
   title!: string;
 
   @ApiProperty()
-  title_vi!: string;
+  titleVi!: string;
 
   @ApiProperty()
   isPublished!: boolean;

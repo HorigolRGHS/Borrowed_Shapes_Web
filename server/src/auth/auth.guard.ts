@@ -40,6 +40,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractToken(request);
     if (!token) throw new UnauthorizedException('auth.unauthorized');
 
+
     try {
       const payload = await this.jwt.verifyAsync(token, {
         secret: this.config.get<string>('JWT_SECRET', 'change-me-in-production'),

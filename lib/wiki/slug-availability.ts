@@ -2,14 +2,14 @@ import { fetchRelatedTitles } from "./related-api";
 
 export interface AvailableSlugs {
   slug: string;
-  slug_vi: string;
+  slugVi: string;
   bumped: boolean;
 }
 
 export class SlugAvailabilityExhausted extends Error {
-  constructor(public readonly slug: string, public readonly slug_vi: string) {
+  constructor(public readonly slug: string, public readonly slugVi: string) {
     super(
-      `Could not find a free slug for "${slug}" / "${slug_vi}" within iteration cap`,
+      `Could not find a free slug for "${slug}" / "${slugVi}" within iteration cap`,
     );
     this.name = "SlugAvailabilityExhausted";
   }
@@ -23,10 +23,10 @@ function bumpSlug(slug: string, attempt: number): string {
 
 export async function findAvailableSlugs(
   slug: string,
-  slug_vi: string,
+  slugVi: string,
 ): Promise<AvailableSlugs> {
   let candidateEn = slug;
-  let candidateVi = slug_vi;
+  let candidateVi = slugVi;
   let attemptEn = 1;
   let attemptVi = 1;
   let resolved = false;
@@ -45,17 +45,17 @@ export async function findAvailableSlugs(
     }
     if (viTaken) {
       attemptVi++;
-      candidateVi = bumpSlug(slug_vi, attemptVi);
+      candidateVi = bumpSlug(slugVi, attemptVi);
     }
   }
 
   if (!resolved) {
-    throw new SlugAvailabilityExhausted(slug, slug_vi);
+    throw new SlugAvailabilityExhausted(slug, slugVi);
   }
 
   return {
     slug: candidateEn,
-    slug_vi: candidateVi,
-    bumped: candidateEn !== slug || candidateVi !== slug_vi,
+    slugVi: candidateVi,
+    bumped: candidateEn !== slug || candidateVi !== slugVi,
   };
 }

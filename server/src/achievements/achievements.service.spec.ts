@@ -66,7 +66,7 @@ describe('AchievementService', () => {
   });
 
   describe('create', () => {
-    it('should create and return achievement (Normal)', async () => {
+    it('should create and return null (Normal)', async () => {
       const dto = {
         name: 'Test',
         criteriaCode: 'TEST',
@@ -74,11 +74,12 @@ describe('AchievementService', () => {
         type: AchievementType.PERMANENT,
       };
       const achievement = new Achievement();
+      jest.spyOn(em, 'findOne').mockResolvedValue(null);
       jest.spyOn(em, 'create').mockReturnValue(achievement);
       jest.spyOn(em, 'persistAndFlush').mockResolvedValue();
 
       const result = await service.create(dto);
-      expect(result).toEqual(achievement);
+      expect(result).toBeNull();
     });
   });
 

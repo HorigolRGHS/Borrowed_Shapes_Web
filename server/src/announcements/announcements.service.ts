@@ -5,7 +5,15 @@ import { Announcement } from '../entities/Announcement';
 import { User } from '../entities/User';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
-import { ListAnnouncementsQueryDto, AnnouncementListResponseDto, AnnouncementResponseDto } from './dto/announcements-response.dto';
+import {
+  ListAnnouncementsQueryDto,
+  AnnouncementPublicListResponseDto,
+  AnnouncementPublicListItemDto,
+  AnnouncementPublicDetailDto,
+  AnnouncementAdminListResponseDto,
+  AnnouncementAdminListItemDto,
+  AnnouncementAdminDetailDto,
+} from './dto/announcements-response.dto';
 import { escapeLike } from '../common/utils/sql-like';
 
 function clamp(n: number, min: number, max: number): number {
@@ -13,32 +21,35 @@ function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
 
+type Lang = 'vi' | 'en';
+
+function parseLang(raw?: string): Lang {
+  return raw?.toLowerCase().startsWith('vi') ? 'vi' : 'en';
+}
+
 @Injectable()
 export class AnnouncementService {
   constructor(private readonly em: EntityManager) { }
 
-  async findAllPaginated(
+  // --- Public (user-facing) ---
+
+  async findAllPublic(
     query: ListAnnouncementsQueryDto,
-    isAdmin = false,
-  ): Promise<AnnouncementListResponseDto> {
+    lang: Lang,
+  ): Promise<AnnouncementPublicListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
 
-    const where: FilterQuery<Announcement> = {};
+    const where: FilterQuery<Announcement> = {
+      isPublished: true,
+      publishedAt: { $lte: new Date() },
+    };
 
-    // For public views, only show published announcements
-    if (!isAdmin) {
-      where.isPublished = true;
-      where.publishedAt = { $lte: new Date() };
-    }
-
-    // Type filter
     if (query.type) {
       where.type = query.type;
     }
 
-    // Search query
     if (query.q && query.q.trim().length > 0) {
       const pattern = `%${escapeLike(query.q.trim())}%`;
       where.$or = [
@@ -67,23 +78,18 @@ export class AnnouncementService {
       },
     );
 
-    const items: AnnouncementResponseDto[] = announcements.map((a) => this.toResponseDto(a));
+    const items: AnnouncementPublicListItemDto[] = announcements.map(
+      (a) => this.toPublicListDto(a, lang),
+    );
 
-    return {
-      items,
-      total,
-      page,
-      limit,
-      totalPages: Math.max(1, Math.ceil(total / limit)),
-    };
+    return { items, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
   }
 
-  async findOne(idOrSlug: string, isAdmin = false): Promise<AnnouncementResponseDto> {
+  async findOnePublic(slug: string, lang: Lang): Promise<AnnouncementPublicDetailDto> {
     const where: FilterQuery<Announcement> = {
       $or: [
-        { id: idOrSlug },
-        { slug: idOrSlug },
-        { slugVi: idOrSlug },
+        { slug },
+        { slugVi: slug },
       ],
     };
 
@@ -95,18 +101,79 @@ export class AnnouncementService {
       throw new NotFoundException('announcements.not_found');
     }
 
-    // Check publication criteria for public views
-    if (!isAdmin) {
-      const now = new Date();
-      if (!announcement.isPublished || (announcement.publishedAt && announcement.publishedAt > now)) {
-        throw new NotFoundException('announcements.not_found');
-      }
+    const now = new Date();
+    if (!announcement.isPublished || (announcement.publishedAt && announcement.publishedAt > now)) {
+      throw new NotFoundException('announcements.not_found');
     }
 
-    return this.toResponseDto(announcement);
+    return this.toPublicDetailDto(announcement, lang);
   }
 
-  async create(dto: CreateAnnouncementDto, authorId: string): Promise<AnnouncementResponseDto> {
+  // --- Admin ---
+
+  async findAllAdmin(
+    query: ListAnnouncementsQueryDto,
+  ): Promise<AnnouncementAdminListResponseDto> {
+    const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
+    const limit = clamp(query.limit ?? 10, 1, 50);
+    const offset = (page - 1) * limit;
+
+    const where: FilterQuery<Announcement> = {};
+
+    if (query.type) {
+      where.type = query.type;
+    }
+
+    if (query.q && query.q.trim().length > 0) {
+      const pattern = `%${escapeLike(query.q.trim())}%`;
+      where.$or = [
+        { title: { $ilike: pattern } },
+        { titleVi: { $ilike: pattern } },
+        { summary: { $ilike: pattern } },
+        { summaryVi: { $ilike: pattern } },
+      ];
+    }
+
+    const sortBy = query.sortBy ?? 'publishedAt';
+    const order = query.order ?? 'desc';
+
+    const [announcements, total] = await this.em.findAndCount(
+      Announcement,
+      where,
+      {
+        populate: ['authorId'],
+        orderBy: [
+          { isPinned: 'desc' },
+          { [sortBy]: order },
+          { id: 'desc' },
+        ],
+        limit,
+        offset,
+      },
+    );
+
+    const items: AnnouncementAdminListItemDto[] = announcements.map(
+      (a) => this.toAdminListDto(a),
+    );
+
+    return { items, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+  }
+
+  async findOneAdmin(id: string): Promise<AnnouncementAdminDetailDto> {
+    const announcement = await this.em.findOne(Announcement, { id }, {
+      populate: ['authorId'],
+    });
+
+    if (!announcement) {
+      throw new NotFoundException('announcements.not_found');
+    }
+
+    return this.toAdminDetailDto(announcement);
+  }
+
+  // --- Mutations (unchanged) ---
+
+  async create(dto: CreateAnnouncementDto, authorId: string): Promise<null> {
     // Check if slug or slug_vi are already taken
     const existing = await this.em.findOne(Announcement, {
       $or: [
@@ -135,13 +202,10 @@ export class AnnouncementService {
 
     await this.em.persistAndFlush(announcement);
 
-    // Reload with author populating
-    await this.em.populate(announcement, ['authorId']);
-
-    return this.toResponseDto(announcement);
+    return null;
   }
 
-  async update(id: string, dto: UpdateAnnouncementDto): Promise<AnnouncementResponseDto> {
+  async update(id: string, dto: UpdateAnnouncementDto): Promise<null> {
     const announcement = await this.em.findOne(Announcement, { id }, {
       populate: ['authorId'],
     });
@@ -183,7 +247,7 @@ export class AnnouncementService {
 
     await this.em.flush();
 
-    return this.toResponseDto(announcement);
+    return null;
   }
 
   async delete(id: string): Promise<void> {
@@ -194,8 +258,69 @@ export class AnnouncementService {
     await this.em.removeAndFlush(announcement);
   }
 
-  private toResponseDto(a: Announcement): AnnouncementResponseDto {
+  // --- Mappers ---
+
+  private buildAuthor(a: Announcement) {
     const author = a.authorId;
+    return author && author.id ? {
+      id: author.id,
+      displayName: (author.displayName as string | undefined) ?? '',
+    } : null;
+  }
+
+  private toPublicListDto(a: Announcement, lang: Lang): AnnouncementPublicListItemDto {
+    const isVi = lang === 'vi';
+    return {
+      slug: isVi ? a.slugVi : a.slug,
+      title: isVi ? a.titleVi : a.title,
+      summary: isVi ? a.summaryVi : a.summary,
+      type: a.type,
+      isPinned: a.isPinned,
+      isPublished: a.isPublished,
+      publishedAt: a.publishedAt,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+      author: this.buildAuthor(a),
+    };
+  }
+
+  private toPublicDetailDto(a: Announcement, lang: Lang): AnnouncementPublicDetailDto {
+    const isVi = lang === 'vi';
+    return {
+      slug: isVi ? a.slugVi : a.slug,
+      title: isVi ? a.titleVi : a.title,
+      summary: isVi ? a.summaryVi : a.summary,
+      content: isVi ? a.contentVi : a.content,
+      type: a.type,
+      isPinned: a.isPinned,
+      isPublished: a.isPublished,
+      publishedAt: a.publishedAt,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+      author: this.buildAuthor(a),
+    };
+  }
+
+  private toAdminListDto(a: Announcement): AnnouncementAdminListItemDto {
+    return {
+      id: a.id,
+      slug: a.slug,
+      slugVi: a.slugVi,
+      title: a.title,
+      titleVi: a.titleVi,
+      summary: a.summary,
+      summaryVi: a.summaryVi,
+      type: a.type,
+      isPinned: a.isPinned,
+      isPublished: a.isPublished,
+      publishedAt: a.publishedAt,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+      author: this.buildAuthor(a),
+    };
+  }
+
+  private toAdminDetailDto(a: Announcement): AnnouncementAdminDetailDto {
     return {
       id: a.id,
       slug: a.slug,
@@ -212,10 +337,7 @@ export class AnnouncementService {
       publishedAt: a.publishedAt,
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
-      author: author && author.id ? {
-        id: author.id,
-        displayName: (author.displayName as string | undefined) ?? '',
-      } : null,
+      author: this.buildAuthor(a),
     };
   }
 }

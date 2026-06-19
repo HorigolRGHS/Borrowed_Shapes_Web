@@ -14,19 +14,19 @@ function slugReason(slug: string): string | null {
 
 export const wikiFormSchema = z.object({
   title: z.string().trim().min(1, "wiki.title_required_error"),
-  title_vi: z.string().trim().min(1, "wiki.title_required_error"),
+  titleVi: z.string().trim().min(1, "wiki.title_required_error"),
   slug: z.string().superRefine((s, ctx) => {
     const reason = slugReason(s);
     if (reason) ctx.addIssue({ code: "custom", message: reason });
   }),
-  slug_vi: z.string().superRefine((s, ctx) => {
+  slugVi: z.string().superRefine((s, ctx) => {
     const reason = slugReason(s);
     if (reason) ctx.addIssue({ code: "custom", message: reason });
   }),
   summary: z.string(),
-  summary_vi: z.string(),
+  summaryVi: z.string(),
   content: z.string(),
-  content_vi: z.string(),
+  contentVi: z.string(),
   isPublished: z.boolean(),
   metadata: wikiMetadataSchema,
 });
@@ -35,13 +35,13 @@ export type WikiFormValue = z.infer<typeof wikiFormSchema>;
 
 export const emptyWikiFormValue: WikiFormValue = {
   title: "",
-  title_vi: "",
+  titleVi: "",
   slug: "",
-  slug_vi: "",
+  slugVi: "",
   summary: "",
-  summary_vi: "",
+  summaryVi: "",
   content: "",
-  content_vi: "",
+  contentVi: "",
   isPublished: false,
   metadata: emptyWikiMetadata,
 };

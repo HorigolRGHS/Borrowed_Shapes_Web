@@ -14,6 +14,7 @@ import { UpdateForumDto } from './dto/update-forums.dto';
 import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
 import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 import { GameProfile } from '../entities/GameProfile';
+import { previewText } from '../common/utils/strip-markdown';
 
 @Injectable()
 export class ForumService {
@@ -29,7 +30,7 @@ export class ForumService {
     order = 'desc',
     month,
     year,
-  }: any) {
+  }: any, user?: { userId?: string; role?: string }) {
     const offset = (page - 1) * limit;
     const clauses: string[] = [];
     const params: any[] = [];
@@ -59,6 +60,19 @@ export class ForumService {
       params.push(startDate, endDate);
     }
 
+    // ARCHIVED visibility:
+  // - Admin sees all
+  // - Authenticated non-admin sees ARCHIVED only when they are the author
+  // - Unauthenticated users or others don't see ARCHIVED
+  if (!(user && user.role === 'ADMIN')) {
+    if (user && user.userId) {
+      clauses.push(`(t."status" <> 'ARCHIVED' OR t."authorId" = ?)`);
+      params.push(user.userId);
+    } else {
+      clauses.push(`t."status" <> 'ARCHIVED'`);
+    }
+  }
+
     const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
 
     // Build order clause: isPinned DESC first, then sortBy with order
@@ -72,7 +86,7 @@ export class ForumService {
     const rows = await this.em.execute(
       `
       select t."id", t."title", t."slug", t."content", t."imageUrl", t."score", 
-             t."viewCount", t."isPinned", t."isLocked", t."postType", t."status",
+             t."viewCount", t."isPinned", t."postType", t."status",
              t."createdAt", t."updatedAt",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
              a."badgeImageUrl" as "authorBadgeImageUrl",
@@ -96,16 +110,30 @@ export class ForumService {
 
     const total = Number(countRes?.[0]?.cnt || 0);
 
+    const items = (rows || []).map((row: any) => ({
+      ...row,
+      content: previewText(row.content ?? '', 100),
+    }));
+
     return {
-      items: rows || [],
+      items,
       meta: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
 
   // Detail + increment viewCount + sanitize author data
-  async findOne(id: string) {
+  async findOne(id: string, user?: { userId?: string; role?: string }) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
+
+    // ARCHIVED visibility check before exposing or incrementing views
+  if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
+    const isAdmin = user && user.role === 'ADMIN';
+    const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
+    if (!isAdmin && !isAuthor) {
+      throw new NotFoundException('forum.thread_not_found');
+    }
+  }
 
     // defensively increment viewCount on the entity and flush
     thread.viewCount = (Number(thread.viewCount) || 0) + 1;
@@ -114,7 +142,7 @@ export class ForumService {
     const gp = await this.em.findOne(
       GameProfile,
       { userId: thread.authorId },
-      { populate: ['equippedAchievement'] },
+      { populate: ['equippedAchievementId'] },
     );
 
     const badgeImageUrl =
@@ -128,11 +156,12 @@ export class ForumService {
       badgeImageUrl,
     };
 
-    const sanitizedCategory = {
+    const sanitizedCategory = thread.categoryId
+    ? {
       id: thread.categoryId.id,
       name: thread.categoryId.name,
-      slug: thread.categoryId.slug,
-    };
+      slug: thread.categoryId.slug
+    } : null;
 
     // Return sanitized thread
     return {
@@ -144,7 +173,6 @@ export class ForumService {
       score: thread.score,
       viewCount: thread.viewCount,
       isPinned: thread.isPinned,
-      isLocked: thread.isLocked,
       postType: thread.postType,
       status: thread.status,
       createdAt: thread.createdAt,
@@ -157,7 +185,7 @@ export class ForumService {
   // Create — auth required
   async create(dto: CreateForumDto, authorId: string, isAdmin = false) {
     // Validate input
-    if ((dto.isPinned !== undefined || dto.isLocked !== undefined) && !isAdmin) {
+    if ((dto.isPinned !== undefined) && !isAdmin) {
       throw new ForbiddenException('forum.forbidden_admin_only');
     }
     if (!dto.title || !dto.title.trim()) {
@@ -199,7 +227,6 @@ export class ForumService {
       imageUrl: dto.imageUrl ?? null,
       postType: dto.postType ?? Web$46ForumPostType.GENERAL,
       isPinned: dto.isPinned ?? false,
-      isLocked: dto.isLocked ?? false,
       status: dto.status ?? Web$46ForumThreadStatus.OPEN,
       createdAt: now,
       updatedAt: now,
@@ -268,12 +295,11 @@ export class ForumService {
       thread.status = dto.status;
     }
 
-    if (dto.isPinned !== undefined || dto.isLocked !== undefined) {
+    if (dto.isPinned !== undefined) {
       if (!isAdmin) {
         throw new ForbiddenException('forum.forbidden_admin_only');
       }
       if (dto.isPinned !== undefined) thread.isPinned = dto.isPinned;
-      if (dto.isLocked !== undefined) thread.isLocked = dto.isLocked;
     }
 
     thread.updatedAt = new Date();

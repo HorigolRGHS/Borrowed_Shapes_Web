@@ -49,7 +49,7 @@ export default async function WikiRevisionPage({
     throw err;
   }
 
-  const title = detail.matchedSlugLocale === 'vi' ? detail.title_vi : detail.title;
+  const title = detail.matchedSlugLocale === 'vi' ? detail.titleVi : detail.title;
   const author = revision.author?.displayName ?? '—';
   const created = new Date(revision.createdAt).toLocaleString();
 
@@ -105,7 +105,7 @@ export default async function WikiRevisionPage({
               <h3 className="text-xs uppercase text-muted-foreground mb-2">
                 Tiếng Việt
               </h3>
-              <WikiContentRenderer markdown={revision.content_vi} />
+              <WikiContentRenderer markdown={revision.contentVi} />
             </div>
           </CardContent>
         </Card>

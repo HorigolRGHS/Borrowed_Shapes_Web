@@ -14,11 +14,11 @@ interface Props {
 
 export function WikiCard({ item, showDraftBadge = false, href }: Props) {
   const { t, locale } = useI18n();
-  const title = locale === "vi" ? item.title_vi : item.title;
-  const slug = locale === "vi" ? item.slug_vi : item.slug;
+  const title = locale === "vi" ? item.titleVi : item.title;
+  const slug = locale === "vi" ? item.slugVi : item.slug;
   const summary =
     locale === "vi"
-      ? item.latestRevision?.summary_vi
+      ? item.latestRevision?.summaryVi
       : item.latestRevision?.summary;
   const linkHref = href ?? `/wiki/${encodeURIComponent(slug)}`;
 

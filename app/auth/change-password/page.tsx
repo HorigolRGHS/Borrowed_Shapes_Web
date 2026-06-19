@@ -13,9 +13,8 @@ import {
   changePasswordSchema,
   ChangePasswordFormValues,
 } from "@/models/dtos/auth.dto";
-import { AuthCard } from "@/components/auth/auth-card";
+import { AuthCard, AuthLogo } from "@/components/auth/auth-card";
 import { PasswordInput } from "@/components/auth/password-input";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -29,6 +28,14 @@ export default function ChangePasswordPage() {
   const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
+
+  const triggerShake = () => {
+    setShake(false);
+    setTimeout(() => setShake(true), 10);
+    setTimeout(() => setShake(false), 600);
+  };
 
   useEffect(() => {
     if (!getUserProfile()) router.push("/auth/login");
@@ -41,6 +48,7 @@ export default function ChangePasswordPage() {
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const { confirmPassword: _ignored, ...payload } = data;
       const response = await axios.post(
@@ -52,19 +60,26 @@ export default function ChangePasswordPage() {
         toast.success(t("auth.password_changed_success"));
         form.reset();
       } else {
-        toast.error(response.data?.message || "Change password failed");
+        setErrorMsg(response.data?.message || t("auth.change_password_failed"));
+        triggerShake();
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || error.message || "Change password failed",
+      setErrorMsg(
+        error.response?.data?.message || error.message || t("auth.change_password_failed"),
       );
+      triggerShake();
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthCard title={t("auth.change_password")}>
+    <AuthCard 
+      logo={<AuthLogo />}
+      title={t("auth.change_password")}
+      error={errorMsg}
+      shake={shake}
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -72,9 +87,9 @@ export default function ChangePasswordPage() {
             name="oldPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.old_password")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.old_password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput autoComplete="current-password" {...field} />
+                  <PasswordInput autoComplete="current-password" placeholder="••••••••" {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -85,9 +100,9 @@ export default function ChangePasswordPage() {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.new_password")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.new_password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput autoComplete="new-password" {...field} />
+                  <PasswordInput autoComplete="new-password" placeholder="••••••••" {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -98,24 +113,30 @@ export default function ChangePasswordPage() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.confirm_password")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.confirm_password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput autoComplete="new-password" {...field} />
+                  <PasswordInput autoComplete="new-password" placeholder="••••••••" {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("auth.changing_password")}
-              </>
-            ) : (
-              t("auth.change_password")
-            )}
-          </Button>
+          <div className="pt-2">
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all flex justify-center items-center font-orbitron tracking-wide"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t("auth.changing_password")}
+                </>
+              ) : (
+                t("auth.change_password")
+              )}
+            </button>
+          </div>
         </form>
       </Form>
     </AuthCard>

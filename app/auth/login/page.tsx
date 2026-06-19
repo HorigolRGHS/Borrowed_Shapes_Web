@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import {
   setUserProfile,
@@ -24,9 +24,6 @@ import {
 import { AuthCard, AuthLogo } from "@/components/auth/auth-card";
 import { PasswordInput } from "@/components/auth/password-input";
 import { GoogleButton } from "@/components/auth/google-button";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
@@ -41,11 +38,22 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
 
   useEffect(() => {
     const error = searchParams.get("error");
-    if (error) toast.error(t(error) || error);
+    if (error) {
+      setErrorMsg(t(error) || error);
+      triggerShake();
+    }
   }, [searchParams, t]);
+
+  const triggerShake = () => {
+    setShake(false);
+    setTimeout(() => setShake(true), 10);
+    setTimeout(() => setShake(false), 600);
+  };
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,6 +62,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const response = await axios.post<ApiResponse<LoginResponse>>(
         "/api/auth/login",
@@ -69,14 +78,16 @@ export default function LoginPage() {
         void syncProfile(accessToken);
         router.push(user.role === "ADMIN" ? "/dashboard" : "/");
       } else {
-        toast.error(res.message || t("auth.login_failed"));
+        setErrorMsg(res.message || t("auth.login_failed"));
+        triggerShake();
       }
     } catch (error: any) {
-      toast.error(
+      setErrorMsg(
         error.response?.data?.message ||
           error.message ||
           t("auth.login_failed"),
       );
+      triggerShake();
     } finally {
       setLoading(false);
     }
@@ -87,25 +98,48 @@ export default function LoginPage() {
       logo={<AuthLogo />}
       title={t("auth.welcome_back")}
       description={t("auth.login_subtitle")}
+      error={errorMsg}
+      shake={shake}
       footer={
-        <span className="text-muted-foreground">
+        <span>
           {t("auth.no_account")}{" "}
-          <Link href="/auth/register" className="font-semibold text-primary hover:underline">
+          <Link href="/auth/register" className="text-amber-500 hover:text-amber-400 font-medium transition-colors">
             {t("auth.register")}
           </Link>
         </span>
       }
     >
+      <GoogleButton href="/api/auth/google/start?platform=web" className="mb-3">
+        {t("auth.continue_with_google")}
+      </GoogleButton>
+
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 h-px bg-[#1e1e3a]" />
+        <span className="text-gray-600 text-xs font-sans">
+          {t("auth.or_continue_with")}
+        </span>
+        <div className="flex-1 h-px bg-[#1e1e3a]" />
+      </div>
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.email")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.email")}</FormLabel>
                 <FormControl>
-                  <Input type="email" autoComplete="email" placeholder="name@example.com" {...field} />
+                  <div className="relative">
+                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input 
+                      type="email" 
+                      autoComplete="email" 
+                      placeholder="name@example.com" 
+                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      {...field} 
+                    />
+                  </div>
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -117,10 +151,10 @@ export default function LoginPage() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel>{t("auth.password")}</FormLabel>
+                  <FormLabel className="text-gray-300 font-sans">{t("auth.password")}</FormLabel>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-xs font-medium text-primary hover:underline"
+                    className="text-xs text-gray-400 hover:text-white transition-colors"
                   >
                     {t("auth.forgot_password")}
                   </Link>
@@ -132,29 +166,26 @@ export default function LoginPage() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={loading} className="w-full" size="lg">
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("auth.signing_in")}
-              </>
-            ) : (
-              t("auth.login")
-            )}
-          </Button>
+          
+          <div className="pt-2">
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all flex justify-center items-center font-orbitron tracking-wide"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t("auth.signing_in")}
+                </>
+              ) : (
+                t("auth.login")
+              )}
+            </button>
+          </div>
         </form>
       </Form>
 
-      <div className="relative my-6">
-        <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs uppercase text-muted-foreground">
-          {t("auth.or_continue_with")}
-        </span>
-      </div>
-
-      <GoogleButton href="/api/auth/google/start?platform=web">
-        {t("auth.login_google")}
-      </GoogleButton>
     </AuthCard>
   );
 }

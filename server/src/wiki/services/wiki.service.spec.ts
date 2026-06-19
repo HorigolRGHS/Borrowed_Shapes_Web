@@ -138,9 +138,9 @@ describe('WikiService.getBySlug', () => {
     em.findOne.mockResolvedValueOnce({
       id: 'p1',
       slug: 'dragon-knight',
-      slug_vi: 'hiep-si-rong',
+      slugVi: 'hiep-si-rong',
       title: 'Dragon Knight',
-      title_vi: 'Hiệp sĩ rồng',
+      titleVi: 'Hiệp sĩ rồng',
       metadataJson: null,
       isPublished: true,
       createdAt: new Date(),
@@ -148,9 +148,9 @@ describe('WikiService.getBySlug', () => {
       latestRevisionId: {
         id: 'r1',
         content: 'a',
-        content_vi: 'b',
+        contentVi: 'b',
         summary: null,
-        summary_vi: null,
+        summaryVi: null,
         authorId: { id: 'u1', displayName: 'A' },
         createdAt: new Date(),
       },
@@ -159,13 +159,13 @@ describe('WikiService.getBySlug', () => {
     expect(out.matchedSlugLocale).toBe('en');
   });
 
-  it('marks matched locale as vi when slug matches `slug_vi` column', async () => {
+  it('marks matched locale as vi when slug matches `slugVi` column', async () => {
     em.findOne.mockResolvedValueOnce({
       id: 'p1',
       slug: 'dragon-knight',
-      slug_vi: 'hiep-si-rong',
+      slugVi: 'hiep-si-rong',
       title: 'Dragon Knight',
-      title_vi: 'Hiệp sĩ rồng',
+      titleVi: 'Hiệp sĩ rồng',
       metadataJson: null,
       isPublished: true,
       createdAt: new Date(),
@@ -173,9 +173,9 @@ describe('WikiService.getBySlug', () => {
       latestRevisionId: {
         id: 'r1',
         content: 'a',
-        content_vi: 'b',
+        contentVi: 'b',
         summary: null,
-        summary_vi: null,
+        summaryVi: null,
         authorId: { id: 'u1', displayName: 'A' },
         createdAt: new Date(),
       },
@@ -186,7 +186,7 @@ describe('WikiService.getBySlug', () => {
 
   it('throws when latestRevisionId is null', async () => {
     em.findOne.mockResolvedValueOnce({
-      id: 'p1', slug: 'a', slug_vi: 'b', title: 'A', title_vi: 'B',
+      id: 'p1', slug: 'a', slugVi: 'b', title: 'A', titleVi: 'B',
       metadataJson: null, isPublished: true,
       createdAt: new Date(), updatedAt: new Date(),
       latestRevisionId: null,
@@ -199,13 +199,13 @@ describe('WikiService.getBySlug', () => {
       const slug = 'a'.repeat(200);
       em.findOne.mockResolvedValueOnce({
         id: 'p1',
-        slug, slug_vi: 'vi-slug',
-        title: 'T', title_vi: 'TV',
+        slug, slugVi: 'vi-slug',
+        title: 'T', titleVi: 'TV',
         metadataJson: null, isPublished: true,
         createdAt: new Date(), updatedAt: new Date(),
         latestRevisionId: {
-          id: 'r1', content: 'a', content_vi: 'b',
-          summary: null, summary_vi: null,
+          id: 'r1', content: 'a', contentVi: 'b',
+          summary: null, summaryVi: null,
           authorId: null, createdAt: new Date(),
         },
       });
@@ -276,7 +276,7 @@ describe('WikiService.search', () => {
   it('escapes ILIKE wildcards in search q', async () => {
     await service.search({ q: '50%_off', page: 1, limit: 20 }, false);
     const where = em.findAndCount.mock.calls[0][1];
-    const orClause = where.$or as { title?: { $ilike: string }; title_vi?: { $ilike: string } }[];
+    const orClause = where.$or as { title?: { $ilike: string }; titleVi?: { $ilike: string } }[];
     expect(orClause).toBeDefined();
     expect(orClause[0].title?.$ilike).toContain('50\\%\\_off');
   });
@@ -344,8 +344,8 @@ describe('WikiService.getHistory', () => {
     });
     em.findAndCount.mockResolvedValueOnce([
       [
-        { id: 'r2', summary: null, summary_vi: null, authorId: null, createdAt: new Date() },
-        { id: 'r1', summary: null, summary_vi: null, authorId: null, createdAt: new Date() },
+        { id: 'r2', summary: null, summaryVi: null, authorId: null, createdAt: new Date() },
+        { id: 'r1', summary: null, summaryVi: null, authorId: null, createdAt: new Date() },
       ],
       2,
     ]);
@@ -428,8 +428,8 @@ describe('WikiService.getRevisionDiff', () => {
     em.findOne
       .mockResolvedValueOnce({
         id: 'r1', pageId: { id: 'p1' },
-        content: 'a', content_vi: 'b',
-        summary: null, summary_vi: null,
+        content: 'a', contentVi: 'b',
+        summary: null, summaryVi: null,
         authorId: null, createdAt: new Date('2026-05-01'),
       })
       .mockResolvedValueOnce(null);
@@ -443,14 +443,14 @@ describe('WikiService.getRevisionDiff', () => {
     em.findOne
       .mockResolvedValueOnce({
         id: 'r2', pageId: { id: 'p1' },
-        content: 'line1\nline2\nline3', content_vi: 'a',
-        summary: null, summary_vi: null,
+        content: 'line1\nline2\nline3', contentVi: 'a',
+        summary: null, summaryVi: null,
         authorId: null, createdAt: new Date('2026-05-02'),
       })
       .mockResolvedValueOnce({
         id: 'r1', pageId: { id: 'p1' },
-        content: 'line1\nline3', content_vi: 'a',
-        summary: null, summary_vi: null,
+        content: 'line1\nline3', contentVi: 'a',
+        summary: null, summaryVi: null,
         authorId: null, createdAt: new Date('2026-05-01'),
       });
     const out = await service.getRevisionDiff('p1', 'r2');
@@ -464,14 +464,14 @@ describe('WikiService.getRevisionDiff', () => {
       em.findOne
         .mockResolvedValueOnce({
           id: 'r2', pageId: { id: 'p1' },
-          content: '', content_vi: '',
-          summary: null, summary_vi: null,
+          content: '', contentVi: '',
+          summary: null, summaryVi: null,
           authorId: null, createdAt: new Date('2026-05-02'),
         })
         .mockResolvedValueOnce({
           id: 'r1', pageId: { id: 'p1' },
-          content: 'line1\nline2', content_vi: 'a',
-          summary: null, summary_vi: null,
+          content: 'line1\nline2', contentVi: 'a',
+          summary: null, summaryVi: null,
           authorId: null, createdAt: new Date('2026-05-01'),
         });
       const out = await service.getRevisionDiff('p1', 'r2');
@@ -506,28 +506,28 @@ describe('WikiService.findBySlugs', () => {
 
   it('returns one entry per input slug, exists flag set per match', async () => {
     em.find.mockResolvedValue([
-      { id: '1', slug: 'link', slug_vi: 'lien-ket', title: 'Link', title_vi: 'Liên Kết' },
-      { id: '2', slug: 'zelda', slug_vi: 'zelda-vi', title: 'Zelda', title_vi: 'Zelda VI' },
+      { id: '1', slug: 'link', slugVi: 'lien-ket', title: 'Link', titleVi: 'Liên Kết' },
+      { id: '2', slug: 'zelda', slugVi: 'zelda-vi', title: 'Zelda', titleVi: 'Zelda VI' },
     ]);
 
     const result = await service.findBySlugs(['link', 'zelda', 'ganondorf']);
 
     expect(result).toEqual([
-      { slug: 'link', title: 'Link', title_vi: 'Liên Kết', exists: true },
-      { slug: 'zelda', title: 'Zelda', title_vi: 'Zelda VI', exists: true },
+      { slug: 'link', title: 'Link', titleVi: 'Liên Kết', exists: true },
+      { slug: 'zelda', title: 'Zelda', titleVi: 'Zelda VI', exists: true },
       { slug: 'ganondorf', exists: false },
     ]);
   });
 
-  it('matches input against either slug or slug_vi', async () => {
+  it('matches input against either slug or slugVi', async () => {
     em.find.mockResolvedValue([
-      { id: '1', slug: 'link', slug_vi: 'lien-ket', title: 'Link', title_vi: 'Liên Kết' },
+      { id: '1', slug: 'link', slugVi: 'lien-ket', title: 'Link', titleVi: 'Liên Kết' },
     ]);
 
     const result = await service.findBySlugs(['lien-ket']);
 
     expect(result).toEqual([
-      { slug: 'lien-ket', title: 'Link', title_vi: 'Liên Kết', exists: true },
+      { slug: 'lien-ket', title: 'Link', titleVi: 'Liên Kết', exists: true },
     ]);
   });
 
@@ -536,5 +536,113 @@ describe('WikiService.findBySlugs', () => {
 
     expect(result).toEqual([]);
     expect(em.find).not.toHaveBeenCalled();
+  });
+});
+
+describe('WikiService public mappers (locale)', () => {
+  let service: WikiService;
+  let em: { findAndCount: jest.Mock; findOne: jest.Mock };
+
+  const page = () => ({
+    id: 'p1',
+    slug: 'dragon-knight',
+    slugVi: 'hiep-si-rong',
+    title: 'Dragon Knight',
+    titleVi: 'Hiệp sĩ rồng',
+    metadataJson: null,
+    isPublished: true,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-02'),
+    latestRevisionId: {
+      id: 'r1',
+      content: 'EN body',
+      contentVi: 'VI body',
+      summary: 'EN summary',
+      summaryVi: 'VI summary',
+      authorId: { id: 'u1', displayName: 'A' },
+      createdAt: new Date('2026-01-02'),
+    },
+  });
+
+  beforeEach(async () => {
+    em = {
+      findAndCount: jest.fn().mockResolvedValue([[page()], 1]),
+      findOne: jest.fn().mockResolvedValue(page()),
+    };
+    const moduleRef = await Test.createTestingModule({
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('list (en) returns flat keys, no content, no Vi', async () => {
+    const out = await service.list({ page: 1, limit: 20 }, false, 'en');
+    const item = out.items[0] as any;
+    expect(item.title).toBe('Dragon Knight');
+    expect(item.slug).toBe('dragon-knight');
+    expect(item).not.toHaveProperty('titleVi');
+    expect(item).not.toHaveProperty('slugVi');
+    expect(item).not.toHaveProperty('content');
+    expect(item.latestRevision.summary).toBe('EN summary');
+    expect(item.latestRevision).not.toHaveProperty('summaryVi');
+  });
+
+  it('list (vi) returns vi values under the same keys', async () => {
+    const out = await service.list({ page: 1, limit: 20 }, false, 'vi');
+    const item = out.items[0] as any;
+    expect(item.title).toBe('Hiệp sĩ rồng');
+    expect(item.slug).toBe('hiep-si-rong');
+    expect(item.latestRevision.summary).toBe('VI summary');
+  });
+
+  it('getBySlug (en) returns flat detail with content, no Vi', async () => {
+    const out = (await service.getBySlug('dragon-knight', 'en')) as any;
+    expect(out.title).toBe('Dragon Knight');
+    expect(out.slug).toBe('dragon-knight');
+    expect(out.latestRevision.content).toBe('EN body');
+    expect(out.latestRevision.summary).toBe('EN summary');
+    expect(out).not.toHaveProperty('titleVi');
+    expect(out.latestRevision).not.toHaveProperty('contentVi');
+    expect(out.matchedSlugLocale).toBe('en');
+  });
+
+  it('getBySlug (vi) returns vi content + marks matchedSlugLocale vi when vi slug matched', async () => {
+    const out = (await service.getBySlug('hiep-si-rong', 'vi')) as any;
+    expect(out.title).toBe('Hiệp sĩ rồng');
+    expect(out.slug).toBe('hiep-si-rong');
+    expect(out.latestRevision.content).toBe('VI body');
+    expect(out.matchedSlugLocale).toBe('vi');
+  });
+
+  it('getBySlug defaults to en when locale omitted', async () => {
+    const out = (await service.getBySlug('dragon-knight')) as any;
+    expect(out.title).toBe('Dragon Knight');
+    expect(out.latestRevision.content).toBe('EN body');
+  });
+
+  it('getBySlug builds $or filter using camelCase slugVi property', async () => {
+    await service.getBySlug('hiep-si-rong', 'vi');
+    const where = em.findOne.mock.calls[0][1];
+    expect(JSON.stringify(where)).toContain('slugVi');
+    expect(JSON.stringify(where)).not.toContain('slug_vi');
+  });
+
+  it('search (vi) returns vi values under flat keys', async () => {
+    const out = await service.search({ q: 'rong', page: 1, limit: 20 }, false, 'vi');
+    const item = out.items[0] as any;
+    expect(item.title).toBe('Hiệp sĩ rồng');
+    expect(item.slug).toBe('hiep-si-rong');
+    expect(item.latestRevision.summary).toBe('VI summary');
+    expect(item).not.toHaveProperty('titleVi');
+    expect(item).not.toHaveProperty('slugVi');
+  });
+
+  it('list (admin) emits bilingual slugVi/titleVi keys', async () => {
+    const out = await service.list({ page: 1, limit: 20 }, true);
+    const item = out.items[0] as any;
+    expect(item).toHaveProperty('slugVi', 'hiep-si-rong');
+    expect(item).toHaveProperty('titleVi', 'Hiệp sĩ rồng');
+    expect(item.slug).toBe('dragon-knight');
+    expect(item.title).toBe('Dragon Knight');
   });
 });

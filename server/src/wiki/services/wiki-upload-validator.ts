@@ -1,6 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
-import { fileTypeFromBuffer } from 'file-type';
+// import { fileTypeFromBuffer } from 'file-type';
 import { ALLOWED_UPLOAD_MIMES } from '../dto/wiki-constants';
+type FileTypeModule = typeof import('file-type');
+
+async function loadFileTypeModule(): Promise<FileTypeModule> {
+  return new Function('specifier', 'return import(specifier)')(
+    'file-type',
+  ) as Promise<FileTypeModule>;
+}
 
 export interface UploadValidationResult {
   mimeType: string;
@@ -16,6 +23,8 @@ export async function validateUploadOrThrow(
     throw new BadRequestException('wiki.upload_invalid_type');
   }
 
+  // const detected = await fileTypeFromBuffer(buffer);
+  const { fileTypeFromBuffer } = await loadFileTypeModule();
   const detected = await fileTypeFromBuffer(buffer);
   if (!detected || !ALLOWED_UPLOAD_MIMES.includes(detected.mime as any)) {
     throw new BadRequestException('wiki.upload_invalid_type');
@@ -26,11 +35,12 @@ export async function validateUploadOrThrow(
 
   // Sanitize: strip path separators and disallowed chars; cap length.
   const base = originalName.split(/[\\/]/).pop() ?? 'upload';
-  const sanitized = base
-    .replace(/[^A-Za-z0-9._-]/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^\.+/, '')
-    .slice(0, 100) || 'upload';
+  const sanitized =
+    base
+      .replace(/[^A-Za-z0-9._-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^\.+/, '')
+      .slice(0, 100) || 'upload';
 
   return { mimeType: detected.mime, sanitizedName: sanitized };
 }

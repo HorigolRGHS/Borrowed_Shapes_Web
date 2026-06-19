@@ -92,7 +92,7 @@ export function WikiHistoryList({
           </TableHeader>
           <TableBody>
             {items.map((it) => {
-              const summary = locale === "vi" ? it.summary_vi : it.summary;
+              const summary = locale === "vi" ? it.summaryVi : it.summary;
               const created = new Date(it.createdAt).toLocaleString(locale);
               const author = it.author?.displayName ?? "—";
               return (

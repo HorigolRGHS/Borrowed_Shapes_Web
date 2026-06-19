@@ -37,7 +37,8 @@
     "password_not_set": "Tài khoản này chưa thiết lập mật khẩu",
     "current_password_incorrect": "Mật khẩu hiện tại không chính xác",
     "new_password_same_as_old": "Mật khẩu mới không được trùng với mật khẩu hiện tại",
-    "session_not_found": "Không tìm thấy phiên làm việc"
+    "session_not_found": "Không tìm thấy phiên làm việc",
+    "unverified_email_ban_reason": "Tài khoản đang chờ xác thực email"
   },
   "game": {
     "run_initialized": "Khởi tạo lượt chơi thành công",
@@ -235,5 +236,34 @@
     "summary_vi_max_length": "Tóm tắt tiếng Việt không được vượt quá 500 ký tự",
     "content_vi_required": "Nội dung tiếng Việt là bắt buộc",
     "content_vi_must_be_string": "Nội dung tiếng Việt phải là chuỗi ký tự"
+  },
+  "game_results": {
+    "list_success": "Lấy danh sách kết quả game thành công",
+    "detail_success": "Lấy chi tiết kết quả game thành công",
+    "leaderboard_success": "Lấy bảng xếp hạng thành công",
+    "delete_success": "Xóa kết quả game thành công",
+    "not_found": "Không tìm thấy kết quả game",
+    "player_not_found": "Không tìm thấy người chơi"
+  },
+  "downloads": {
+    "list_versions_success": "Lấy danh sách phiên bản game thành công",
+    "download_url_created": "Tạo liên kết tải xuống thành công",
+    "history_success": "Lấy lịch sử tải xuống thành công",
+    "upload_url_created": "Tạo liên kết upload thành công",
+    "upload_confirmed": "Xác nhận upload thành công, phiên bản đã được đăng ký",
+    "version_not_found": "Không tìm thấy phiên bản game",
+    "version_already_exists": "Phiên bản này đã tồn tại",
+    "file_not_found_on_storage": "Không tìm thấy file trên bộ nhớ; file có thể đã bị xóa",
+    "file_name_required": "Tên file là bắt buộc",
+    "file_version_required": "Phiên bản file là bắt buộc",
+    "file_size_invalid": "Kích thước file phải lớn hơn 0",
+    "file_path_required": "Đường dẫn file (R2 key) là bắt buộc",
+    "mime_type_required": "Loại MIME là bắt buộc",
+    "mime_type_invalid": "Loại MIME không được phép; sử dụng application/octet-stream, application/x-msdownload, hoặc application/zip",
+    "invalid_file_name": "Tên file chứa ký tự không hợp lệ hoặc path traversal"
+  },
+  "account": {
+    "profile_updated": "Cập nhật hồ sơ thành công",
+    "avatar_upload_url_created": "Tạo liên kết upload ảnh đại diện thành công"
   }
 }

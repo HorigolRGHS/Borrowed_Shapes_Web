@@ -7,7 +7,12 @@ import { Menu } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { getUserProfile } from "@/lib/api/api-client";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -61,6 +66,7 @@ export default function DashboardLayout({
     { href: "/dashboard/wiki", label: "Wiki" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
     { href: "/dashboard/announcements", label: t("common.announcements") },
+    { href: "/dashboard/downloads", label: t("admin.download.nav_label") || "Download" },
   ];
 
   const isActive = (href: string) =>
@@ -96,16 +102,24 @@ export default function DashboardLayout({
           <div className="flex items-center gap-2 min-w-0">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon" aria-label="Open navigation">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open navigation"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-4">
-                <SheetTitle className="text-xl font-bold mb-6">Admin Panel</SheetTitle>
+                <SheetTitle className="text-xl font-bold mb-6">
+                  Admin Panel
+                </SheetTitle>
                 {NavList}
               </SheetContent>
             </Sheet>
-            <h1 className={cn("text-lg font-semibold truncate")}>{t("common.dashboard")}</h1>
+            <h1 className={cn("text-lg font-semibold truncate")}>
+              {t("common.dashboard")}
+            </h1>
           </div>
           <div className="flex items-center gap-1">
             <LanguageDropdown />

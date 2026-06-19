@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { WikiPublicHeader } from "@/components/wiki/wiki-public-header";
+import { PublicFooter } from "@/components/layout/public-footer";
 
 export default function WikiLayout({
   children,
@@ -12,6 +13,7 @@ export default function WikiLayout({
         <WikiPublicHeader />
       </Suspense>
       {children}
+      <PublicFooter />
     </div>
   );
 }

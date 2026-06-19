@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { getUserProfile } from "@/lib/api/api-client";
-import { PublicHeader } from "@/components/layout/public-header";
-import { PublicFooter } from "@/components/layout/public-footer";
 import { DownloadCTA } from "@/components/home/download-cta";
 import { HeroSection } from "@/components/home/hero-section";
 import { GameIntroSection } from "@/components/home/game-intro-section";
+import { KnowledgeBaseSection } from "@/components/home/knowledge-base-section";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -26,18 +25,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans">
-      <PublicHeader />
       <HeroSection />
       <GameIntroSection />
+      <KnowledgeBaseSection />
 
       <main className="flex-1 flex flex-col items-center justify-center pt-16 pb-16 px-4">
-
-
         {/* New Download CTA Section */}
         <DownloadCTA user={user} />
       </main>
-
-      <PublicFooter />
     </div>
   );
 }

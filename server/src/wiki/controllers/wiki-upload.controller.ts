@@ -78,8 +78,8 @@ export class WikiUploadController {
       } as any);
       await this.em.flush();
     } catch (err) {
-      // Compensating delete: storage already wrote the file but DB persist failed.
-      // Best-effort cleanup; storage.delete swallows ENOENT.
+      // Compensating delete: R2 already stored the object but DB persist failed.
+      // Best-effort cleanup; R2 DeleteObject is idempotent (no error if key is gone).
       await this.storage.delete(stored.key).catch(() => {});
       throw err;
     }

@@ -160,6 +160,7 @@
     "category_not_found": "Danh mục không tồn tại",
     "category_required": "Danh mục là bắt buộc",
     "category_invalid_uuid": "Danh mục phải là một UUID hợp lệ",
+    "category_official_admin_only": "Chỉ quản trị viên mới có thể đăng trong danh mục chính thức",
     "title_required": "Tiêu đề là bắt buộc",
     "title_must_be_string": "Tiêu đề phải là một chuỗi",
     "title_length_invalid": "Tiêu đề phải có từ 3 đến 200 ký tự",

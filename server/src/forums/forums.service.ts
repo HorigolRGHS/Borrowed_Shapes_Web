@@ -15,6 +15,7 @@ import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
 import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 import { GameProfile } from '../entities/GameProfile';
 import { previewText } from '../common/utils/strip-markdown';
+import { resolveLocale, Locale } from '../common/utils/resolve-locale';
 
 @Injectable()
 export class ForumService {
@@ -30,7 +31,9 @@ export class ForumService {
     order = 'desc',
     month,
     year,
-  }: any, user?: { userId?: string; role?: string }) {
+  }: any,
+     user?: { userId?: string; role?: string },
+     locale: Locale = 'en',) {
     const offset = (page - 1) * limit;
     const clauses: string[] = [];
     const params: any[] = [];
@@ -65,7 +68,7 @@ export class ForumService {
   // - Authenticated non-admin sees ARCHIVED only when they are the author
   // - Unauthenticated users or others don't see ARCHIVED
   if (!(user && user.role === 'ADMIN')) {
-    if (user && user.userId) {
+    if (user?.userId) {
       clauses.push(`(t."status" <> 'ARCHIVED' OR t."authorId" = ?)`);
       params.push(user.userId);
     } else {
@@ -74,7 +77,8 @@ export class ForumService {
   }
 
     const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
-
+    const categoryNameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
+    const categorySlugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
     // Build order clause: isPinned DESC first, then sortBy with order
     const validSortFields = ['score', 'createdAt', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
@@ -85,12 +89,12 @@ export class ForumService {
     // Select specific columns to avoid leaking sensitive data
     const rows = await this.em.execute(
       `
-      select t."id", t."title", t."slug", t."content", t."imageUrl", t."score", 
-             t."viewCount", t."isPinned", t."postType", t."status",
+      select t."id", t."slug", t."title", t."content", t."score", 
+             t."viewCount", t."isPinned", t."postType",
              t."createdAt", t."updatedAt",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
              a."badgeImageUrl" as "authorBadgeImageUrl",
-             c."id" as "categoryId", c."name" as "categoryName", c."slug" as "categorySlug"
+             c."id" as "categoryId", ${categoryNameField} as "categoryName", ${categorySlugField} as "categorySlug"
       from web."ForumThread" t
       inner join auth."User" u on u."id" = t."authorId"
       left join game."GameProfile" gp on gp."userId" = u."id"
@@ -110,10 +114,38 @@ export class ForumService {
 
     const total = Number(countRes?.[0]?.cnt || 0);
 
-    const items = (rows || []).map((row: any) => ({
-      ...row,
-      content: previewText(row.content ?? '', 100),
-    }));
+    // const items = (rows || []).map((row: any) => ({
+    //   ...row,
+    //   content: previewText(row.content ?? '', 100),
+    // }));
+
+    const items = (rows || []).map((row: any) => {
+    const base = {
+      title: row.title,
+      excerpt: previewText(row.content ?? '', 100),
+      score: row.score,
+      viewCount: row.viewCount,
+      isPinned: row.isPinned,
+      postType: row.postType,
+      author: {
+        id: row.authorId,
+        displayName: row.authorName,
+        imgUrl: row.authorAvatar,
+        badgeImageUrl: row.authorBadgeImageUrl,
+      },
+      category: {
+        id: row.categoryId,
+        name: row.categoryName,
+        slug: row.categorySlug,
+      },
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+
+    return user?.role === 'ADMIN'
+      ? { ...base, id: row.id }
+      : { ...base, slug: row.slug };
+    });
 
     return {
       items,
@@ -121,69 +153,134 @@ export class ForumService {
     };
   }
 
-  // Detail + increment viewCount + sanitize author data
-  async findOne(id: string, user?: { userId?: string; role?: string }) {
-    const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
-    if (!thread) throw new NotFoundException('forum.thread_not_found');
+  // // Detail + increment viewCount + sanitize author data
+  // async findOne(id: string, user?: { userId?: string; role?: string }) {
+  //   const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
+  //   if (!thread) throw new NotFoundException('forum.thread_not_found');
 
-    // ARCHIVED visibility check before exposing or incrementing views
+  //   // ARCHIVED visibility check before exposing or incrementing views
+  // if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
+  //   const isAdmin = user && user.role === 'ADMIN';
+  //   const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
+  //   if (!isAdmin && !isAuthor) {
+  //     throw new NotFoundException('forum.thread_not_found');
+  //   }
+  // }
+
+  //   // defensively increment viewCount on the entity and flush
+  //   thread.viewCount = (Number(thread.viewCount) || 0) + 1;
+  //   await this.em.flush();
+
+  //   const gp = await this.em.findOne(
+  //     GameProfile,
+  //     { userId: thread.authorId },
+  //     { populate: ['equippedAchievementId'] },
+  //   );
+
+  //   const badgeImageUrl =
+  //     gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
+
+  //   // Sanitize user data: exclude email, password, and other sensitive fields
+  //   const sanitizedAuthor = {
+  //     id: thread.authorId.id,
+  //     displayName: thread.authorId.displayName,
+  //     imgUrl: thread.authorId.imgUrl,
+  //     badgeImageUrl,
+  //   };
+
+  //   const sanitizedCategory = thread.categoryId
+  //   ? {
+  //     id: thread.categoryId.id,
+  //     name: thread.categoryId.name,
+  //     slug: thread.categoryId.slug
+  //   } : null;
+
+  //   // Return sanitized thread
+  //   return {
+  //     id: thread.id,
+  //     title: thread.title,
+  //     slug: thread.slug,
+  //     content: thread.content,
+  //     imageUrl: thread.imageUrl,
+  //     score: thread.score,
+  //     viewCount: thread.viewCount,
+  //     isPinned: thread.isPinned,
+  //     postType: thread.postType,
+  //     status: thread.status,
+  //     createdAt: thread.createdAt,
+  //     updatedAt: thread.updatedAt,
+  //     author: sanitizedAuthor,
+  //     category: sanitizedCategory,
+  //   };
+  // }
+
+
+  async findOneBySlug(
+  slug: string,
+  locale: Locale = 'en',
+  user?: { userId?: string; role?: string },
+) {
+  const thread = await this.em.findOne(ForumThread, { slug }, { populate: ['authorId', 'categoryId'] });
+  if (!thread) throw new NotFoundException('forum.thread_not_found');
+
   if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
-    const isAdmin = user && user.role === 'ADMIN';
-    const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
-    if (!isAdmin && !isAuthor) {
-      throw new NotFoundException('forum.thread_not_found');
-    }
+    const isAdmin = user?.role === 'ADMIN';
+    const isAuthor = user?.userId && String(thread.authorId.id) === String(user.userId);
+    if (!isAdmin && !isAuthor) throw new NotFoundException('forum.thread_not_found');
   }
 
-    // defensively increment viewCount on the entity and flush
-    thread.viewCount = (Number(thread.viewCount) || 0) + 1;
+  thread.viewCount = (Number(thread.viewCount) || 0) + 1;
     await this.em.flush();
 
-    const gp = await this.em.findOne(
+  return this.mapThreadDetail(thread, locale);
+}
+
+async findOneById(id: string, locale: Locale = 'en') {
+  const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
+  if (!thread) throw new NotFoundException('forum.thread_not_found');
+  return this.mapThreadDetail(thread, locale);
+}
+
+private mapThreadDetail(thread: ForumThread, locale: Locale) {
+  const category = thread.categoryId;
+  const gp = this.em.findOne(
       GameProfile,
       { userId: thread.authorId },
       { populate: ['equippedAchievementId'] },
     );
 
     const badgeImageUrl =
-      gp && (gp as any).equippedAchievement ? (gp as any).equippedAchievement.badgeImageUrl : null;
-
-    // Sanitize user data: exclude email, password, and other sensitive fields
-    const sanitizedAuthor = {
+      gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
+  return {
+    id: thread.id,
+    title: thread.title,
+    slug: thread.slug,
+    content: thread.content,
+    score: thread.score,
+    viewCount: thread.viewCount,
+    isPinned: thread.isPinned,
+    postType: thread.postType,
+    status: thread.status,
+    createdAt: thread.createdAt,
+    updatedAt: thread.updatedAt,
+    author:{
       id: thread.authorId.id,
       displayName: thread.authorId.displayName,
       imgUrl: thread.authorId.imgUrl,
       badgeImageUrl,
-    };
-
-    const sanitizedCategory = thread.categoryId
-    ? {
-      id: thread.categoryId.id,
-      name: thread.categoryId.name,
-      slug: thread.categoryId.slug
-    } : null;
-
-    // Return sanitized thread
-    return {
-      id: thread.id,
-      title: thread.title,
-      slug: thread.slug,
-      content: thread.content,
-      imageUrl: thread.imageUrl,
-      score: thread.score,
-      viewCount: thread.viewCount,
-      isPinned: thread.isPinned,
-      postType: thread.postType,
-      status: thread.status,
-      createdAt: thread.createdAt,
-      updatedAt: thread.updatedAt,
-      author: sanitizedAuthor,
-      category: sanitizedCategory,
-    };
-  }
+      },
+    category: category
+      ? {
+          id: category.id,
+          name: locale === 'vi' ? category.nameVi : category.name,
+          slug: locale === 'vi' ? category.slugVi : category.slug,
+        }
+      : null,
+  };
+}
 
   // Create — auth required
-  async create(dto: CreateForumDto, authorId: string, isAdmin = false) {
+  async create(dto: CreateForumDto, authorId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
     // Validate input
     if ((dto.isPinned !== undefined) && !isAdmin) {
       throw new ForbiddenException('forum.forbidden_admin_only');
@@ -205,6 +302,9 @@ export class ForumService {
     // Check category exists (required)
     const category = await this.em.findOne(ForumCategory, { id: dto.categoryId });
     if (!category) throw new BadRequestException('forum.category_not_found');
+    if (category.isOfficial && !isAdmin) {
+      throw new ForbiddenException('forum.category_official_admin_only');
+    }
 
     // Prepare thread data
     const now = new Date();
@@ -237,7 +337,7 @@ export class ForumService {
   }
 
   // Update — author only
-  async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false) {
+  async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
     if (!thread) throw new NotFoundException('forum.thread_not_found');
 
@@ -281,9 +381,12 @@ export class ForumService {
     }
 
     // Category: if provided, must exist (required)
-    if (dto.categoryId) {
+    if (dto.categoryId !== undefined) {
       const category = await this.em.findOne(ForumCategory, { id: dto.categoryId });
       if (!category) throw new BadRequestException('forum.category_not_found');
+      if (category.isOfficial && !isAdmin) {
+        throw new ForbiddenException('forum.category_official_admin_only');
+      }
       thread.categoryId = category;
     }
 

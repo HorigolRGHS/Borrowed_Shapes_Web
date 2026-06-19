@@ -25,9 +25,7 @@ export class ListForumsDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiPropertyOptional({
-    example: 'get over it',
-  })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   q?: string;
@@ -60,7 +58,6 @@ export class ListForumsDto {
   order?: 'asc' | 'desc' = 'desc';
 
   @ApiPropertyOptional({
-    example: 6,
     minimum: 1,
     maximum: 12,
     description: 'Filter by month (1-12). Requires year param.',

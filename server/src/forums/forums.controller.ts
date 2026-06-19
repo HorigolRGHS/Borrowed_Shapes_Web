@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Headers,
 } from '@nestjs/common';
 import { ForumService } from './forums.service';
 import { CreateForumDto } from './dto/create-forums.dto';
@@ -16,6 +17,7 @@ import { UpdateForumDto } from './dto/update-forums.dto';
 import { ListForumsDto } from './dto/list-forums.dto';
 import { VoteDto } from './dto/vote.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { resolveLocale } from '../common/utils/resolve-locale';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Public } from '../auth/decorators/public.decorator';
@@ -26,6 +28,7 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('Forum')
 @Controller('forum')
@@ -37,32 +40,50 @@ export class ForumController {
   @Get()
   @ApiOperation({
     summary: 'List forum threads',
-    description: 'Thread `content` is a ~100-character plaintext preview (markdown stripped). Full content is available via GET /forum/:id.',
+    description: 'Thread `content` is a ~100-character',
   })
   async findAll(
     @Query() query: ListForumsDto,
     @CurrentUser() user?: RequestUser,
+    @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.list(query, user);
+    const locale = resolveLocale(acceptLanguage);
+    const data = await this.forumService.list(query, user, locale);
     return okResponse('forum.list_success', data, 'GET /forum');
   }
 
-  // Get thread detail (public)
   @Public()
-  @Get(':id')
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get forum thread detail by slug' })
+  @ApiParam({ name: 'slug', description: 'Thread slug' })
+  async findOneBySlug(
+    @Param('slug') slug: string,
+    @CurrentUser() user?: RequestUser,
+    @Headers('accept-language') acceptLanguage?: string,
+  ): Promise<ApiResponseDto<any>> {
+    const locale = resolveLocale(acceptLanguage);
+    const data = await this.forumService.findOneBySlug(slug, locale, user);
+    return okResponse('forum.detail_success', data, `GET /forum/slug/${slug}`);
+  }
+
+  // Get thread detail (public)
+  @Roles('ADMIN')
+  @Get('id/:id')
   @ApiOperation({
-    summary: 'Get forum thread detail',
+    summary: 'Get forum thread detail by ID',
   })
   @ApiParam({
     name: 'id',
     description: 'Thread ID',
   })
-  async findOne(
+  async findOneById(
     @Param('id') id: string,
-    @CurrentUser() user?: RequestUser,
+    // @CurrentUser() user?: RequestUser,
+    @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.forumService.findOne(id, user);
-    return okResponse('forum.detail_success', data, `GET /forum/${id}`);
+    const locale = resolveLocale(acceptLanguage);
+    const data = await this.forumService.findOneById(id, locale);
+    return okResponse('forum.detail_success', data, `GET /forum/id/${id}`);
   }
 
   // Create thread (requires auth)
@@ -74,9 +95,11 @@ export class ForumController {
   async create(
     @Body() createForumDto: CreateForumDto,
     @CurrentUser() user: RequestUser,
+    @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
+    const locale = resolveLocale(acceptLanguage);
     const isAdmin = user.role === 'ADMIN';
-    await this.forumService.create(createForumDto, user.userId, isAdmin);
+    await this.forumService.create(createForumDto, user.userId, isAdmin, locale);
     return okResponse('forum.create_success', null, 'POST /forum');
   }
 
@@ -93,9 +116,11 @@ export class ForumController {
     @Param('id') id: string,
     @Body() updateForumDto: UpdateForumDto,
     @CurrentUser() user: RequestUser,
+    @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
-    await this.forumService.update(id, updateForumDto, user.userId, isAdmin);
+    const locale = resolveLocale(acceptLanguage);
+    await this.forumService.update(id, updateForumDto, user.userId, isAdmin, locale);
     return okResponse('forum.update_success', null, `PATCH /forum/${id}`);
   }
 

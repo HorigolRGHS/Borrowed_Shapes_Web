@@ -16,31 +16,22 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateForumDto {
   @ApiProperty({
     example: 'How to get over it?',
-    minLength: 3,
-    maxLength: 200,
   })
   @IsString({ message: 'forum.title_must_be_string' })
-  @Length(3, 200, { message: 'forum.title_length_invalid' })
   title!: string;
 
   @ApiPropertyOptional({
     example: 'how-to-get-over-it',
-    minLength: 0,
-    maxLength: 200,
   })
   @IsOptional()
   @IsString({ message: 'forum.slug_must_be_string' })
-  @Length(0, 200, { message: 'forum.slug_length_invalid' })
   @Matches(/^[a-z0-9\-]*$/, { message: 'forum.invalid_slug_format' })
   slug?: string;
 
   @ApiProperty({
     example: 'I am struggling to get over it. Any tips?',
-    minLength: 1,
-    maxLength: 20000,
   })
   @IsString({ message: 'forum.content_must_be_string' })
-  @Length(1, 20000, { message: 'forum.content_length_invalid' })
   content!: string;
 
   @ApiProperty({

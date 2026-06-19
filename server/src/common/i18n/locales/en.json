@@ -245,5 +245,26 @@
     "delete_success": "Game result deleted successfully",
     "not_found": "Game result not found",
     "player_not_found": "Player not found"
+  },
+  "downloads": {
+    "list_versions_success": "Game versions retrieved successfully",
+    "download_url_created": "Download URL created successfully",
+    "history_success": "Download history retrieved successfully",
+    "upload_url_created": "Upload URL created successfully",
+    "upload_confirmed": "File upload confirmed and version registered",
+    "version_not_found": "Game version not found",
+    "version_already_exists": "This version already exists",
+    "file_not_found_on_storage": "File not found on storage; it may have been removed",
+    "file_name_required": "File name is required",
+    "file_version_required": "File version is required",
+    "file_size_invalid": "File size must be greater than 0",
+    "file_path_required": "File path (R2 key) is required",
+    "mime_type_required": "MIME type is required",
+    "mime_type_invalid": "MIME type not allowed; use application/octet-stream, application/x-msdownload, or application/zip",
+    "invalid_file_name": "File name contains invalid characters or path traversal"
+  },
+  "account": {
+    "profile_updated": "Profile updated successfully",
+    "avatar_upload_url_created": "Avatar upload URL created successfully"
   }
 }

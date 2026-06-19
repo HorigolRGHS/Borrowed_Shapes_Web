@@ -145,7 +145,7 @@ export default function ForgotPasswordPage() {
         step === 1
           ? t("auth.forgot_password_title")
           : step === 2
-          ? "Enter Verification Code"
+          ? t("auth.verification_code_title")
           : t("auth.reset_password_title")
       }
       description={
@@ -154,10 +154,10 @@ export default function ForgotPasswordPage() {
           : step === 2
           ? (
             <>
-              We've sent a 6-digit code to <span className="text-amber-400 font-medium">{email}</span>. Please enter it below.
+              {t("auth.otp_sent_desc_1")} <span className="text-amber-400 font-medium">{email}</span>{t("auth.otp_sent_desc_2")}
             </>
           )
-          : "Enter your new password to complete the reset."
+          : t("auth.reset_password_desc")
       }
       error={errorMsg}
       shake={shake}
@@ -246,7 +246,7 @@ export default function ForgotPasswordPage() {
                   onClick={handleVerifyOTP}
                   className="w-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all flex justify-center items-center font-orbitron tracking-wide"
                 >
-                  Verify Code
+                  {t("auth.verify_code")}
                 </button>
               </div>
             </>

@@ -60,12 +60,12 @@ export default function ChangePasswordPage() {
         toast.success(t("auth.password_changed_success"));
         form.reset();
       } else {
-        setErrorMsg(response.data?.message || "Change password failed");
+        setErrorMsg(response.data?.message || t("auth.change_password_failed"));
         triggerShake();
       }
     } catch (error: any) {
       setErrorMsg(
-        error.response?.data?.message || error.message || "Change password failed",
+        error.response?.data?.message || error.message || t("auth.change_password_failed"),
       );
       triggerShake();
     } finally {

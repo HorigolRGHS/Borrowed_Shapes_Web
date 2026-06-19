@@ -93,8 +93,8 @@ export default function RegisterPage() {
     return (
       <AuthCard
         logo={<AuthLogo />}
-        title="Check Your Email"
-        description="We've sent a verification link to your email address."
+        title={t("auth.check_your_email")}
+        description={t("auth.verification_link_sent")}
         error={errorMsg}
         shake={shake}
       >
@@ -110,7 +110,7 @@ export default function RegisterPage() {
           </div>
 
           <p className="text-gray-400 text-sm text-center font-sans max-w-[280px]">
-            Please click the link in the email to verify your account and continue.
+            {t("auth.verify_instruction")}
           </p>
 
           <div className="w-full pt-4">
@@ -125,7 +125,7 @@ export default function RegisterPage() {
               ) : (
                 <RefreshCw size={16} />
               )}
-              {countdown > 0 ? `Resend Email (${countdown}s)` : 'Resend Email'}
+              {countdown > 0 ? `${t("auth.resend_email")} (${countdown}s)` : t("auth.resend_email")}
             </button>
           </div>
 
@@ -136,7 +136,7 @@ export default function RegisterPage() {
             }}
             className="text-amber-500 hover:text-amber-400 text-sm font-medium transition-colors"
           >
-            Back to Login
+            {t("auth.back_to_login")}
           </button>
         </div>
       </AuthCard>
@@ -160,7 +160,7 @@ export default function RegisterPage() {
       }
     >
       <GoogleButton href="/api/auth/google/start?platform=web" className="mb-3">
-        Continue with Google
+        {t("auth.continue_with_google")}
       </GoogleButton>
 
       <div className="flex items-center gap-3 mb-4">

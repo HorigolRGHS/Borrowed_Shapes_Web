@@ -8,7 +8,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'node:path';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { GlobalExceptionFilter } from '../src/common/filters/http-exception.filter';
@@ -57,7 +56,6 @@ describe('Wiki module (e2e)', () => {
     const i18n = app.get(I18nService);
     app.useGlobalInterceptors(new StandardApiResponseInterceptor(i18n));
     app.useGlobalFilters(new GlobalExceptionFilter(i18n));
-    app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
     await app.init();
 
     adminToken = await login(app, ADMIN_EMAIL, ADMIN_PASSWORD);
@@ -364,7 +362,7 @@ describe('Wiki module (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', PNG_HEADER, { filename: 'pic.png', contentType: 'image/png' })
         .expect(200);
-      expect(res.body.data.url).toMatch(/\/uploads\/wiki\/[a-f0-9-]+\.png$/);
+      expect(res.body.data.url).toMatch(/^https?:\/\/.+\/wiki\/[a-f0-9-]+\.png$/);
       expect(res.body.data.mimeType).toBe('image/png');
     });
 

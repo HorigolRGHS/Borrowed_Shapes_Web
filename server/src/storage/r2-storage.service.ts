@@ -107,6 +107,24 @@ export class R2StorageService {
   }
 
   /**
+   * Upload an object directly to R2 (server-side put, no presigned URL).
+   */
+  async putObject(
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType || 'application/octet-stream',
+      }),
+    );
+  }
+
+  /**
    * Delete an object from the bucket.
    */
   async deleteObject(key: string): Promise<void> {

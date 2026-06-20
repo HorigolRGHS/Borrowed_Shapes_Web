@@ -7,6 +7,7 @@ import { PublicFooter } from "@/components/layout/public-footer";
 import { DownloadCTA } from "@/components/home/download-cta";
 import { HeroSection } from "@/components/home/hero-section";
 import { GameIntroSection } from "@/components/home/game-intro-section";
+import { AnnouncementsSection } from "@/components/home/announcements-section";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -28,6 +29,7 @@ export default function Home() {
     <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans">
       <PublicHeader />
       <HeroSection />
+      <AnnouncementsSection />
       <GameIntroSection />
 
       <main className="flex-1 flex flex-col items-center justify-center pt-16 pb-16 px-4">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
+import { cn } from "@/lib/utils";
 import { useUserRole } from "@/lib/wiki/use-user-role";
 import { rollbackWiki } from "@/lib/wiki/api";
 import type { WikiHistoryItem } from "@/models/dtos/wiki.dto";
@@ -76,6 +77,61 @@ export function WikiHistoryList({
       setBusy(null);
     }
   };
+
+  // Regular users see a read-only edit-history timeline — no status column,
+  // no rollback. Admins get the full management table below.
+  if (!isAdmin) {
+    return (
+      <div>
+        <ol className="relative border-l border-border ml-2">
+          {items.map((it) => {
+            const summary = locale === "vi" ? it.summaryVi : it.summary;
+            const created = new Date(it.createdAt).toLocaleString(locale);
+            const author = it.author?.displayName ?? "—";
+            return (
+              <li key={it.id} className="mb-6 ml-6">
+                <span
+                  className={cn(
+                    "absolute -left-1.75 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-background",
+                    it.isLatest ? "bg-primary" : "bg-muted-foreground/40",
+                  )}
+                  aria-hidden
+                />
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="font-medium text-foreground">{author}</span>
+                  {it.isLatest && (
+                    <Badge variant="secondary" className="text-xs">
+                      {t("wiki.latest_badge")}
+                    </Badge>
+                  )}
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {created}
+                  </span>
+                </div>
+                {summary && (
+                  <p className="mt-1 text-sm text-muted-foreground">{summary}</p>
+                )}
+                <Link
+                  href={`/wiki/${encodeURIComponent(slug)}/history/${it.id}`}
+                  className="mt-1 inline-block text-sm text-primary underline-offset-4 hover:underline"
+                >
+                  {t("wiki.view_button")}
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+        <WikiPagination
+          page={page}
+          totalPages={totalPages}
+          basePath={`/wiki/${encodeURIComponent(slug)}/history`}
+        />
+        <p className="text-sm text-muted-foreground mt-4 text-center">
+          {total} revisions
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>

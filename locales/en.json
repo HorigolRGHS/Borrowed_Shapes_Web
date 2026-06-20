@@ -636,6 +636,26 @@
       "platform_note": "Available for Windows PC.",
       "download": "Download",
       "create_account": "Create Account"
+    },
+    "announcements_section": {
+      "label": "LATEST UPDATES",
+      "title": "Announcements",
+      "subtitle": "Stay up to date with the latest patches, events, and developer communications.",
+      "tab_all": "All",
+      "tab_news": "News",
+      "tab_events": "Events",
+      "tab_updates": "Updates",
+      "tab_patch_notes": "Patch Notes",
+      "tab_maintenance": "Maintenance",
+      "pinned": "PINNED",
+      "read_more": "READ MORE",
+      "read": "READ",
+      "view_all": "View All Announcements",
+      "back_to_announcements": "Back to Announcements",
+      "latest": "LATEST",
+      "prev": "Prev",
+      "next": "Next",
+      "no_announcements": "No announcements available."
     }
   },
   "admin": {

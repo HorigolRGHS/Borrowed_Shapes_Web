@@ -633,6 +633,26 @@
       "platform_note": "Hiện hỗ trợ Windows PC.",
       "download": "Tải game",
       "create_account": "Tạo tài khoản"
+    },
+    "announcements_section": {
+      "label": "CẬP NHẬT MỚI NHẤT",
+      "title": "Thông báo",
+      "subtitle": "Cập nhật các bản vá, sự kiện và thông tin từ đội ngũ phát triển.",
+      "tab_all": "Tất cả",
+      "tab_news": "Tin tức",
+      "tab_events": "Sự kiện",
+      "tab_updates": "Cập nhật",
+      "tab_patch_notes": "Bản vá",
+      "tab_maintenance": "Bảo trì",
+      "pinned": "GHIM",
+      "read_more": "ĐỌC THÊM",
+      "read": "ĐỌC",
+      "view_all": "Xem tất cả thông báo",
+      "back_to_announcements": "Quay lại Thông báo",
+      "latest": "MỚI NHẤT",
+      "prev": "Trước",
+      "next": "Tiếp",
+      "no_announcements": "Chưa có thông báo nào."
     }
   },
   "admin": {

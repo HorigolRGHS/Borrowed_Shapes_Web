@@ -61,6 +61,7 @@ export default function DashboardLayout({
     { href: "/dashboard/wiki", label: "Wiki" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
     { href: "/dashboard/announcements", label: t("common.announcements") },
+    { href: "/dashboard/game-results", label: t("common.game_results") },
   ];
 
   const isActive = (href: string) =>

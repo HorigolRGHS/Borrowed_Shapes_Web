@@ -4,19 +4,18 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Hash, ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import {
   resetPasswordSchema,
   ResetPasswordFormValues,
 } from "@/models/dtos/auth.dto";
 import { ApiResponse } from "@/models/dtos/api-response.dto";
-import { AuthCard } from "@/components/auth/auth-card";
+import { AuthCard, AuthLogo } from "@/components/auth/auth-card";
 import { PasswordInput } from "@/components/auth/password-input";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -32,6 +31,14 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const emailParam = searchParams.get("email") || "";
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
+
+  const triggerShake = () => {
+    setShake(false);
+    setTimeout(() => setShake(true), 10);
+    setTimeout(() => setShake(false), 600);
+  };
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -40,6 +47,7 @@ function ResetPasswordForm() {
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const response = await axios.post<ApiResponse<unknown>>(
         "/api/auth/reset-password",
@@ -50,14 +58,16 @@ function ResetPasswordForm() {
         toast.success(t("auth.reset_password_success"));
         router.push("/auth/login");
       } else {
-        toast.error(res.message || t("auth.reset_password_failed"));
+        setErrorMsg(res.message || t("auth.reset_password_failed"));
+        triggerShake();
       }
     } catch (error: any) {
-      toast.error(
+      setErrorMsg(
         error.response?.data?.message ||
           error.message ||
           t("auth.reset_password_failed"),
       );
+      triggerShake();
     } finally {
       setLoading(false);
     }
@@ -65,8 +75,17 @@ function ResetPasswordForm() {
 
   return (
     <AuthCard
+      logo={<AuthLogo />}
       title={t("auth.reset_password_title")}
       description={t("auth.reset_password_subtitle")}
+      error={errorMsg}
+      shake={shake}
+      footer={
+        <Link href="/auth/login" className="inline-flex items-center gap-1 text-gray-400 hover:text-white transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+          {t("auth.back_to_login")}
+        </Link>
+      }
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -75,9 +94,16 @@ function ResetPasswordForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.email")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.email")}</FormLabel>
                 <FormControl>
-                  <Input type="email" {...field} />
+                  <div className="relative">
+                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input 
+                      type="email" 
+                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      {...field} 
+                    />
+                  </div>
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -88,9 +114,17 @@ function ResetPasswordForm() {
             name="otp"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.otp")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.otp")}</FormLabel>
                 <FormControl>
-                  <Input placeholder={t("auth.otp_placeholder")} {...field} />
+                  <div className="relative">
+                    <Hash size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input 
+                      type="text" 
+                      placeholder={t("auth.otp_placeholder")}
+                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      {...field} 
+                    />
+                  </div>
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -101,9 +135,9 @@ function ResetPasswordForm() {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.new_password")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.new_password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput {...field} />
+                  <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -114,24 +148,30 @@ function ResetPasswordForm() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("auth.confirm_password")}</FormLabel>
+                <FormLabel className="text-gray-300 font-sans">{t("auth.confirm_password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput {...field} />
+                  <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("auth.resetting_password")}
-              </>
-            ) : (
-              t("auth.reset_password")
-            )}
-          </Button>
+          <div className="pt-2">
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all flex justify-center items-center font-orbitron tracking-wide"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t("auth.resetting_password")}
+                </>
+              ) : (
+                t("auth.reset_password")
+              )}
+            </button>
+          </div>
         </form>
       </Form>
     </AuthCard>
@@ -140,7 +180,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={<div className="text-muted-foreground flex justify-center py-10"><Loader2 className="animate-spin" /></div>}>
       <ResetPasswordForm />
     </Suspense>
   );

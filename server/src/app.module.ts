@@ -14,7 +14,10 @@ import { SeasonTeamModule } from './season-team/season-team.module';
 import { WikiModule } from './wiki/wiki.module';
 import { ForumModule } from './forums/forums.module';
 import { CategoryModule } from './categories/categories.module';
+import { StorageModule } from './storage/storage.module';
+import { AccountModule } from './account/account.module';
 import { AnnouncementModule } from './announcements/announcements.module';
+import { DownloadsModule } from './downloads/downloads.module';
 import mikroOrmConfig from './mikro-orm.config';
 import { GameResultModule } from './game-results/game-results.module';
 
@@ -25,16 +28,18 @@ import { GameResultModule } from './game-results/game-results.module';
     RedisModule,
     AuthModule,
     SessionsModule,
+    AccountModule,
+    WikiModule,
     PresenceModule,
     GameModule,
     AchievementModule,
     I18nModule,
     SeasonTeamModule,
-    WikiModule,
     ForumModule,
     CategoryModule,
     AnnouncementModule,
     GameResultModule,
+    DownloadsModule,
   ],
   providers: [
     {
@@ -43,4 +48,4 @@ import { GameResultModule } from './game-results/game-results.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

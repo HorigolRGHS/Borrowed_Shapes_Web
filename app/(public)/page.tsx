@@ -6,6 +6,7 @@ import { DownloadCTA } from "@/components/home/download-cta";
 import { HeroSection } from "@/components/home/hero-section";
 import { GameIntroSection } from "@/components/home/game-intro-section";
 import { KnowledgeBaseSection } from "@/components/home/knowledge-base-section";
+import { AnnouncementsSection } from "@/components/home/announcements-section";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -26,6 +27,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans">
       <HeroSection />
+      <AnnouncementsSection />
       <GameIntroSection />
       <KnowledgeBaseSection />
 

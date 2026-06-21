@@ -561,7 +561,27 @@
     "download_again": "Tải lại",
     "search_placeholder": "Tìm kiếm file hoặc phiên bản...",
     "play_history": "Lịch sử chơi",
-    "reports": "Báo cáo"
+    "reports": "Báo cáo",
+    "achievements": {
+      "total_earned": "Tổng đạt được",
+      "filter_all": "Tất cả",
+      "section_permanent": "Vĩnh viễn",
+      "section_seasonal": "Theo mùa",
+      "search_placeholder": "Tìm thành tựu...",
+      "season_label": "Mùa",
+      "expires_label": "Hết hạn",
+      "expired_label": "Đã hết hạn",
+      "earned_on": "Ngày đạt",
+      "not_earned": "Chưa đạt",
+      "locked": "Chưa mở khóa",
+      "equip_button": "Trang bị thành tựu",
+      "unequip_button": "Gỡ trang bị",
+      "equip_disabled_expired": "Mùa đã hết hạn",
+      "category_label": "Loại",
+      "close": "Đóng",
+      "equipped_badge": "ĐANG DÙNG",
+      "error_loading": "Không thể tải thành tựu."
+    }
   },
   "header": {
     "home": "Trang chủ",

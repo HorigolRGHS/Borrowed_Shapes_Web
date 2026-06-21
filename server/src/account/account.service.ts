@@ -20,7 +20,7 @@ export class AccountService {
     private em: EntityManager,
     private storageService: R2StorageService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   private getPublicBaseUrl(): string {
     return this.configService
@@ -123,6 +123,9 @@ export class AccountService {
             throw new ForbiddenException('Achievement not unlocked or does not exist');
           }
           const achievement = await this.em.findOne(Achievement, { id: dto.equippedAchievementId });
+          if (achievement?.type === 'SEASONAL' && achievement.expiresAt && new Date(achievement.expiresAt) < new Date()) {
+            throw new ForbiddenException('Achievement season has expired');
+          }
           gameProfile.equippedAchievementId = achievement as any;
           updated = true;
           oldValues['equippedAchievementId'] = oldEquipped;
@@ -178,11 +181,11 @@ export class AccountService {
       equippedAchievementId: updatedGameProfile?.equippedAchievementId?.id ?? null,
       equippedAchievement: updatedGameProfile?.equippedAchievementId
         ? {
-            id: updatedGameProfile.equippedAchievementId.id,
-            name: updatedGameProfile.equippedAchievementId.name,
-            badgeImageUrl: updatedGameProfile.equippedAchievementId.badgeImageUrl,
-            type: updatedGameProfile.equippedAchievementId.type,
-          }
+          id: updatedGameProfile.equippedAchievementId.id,
+          name: updatedGameProfile.equippedAchievementId.name,
+          badgeImageUrl: updatedGameProfile.equippedAchievementId.badgeImageUrl,
+          type: updatedGameProfile.equippedAchievementId.type,
+        }
         : null,
     };
   }

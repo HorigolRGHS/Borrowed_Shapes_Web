@@ -233,6 +233,96 @@ export class AchievementService {
     return rows || [];
   }
 
+  async findShowcaseForUser(gameProfileId: string) {
+    const now = new Date();
+
+    const rows = await this.em.execute(
+      `SELECT
+         a.id,
+         a.name,
+         a.description,
+         a."criteriaCode",
+         a."badgeImageUrl",
+         a.type,
+         a."seasonMonth",
+         a."expiresAt",
+         ua."achievedAt"
+       FROM game."Achievement" a
+       LEFT JOIN game."UserAchievement" ua
+         ON ua."achievementId" = a.id
+         AND ua."gameProfileId" = ?
+       ORDER BY a.type ASC, a."seasonMonth" DESC NULLS LAST, a.name ASC`,
+      [gameProfileId],
+    );
+
+    const permanent: any[] = [];
+    const seasonMap = new Map<string, {
+      seasonKey: string;
+      expiresAt: string | null;
+      isActive: boolean;
+      achievements: any[];
+    }>();
+
+    let totalEarned = 0;
+    let permanentEarned = 0;
+    let seasonalEarned = 0;
+
+    for (const row of rows || []) {
+      const owned = !!row.achievedAt;
+      const isPermanent = row.type === 'PERMANENT';
+      const expiresAt = row.expiresAt ? new Date(row.expiresAt) : null;
+      const isExpired = expiresAt ? expiresAt < now : false;
+      const equippable = owned && (!isExpired || isPermanent);
+
+      if (owned) {
+        totalEarned++;
+        if (isPermanent) permanentEarned++;
+        else seasonalEarned++;
+      }
+
+      const item = {
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        criteriaCode: row.criteriaCode,
+        badgeImageUrl: row.badgeImageUrl,
+        type: row.type,
+        seasonMonth: row.seasonMonth,
+        expiresAt: row.expiresAt,
+        owned,
+        achievedAt: row.achievedAt ?? null,
+        equippable,
+      };
+
+      if (isPermanent) {
+        permanent.push(item);
+      } else {
+        // Seasonal: skip unowned expired
+        if (!owned && isExpired) continue;
+
+        const seasonKey = row.seasonMonth
+          ? String(row.seasonMonth).slice(0, 7)
+          : 'unknown';
+
+        if (!seasonMap.has(seasonKey)) {
+          seasonMap.set(seasonKey, {
+            seasonKey,
+            expiresAt: row.expiresAt ?? null,
+            isActive: !isExpired,
+            achievements: [],
+          });
+        }
+        seasonMap.get(seasonKey)!.achievements.push(item);
+      }
+    }
+
+    return {
+      permanent,
+      seasonal: Array.from(seasonMap.values()),
+      stats: { totalEarned, permanentEarned, seasonalEarned },
+    };
+  }
+
   async unlock(gameProfileId: string, criteriaCode: string): Promise<UnlockAchievementResponseDto> {
     const achievement = await this.em.findOne(Achievement, { criteriaCode });
     if (!achievement) throw new NotFoundException('achievements.not_found');

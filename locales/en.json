@@ -564,7 +564,27 @@
     "download_again": "Download Again",
     "search_placeholder": "Search file or version...",
     "play_history": "Play History",
-    "reports": "Reports"
+    "reports": "Reports",
+    "achievements": {
+      "total_earned": "Total Earned",
+      "filter_all": "All",
+      "section_permanent": "Permanent",
+      "section_seasonal": "Seasonal",
+      "search_placeholder": "Search achievements...",
+      "season_label": "Season",
+      "expires_label": "Expires",
+      "expired_label": "Expired",
+      "earned_on": "Earned On",
+      "not_earned": "Not Earned",
+      "locked": "Locked",
+      "equip_button": "Equip Achievement",
+      "unequip_button": "Unequip",
+      "equip_disabled_expired": "Season Expired",
+      "category_label": "Type",
+      "close": "Close",
+      "equipped_badge": "EQUIPPED",
+      "error_loading": "Failed to load achievements."
+    }
   },
   "header": {
     "home": "Home",

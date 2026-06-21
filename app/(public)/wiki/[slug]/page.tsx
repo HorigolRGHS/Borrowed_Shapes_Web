@@ -19,6 +19,7 @@ import enDict from "@/locales/en.json";
 import viDict from "@/locales/vi.json";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { WikiLocaleSync } from "@/components/wiki/wiki-locale-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -107,7 +108,7 @@ export default async function WikiDetailPage({
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
+    <main className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">
           Wiki

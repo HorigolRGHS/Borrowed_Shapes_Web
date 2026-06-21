@@ -1,54 +1,50 @@
 import { redirect, notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { fetchWikiBySlug, fetchWikiHistory } from '@/lib/wiki/api';
+import { fetchAdminWikiById, fetchWikiHistory } from '@/lib/wiki/api';
 import { WikiHistoryList } from '@/components/wiki/wiki-history-list';
-import { WikiLocaleSync } from '@/components/wiki/wiki-locale-sync';
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
 
 export const dynamic = 'force-dynamic';
 
-export default async function WikiHistoryPage({
+export default async function AdminWikiHistoryPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
-  // Auth gate: redirect guests to login
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
   const decoded = token ? decodeJwt(token) : null;
   const normalized = decoded ? normalizeJwt(decoded) : null;
-  if (!normalized) {
-    const { slug: pathSlug } = await params;
-    redirect(`/auth/login?from=/wiki/${encodeURIComponent(pathSlug)}/history`);
+
+  if (!normalized || normalized.role !== 'ADMIN') {
+    redirect('/dashboard');
   }
 
-  const { slug } = await params;
+  const { id } = await params;
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
 
   let detail;
   try {
-    detail = await fetchWikiBySlug(slug);
+    detail = await fetchAdminWikiById(id);
   } catch (err: any) {
     if (err?.response?.status === 404) notFound();
     throw err;
   }
 
   const history = await fetchWikiHistory(detail.id, page, 20);
-  const title = detail.matchedSlugLocale === 'vi' ? detail.titleVi : detail.title;
+  const title = detail.titleVi || detail.title;
 
   return (
-    <>
-      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} currentPath="/history" />
-      <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
+    <main className="p-6 max-w-6xl mx-auto">
       <nav className="text-sm text-muted-foreground mb-4">
-        <Link href="/wiki" className="hover:text-foreground">Wiki</Link>
+        <Link href="/dashboard/wiki" className="hover:text-foreground">Wiki Admin</Link>
         <span className="mx-2">›</span>
         <Link
-          href={`/wiki/${encodeURIComponent(slug)}`}
+          href={`/dashboard/wiki/${id}/edit`}
           className="hover:text-foreground"
         >
           {title}
@@ -61,14 +57,14 @@ export default async function WikiHistoryPage({
 
       <WikiHistoryList
         pageId={detail.id}
-        slug={slug}
+        slug={detail.slug}
         items={history.items}
         total={history.total}
         page={history.page}
         totalPages={history.totalPages}
         expectedLatestRevisionId={detail.latestRevision.id}
+        isAdminRoute
       />
     </main>
-    </>
   );
 }

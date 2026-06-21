@@ -27,7 +27,7 @@ export default async function WikiListPage({
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-6xl">
+    <main className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Wiki</h1>
       </header>

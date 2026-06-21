@@ -1,18 +1,25 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { fetchWikiList } from "@/lib/wiki/api";
 import { WikiCard } from "@/components/wiki/wiki-card";
 import { Button } from "@/components/ui/button";
+import type { WikiListResponse } from "@/models/dtos/wiki.dto";
 
-export async function KnowledgeBaseSection() {
-  let data;
-  try {
-    data = await fetchWikiList({ page: 1, limit: 6 });
-  } catch {
-    return null;
-  }
+export function KnowledgeBaseSection() {
+  const [data, setData] = useState<WikiListResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!data || data.items.length === 0) {
+  useEffect(() => {
+    fetchWikiList({ page: 1, limit: 6 })
+      .then(setData)
+      .catch(() => setData(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !data || data.items.length === 0) {
     return null;
   }
 

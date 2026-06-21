@@ -106,7 +106,7 @@ export function StatsInput({ value, onChange, className }: Props) {
                   step="any"
                   value={row.value}
                   onChange={(e) => updateRow(i, { value: e.target.value })}
-                  placeholder={t("wiki.metadata.statValue_placeholder")}
+                  placeholder={t("wiki.metadata.stat_value_placeholder")}
                   className="max-w-40"
                 />
                 <Button

@@ -2,39 +2,36 @@ import { redirect, notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import {
-  fetchWikiBySlug,
+  fetchAdminWikiById,
   fetchWikiRevision,
   fetchWikiRevisionDiff,
 } from '@/lib/wiki/api';
 import { WikiDiffView } from '@/components/wiki/wiki-diff-view';
 import { WikiContentRenderer } from '@/components/wiki/wiki-content-renderer';
-import { WikiLocaleSync } from '@/components/wiki/wiki-locale-sync';
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
 
 export const dynamic = 'force-dynamic';
 
-export default async function WikiRevisionPage({
+export default async function AdminWikiRevisionPage({
   params,
 }: {
-  params: Promise<{ slug: string; revisionId: string }>;
+  params: Promise<{ id: string; revisionId: string }>;
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
   const decoded = token ? decodeJwt(token) : null;
   const normalized = decoded ? normalizeJwt(decoded) : null;
-  if (!normalized) {
-    const { slug, revisionId } = await params;
-    redirect(`/auth/login?from=/wiki/${encodeURIComponent(slug)}/history/${revisionId}`);
+
+  if (!normalized || normalized.role !== 'ADMIN') {
+    redirect('/dashboard');
   }
 
-  const { slug, revisionId } = await params;
-  const isAdmin = normalized.role === 'ADMIN';
-
+  const { id, revisionId } = await params;
   let detail;
   try {
-    detail = await fetchWikiBySlug(slug);
+    detail = await fetchAdminWikiById(id);
   } catch (err: any) {
     if (err?.response?.status === 404) notFound();
     throw err;
@@ -43,39 +40,33 @@ export default async function WikiRevisionPage({
   let revision;
   let diff;
   try {
-    if (isAdmin) {
-      [revision, diff] = await Promise.all([
-        fetchWikiRevision(detail.id, revisionId),
-        fetchWikiRevisionDiff(detail.id, revisionId),
-      ]);
-    } else {
-      revision = await fetchWikiRevision(detail.id, revisionId);
-    }
+    [revision, diff] = await Promise.all([
+      fetchWikiRevision(detail.id, revisionId),
+      fetchWikiRevisionDiff(detail.id, revisionId),
+    ]);
   } catch (err: any) {
     if (err?.response?.status === 404) notFound();
     throw err;
   }
 
-  const title = detail.matchedSlugLocale === 'vi' ? detail.titleVi : detail.title;
+  const title = detail.titleVi || detail.title;
   const author = revision.author?.displayName ?? '—';
   const created = new Date(revision.createdAt).toLocaleString();
 
   return (
-    <>
-      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} currentPath={`/history/${revisionId}`} />
-      <main className="container mx-auto px-4 py-8 pt-24 max-w-5xl">
+    <main className="p-6 max-w-6xl mx-auto">
       <nav className="text-sm text-muted-foreground mb-4">
-        <Link href="/wiki" className="hover:text-foreground">Wiki</Link>
+        <Link href="/dashboard/wiki" className="hover:text-foreground">Wiki Admin</Link>
         <span className="mx-2">›</span>
         <Link
-          href={`/wiki/${encodeURIComponent(slug)}`}
+          href={`/dashboard/wiki/${id}/edit`}
           className="hover:text-foreground"
         >
           {title}
         </Link>
         <span className="mx-2">›</span>
         <Link
-          href={`/wiki/${encodeURIComponent(slug)}/history`}
+          href={`/dashboard/wiki/${id}/history`}
           className="hover:text-foreground"
         >
           History
@@ -94,12 +85,10 @@ export default async function WikiRevisionPage({
         )}
       </header>
 
-      {isAdmin && diff && (
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Diff vs previous</h2>
-          <WikiDiffView diff={diff.diff} isFirst={diff.isFirst} />
-        </section>
-      )}
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold mb-3">Diff vs previous</h2>
+        <WikiDiffView diff={diff.diff} isFirst={diff.isFirst} />
+      </section>
 
       <section className="space-y-6">
         <h2 className="text-lg font-semibold">Content snapshot</h2>
@@ -122,6 +111,5 @@ export default async function WikiRevisionPage({
         </Card>
       </section>
     </main>
-    </>
   );
 }

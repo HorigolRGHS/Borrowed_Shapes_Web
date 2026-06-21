@@ -5,6 +5,20 @@ import { api } from '@/lib/api/api-client';
 
 const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api';
 
+function getPublicOrigin(req: Request): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  const proto =
+    req.headers.get('x-forwarded-proto') ??
+    (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const host =
+    req.headers.get('x-forwarded-host') ??
+    req.headers.get('host') ??
+    new URL(req.url).host;
+  return `${proto}://${host}`;
+}
+
 function parseState(state: string): { platform?: string; returnTo?: string } {
   try {
     return JSON.parse(Buffer.from(state, 'base64').toString('utf-8')) as {
@@ -20,6 +34,8 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
+
+  const origin = getPublicOrigin(req);
 
   const cookieStore = await cookies();
   const codeVerifier = cookieStore.get('google_pkce')?.value;
@@ -67,7 +83,7 @@ export async function GET(req: Request) {
         });
 
         const authData = completeRes.data;
-        const response = NextResponse.redirect(new URL('/', req.url));
+        const response = NextResponse.redirect(new URL('/', origin));
         
         if (authData.accessToken) {
           response.cookies.set("accessToken", authData.accessToken, {
@@ -91,14 +107,14 @@ export async function GET(req: Request) {
         console.error('Google complete failed:', backendMessage);
         
         // Chuyển hướng về login kèm lỗi để người dùng biết (ví dụ: Unverified email)
-        const loginUrl = new URL('/auth/login', req.url);
+        const loginUrl = new URL('/auth/login', origin);
         loginUrl.searchParams.set('error', backendMessage);
         return NextResponse.redirect(loginUrl);
       }
     }
 
     // --- Xử lý cho Game/Desktop ---
-    const redirectUrl = new URL('/auth/google/finish', req.url);
+    const redirectUrl = new URL('/auth/google/finish', origin);
     redirectUrl.searchParams.set('loginCode', loginCode);
     if (returnTo) {
       redirectUrl.searchParams.set('returnTo', returnTo);

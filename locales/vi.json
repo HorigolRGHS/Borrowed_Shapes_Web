@@ -186,6 +186,7 @@
     "edit": {
       "settings_button": "Cài đặt",
       "unsaved_indicator": "Có thay đổi chưa lưu",
+      "saved_indicator": "Đã lưu tất cả thay đổi",
       "cancel_button": "Hủy",
       "cancel_confirm_title": "Rời trang?",
       "cancel_confirm_message": "Bạn có thay đổi chưa lưu. Rời trang sẽ mất các thay đổi này.",

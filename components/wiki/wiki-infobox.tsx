@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   emptyWikiMetadata,
+  isWikiMetadataEmpty,
   wikiMetadataSchema,
   type WikiCategory,
   type WikiMetadata,
@@ -38,19 +39,6 @@ interface Props {
   i18n: InfoboxI18n;
   mode?: "view" | "edit";
   editSlots?: InfoboxEditSlots;
-}
-
-function isEmpty(m: WikiMetadata): boolean {
-  return (
-    !m.category &&
-    !m.infoboxImage &&
-    m.tags.length === 0 &&
-    m.tags_vi.length === 0 &&
-    Object.keys(m.stats).length === 0 &&
-    !m.location &&
-    !m.location_vi &&
-    m.relatedPages.length === 0
-  );
 }
 
 function pickTags(m: WikiMetadata, locale: "en" | "vi"): string[] {
@@ -89,7 +77,7 @@ export function WikiInfobox({
     );
   }
 
-  if (isEmpty(m)) return null;
+  if (isWikiMetadataEmpty(m)) return null;
 
   const tags = pickTags(m, locale);
   const location = pickLocation(m, locale);

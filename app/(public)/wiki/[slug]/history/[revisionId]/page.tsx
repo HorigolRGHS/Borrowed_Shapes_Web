@@ -8,6 +8,7 @@ import {
 } from '@/lib/wiki/api';
 import { WikiDiffView } from '@/components/wiki/wiki-diff-view';
 import { WikiContentRenderer } from '@/components/wiki/wiki-content-renderer';
+import { WikiLocaleSync } from '@/components/wiki/wiki-locale-sync';
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
@@ -29,6 +30,8 @@ export default async function WikiRevisionPage({
   }
 
   const { slug, revisionId } = await params;
+  const isAdmin = normalized.role === 'ADMIN';
+
   let detail;
   try {
     detail = await fetchWikiBySlug(slug);
@@ -40,10 +43,14 @@ export default async function WikiRevisionPage({
   let revision;
   let diff;
   try {
-    [revision, diff] = await Promise.all([
-      fetchWikiRevision(detail.id, revisionId),
-      fetchWikiRevisionDiff(detail.id, revisionId),
-    ]);
+    if (isAdmin) {
+      [revision, diff] = await Promise.all([
+        fetchWikiRevision(detail.id, revisionId),
+        fetchWikiRevisionDiff(detail.id, revisionId),
+      ]);
+    } else {
+      revision = await fetchWikiRevision(detail.id, revisionId);
+    }
   } catch (err: any) {
     if (err?.response?.status === 404) notFound();
     throw err;
@@ -54,7 +61,9 @@ export default async function WikiRevisionPage({
   const created = new Date(revision.createdAt).toLocaleString();
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-5xl">
+    <>
+      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} currentPath={`/history/${revisionId}`} />
+      <main className="container mx-auto px-4 py-8 pt-24 max-w-5xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">Wiki</Link>
         <span className="mx-2">›</span>
@@ -85,10 +94,12 @@ export default async function WikiRevisionPage({
         )}
       </header>
 
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Diff vs previous</h2>
-        <WikiDiffView diff={diff.diff} isFirst={diff.isFirst} />
-      </section>
+      {isAdmin && diff && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold mb-3">Diff vs previous</h2>
+          <WikiDiffView diff={diff.diff} isFirst={diff.isFirst} />
+        </section>
+      )}
 
       <section className="space-y-6">
         <h2 className="text-lg font-semibold">Content snapshot</h2>
@@ -111,5 +122,6 @@ export default async function WikiRevisionPage({
         </Card>
       </section>
     </main>
+    </>
   );
 }

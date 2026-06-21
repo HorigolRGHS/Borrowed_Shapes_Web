@@ -57,6 +57,19 @@ export const emptyWikiMetadata: WikiMetadata = {
   relatedPages: [],
 };
 
+export function isWikiMetadataEmpty(m: WikiMetadata): boolean {
+  return (
+    !m.category &&
+    !m.infoboxImage &&
+    m.tags.length === 0 &&
+    m.tags_vi.length === 0 &&
+    Object.keys(m.stats).length === 0 &&
+    !m.location &&
+    !m.location_vi &&
+    m.relatedPages.length === 0
+  );
+}
+
 /**
  * Drops fields that should not be persisted to JSONB:
  * - empty arrays (tags, tags_vi, relatedPages)

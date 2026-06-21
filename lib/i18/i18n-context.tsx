@@ -28,6 +28,16 @@ export function I18nProvider({
   const setLocale = (lang: Language) => {
     setLocaleState(lang);
     Cookies.set("NEXT_LOCALE", lang, { expires: 365 });
+
+    // Check if we're on a wiki page with alternate locale slug
+    const wikiData = (window as any).__wikiSlugData as { slug: string; slugVi: string; pathSuffix: string } | undefined;
+    if (wikiData) {
+      const targetSlug = lang === "vi" ? wikiData.slugVi : wikiData.slug;
+      const targetUrl = `/wiki/${encodeURIComponent(targetSlug)}${wikiData.pathSuffix}`;
+      window.location.href = targetUrl;
+      return;
+    }
+
     window.location.reload();
   };
 

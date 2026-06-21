@@ -231,7 +231,7 @@ export function AdminWikiListClient() {
                           <DropdownMenuItem asChild>
                             <Link
                               href={`/wiki/${encodeURIComponent(
-                                locale === "vi" ? item.slugVi : item.slug,
+                                locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi),
                               )}`}
                               className="gap-2"
                             >
@@ -250,7 +250,7 @@ export function AdminWikiListClient() {
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/wiki/${encodeURIComponent(item.slug)}/history`}
+                              href={`/wiki/${encodeURIComponent((locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi)))}/history`}
                               className="gap-2"
                             >
                               <History className="h-4 w-4" />

@@ -15,7 +15,7 @@ interface Props {
 export function WikiCard({ item, showDraftBadge = false, href }: Props) {
   const { t, locale } = useI18n();
   const title = locale === "vi" ? item.titleVi : item.title;
-  const slug = locale === "vi" ? item.slugVi : item.slug;
+  const slug = (locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi));
   const summary =
     locale === "vi"
       ? item.latestRevision?.summaryVi
@@ -27,7 +27,7 @@ export function WikiCard({ item, showDraftBadge = false, href }: Props) {
       <Card className="h-full transition hover:border-primary/40 hover:shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
           <h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary">
-            {title}
+            {item.title}
           </h3>
           {showDraftBadge && !item.isPublished && (
             <Badge variant="secondary" className="shrink-0">

@@ -39,6 +39,7 @@ interface Props {
   page: number;
   totalPages: number;
   expectedLatestRevisionId: string;
+  isAdminRoute?: boolean;
 }
 
 export function WikiHistoryList({
@@ -49,6 +50,7 @@ export function WikiHistoryList({
   page,
   totalPages,
   expectedLatestRevisionId,
+  isAdminRoute = false,
 }: Props) {
   const { t, locale } = useI18n();
   const role = useUserRole();
@@ -78,9 +80,17 @@ export function WikiHistoryList({
     }
   };
 
-  // Regular users see a read-only edit-history timeline — no status column,
-  // no rollback. Admins get the full management table below.
-  if (!isAdmin) {
+  const basePathHistory = isAdminRoute
+    ? `/dashboard/wiki/${pageId}/history`
+    : `/wiki/${encodeURIComponent(slug)}/history`;
+
+  const getRevisionLink = (revisionId: string) =>
+    isAdminRoute
+      ? `/dashboard/wiki/${pageId}/history/${revisionId}`
+      : `/wiki/${encodeURIComponent(slug)}/history/${revisionId}`;
+
+  // Public routes show timeline for everyone. Dashboard routes show admin table.
+  if (!isAdminRoute) {
     return (
       <div>
         <ol className="relative border-l border-border ml-2">
@@ -112,7 +122,7 @@ export function WikiHistoryList({
                   <p className="mt-1 text-sm text-muted-foreground">{summary}</p>
                 )}
                 <Link
-                  href={`/wiki/${encodeURIComponent(slug)}/history/${it.id}`}
+                  href={getRevisionLink(it.id)}
                   className="mt-1 inline-block text-sm text-primary underline-offset-4 hover:underline"
                 >
                   {t("wiki.view_button")}
@@ -124,7 +134,7 @@ export function WikiHistoryList({
         <WikiPagination
           page={page}
           totalPages={totalPages}
-          basePath={`/wiki/${encodeURIComponent(slug)}/history`}
+          basePath={basePathHistory}
         />
         <p className="text-sm text-muted-foreground mt-4 text-center">
           {total} revisions
@@ -165,9 +175,7 @@ export function WikiHistoryList({
                   </TableCell>
                   <TableCell className="text-right space-x-2 whitespace-nowrap">
                     <Button asChild variant="outline" size="sm">
-                      <Link
-                        href={`/wiki/${encodeURIComponent(slug)}/history/${it.id}`}
-                      >
+                      <Link href={getRevisionLink(it.id)}>
                         {t("wiki.view_button")}
                       </Link>
                     </Button>
@@ -217,7 +225,7 @@ export function WikiHistoryList({
       <WikiPagination
         page={page}
         totalPages={totalPages}
-        basePath={`/wiki/${encodeURIComponent(slug)}/history`}
+        basePath={basePathHistory}
       />
       <p className="text-sm text-muted-foreground mt-4 text-center">
         {total} revisions

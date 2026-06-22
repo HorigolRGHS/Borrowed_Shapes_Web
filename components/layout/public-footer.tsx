@@ -66,9 +66,8 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-3">
               <li>
-                {/* TODO: add route later */}
-                <Link href="#" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
-                  {t("footer.about")}
+                <Link href="/about-us" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                  {t("footer.about") || "About Us"}
                 </Link>
               </li>
               <li>

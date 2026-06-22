@@ -241,6 +241,9 @@ export class AchievementController {
     @Body() dto: UnlockAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<UnlockAchievementResponseDto>> {
+    if (!user.gameProfileId) {
+      throw new BadRequestException('User does not have a game profile');
+    }
     const data = await this.achievementService.unlock(user.gameProfileId, dto.criteriaCode);
     return okResponse('achievements.unlocked_success', data, `${req.method} ${req.path}`);
   }

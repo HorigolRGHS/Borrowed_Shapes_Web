@@ -15,6 +15,7 @@ import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
 import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 import { GameProfile } from '../entities/GameProfile';
 import { previewText } from '../common/utils/strip-markdown';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
 
 @Injectable()
 export class ForumService {
@@ -152,7 +153,7 @@ export class ForumService {
     const sanitizedAuthor = {
       id: thread.authorId.id,
       displayName: thread.authorId.displayName,
-      imgUrl: thread.authorId.imgUrl,
+      imgUrl: getProxyAvatarUrl(thread.authorId.imgUrl, thread.authorId.id, thread.authorId.updatedAt),
       badgeImageUrl,
     };
 

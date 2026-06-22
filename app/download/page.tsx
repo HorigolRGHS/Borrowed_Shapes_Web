@@ -29,8 +29,12 @@ export default function DownloadPage() {
       const items = data?.data?.items || [];
       
       setVersions(items);
-      if (items.length > 0) {
-        setLatestVersion(items.find((i: any) => i.isLatest) || items[0]);
+      const activeVersion = items.find((i: any) => i.isActive);
+      
+      if (activeVersion) {
+        setLatestVersion(activeVersion);
+      } else {
+        setLatestVersion(items.length > 0 ? items[0] : null);
       }
     } catch (error) {
       console.error("Failed to fetch versions:", error);
@@ -96,19 +100,29 @@ export default function DownloadPage() {
         />
 
         <div className="w-full mt-8">
-          <DownloadCard
-            latestVersion={latestVersion}
-            loading={loadingLatest}
-            onDownload={() => latestVersion && handleDownload(latestVersion.id, latestVersion.fileVersion)}
-            selectedPlatform={selectedPlatform}
-          />
+          {latestVersion ? (
+            <DownloadCard
+              latestVersion={latestVersion}
+              loading={loadingLatest}
+              onDownload={() => latestVersion && handleDownload(latestVersion.id, latestVersion.fileVersion)}
+              selectedPlatform={selectedPlatform}
+            />
+          ) : (
+            <div className="text-center p-8 bg-muted/20 border border-border/50 rounded-xl">
+              <p className="text-muted-foreground">{t("download.no_version") || "No download version is available yet."}</p>
+            </div>
+          )}
         </div>
 
-        <OlderVersions
-          versions={versions}
-          onDownload={handleDownload}
-          loadingId={loadingId}
-        />
+        {versions.length > 0 && (
+          <div className="mt-16 w-full">
+            <OlderVersions
+              versions={versions}
+              onDownload={handleDownload}
+              loadingId={loadingId}
+            />
+          </div>
+        )}
       </main>
 
       <PublicFooter />

@@ -16,6 +16,7 @@ import { User } from '../entities/User';
 import { Role } from '../entities/Role';
 import { UserSession } from '../entities/UserSession';
 import { SessionStatus } from '../entities/SessionStatus';
+import { ensureAccountActive } from './auth-utils';
 
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
@@ -87,22 +88,11 @@ export class AuthGuard implements CanActivate {
         { fields: ['id', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
       );
 
-      if (!user || user.deletedAt) {
+      if (!user) {
         throw new UnauthorizedException('auth.unauthorized');
       }
 
-      const now = new Date();
-      if (user.isBanned) {
-        if (user.banExpiresAt && user.banExpiresAt <= now) {
-          user.isBanned = false;
-          user.bannedAt = undefined;
-          user.banReason = undefined;
-          user.banExpiresAt = undefined;
-          await this.em.flush();
-        } else {
-          throw new ForbiddenException(user.banReason ?? 'auth.account_banned');
-        }
-      }
+      await ensureAccountActive(user as User, this.em);
 
       request.user = {
         userId: user.id,

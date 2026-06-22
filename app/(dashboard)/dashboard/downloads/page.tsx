@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -33,6 +35,7 @@ interface VersionItem {
   uploadedAt: string;
   updatedAt: string;
   isLatest: boolean;
+  isActive: boolean;
   filePath?: string;
 }
 
@@ -64,6 +67,10 @@ export default function DownloadManagementPage() {
 
   const [selectedVersion, setSelectedVersion] = useState<VersionItem | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const [activeConfirmOpen, setActiveConfirmOpen] = useState(false);
+  const [targetActiveVersion, setTargetActiveVersion] = useState<VersionItem | null>(null);
+  const [settingActive, setSettingActive] = useState(false);
 
   const fetchVersions = useCallback(async () => {
     setLoading(true);
@@ -109,6 +116,22 @@ export default function DownloadManagementPage() {
     setDetailsOpen(true);
   };
 
+  const handleSetActive = async () => {
+    if (!targetActiveVersion) return;
+    setSettingActive(true);
+    try {
+      await api.patch(`/downloads/admin/versions/${targetActiveVersion.id}/active`);
+      setActiveConfirmOpen(false);
+      fetchVersions();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || t("admin.download.active.error") || "Failed to set active version");
+      setActiveConfirmOpen(false);
+    } finally {
+      setSettingActive(false);
+    }
+  };
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
@@ -121,9 +144,6 @@ export default function DownloadManagementPage() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon" onClick={() => fetchVersions()} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          </Button>
           <UploadDialog onUploadSuccess={handleUploadSuccess} />
         </div>
       </div>
@@ -167,7 +187,10 @@ export default function DownloadManagementPage() {
                     </TableRow>
                   ) : (
                     versions.map((version) => (
-                      <TableRow key={version.id}>
+                      <TableRow 
+                        key={version.id}
+                        className={version.isActive ? "bg-amber-500/5 hover:bg-amber-500/10 border-l-2 border-l-amber-500" : ""}
+                      >
                         <TableCell className="font-medium">{version.fileVersion}</TableCell>
                         <TableCell>{version.fileName}</TableCell>
                         <TableCell>{formatBytes(version.fileSize)}</TableCell>
@@ -176,13 +199,41 @@ export default function DownloadManagementPage() {
                           {new Date(version.uploadedAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          {version.isLatest ? (
-                            <Badge variant="default" className="bg-green-500 hover:bg-green-600">{t("admin.download.versions.status.latest") || "Latest"}</Badge>
-                          ) : (
-                            <Badge variant="secondary">{t("admin.download.versions.status.older") || "Older"}</Badge>
-                          )}
+                          <div className="flex flex-col items-start gap-1">
+                            {version.isActive ? (
+                              <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+                                {t("admin.download.active.badge") || "Active"}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted">
+                                {t("admin.download.active.inactive_badge") || "Inactive"}
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
+                          {version.isActive ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mr-2 opacity-50 cursor-default hover:bg-transparent"
+                              disabled
+                            >
+                              {t("admin.download.active.current") || "Current Version"}
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-2 border-amber-500/50 text-amber-600 dark:text-amber-500 hover:bg-amber-500/10"
+                              onClick={() => {
+                                setTargetActiveVersion(version);
+                                setActiveConfirmOpen(true);
+                              }}
+                            >
+                              {t("admin.download.active.set_active") || "Set Active"}
+                            </Button>
+                          )}
                           <Button variant="ghost" size="sm" onClick={() => openDetails(version)} className="gap-2">
                             <Info className="h-4 w-4" />
                             <span className="hidden sm:inline">{t("admin.download.versions.actions.details") || "Details"}</span>
@@ -301,6 +352,62 @@ export default function DownloadManagementPage() {
               {t("admin.download.versions.details.close") || "Close"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Set Active Confirm Modal */}
+      <Dialog open={activeConfirmOpen} onOpenChange={setActiveConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("admin.download.active.title") || "Set Active Download Version"}</DialogTitle>
+            <DialogDescription>
+              {t("admin.download.active.description") || "This version will be shown on the public download page. Users will download this version until another one is selected."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <div className="text-sm text-muted-foreground mb-4 space-y-2">
+              <p>
+                {t("admin.download.active.description") || "This version will become the recommended download on the public Download page. The previous active version will become inactive but will remain in the version list."}
+              </p>
+              <p className="font-medium text-foreground">
+                {t("admin.download.active.warning") || "Use this when the newest upload has issues and you want users to download a stable older version."}
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              {versions.find(v => v.isActive) && (
+                <div className="bg-muted/50 p-3 rounded-md text-sm flex items-center justify-between border">
+                  <div>
+                    <span className="text-xs text-muted-foreground block mb-1">
+                      {t("admin.download.active.current_version") || "Current active version"}
+                    </span>
+                    <span className="font-medium">{versions.find(v => v.isActive)?.fileName}</span>
+                  </div>
+                  <Badge variant="secondary">{versions.find(v => v.isActive)?.fileVersion}</Badge>
+                </div>
+              )}
+
+              {targetActiveVersion && (
+                <div className="bg-amber-500/10 p-3 rounded-md text-sm flex items-center justify-between border border-amber-500/30">
+                  <div>
+                    <span className="text-xs text-amber-600 dark:text-amber-500 block mb-1 font-medium">
+                      {t("admin.download.active.new_version") || "New active version"}
+                    </span>
+                    <span className="font-medium">{targetActiveVersion.fileName}</span>
+                  </div>
+                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white">{targetActiveVersion.fileVersion}</Badge>
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActiveConfirmOpen(false)} disabled={settingActive}>
+              {t("common.cancel") || "Cancel"}
+            </Button>
+            <Button onClick={handleSetActive} disabled={settingActive}>
+              {settingActive ? "..." : (t("admin.download.active.confirm") || "Confirm")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ChevronDown, Lock, LogOut, User, Download } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,6 +22,7 @@ interface Props {
 
 export function UserMenu({ displayName, role, imgUrl }: Props) {
   const { t } = useI18n();
+  const [imgError, setImgError] = useState(false);
   const initials = displayName
     ? displayName.substring(0, 2).toUpperCase()
     : "US";
@@ -38,8 +40,8 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 group p-1 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
         <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-xs shadow-md overflow-hidden">
-          {imgUrl ? (
-            <img src={imgUrl} alt={displayName} className="w-full h-full object-cover" />
+          {imgUrl && !imgError ? (
+            <img src={imgUrl} alt={displayName} className="w-full h-full object-cover" onError={() => setImgError(true)} />
           ) : (
             initials
           )}

@@ -63,7 +63,9 @@ export default function DashboardLayout({
 
   const navItems = [
     { href: "/dashboard", label: t("common.dashboard") },
+    { href: "/dashboard/audit-logs", label: t("admin.auditLogs.nav") || "Audit Log" },
     { href: "/dashboard/wiki", label: "Wiki" },
+    { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
     { href: "/dashboard/announcements", label: t("common.announcements") },
     { href: "/dashboard/downloads", label: t("admin.download.nav_label") || "Download" },
@@ -92,7 +94,7 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex bg-muted/40">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card p-4">
+      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card p-4 sticky top-0 h-screen overflow-y-auto">
         <h2 className="text-xl font-bold px-2 mb-6">Admin Panel</h2>
         {NavList}
       </aside>

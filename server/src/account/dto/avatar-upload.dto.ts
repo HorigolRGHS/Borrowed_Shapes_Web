@@ -27,8 +27,5 @@ export class AvatarUploadResponseDto {
   key: string;
 
   @ApiProperty()
-  publicUrl: string;
-
-  @ApiProperty()
   headers: Record<string, string>;
 }

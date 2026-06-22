@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/providers/toast";
 import { I18nProvider } from "@/lib/i18/i18n-context";
 import AuthSessionHandler from "@/components/handlers/auth-session-handler";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { AccountStatusWatcher } from "@/components/auth/account-status-watcher";
 import "react-toastify/dist/ReactToastify.css";
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export default async function RootLayout({
         >
           <I18nProvider initialLocale={locale}>
             <AuthSessionHandler />
+            <AccountStatusWatcher />
             <ToastProvider />
             {children}
           </I18nProvider>

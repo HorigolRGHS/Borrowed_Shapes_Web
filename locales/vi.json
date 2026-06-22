@@ -72,7 +72,31 @@
     "otp_sent_desc_2": ". Vui lòng nhập mã vào bên dưới.",
     "reset_password_desc": "Nhập mật khẩu mới của bạn để hoàn tất.",
     "copy": "Sao chép",
-    "copy_success": "Đã sao chép!"
+    "copy_success": "Đã sao chép!",
+    "ban": {
+      "title": "Tài khoản đã bị cấm",
+      "message": "Tài khoản của bạn đã bị cấm.",
+      "reason": "Lý do",
+      "no_reason": "Không có lý do.",
+      "expires_at": "Hết hạn",
+      "duration": "Thời hạn",
+      "permanent": "Vĩnh viễn",
+      "go_to_login": "Về trang đăng nhập"
+    },
+    "status": {
+      "banned_title": "Tài khoản đã bị cấm",
+      "banned_message": "Tài khoản của bạn đã bị cấm.",
+      "deleted_title": "Tài khoản đã bị xóa",
+      "deleted_message": "Tài khoản của bạn đã bị xóa.",
+      "deleted_description": "Tài khoản này không còn quyền truy cập hệ thống.",
+      "reason": "Lý do",
+      "no_reason": "Không có lý do.",
+      "expires_at": "Hết hạn",
+      "deleted_at": "Ngày xóa",
+      "duration": "Thời hạn",
+      "permanent": "Vĩnh viễn",
+      "go_to_login": "Về trang đăng nhập"
+    }
   },
   "common": {
     "home": "Trang chủ",
@@ -87,7 +111,8 @@
     "theme_dark": "Tối",
     "theme_system": "Theo hệ thống",
     "theme_toggle_label": "Đổi giao diện",
-    "site_brand": "Wiki Borrowed Shapes"
+    "site_brand": "Wiki Borrowed Shapes",
+    "cancel": "Hủy"
   },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",
@@ -472,7 +497,13 @@
     "cta_tag": "MÙA 2 — BẢN MỞ RỘNG LỤC GIÁC",
     "cta_title": "Sẵn sàng chơi?",
     "cta_button": "TẢI XUỐNG",
-    "description": "Trải nghiệm cuộc phiêu lưu đỉnh cao. Tải xuống phiên bản mới nhất của Borrowed Shapes và bắt đầu hành trình của bạn ngay hôm nay."
+    "description": "Trải nghiệm cuộc phiêu lưu đỉnh cao. Tải xuống phiên bản mới nhất của Borrowed Shapes và bắt đầu hành trình của bạn ngay hôm nay.",
+    "active_version": "Phiên bản đang phát hành",
+    "no_version": "Chưa có phiên bản tải xuống.",
+    "recommended_version": "Phiên bản khuyến nghị",
+    "other_versions": "Các phiên bản khác",
+    "inactive_version": "Ngừng hỗ trợ",
+    "not_recommended": "Không khuyến nghị"
   },
   "profile": {
     "title": "Hồ sơ",
@@ -635,6 +666,174 @@
     }
   },
   "admin": {
+    "auditLogs": {
+      "rowsPerPage": "Số dòng mỗi trang",
+      "nav": "Nhật ký hệ thống",
+      "title": "Nhật ký hệ thống",
+      "description": "Xem lịch sử hoạt động và thao tác quản trị trong toàn hệ thống.",
+      "searchPlaceholder": "Tìm actor, entity hoặc ID...",
+      "filters": "Bộ lọc",
+      "actionType": "Loại hành động",
+      "allActions": "Tất cả hành động",
+      "entityName": "Đối tượng",
+      "entityId": "ID đối tượng",
+      "actor": "Người thao tác",
+      "systemActor": "Hệ thống",
+      "ipAddress": "Địa chỉ IP",
+      "timestamp": "Thời gian",
+      "details": "Chi tiết",
+      "oldValue": "Giá trị cũ",
+      "newValue": "Giá trị mới",
+      "from": "Từ ngày",
+      "to": "Đến ngày",
+      "reset": "Đặt lại",
+      "noData": "Không tìm thấy nhật ký.",
+      "loadFailed": "Không thể tải nhật ký hệ thống.",
+      "pageOf": "Trang {page} / {totalPages}",
+      "previous": "Trước",
+      "next": "Sau",
+      "actions": {
+        "CREATE": "Tạo mới",
+        "UPDATE": "Cập nhật",
+        "DELETE": "Xóa",
+        "LOGIN": "Đăng nhập",
+        "LOGOUT": "Đăng xuất",
+        "REVOKE_SESSION": "Thu hồi phiên",
+        "BAN_USER": "Khóa tài khoản",
+        "UNBAN_USER": "Mở khóa tài khoản",
+        "PROCESS_REPORT": "Xử lý báo cáo"
+      }
+    },
+    "account": {
+      "nav_label": "Tài khoản",
+      "title": "Quản lý tài khoản",
+      "subtitle": "Xem, tìm kiếm, chỉnh sửa, cấm, gỡ cấm và xóa tài khoản người dùng.",
+      "search_placeholder": "Tìm theo ID, tên hoặc email...",
+      "filters": {
+        "all": "Tất cả",
+        "user": "Người dùng",
+        "admin": "Quản trị viên",
+        "active": "Hoạt động",
+        "banned": "Đã bị cấm",
+        "deleted": "Đã xóa",
+        "clear": "Xóa bộ lọc"
+      },
+      "columns": {
+        "user": "Người dùng",
+        "email": "Email",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "created_at": "Ngày tạo",
+        "actions": "Hành động"
+      },
+      "actions": {
+        "view_profile": "Xem hồ sơ",
+        "edit_account": "Chỉnh sửa tài khoản",
+        "view_audit_log": "Xem nhật ký",
+        "ban_account": "Cấm tài khoản",
+        "unban_account": "Gỡ cấm tài khoản",
+        "delete_account": "Xóa tài khoản",
+        "back": "Quay lại danh sách",
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "confirm_ban": "Xác nhận cấm",
+        "confirm_unban": "Xác nhận gỡ cấm",
+        "confirm_delete": "Xác nhận xóa",
+        "restore_account": "Khôi phục tài khoản",
+        "confirm_restore": "Xác nhận khôi phục"
+      },
+      "detail": {
+        "title": "Chi tiết tài khoản",
+        "subtitle": "Đang quản lý người dùng: {name}",
+        "account_information": "Thông tin tài khoản",
+        "user_id": "ID người dùng",
+        "created_at": "Ngày tạo",
+        "updated_at": "Ngày cập nhật",
+        "ban_details": "Thông tin cấm",
+        "ban_reason": "Lý do cấm",
+        "expiration_date": "Ngày hết hạn",
+        "permanent": "Vĩnh viễn",
+        "no_reason": "Không có lý do",
+        "profile_summary": "Tóm tắt hồ sơ",
+        "action_panel": "Hành động",
+        "game_profile": "Hồ sơ game",
+        "display_name": "Tên hiển thị",
+        "email": "Email",
+        "role": "Vai trò",
+        "status": "Trạng thái",
+        "deleted_at": "Ngày xóa",
+        "banned_at": "Ngày cấm",
+        "game_profile_id": "ID hồ sơ game",
+        "total_sessions": "Tổng phiên chơi",
+        "total_wins": "Tổng trận thắng",
+        "total_losses": "Tổng trận thua",
+        "total_abandoned": "Tổng phiên bỏ dở",
+        "total_play_time": "Tổng thời gian chơi",
+        "equipped_achievement": "Achievement đang dùng"
+      },
+      "modal": {
+        "edit_title": "Chỉnh sửa tài khoản",
+        "display_name": "Tên hiển thị",
+        "avatar_url": "URL ảnh đại diện",
+        "role": "Vai trò",
+        "role_readonly_hint": "Chức năng đổi vai trò không nằm trong task này.",
+        "ban_title": "Cấm tài khoản",
+        "ban_description": "Bạn có chắc muốn cấm {name} không?",
+        "ban_reason": "Lý do cấm",
+        "ban_expiration": "Ngày hết hạn (không bắt buộc)",
+        "unban_title": "Gỡ cấm tài khoản",
+        "unban_description": "Bạn có chắc muốn khôi phục quyền truy cập cho người dùng này không?",
+        "delete_title": "Xóa tài khoản",
+        "delete_warning": "Cảnh báo: Tài khoản sẽ bị xóa mềm và không thể truy cập.",
+        "audit_title": "Nhật ký của {name}",
+        "ban_reason_editor_hint": "Mô tả lý do tài khoản này bị cấm.",
+        "ban_reason_plain_required": "Lý do cấm không được để trống.",
+        "ban_reason_plain_too_long": "Lý do cấm tối đa 500 ký tự.",
+        "restore_title": "Khôi phục tài khoản",
+        "restore_description": "Tài khoản này sẽ được khôi phục và có thể truy cập hệ thống lại nếu không còn bị cấm."
+      },
+      "role": {
+        "title": "Vai trò",
+        "user": "Người dùng",
+        "admin": "Quản trị viên",
+        "change": "Thay đổi vai trò",
+        "changeRole": "Đổi vai trò",
+        "currentRole": "Vai trò hiện tại",
+        "newRole": "Vai trò mới",
+        "promoteConfirmTitle": "Cấp quyền Quản trị viên?",
+        "promoteConfirmDescription": "Tài khoản này sẽ có quyền truy cập vào tất cả các chức năng quản trị. Bạn có chắc chắn muốn tiếp tục?",
+        "demoteConfirmTitle": "Thu hồi quyền Quản trị viên?",
+        "demoteConfirmDescription": "Tài khoản này sẽ mất quyền truy cập vào tất cả các chức năng quản trị. Bạn có chắc chắn muốn tiếp tục?",
+        "selfDemoteBlocked": "Bạn không thể tự thu hồi quyền quản trị của chính mình.",
+        "lastAdminBlocked": "Không thể thu hồi quyền của quản trị viên hoạt động cuối cùng.",
+        "updateSuccess": "Cập nhật vai trò tài khoản thành công.",
+        "updateFailed": "Không thể cập nhật vai trò tài khoản.",
+        "noChange": "Vai trò không thay đổi.",
+        "save": "Lưu vai trò",
+        "cancel": "Hủy"
+      },
+      "empty": {
+        "no_users": "Không tìm thấy người dùng.",
+        "no_audit_logs": "Không tìm thấy nhật ký nào cho người dùng này."
+      },
+      "messages": {
+        "update_success": "Cập nhật tài khoản thành công.",
+        "ban_success": "Cấm tài khoản thành công.",
+        "unban_success": "Gỡ cấm tài khoản thành công.",
+        "delete_success": "Xóa tài khoản thành công.",
+        "generic_error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+        "restore_success": "Khôi phục tài khoản thành công."
+      },
+      "validation": {
+        "display_name_required": "Tên hiển thị không được để trống.",
+        "display_name_too_short": "Tên hiển thị phải có ít nhất 2 ký tự.",
+        "display_name_too_long": "Tên hiển thị tối đa 50 ký tự.",
+        "ban_reason_required": "Lý do cấm không được để trống.",
+        "ban_reason_too_long": "Lý do cấm tối đa 500 ký tự.",
+        "ban_expiration_future": "Ngày hết hạn phải nằm trong tương lai.",
+        "invalid_avatar": "URL ảnh đại diện không hợp lệ"
+      }
+    },
     "download": {
       "nav_label": "Tải xuống",
       "title": "Quản lý tải xuống",
@@ -701,7 +900,186 @@
           "latest_status": "Trạng thái",
           "close": "Đóng"
         }
+      },
+      "active": {
+        "badge": "Đang phát hành",
+        "current": "Phiên bản hiện tại",
+        "set_active": "Chọn phát hành",
+        "title": "Chọn phiên bản phát hành",
+        "description": "Phiên bản này sẽ trở thành bản tải khuyến nghị trên trang Download công khai. Phiên bản đang phát hành trước đó sẽ chuyển sang ngừng hỗ trợ nhưng vẫn nằm trong danh sách phiên bản.",
+        "warning": "Dùng chức năng này khi bản mới upload bị lỗi và bạn muốn người dùng tải một bản cũ ổn định hơn.",
+        "confirm": "Xác nhận",
+        "success": "Cập nhật phiên bản phát hành thành công.",
+        "error": "Cập nhật phiên bản phát hành thất bại.",
+        "inactive_badge": "Ngừng hỗ trợ",
+        "summary_title": "Phiên bản đang phát hành",
+        "no_active": "Chưa chọn phiên bản phát hành.",
+        "summary_note": "Người dùng sẽ tải phiên bản này từ trang Download công khai.",
+        "inactive_note": "Vẫn hiển thị trong danh sách phiên bản, nhưng không phải bản tải khuyến nghị.",
+        "current_version": "Phiên bản đang phát hành",
+        "new_version": "Phiên bản mới sẽ phát hành"
+      }
+    },
+    "accounts": {
+      "online": {
+        "webOnline": "Online (Web)",
+        "gameOnline": "Online (Game)",
+        "offline": "Ngoại tuyến",
+        "unknown": "Không rõ",
+        "lastOnline": "Lần cuối online",
+        "title": "Trạng thái Online"
       }
     }
+  },
+  "about_us": {
+    "nav_label": "Về chúng tôi",
+    "hero": {
+      "eyebrow": "ĐỘI NGŨ SAU NHỮNG HÌNH DẠNG",
+      "title": "Hall of Fame",
+      "subtitle": "Gặp gỡ những người đã cùng xây dựng, kiểm thử, thiết kế và kể nên câu chuyện của Borrowed Shapes."
+    },
+    "stats": {
+      "members": "6 thành viên",
+      "adventure": "1 hành trình co-op",
+      "scrum": "Scrum Team",
+      "platform": "Game + Web Platform"
+    },
+    "team": {
+      "title": "Gặp gỡ đội ngũ",
+      "subtitle": "Mỗi thành viên mang một vai trò, một trách nhiệm và một mảnh ghép trong thế giới mà cả đội cùng tạo nên.",
+      "roles": {
+        "sm": "Scrum Master",
+        "tl": "Technical Leader",
+        "doc": "Document Lead",
+        "dl": "Diagram Lead",
+        "qa": "Quality Assurance",
+        "des": "Designer Lead"
+      },
+      "specialties": {
+        "sm": "Người gác đền Sprint",
+        "tl": "Kiến trúc sư Hệ thống",
+        "doc": "Người giữ tài liệu",
+        "dl": "Nghệ nhân Sơ đồ",
+        "qa": "Thợ săn lỗi",
+        "des": "Phù thủy Thị giác"
+      },
+      "descriptions": {
+        "sm": "Quản lý các hoạt động Scrum, điều phối lập kế hoạch và đánh giá Sprint, theo dõi tiến độ dự án, quản lý ưu tiên Product Backlog, giao tiếp với các bên liên quan và đảm bảo dự án tuân thủ các thực hành Scrum trong suốt quá trình phát triển.",
+        "tl": "Thiết kế kiến trúc kỹ thuật cho hệ thống web và cơ chế gameplay, quản lý cấu trúc cơ sở dữ liệu và mạng, xem xét triển khai kỹ thuật và duy trì sự ổn định chung của hệ thống cũng như chất lượng mã nguồn.",
+        "doc": "Chuẩn bị, bảo trì, tổ chức và chuẩn hóa các báo cáo dự án, tài liệu kỹ thuật, hướng dẫn định dạng và kiểm soát phiên bản tài liệu.",
+        "dl": "Thiết kế và duy trì các sơ đồ kỹ thuật bao gồm sơ đồ lớp, sơ đồ tuần tự, sơ đồ hoạt động, sơ đồ ca sử dụng, quy trình làm việc, sơ đồ quan hệ cơ sở dữ liệu và trực quan hóa kiến trúc hệ thống để hỗ trợ các hoạt động phân tích và phát triển.",
+        "qa": "Thực hiện các hoạt động kiểm thử, xác nhận kết quả Sprint, theo dõi lỗi, xác minh chất lượng gameplay và hệ thống, đảm bảo các tính năng hoàn thành đáp ứng Definition of Done (DoD).",
+        "des": "Thiết kế bố cục UI/UX, hình ảnh gameplay, luồng tương tác, tài sản trực quan và duy trì tính nhất quán về mặt hình ảnh trên toàn hệ thống game và web."
+      }
+    },
+    "closing": {
+      "title": "Nhiều đôi tay cùng tạo nên một hình hài.",
+      "description": "Borrowed Shapes không chỉ là một dự án game, mà còn là hành trình cả đội cùng lên kế hoạch, thiết kế, xây dựng, kiểm thử và hoàn thiện.",
+      "primary_cta": "Khám phá trò chơi",
+      "secondary_cta": "Tải game"
+    }
+  },
+  "contact_page": {
+    "hero": {
+      "badge": "Hỗ trợ & Cộng đồng",
+      "title": "Liên hệ với Borrowed Shapes",
+      "description": "Bạn cần hỗ trợ về tài khoản, tải game, báo lỗi gameplay hoặc muốn góp ý cho Borrowed Shapes? Trang này giúp bạn chọn đúng kênh liên hệ để nhóm phát triển có thể phản hồi và xử lý nhanh hơn."
+    },
+    "cards": {
+      "account": {
+        "title": "Hỗ trợ tài khoản",
+        "description": "Dành cho các vấn đề liên quan đến đăng ký, đăng nhập, Google Login, quên mật khẩu, hồ sơ người chơi, avatar và lịch sử tải game.",
+        "cta": "Quản lý tài khoản"
+      },
+      "bug": {
+        "title": "Báo lỗi game hoặc website",
+        "description": "Gửi lỗi liên quan đến gameplay, nhiệm vụ co-op, tải game, forum, wiki, leaderboard hoặc các chức năng trên website.",
+        "cta": "Báo lỗi trên diễn đàn"
+      },
+      "suggestion": {
+        "title": "Góp ý cộng đồng",
+        "description": "Chia sẻ ý tưởng về map, nhân vật, nhiệm vụ, thành tựu, wiki hoặc các cải tiến giúp Borrowed Shapes trở nên vui và dễ chơi hơn.",
+        "cta": "Thảo luận với cộng đồng"
+      },
+      "dev": {
+        "title": "Liên hệ nhóm phát triển",
+        "description": "Dùng cho các nội dung cần trao đổi trực tiếp với nhóm phát triển, bao gồm hợp tác, phản hồi quan trọng hoặc vấn đề không phù hợp để đăng công khai.",
+        "cta": "Gửi email"
+      }
+    },
+    "before_contact": {
+      "title": "Trước khi liên hệ",
+      "description": "Để tránh mất thời gian chờ phản hồi, bạn có thể kiểm tra nhanh một số mục dưới đây trước khi gửi yêu cầu hỗ trợ.",
+      "items": [
+        "Kiểm tra bạn đang dùng đúng phiên bản game mới nhất trong trang Download.",
+        "Thử đăng xuất và đăng nhập lại nếu lỗi liên quan đến tài khoản hoặc phiên đăng nhập.",
+        "Tìm kiếm trên Forum hoặc Wiki để xem vấn đề đã có hướng dẫn xử lý chưa.",
+        "Chuẩn bị ảnh chụp màn hình hoặc thông báo lỗi nếu có."
+      ]
+    },
+    "bug_report": {
+      "title": "Khi báo lỗi, hãy gửi kèm",
+      "items": [
+        "Phiên bản game hoặc đường dẫn trang web gặp lỗi.",
+        "Thiết bị, hệ điều hành và trình duyệt đang sử dụng.",
+        "Các bước để tái hiện lỗi một cách rõ ràng.",
+        "Ảnh chụp màn hình, video ngắn hoặc nội dung thông báo lỗi nếu có.",
+        "Thời điểm lỗi xảy ra và tài khoản liên quan nếu lỗi thuộc hồ sơ, tải game hoặc lịch sử chơi."
+      ]
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "q1": "Tôi không đăng nhập được thì làm gì?",
+      "a1": "Hãy kiểm tra email, mật khẩu, kết nối mạng và thử đăng nhập lại. Nếu bạn dùng Google Login, hãy chắc chắn tài khoản Google đang hoạt động bình thường. Nếu lỗi vẫn còn, hãy gửi mô tả lỗi kèm ảnh chụp màn hình cho nhóm phát triển.",
+      "q2": "Tôi tải game không được thì làm gì?",
+      "a2": "Hãy kiểm tra kết nối mạng, dung lượng trống trên thiết bị và thử tải lại từ trang Download. Nếu liên kết tải hết hạn hoặc không hoạt động, hãy quay lại trang Download để lấy liên kết mới.",
+      "q3": "Tôi muốn báo cáo nội dung xấu trên forum thì sao?",
+      "a3": "Hãy sử dụng chức năng báo cáo nếu có trong bài viết hoặc bình luận. Báo cáo sẽ được gửi đến đội ngũ quản trị để xem xét theo quy định cộng đồng.",
+      "q4": "Tôi muốn góp ý gameplay hoặc thêm map mới thì gửi ở đâu?",
+      "a4": "Bạn có thể tạo bài viết trong Forum với loại bài Suggestion hoặc thảo luận trong các chủ đề cộng đồng. Những góp ý rõ ràng, có ví dụ cụ thể sẽ giúp nhóm phát triển đánh giá tốt hơn."
+    }
+  },
+  "contact": {
+    "eyebrow": "Hỗ trợ & phản hồi",
+    "title": "Liên hệ với Borrowed Shapes",
+    "description": "Bạn cần hỗ trợ về tài khoản, tải game, diễn đàn, thành tích, kết quả chơi hoặc muốn báo lỗi? Hãy liên hệ với đội ngũ Borrowed Shapes qua kênh chính thức của dự án.",
+    "lastUpdated": "Cập nhật lần cuối: 21/06/2026",
+    "card": {
+      "title": "Liên hệ qua Facebook",
+      "description": "Cách nhanh nhất để gửi câu hỏi, báo lỗi hoặc góp ý cho đội ngũ Borrowed Shapes là liên hệ qua trang Facebook chính thức của dự án.",
+      "cta": "Mở Facebook",
+      "secondaryNote": "Nếu bạn báo lỗi, vui lòng mô tả rõ vấn đề, kèm các bước tái hiện lỗi, trình duyệt/thiết bị đang dùng và ảnh chụp màn hình nếu có."
+    },
+    "topics": [
+      "Tài khoản & đăng nhập",
+      "Tải game",
+      "Báo lỗi website hoặc game",
+      "Forum, Wiki & bình luận",
+      "Kết quả chơi, bảng xếp hạng & thành tích",
+      "Báo cáo nội dung vi phạm",
+      "Góp ý cải thiện sản phẩm"
+    ],
+    "privacyReminder": "Không gửi mật khẩu, mã xác thực, access token, refresh token hoặc thông tin nhạy cảm qua tin nhắn. Đội ngũ Borrowed Shapes sẽ không bao giờ yêu cầu bạn cung cấp mật khẩu.",
+    "faq": [
+      {
+        "q": "Tôi không đăng nhập được thì làm sao?",
+        "a": "Hãy thử kiểm tra email/mật khẩu, dùng chức năng quên mật khẩu hoặc đăng nhập lại bằng Google nếu bạn đã dùng Google Login."
+      },
+      {
+        "q": "Tôi tải game không được thì làm sao?",
+        "a": "Hãy vào trang Download, chọn phiên bản được đánh dấu là khuyến nghị/đang phát hành và thử tải lại với kết nối mạng ổn định."
+      },
+      {
+        "q": "Tôi muốn báo cáo nội dung vi phạm thì làm sao?",
+        "a": "Bạn có thể dùng tính năng report trên website nếu có, hoặc gửi đường dẫn/nội dung cần kiểm tra qua kênh liên hệ chính thức."
+      }
+    ]
+  },
+  "pagination": {
+    "previous": "Trang trước",
+    "next": "Trang tiếp",
+    "page": "Trang",
+    "of": "trên",
+    "empty": "Không có dữ liệu"
   }
 }

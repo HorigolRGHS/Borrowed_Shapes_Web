@@ -148,6 +148,26 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
 
+    if (typeof window !== "undefined" && error.response?.status === 403) {
+      const respData = error.response.data as any;
+      const errorCode = respData?.code || respData?.data?.code || respData?.error?.code;
+      if (errorCode === "ACCOUNT_BANNED") {
+        const banInfo = respData?.ban || respData?.data?.ban || respData?.error?.ban || respData?.details?.ban;
+        window.dispatchEvent(
+          new CustomEvent("account:status_error", {
+            detail: { code: "ACCOUNT_BANNED", ban: banInfo },
+          })
+        );
+      } else if (errorCode === "ACCOUNT_DELETED") {
+        const deletedInfo = respData?.deleted || respData?.data?.deleted || respData?.error?.deleted || respData?.details?.deleted;
+        window.dispatchEvent(
+          new CustomEvent("account:status_error", {
+            detail: { code: "ACCOUNT_DELETED", deleted: deletedInfo },
+          })
+        );
+      }
+    }
+
     if (typeof window !== "undefined" && error.response?.status === 401 && !originalRequest._retry) {
       // Nếu là request tới login/refresh bị 401 thì không retry (tránh loop)
       if (originalRequest.url?.includes("/auth/login") || originalRequest.url?.includes("/auth/refresh")) {
@@ -194,8 +214,22 @@ export const setUserProfile = (user: any) => {
 
 export const getUserProfile = (): any | null => {
   if (typeof window === "undefined") return null;
-  const user = localStorage.getItem("user_profile");
-  return user ? JSON.parse(user) : null;
+  const userStr = localStorage.getItem("user_profile");
+  if (!userStr) return null;
+
+  try {
+    const user = JSON.parse(userStr);
+    // Migration: If the cached user still has the raw public R2 URL, invalidate the cache.
+    // This forces the frontend to fetch the fresh proxy URL from /api/auth/me.
+    if (user && user.imgUrl && user.imgUrl.includes("r2.dev")) {
+      localStorage.removeItem("user_profile");
+      return null;
+    }
+    return user;
+  } catch (err) {
+    localStorage.removeItem("user_profile");
+    return null;
+  }
 };
 
 export const getAccessToken = () => getCookie("accessToken");

@@ -204,7 +204,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_rows_null (Boundary)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce(null);
+      jest.spyOn(em, 'execute').mockResolvedValueOnce(null as any);
 
       await expect(service.findOne('null-result')).rejects.toThrow(
         NotFoundException,

@@ -12,6 +12,8 @@ import { FileAsset } from '../entities/FileAsset';
 import { DownloadLog } from '../entities/DownloadLog';
 import { DownloadStats } from '../entities/DownloadStats';
 import { User } from '../entities/User';
+import { AuditLog } from '../entities/AuditLog';
+import { AuditActionType } from '../entities/AuditActionType';
 import { GameVersionQueryDto } from './dto/game-version-query.dto';
 import { CreateUploadUrlDto } from './dto/create-upload-url.dto';
 import { ConfirmUploadDto } from './dto/confirm-upload.dto';
@@ -67,6 +69,7 @@ export class DownloadsService {
         fileVersion: f.fileVersion,
         fileSize: Number(f.fileSize),
         mimeType: f.mimeType,
+        isActive: f.isActive,
         uploadedAt: f.uploadedAt,
         updatedAt: f.updatedAt,
         isLatest: f.id === latestId,
@@ -88,6 +91,67 @@ export class DownloadsService {
       .limit(1)
       .getSingleResult();
     return latest?.id ?? null;
+  }
+
+  // ─── Active Version Management ───────────────────────────────
+  async getActiveVersion() {
+    let active = await this.em.findOne(FileAsset, { isActive: true });
+    
+    if (!active) {
+      // Fallback to latest
+      active = await this.em
+        .createQueryBuilder(FileAsset, 'f')
+        .orderBy({ uploadedAt: 'DESC' })
+        .limit(1)
+        .getSingleResult();
+    }
+
+    if (!active) return null;
+
+    return {
+      id: active.id,
+      fileName: active.fileName,
+      fileVersion: active.fileVersion,
+      fileSize: Number(active.fileSize),
+      mimeType: active.mimeType,
+      isActive: active.isActive,
+      uploadedAt: active.uploadedAt,
+      updatedAt: active.updatedAt,
+    };
+  }
+
+  async setActiveVersion(id: string, adminUser: { userId: string }) {
+    return await this.em.transactional(async (em) => {
+      const target = await em.findOneOrFail(FileAsset, { id });
+      const previousActive = await em.findOne(FileAsset, { isActive: true });
+
+      if (previousActive?.id !== target.id) {
+        // Set all to false
+        await em.nativeUpdate(FileAsset, {}, { isActive: false });
+        
+        // Set target to true
+        target.isActive = true;
+        await em.persistAndFlush(target);
+
+        // Record AuditLog
+        const log = em.create(AuditLog, {
+          userId: adminUser.userId,
+          actionType: AuditActionType.UPDATE,
+          entityName: 'FileAsset',
+          entityId: target.id,
+          oldValue: previousActive ? { id: previousActive.id, fileVersion: previousActive.fileVersion } : null,
+          newValue: { id: target.id, fileVersion: target.fileVersion },
+        });
+        await em.persistAndFlush(log);
+      }
+
+      return {
+        id: target.id,
+        fileName: target.fileName,
+        fileVersion: target.fileVersion,
+        isActive: target.isActive,
+      };
+    });
   }
 
   // ─── 2. Request download ─────────────────────────────────
@@ -158,15 +222,13 @@ export class DownloadsService {
     if (existing) {
       // downloadCount and totalBytesSent represent request counts and
       // estimated total requested download size — NOT actual R2 bandwidth.
-      existing.downloadCount = BigInt(Number(existing.downloadCount) + 1);
-      existing.totalBytesSent = BigInt(
-        Number(existing.totalBytesSent) + Number(file.fileSize),
-      );
+      existing.downloadCount = existing.downloadCount + 1n;
+      existing.totalBytesSent = existing.totalBytesSent + file.fileSize;
     } else {
       const stats = this.em.create(DownloadStats, {
         fileAssetId: this.em.getReference(FileAsset, file.id),
         date: today,
-        downloadCount: BigInt(1),
+        downloadCount: 1n,
         totalBytesSent: file.fileSize,
       });
       this.em.persist(stats);
@@ -284,7 +346,7 @@ export class DownloadsService {
       throw new BadRequestException('downloads.invalid_file_name');
     }
 
-    const key = `game/windows/${dto.fileVersion}/${safeFileName}`;
+    const key = `game/windows/${fileVersion}/${safeFileName}`;
 
     const uploadUrl = await this.r2.createUploadUrl({
       key,
@@ -307,6 +369,11 @@ export class DownloadsService {
     const fileVersion = dto.fileVersion?.trim();
     if (!fileVersion) {
       throw new BadRequestException('Invalid version');
+    }
+
+    const expectedPrefix = `game/windows/${fileVersion}/`;
+    if (!dto.filePath.startsWith(expectedPrefix)) {
+      throw new BadRequestException('downloads.invalid_file_path');
     }
 
     // Check version uniqueness
@@ -345,6 +412,7 @@ export class DownloadsService {
       filePath: dto.filePath,
       fileSize: BigInt(dto.fileSize),
       mimeType: dto.mimeType,
+      isActive: false,
     });
 
     try {

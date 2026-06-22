@@ -13,6 +13,7 @@ import { CreateSeasonTeamDto } from './dto/create-season-team.dto';
 import { JoinSeasonTeamDto } from './dto/join-season-team.dto';
 import { KickSeasonTeamMemberDto } from './dto/kick-season-team-member.dto';
 import { SeasonTeamResponseDto } from './dto/season-team-response.dto';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
 
 const TEAM_MAX_MEMBERS = 5; // Leader + tối đa 4 người join
 
@@ -241,7 +242,7 @@ export class SeasonTeamService {
       members: members.map((m) => ({
         gameProfileId: m.gameProfileId.id,
         displayName: m.gameProfileId.userId?.displayName ? String(m.gameProfileId.userId.displayName) : null,
-        imgUrl: m.gameProfileId.userId?.imgUrl ?? null,
+        imgUrl: m.gameProfileId.userId ? getProxyAvatarUrl(m.gameProfileId.userId.imgUrl, m.gameProfileId.userId.id, m.gameProfileId.userId.updatedAt) : null,
         badgeImageUrl: m.gameProfileId.equippedAchievementId?.badgeImageUrl ?? null,
         joinedAt: m.joinedAt,
         isLeader: m.gameProfileId.id === team.leaderId.id,

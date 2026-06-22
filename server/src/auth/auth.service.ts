@@ -32,6 +32,7 @@ import {
 import { User } from '../entities/User';
 import { UserSession } from '../entities/UserSession';
 import { AuditLog } from '../entities/AuditLog';
+import { ensureAccountActive, getProxyAvatarUrl } from './auth-utils';
 import { GameProfile } from '../entities/GameProfile';
 import { Role } from '../entities/Role';
 import { SessionStatus } from '../entities/SessionStatus';
@@ -163,21 +164,7 @@ export class AuthService {
     return infoJson;
   }
 
-  private async ensureNotBanned(user: User): Promise<void> {
-    const currentTime = new Date();
-    if (!user.isBanned) return;
-
-    if (user.banExpiresAt && user.banExpiresAt <= currentTime) {
-      user.isBanned = false;
-      user.bannedAt = undefined;
-      user.banReason = undefined;
-      user.banExpiresAt = undefined;
-      await this.em.flush();
-      return;
-    }
-
-    throw new ForbiddenException(user.banReason ?? 'auth.account_banned');
-  }
+  // Removed ensureNotBanned in favor of ensureAccountActive from auth-utils.ts
 
   private async getOrCreateGameProfile(user: User): Promise<GameProfile> {
     const existing = await this.em.findOne(GameProfile, { userId: user.id });
@@ -194,7 +181,7 @@ export class AuthService {
       gameProfileId: gameProfile.id,
       email: String(user.email),
       displayName: user.displayName ? String(user.displayName) : null,
-      imgUrl: user.imgUrl ?? null,
+      imgUrl: getProxyAvatarUrl(user.imgUrl, user.id, user.updatedAt),
       role: user.role,
       isBanned: user.isBanned,
       bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
@@ -478,7 +465,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('auth.invalid_credentials');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
-    await this.ensureNotBanned(user);
+    await ensureAccountActive(user, this.em);
 
     const valid = user.passwordHash
       ? await bcrypt.compare(password, user.passwordHash)
@@ -637,7 +624,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('auth.user_not_found');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
-    await this.ensureNotBanned(user);
+    await ensureAccountActive(user, this.em);
 
     return this.issueLoginTokens(
       user,
@@ -687,9 +674,11 @@ export class AuthService {
     const user = await this.em.findOne(
       User,
       { id: userId },
-      { fields: ['role'] },
+      { fields: ['role', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
     );
     if (!user) throw new UnauthorizedException('auth.unauthorized');
+
+    await ensureAccountActive(user as User, this.em);
 
     const sessionTtl = parseInt(
       this.config.get('SESSION_TTL_SEC', '604800'),
@@ -801,7 +790,7 @@ export class AuthService {
     void auditLog;
   }
 
-  private async revokeUserSessions(
+  public async revokeUserSessions(
     userId: string,
     options?: { excludePlatform?: string },
   ): Promise<void> {
@@ -1005,7 +994,7 @@ export class AuthService {
       gameProfileId: gameProfile ? gameProfile.id : null,
       email: String(user.email),
       displayName: user.displayName ? String(user.displayName) : null,
-      imgUrl: user.imgUrl ?? null,
+      imgUrl: getProxyAvatarUrl(user.imgUrl, user.id, user.updatedAt),
       role: user.role,
       isBanned: user.isBanned,
       bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,

@@ -691,6 +691,28 @@
     }
   },
   "admin": {
+    "dashboard": {
+      "statistics": {
+        "title": "Statistics Dashboard",
+        "description": "Overview of forum, gameplay, players, and downloads.",
+        "refresh": "Refresh",
+        "loading": "Loading statistics...",
+        "loadFailed": "Failed to load statistics.",
+        "range": "Range",
+        "range7d": "7 days",
+        "range30d": "30 days",
+        "range90d": "90 days",
+        "totalForumThreads": "Total Forum Threads",
+        "totalGameSessions": "Total Game Sessions",
+        "totalUsers": "Total Users",
+        "totalDownloads": "Total Downloads",
+        "forumActivity": "Forum Activity",
+        "gameplayActivity": "Gameplay Activity",
+        "userGrowth": "User Growth",
+        "downloadTrend": "Download Trend",
+        "noData": "No data available."
+      }
+    },
     "auditLogs": {
       "rowsPerPage": "Rows per page",
       "nav": "Audit Log",

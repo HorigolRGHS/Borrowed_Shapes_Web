@@ -24,6 +24,13 @@ import { randomUUID } from 'crypto';
 import { UserSession } from '../entities/UserSession';
 import { SessionStatus } from '../entities/SessionStatus';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { AdminDashboardStatisticsQueryDto, DashboardRange } from './dto/admin-dashboard-statistics-query.dto';
+import { GameRun } from '../entities/GameRun';
+import { GameSession } from '../entities/GameSession';
+import { ForumThread } from '../entities/ForumThread';
+import { ForumComment } from '../entities/ForumComment';
+import { DownloadLog } from '../entities/DownloadLog';
+import { FileAsset } from '../entities/FileAsset';
 
 import {
   AdminAccountQueryDto,
@@ -957,5 +964,110 @@ export class AccountService {
     await this.em.flush();
 
     return this.getAdminUserDetails(targetUserId);
+  }
+
+  async getDashboardStatistics(query: AdminDashboardStatisticsQueryDto) {
+    let days = 30;
+    if (query.range === DashboardRange.DAYS_7) days = 7;
+    else if (query.range === DashboardRange.DAYS_90) days = 90;
+
+    const knex = this.em.getConnection().getKnex();
+    
+    // Summary
+    const [
+      totalThreads,
+      totalComments,
+      totalGameRuns,
+      totalGameSessions,
+      completedRuns,
+      totalUsers,
+      totalPlayers,
+      bannedUsers,
+      newUsersInRange,
+      downloadsResult,
+      activeFileResult
+    ] = await Promise.all([
+      this.em.count(ForumThread, {}),
+      this.em.count(ForumComment, { isDeleted: false }),
+      this.em.count(GameRun, {}),
+      this.em.count(GameSession, {}),
+      this.em.count(GameRun, { isCompleted: true }),
+      this.em.count(User, { deletedAt: null }),
+      this.em.count(GameProfile, {}),
+      this.em.count(User, { isBanned: true }),
+      this.em.getConnection().execute(`SELECT count(*) as count FROM auth."User" WHERE "createdAt" >= NOW() - INTERVAL '${days} days'`),
+      this.em.getConnection().execute(`SELECT count(*) as total, sum("bytesSent") as bytes FROM web."DownloadLog"`),
+      this.em.getConnection().execute(`SELECT "fileVersion" FROM web."FileAsset" WHERE "isActive" = true LIMIT 1`)
+    ]);
+
+    const totalDownloads = Number(downloadsResult[0]?.total || 0);
+    const totalBytesSent = Number(downloadsResult[0]?.bytes || 0);
+    const activeFileVersion = activeFileResult[0]?.fileVersion || null;
+
+    // Series queries
+    const seriesSql = (table: string, dateCol: string, countCol: string = '*') => `
+      SELECT date_trunc('day', "${dateCol}") as date, count(${countCol}) as count
+      FROM ${table}
+      WHERE "${dateCol}" >= NOW() - INTERVAL '${days} days'
+      GROUP BY date_trunc('day', "${dateCol}")
+      ORDER BY date ASC
+    `;
+
+    const [forumActivityRes, gameplayActivityRes, userGrowthRes, downloadTrendRes] = await Promise.all([
+      this.em.getConnection().execute(seriesSql('web."ForumThread"', 'createdAt')),
+      this.em.getConnection().execute(seriesSql('game."GameRun"', 'startedAt')),
+      this.em.getConnection().execute(seriesSql('auth."User"', 'createdAt')),
+      this.em.getConnection().execute(seriesSql('web."DownloadLog"', 'downloadedAt'))
+    ]);
+
+    // Fill missing days
+    const generateSeries = (rawRes: any[]) => {
+      const map = new Map(rawRes.map(r => [new Date(r.date).toISOString().split('T')[0], Number(r.count)]));
+      const series = [];
+      const now = new Date();
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        series.push({
+          label,
+          date: dateStr,
+          value: map.get(dateStr) || 0
+        });
+      }
+      return series;
+    };
+
+    return {
+      summary: {
+        forum: {
+          totalThreads,
+          totalComments,
+        },
+        gameplay: {
+          totalGameRuns,
+          totalGameSessions,
+          completedRuns,
+        },
+        players: {
+          totalUsers,
+          totalPlayers,
+          newUsersInRange: Number(newUsersInRange[0]?.count || 0),
+          bannedUsers,
+        },
+        downloads: {
+          totalDownloads,
+          totalBytesSent,
+          activeFileVersion,
+        }
+      },
+      series: {
+        forumActivity: generateSeries(forumActivityRes),
+        gameplayActivity: generateSeries(gameplayActivityRes),
+        userGrowth: generateSeries(userGrowthRes),
+        downloadTrend: generateSeries(downloadTrendRes),
+      }
+    };
   }
 }

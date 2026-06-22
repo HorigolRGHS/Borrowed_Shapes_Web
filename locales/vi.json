@@ -688,6 +688,28 @@
     }
   },
   "admin": {
+    "dashboard": {
+      "statistics": {
+        "title": "Bảng thống kê",
+        "description": "Tổng quan về diễn đàn, gameplay, người chơi và lượt tải.",
+        "refresh": "Làm mới",
+        "loading": "Đang tải thống kê...",
+        "loadFailed": "Không thể tải thống kê.",
+        "range": "Khoảng thời gian",
+        "range7d": "7 ngày",
+        "range30d": "30 ngày",
+        "range90d": "90 ngày",
+        "totalForumThreads": "Tổng bài viết diễn đàn",
+        "totalGameSessions": "Tổng phiên chơi",
+        "totalUsers": "Tổng người dùng",
+        "totalDownloads": "Tổng lượt tải",
+        "forumActivity": "Hoạt động diễn đàn",
+        "gameplayActivity": "Hoạt động gameplay",
+        "userGrowth": "Tăng trưởng người dùng",
+        "downloadTrend": "Xu hướng tải xuống",
+        "noData": "Chưa có dữ liệu."
+      }
+    },
     "auditLogs": {
       "rowsPerPage": "Số dòng mỗi trang",
       "nav": "Nhật ký hệ thống",

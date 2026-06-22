@@ -14,6 +14,7 @@ import { AdminBanAccountDto } from './dto/admin-ban-account.dto';
 import { AdminAuditLogQueryDto } from './dto/admin-audit-log-query.dto';
 import { AdminSystemAuditLogQueryDto } from './dto/admin-system-audit-log-query.dto';
 import { AdminUpdateAccountRoleDto } from './dto/admin-update-account-role.dto';
+import { AdminDashboardStatisticsQueryDto } from './dto/admin-dashboard-statistics-query.dto';
 import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Account')
@@ -116,6 +117,18 @@ export class AccountController {
   ): Promise<ApiResponseDto<any>> {
     const data = await this.accountService.getAdminUserAuditLogs(id, query);
     return okResponse('admin.account.user_audit_logs', data, `${req.method} ${req.path}`);
+  }
+
+  @Roles('ADMIN')
+  @Get('admin/dashboard/statistics')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get dashboard statistics (Admin)' })
+  async getDashboardStatistics(
+    @Query() query: AdminDashboardStatisticsQueryDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    const data = await this.accountService.getDashboardStatistics(query);
+    return okResponse('admin.dashboard.statistics_loaded', data, `${req.method} ${req.path}`);
   }
 
   @Roles('ADMIN')

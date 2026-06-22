@@ -84,9 +84,10 @@ describe('GameResultService', () => {
 
   describe('findAllPaginated', () => {
     it('should_return_paginated_runs_when_valid_query (Normal)', async () => {
-      const executeSpy = jest.spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }])  // count query
-        .mockResolvedValueOnce([mockRunRow])     // data query
+      const executeSpy = jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([{ count: 1 }]) // count query
+        .mockResolvedValueOnce([mockRunRow]) // data query
         .mockResolvedValueOnce([mockPlayerRow]); // players query
 
       const result = await service.findAllPaginated({ page: 1, limit: 10 });
@@ -102,7 +103,8 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_list_when_no_runs_exist (Boundary)', async () => {
-      jest.spyOn(em, 'execute')
+      jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -114,7 +116,8 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_by_isCompleted_when_provided (Normal)', async () => {
-      const executeSpy = jest.spyOn(em, 'execute')
+      const executeSpy = jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockRunRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -127,7 +130,8 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_by_search_when_provided (Normal)', async () => {
-      const executeSpy = jest.spyOn(em, 'execute')
+      const executeSpy = jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockRunRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -140,7 +144,8 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_by_isPrivate_when_provided (Normal)', async () => {
-      const executeSpy = jest.spyOn(em, 'execute')
+      const executeSpy = jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockRunRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -153,7 +158,8 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_by_date_range_when_provided (Normal)', async () => {
-      const executeSpy = jest.spyOn(em, 'execute')
+      const executeSpy = jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -168,7 +174,8 @@ describe('GameResultService', () => {
     });
 
     it('should_clamp_page_to_minimum_1_when_invalid (Boundary)', async () => {
-      jest.spyOn(em, 'execute')
+      jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -179,10 +186,11 @@ describe('GameResultService', () => {
 
   describe('findOne', () => {
     it('should_return_run_details_when_found (Normal)', async () => {
-      jest.spyOn(em, 'execute')
-        .mockResolvedValueOnce([mockRunRow])        // run query
-        .mockResolvedValueOnce([mockPlayerRow])      // run players
-        .mockResolvedValueOnce([mockSessionRow])     // sessions
+      jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([mockRunRow]) // run query
+        .mockResolvedValueOnce([mockPlayerRow]) // run players
+        .mockResolvedValueOnce([mockSessionRow]) // sessions
         .mockResolvedValueOnce([mockSessionPlayerRow]); // session players
 
       const result = await service.findOne('run-1');
@@ -222,12 +230,17 @@ describe('GameResultService', () => {
         isHost: true,
       };
 
-      jest.spyOn(em, 'execute')
-        .mockResolvedValueOnce([mockProfileRow])     // profile query
-        .mockResolvedValueOnce([{ count: 1 }])       // count query
-        .mockResolvedValueOnce([mockHistoryRun]);     // runs query
+      jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([mockProfileRow]) // profile query
+        .mockResolvedValueOnce([{ count: 1 }]) // count query
+        .mockResolvedValueOnce([mockHistoryRun]) // runs query
+        .mockResolvedValueOnce([mockPlayerRow]); // players query
 
-      const result = await service.findPlayerHistory('gp-1', { page: 1, limit: 10 });
+      const result = await service.findPlayerHistory('gp-1', {
+        page: 1,
+        limit: 10,
+      });
 
       expect(result.playerInfo.gameProfileId).toBe('gp-1');
       expect(result.playerInfo.displayName).toBe('Player1');
@@ -258,14 +271,37 @@ describe('GameResultService', () => {
         isHost: false,
       };
 
-      jest.spyOn(em, 'execute')
+      jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([mockProfileRow])
         .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([mockNonHostRun]);
+        .mockResolvedValueOnce([mockNonHostRun])
+        .mockResolvedValueOnce([mockPlayerRow]);
 
-      const result = await service.findPlayerHistory('gp-1', { page: 1, limit: 10 });
+      const result = await service.findPlayerHistory('gp-1', {
+        page: 1,
+        limit: 10,
+      });
 
       expect(result.items[0].playerRole).toBe('PLAYER');
+    });
+
+    it('should_sort_by_totalTimeSec_asc_when_requested (Normal)', async () => {
+      const executeSpy = jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([mockProfileRow])
+        .mockResolvedValueOnce([{ count: 1 }])
+        .mockResolvedValueOnce([]);
+
+      await service.findPlayerHistory('gp-1', {
+        page: 1,
+        limit: 10,
+        sortBy: 'totalTimeSec',
+        order: 'asc',
+      });
+
+      const dataQueryCall = executeSpy.mock.calls[2];
+      expect(dataQueryCall[0]).toContain('ORDER BY gr."totalTimeSec" asc');
     });
   });
 
@@ -279,7 +315,8 @@ describe('GameResultService', () => {
         totalPlayers: 4,
       };
 
-      jest.spyOn(em, 'execute')
+      jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([leaderboardRow]);
 
@@ -293,7 +330,8 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_leaderboard_when_no_completed_runs (Boundary)', async () => {
-      jest.spyOn(em, 'execute')
+      jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -305,10 +343,17 @@ describe('GameResultService', () => {
 
     it('should_calculate_correct_rank_on_page_2 (Boundary)', async () => {
       const rows = [
-        { runId: 'run-11', lobbyName: 'Team 11', totalTimeSec: 200, completedAt: new Date(), totalPlayers: 3 },
+        {
+          runId: 'run-11',
+          lobbyName: 'Team 11',
+          totalTimeSec: 200,
+          completedAt: new Date(),
+          totalPlayers: 3,
+        },
       ];
 
-      jest.spyOn(em, 'execute')
+      jest
+        .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 11 }])
         .mockResolvedValueOnce(rows);
 

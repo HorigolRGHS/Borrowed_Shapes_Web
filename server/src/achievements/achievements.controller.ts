@@ -182,6 +182,29 @@ export class AchievementController {
     );
   }
 
+  @Get('user/me/showcase')
+  @ApiOperation({ summary: 'Get achievement showcase for current user profile' })
+  async findShowcase(
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
+  ) {
+    if (!user.gameProfileId) {
+      return okResponse(
+        'achievements.showcase_success',
+        { permanent: [], seasonal: [], stats: { totalEarned: 0, permanentEarned: 0, seasonalEarned: 0 } },
+        `${req.method} ${req.path}`,
+      );
+    }
+
+    const data = await this.achievementService.findShowcaseForUser(user.gameProfileId);
+
+    return okResponse(
+      'achievements.showcase_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
+  }
+
   @Get(':id/users')
   async findUsersByAchievement(
     @Param('id') id: string,

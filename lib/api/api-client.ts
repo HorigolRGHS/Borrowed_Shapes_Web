@@ -1,8 +1,20 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { decodeJwt } from "@/lib/utils/jwt";
 
+// Đọc API base URL ở RUNTIME, không inline lúc build.
+// - Client: lấy từ window.__ENV (được layout chèn vào <head> theo request).
+// - Server: đọc trực tiếp process.env (route handler / server component chạy ở runtime).
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== "undefined") {
+    const runtime = (window as unknown as { __ENV?: Record<string, string> })
+      .__ENV?.NEXT_PUBLIC_API_BASE_URL;
+    if (runtime) return runtime;
+  }
+  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+};
+
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api",
+  baseURL: getApiBaseUrl(),
   timeout: 30000,
   withCredentials: true,
   headers: {
@@ -44,7 +56,7 @@ export const syncProfile = async (accessToken?: string): Promise<any | null> => 
 
   try {
     // Sử dụng raw axios để tránh interceptor deadlock
-    const response = await axios.get(`${apiClient.defaults.baseURL}/auth/me`, {
+    const response = await axios.get(`${getApiBaseUrl()}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
@@ -96,6 +108,9 @@ const refreshSession = async (): Promise<string | null> => {
 
 apiClient.interceptors.request.use(
   async (config) => {
+    // Resolve lại baseURL mỗi request để luôn lấy giá trị runtime (window.__ENV).
+    config.baseURL = getApiBaseUrl();
+
     let token: string | null = null;
 
     if (typeof window !== "undefined") {

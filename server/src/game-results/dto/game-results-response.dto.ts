@@ -25,7 +25,7 @@ export class ListGameResultsQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by completion status' })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ obj, key }) => obj[key] === 'true' || obj[key] === true)
   @IsBoolean()
   isCompleted?: boolean;
 
@@ -36,7 +36,7 @@ export class ListGameResultsQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by visibility' })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ obj, key }) => obj[key] === 'true' || obj[key] === true)
   @IsBoolean()
   isPrivate?: boolean;
 

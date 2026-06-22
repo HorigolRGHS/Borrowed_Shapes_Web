@@ -27,8 +27,21 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const locale = (cookieStore.get("NEXT_LOCALE")?.value as any) || "en";
 
+  // Chèn biến công khai theo RUNTIME (đọc process.env mỗi request, không inline lúc build).
+  const runtimeEnv = {
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "",
+  };
+
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            // Escape "<" để giá trị env không thể phá vỡ thẻ <script> (vd: chuỗi chứa </script>).
+            __html: `window.__ENV = ${JSON.stringify(runtimeEnv).replace(/</g, "\\u003c")};`,
+          }}
+        />
+      </head>
       <body
         className={cn(
           inter.variable,

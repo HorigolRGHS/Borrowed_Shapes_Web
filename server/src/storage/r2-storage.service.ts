@@ -25,6 +25,21 @@ export class R2StorageService {
       'R2_SECRET_ACCESS_KEY',
     );
 
+    if (!accessKeyId) {
+      throw new Error(
+        'R2_ACCESS_KEY_ID is missing or empty in environment variables',
+      );
+    }
+    if (!secretAccessKey) {
+      throw new Error(
+        'R2_SECRET_ACCESS_KEY is missing or empty in environment variables',
+      );
+    }
+
+    console.log('R2 accessKeyId exists:', Boolean(accessKeyId));
+    console.log('R2 accessKeyId prefix:', accessKeyId.slice(0, 6));
+    console.log('R2 secretAccessKey exists:', Boolean(secretAccessKey));
+
     this.bucket = this.configService.getOrThrow<string>('R2_BUCKET_NAME');
     this.expiresIn = this.configService.get<number>(
       'R2_SIGNED_URL_EXPIRES',
@@ -77,6 +92,13 @@ export class R2StorageService {
       signableHeaders: new Set(['host', 'content-type']),
     });
 
+    console.log('R2 signed upload key:', params.key);
+    console.log('R2 signed upload contentType:', contentType);
+    console.log(
+      'R2 upload url signed headers:',
+      uploadUrl.match(/X-Amz-SignedHeaders=([^&]+)/)?.[1],
+    );
+
     return uploadUrl;
   }
 
@@ -113,6 +135,24 @@ export class R2StorageService {
       contentLength: response.ContentLength ?? 0,
       contentType: response.ContentType ?? 'application/octet-stream',
     };
+  }
+
+  /**
+   * Upload an object directly to R2 (server-side put, no presigned URL).
+   */
+  async putObject(
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType || 'application/octet-stream',
+      }),
+    );
   }
 
   /**

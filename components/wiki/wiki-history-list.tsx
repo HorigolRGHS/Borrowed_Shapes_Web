@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
+import { cn } from "@/lib/utils";
 import { useUserRole } from "@/lib/wiki/use-user-role";
 import { rollbackWiki } from "@/lib/wiki/api";
 import type { WikiHistoryItem } from "@/models/dtos/wiki.dto";
@@ -38,6 +39,7 @@ interface Props {
   page: number;
   totalPages: number;
   expectedLatestRevisionId: string;
+  isAdminRoute?: boolean;
 }
 
 export function WikiHistoryList({
@@ -48,6 +50,7 @@ export function WikiHistoryList({
   page,
   totalPages,
   expectedLatestRevisionId,
+  isAdminRoute = false,
 }: Props) {
   const { t, locale } = useI18n();
   const role = useUserRole();
@@ -76,6 +79,69 @@ export function WikiHistoryList({
       setBusy(null);
     }
   };
+
+  const basePathHistory = isAdminRoute
+    ? `/dashboard/wiki/${pageId}/history`
+    : `/wiki/${encodeURIComponent(slug)}/history`;
+
+  const getRevisionLink = (revisionId: string) =>
+    isAdminRoute
+      ? `/dashboard/wiki/${pageId}/history/${revisionId}`
+      : `/wiki/${encodeURIComponent(slug)}/history/${revisionId}`;
+
+  // Public routes show timeline for everyone. Dashboard routes show admin table.
+  if (!isAdminRoute) {
+    return (
+      <div>
+        <ol className="relative border-l border-border ml-2">
+          {items.map((it) => {
+            const summary = locale === "vi" ? it.summaryVi : it.summary;
+            const created = new Date(it.createdAt).toLocaleString(locale);
+            const author = it.author?.displayName ?? "—";
+            return (
+              <li key={it.id} className="mb-6 ml-6">
+                <span
+                  className={cn(
+                    "absolute -left-1.75 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-background",
+                    it.isLatest ? "bg-primary" : "bg-muted-foreground/40",
+                  )}
+                  aria-hidden
+                />
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="font-medium text-foreground">{author}</span>
+                  {it.isLatest && (
+                    <Badge variant="secondary" className="text-xs">
+                      {t("wiki.latest_badge")}
+                    </Badge>
+                  )}
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {created}
+                  </span>
+                </div>
+                {summary && (
+                  <p className="mt-1 text-sm text-muted-foreground">{summary}</p>
+                )}
+                <Link
+                  href={getRevisionLink(it.id)}
+                  className="mt-1 inline-block text-sm text-primary underline-offset-4 hover:underline"
+                >
+                  {t("wiki.view_button")}
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+        <WikiPagination
+          page={page}
+          totalPages={totalPages}
+          basePath={basePathHistory}
+        />
+        <p className="text-sm text-muted-foreground mt-4 text-center">
+          {total} revisions
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -109,9 +175,7 @@ export function WikiHistoryList({
                   </TableCell>
                   <TableCell className="text-right space-x-2 whitespace-nowrap">
                     <Button asChild variant="outline" size="sm">
-                      <Link
-                        href={`/wiki/${encodeURIComponent(slug)}/history/${it.id}`}
-                      >
+                      <Link href={getRevisionLink(it.id)}>
                         {t("wiki.view_button")}
                       </Link>
                     </Button>
@@ -161,7 +225,7 @@ export function WikiHistoryList({
       <WikiPagination
         page={page}
         totalPages={totalPages}
-        basePath={`/wiki/${encodeURIComponent(slug)}/history`}
+        basePath={basePathHistory}
       />
       <p className="text-sm text-muted-foreground mt-4 text-center">
         {total} revisions

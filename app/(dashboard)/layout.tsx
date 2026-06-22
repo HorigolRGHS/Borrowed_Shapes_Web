@@ -69,6 +69,7 @@ export default function DashboardLayout({
     { href: "/dashboard/achievements", label: t("common.achievements") },
     { href: "/dashboard/announcements", label: t("common.announcements") },
     { href: "/dashboard/downloads", label: t("admin.download.nav_label") || "Download" },
+    { href: "/dashboard/game-results", label: t("common.game_results") },
   ];
 
   const isActive = (href: string) =>

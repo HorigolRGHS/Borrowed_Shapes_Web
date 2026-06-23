@@ -45,7 +45,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const BADGE_BASE_CLASS =
   "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
 const HEADER_CLASS =
-  "text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium";
+  "text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium";
 
 // ── Types ────────────────────────────────────────────────
 
@@ -276,9 +276,9 @@ export default function GameResultDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="min-h-screen bg-background text-foreground">
         <main className="px-8 py-8">
-          <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">
+          <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">
             {t("gameResults.loading")}
           </div>
         </main>
@@ -293,7 +293,7 @@ export default function GameResultDetailPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-background text-foreground">
       <main className="px-8 py-8 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -301,15 +301,15 @@ export default function GameResultDetailPage() {
             <button
               id="btn-back-to-runs"
               onClick={() => router.push("/dashboard/game-results")}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-white hover:border-slate-500 transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/60 text-muted-foreground hover:text-foreground hover:border-slate-500 transition-colors cursor-pointer"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className="text-3xl font-bold text-foreground">
                 {t("gameResults.detail_title")}
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 {t("gameResults.detail_subtitle")}{" "}
                 <span className="text-amber-400 font-mono font-semibold">
                   {detail.id.length > 12
@@ -325,11 +325,11 @@ export default function GameResultDetailPage() {
         {/* ── Run Information ─────────────────────────── */}
         <section
           id="section-run-info"
-          className="rounded-[16px] border border-slate-800 bg-slate-900/60 p-6 mb-6"
+          className="rounded-[16px] border border-border bg-card/60 p-6 mb-6"
         >
           <div className="flex items-center gap-2 mb-5">
             <Zap className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-white">
+            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
               {t("gameResults.section_run_info")}
             </h3>
           </div>
@@ -368,7 +368,7 @@ export default function GameResultDetailPage() {
                   variant="outline"
                   className={`${BADGE_BASE_CLASS} ${
                     detail.isPrivate
-                      ? "border-slate-500/70 bg-slate-500/10 text-slate-300"
+                      ? "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
                       : "border-sky-500/70 bg-sky-500/10 text-sky-300"
                   }`}
                 >
@@ -404,19 +404,19 @@ export default function GameResultDetailPage() {
         {/* ── Player List ─────────────────────────────── */}
         <section
           id="section-player-list"
-          className="rounded-[16px] border border-slate-800 bg-slate-900/60 p-6 mb-6"
+          className="rounded-[16px] border border-border bg-card/60 p-6 mb-6"
         >
           <div className="flex items-center gap-2 mb-5">
             <Users className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-white">
+            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
               {t("gameResults.section_player_list")}
             </h3>
           </div>
 
-          <div className="rounded-[12px] border border-slate-800 overflow-hidden">
+          <div className="rounded-[12px] border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
+                <TableRow className="border-border hover:bg-transparent">
                   <TableHead className={HEADER_CLASS}>
                     {t("gameResults.col_player")}
                   </TableHead>
@@ -437,22 +437,22 @@ export default function GameResultDetailPage() {
                   return (
                     <TableRow
                       key={player.gameProfileId}
-                      className="border-slate-800 hover:bg-slate-800/50 cursor-pointer transition-colors"
+                      className="border-border hover:bg-muted/50 cursor-pointer transition-colors"
                       onClick={() => handlePlayerClick(player)}
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${avatarBg}`}
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-foreground ${avatarBg}`}
                           >
                             {initials}
                           </div>
-                          <span className="font-medium text-white">
+                          <span className="font-medium text-foreground">
                             {player.displayName}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-slate-400 font-mono text-sm">
+                      <TableCell className="text-muted-foreground font-mono text-sm">
                         {player.gameProfileId}
                       </TableCell>
                       <TableCell>
@@ -461,7 +461,7 @@ export default function GameResultDetailPage() {
                           className={`${BADGE_BASE_CLASS} ${
                             player.isHost
                               ? "border-amber-500/70 bg-amber-500/10 text-amber-300"
-                              : "border-slate-500/70 bg-slate-500/10 text-slate-300"
+                              : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
                           }`}
                         >
                           {player.isHost
@@ -480,19 +480,19 @@ export default function GameResultDetailPage() {
         {/* ── Session List ────────────────────────────── */}
         <section
           id="section-session-list"
-          className="rounded-[16px] border border-slate-800 bg-slate-900/60 p-6 mb-6"
+          className="rounded-[16px] border border-border bg-card/60 p-6 mb-6"
         >
           <div className="flex items-center gap-2 mb-5">
             <Globe className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-white">
+            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
               {t("gameResults.section_session_list")}
             </h3>
           </div>
 
-          <div className="rounded-[12px] border border-slate-800 overflow-hidden">
+          <div className="rounded-[12px] border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
+                <TableRow className="border-border hover:bg-transparent">
                   <TableHead className={HEADER_CLASS}>
                     {t("gameResults.col_level")}
                   </TableHead>
@@ -515,9 +515,9 @@ export default function GameResultDetailPage() {
                   sortedSessions.map((session) => (
                     <TableRow
                       key={session.id}
-                      className="border-slate-800 hover:bg-slate-800/50"
+                      className="border-border hover:bg-muted/50"
                     >
-                      <TableCell className="font-medium text-white">
+                      <TableCell className="font-medium text-foreground">
                         {session.levelName}
                       </TableCell>
                       <TableCell>
@@ -534,14 +534,14 @@ export default function GameResultDetailPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-0.5 text-sm text-slate-400">
+                        <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5 text-slate-500" />
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                             {t("gameResults.start")}:{" "}
                             {formatTimeOnly(session.startedAt)}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5 text-slate-500" />
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                             {t("gameResults.end")}:{" "}
                             {formatTimeOnly(session.endedAt)}
                           </span>
@@ -553,7 +553,7 @@ export default function GameResultDetailPage() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="text-center py-12 text-slate-400"
+                      className="text-center py-12 text-muted-foreground"
                     >
                       {t("gameResults.no_runs")}
                     </TableCell>
@@ -591,7 +591,7 @@ export default function GameResultDetailPage() {
               <AlertDialogDescription>
                 {t("gameResults.delete_confirm")}
                 <br />
-                <span className="text-xs text-slate-500 mt-1 block">
+                <span className="text-xs text-muted-foreground mt-1 block">
                   {t("gameResults.delete_confirm_undone")}
                 </span>
               </AlertDialogDescription>
@@ -617,7 +617,7 @@ export default function GameResultDetailPage() {
             if (!open) closePlayerModal();
           }}
         >
-          <DialogContent className="max-w-3xl max-h-[90vh] p-0 border-slate-700 bg-slate-900 overflow-hidden">
+          <DialogContent className="max-w-3xl max-h-[90vh] p-0 border-border bg-card overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
             <DialogTitle className="sr-only">
               {selectedPlayer?.displayName ?? ""}
@@ -629,7 +629,7 @@ export default function GameResultDetailPage() {
                   {/* Player header */}
                   <div className="flex items-center gap-4 mb-6">
                     <div
-                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-white ${getAvatarColor(
+                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-foreground ${getAvatarColor(
                         selectedPlayer.displayName
                       )}`}
                     >
@@ -638,10 +638,10 @@ export default function GameResultDetailPage() {
                         .toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white">
+                      <h3 className="text-xl font-bold text-foreground">
                         {selectedPlayer.displayName}
                       </h3>
-                      <p className="text-sm text-slate-400 font-mono">
+                      <p className="text-sm text-muted-foreground font-mono">
                         # {t("gameResults.player_profile_id")}:{" "}
                         {selectedPlayer.gameProfileId}
                       </p>
@@ -649,7 +649,7 @@ export default function GameResultDetailPage() {
                   </div>
 
                   {loadingHistory ? (
-                    <div className="rounded-[12px] border border-slate-800 bg-slate-950/60 p-12 text-center text-slate-400">
+                    <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">
                       {t("gameResults.loading")}
                     </div>
                   ) : playerHistory ? (
@@ -692,10 +692,10 @@ export default function GameResultDetailPage() {
                       </div>
 
                       {/* Run history table */}
-                      <div className="rounded-[12px] border border-slate-800 overflow-hidden">
+                      <div className="rounded-[12px] border border-border overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-slate-800 hover:bg-transparent">
+                            <TableRow className="border-border hover:bg-transparent">
                               <TableHead className={HEADER_CLASS}>
                                 {t("gameResults.history_col_run_id")}
                               </TableHead>
@@ -724,14 +724,14 @@ export default function GameResultDetailPage() {
                               playerHistory.items.map((run) => (
                                 <TableRow
                                   key={run.id}
-                                  className="border-slate-800 hover:bg-slate-800/50"
+                                  className="border-border hover:bg-muted/50"
                                 >
-                                  <TableCell className="text-slate-400 font-mono text-sm">
+                                  <TableCell className="text-muted-foreground font-mono text-sm">
                                     {run.id.length > 12
                                       ? run.id.slice(0, 12)
                                       : run.id}
                                   </TableCell>
-                                  <TableCell className="font-medium text-white">
+                                  <TableCell className="font-medium text-foreground">
                                     {run.lobbyName || "—"}
                                   </TableCell>
                                   <TableCell>
@@ -740,7 +740,7 @@ export default function GameResultDetailPage() {
                                       className={`${BADGE_BASE_CLASS} ${
                                         run.playerRole === "HOST"
                                           ? "border-amber-500/70 bg-amber-500/10 text-amber-300"
-                                          : "border-slate-500/70 bg-slate-500/10 text-slate-300"
+                                          : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
                                       }`}
                                     >
                                       {run.playerRole === "HOST"
@@ -755,7 +755,7 @@ export default function GameResultDetailPage() {
                                       {formatTime(run.totalTimeSec)}
                                     </span>
                                   </TableCell>
-                                  <TableCell className="text-slate-400 text-sm">
+                                  <TableCell className="text-muted-foreground text-sm">
                                     {formatDateTime(run.startedAt)}
                                   </TableCell>
                                 </TableRow>
@@ -764,7 +764,7 @@ export default function GameResultDetailPage() {
                               <TableRow>
                                 <TableCell
                                   colSpan={5}
-                                  className="text-center py-8 text-slate-400"
+                                  className="text-center py-8 text-muted-foreground"
                                 >
                                   {t("gameResults.no_runs")}
                                 </TableCell>
@@ -775,7 +775,7 @@ export default function GameResultDetailPage() {
                       </div>
                     </>
                   ) : (
-                    <div className="rounded-[12px] border border-slate-800 bg-slate-950/60 p-12 text-center text-slate-400">
+                    <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">
                       {t("gameResults.no_runs")}
                     </div>
                   )}
@@ -805,8 +805,8 @@ function InfoBox({
   highlight?: boolean;
 }) {
   return (
-    <div className="rounded-[12px] border border-slate-700/60 bg-slate-950/40 px-4 py-3">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1.5">
+    <div className="rounded-[12px] border border-border/60 bg-background/40 px-4 py-3">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
         {label}
       </div>
       {badge ? (
@@ -814,7 +814,7 @@ function InfoBox({
       ) : (
         <div
           className={`text-sm font-semibold ${
-            highlight ? "text-amber-400" : "text-white"
+            highlight ? "text-amber-400" : "text-foreground"
           } ${mono ? "font-mono" : ""}`}
         >
           {value}
@@ -834,12 +834,12 @@ function StatBox({
   color?: string;
 }) {
   return (
-    <div className="rounded-[12px] border border-slate-700/60 bg-slate-950/40 px-3 py-3 text-center">
-      <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1">
+    <div className="rounded-[12px] border border-border/60 bg-background/40 px-3 py-3 text-center">
+      <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-1">
         {label}
       </div>
       <div
-        className={`text-lg font-bold ${color || "text-white"}`}
+        className={`text-lg font-bold ${color || "text-foreground"}`}
       >
         {value}
       </div>
@@ -869,7 +869,7 @@ function SessionResultBadge({
 }: {
   result?: string;
 }) {
-  if (!result) return <span className="text-slate-500">—</span>;
+  if (!result) return <span className="text-muted-foreground">—</span>;
   const isWin = result === "WIN";
   return (
     <Badge

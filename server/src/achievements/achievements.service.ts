@@ -5,11 +5,24 @@ import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
+import { ConfigService } from '@nestjs/config';
+import { R2StorageService } from '../storage/r2-storage.service';
+import { randomUUID } from 'node:crypto';
 
+const MIME_EXT_MAP: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+};
 
 @Injectable()
 export class AchievementService {
-  constructor(private em: EntityManager) { }
+  constructor(
+    private em: EntityManager,
+    private readonly r2: R2StorageService,
+    private readonly config: ConfigService,
+  ) { }
 
   async findAll(): Promise<Achievement[]> {
     return this.em.find(Achievement, {});
@@ -173,7 +186,39 @@ export class AchievementService {
 
   async delete(id: string): Promise<void> {
     const achievement = await this.findOne(id);
+    if (achievement.badgeImageUrl) {
+      const match = achievement.badgeImageUrl.match(/(achievement\/[a-zA-Z0-9.\-_]+)$/);
+      if (match) {
+        const key = match[1];
+        try {
+          await this.r2.deleteObject(key);
+        } catch (err) {
+          console.error(`Failed to delete R2 object for key ${key}:`, err);
+        }
+      }
+    }
     await this.em.removeAndFlush(achievement);
+  }
+
+  async uploadBadge(
+    buffer: Buffer,
+    mimeType: string,
+    originalName: string,
+  ): Promise<string> {
+    const ext = MIME_EXT_MAP[mimeType];
+    if (!ext) {
+      throw new BadRequestException('achievements.upload_invalid_type');
+    }
+
+    const key = `achievement/${randomUUID()}${ext}`;
+    await this.r2.putObject(key, buffer, mimeType);
+
+    const base =
+      this.config.get<string>('R2_PUBLIC_BASE_URL') ??
+      this.config.getOrThrow<string>('R2_PUBLIC_DEV_URL');
+    const publicBaseUrl = base.replace(/\/+$/, '');
+
+    return `${publicBaseUrl}/${key}`;
   }
 
   async search(query: string): Promise<Array<Achievement & { earnedCount: number }>> {

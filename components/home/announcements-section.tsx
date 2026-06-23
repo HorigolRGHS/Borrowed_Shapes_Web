@@ -416,7 +416,7 @@ export function AnnouncementsSection() {
             {/* Close Button */}
             <button
               onClick={closeAnnouncement}
-              className="absolute top-4 right-4 p-2 rounded-full bg-background/50 dark:bg-white/5 hover:bg-card dark:hover:bg-white/10 text-white hover:text-foreground transition-all z-50 cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-full bg-background/50 dark:bg-white/5 hover:bg-card dark:hover:bg-white/10 text-foreground/80 dark:text-white hover:text-foreground transition-all z-50 cursor-pointer"
               aria-label="Close dialog"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -424,7 +424,7 @@ export function AnnouncementsSection() {
               </svg>
             </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-background dark:bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
               {/* Main content */}
               <article className="lg:col-span-2">
                 {/* Header gradient area */}
@@ -474,7 +474,7 @@ export function AnnouncementsSection() {
 
                   {/* Summary blockquote */}
                   {getSummary(selectedAnnouncement) && (
-                    <blockquote className="border-l-4 border-amber-500/50 bg-[#16162a] dark:bg-[#16162a] px-5 py-4 rounded-r-lg mb-8 text-muted-foreground dark:text-gray-300 italic text-base leading-relaxed">
+                    <blockquote className="border-l-4 border-amber-500/50 bg-muted/40 dark:bg-[#16162a] px-5 py-4 rounded-r-lg mb-8 text-muted-foreground dark:text-gray-300 italic text-base leading-relaxed">
                       {getSummary(selectedAnnouncement)}
                     </blockquote>
                   )}

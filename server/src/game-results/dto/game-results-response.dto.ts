@@ -105,6 +105,16 @@ export class LeaderboardQueryDto {
   @Min(1)
   @Max(50)
   limit?: number = 10;
+
+  @ApiPropertyOptional({ enum: ['all-time', 'seasonal'], default: 'all-time' })
+  @IsOptional()
+  @IsIn(['all-time', 'seasonal'])
+  scope?: 'all-time' | 'seasonal' = 'all-time';
+
+  @ApiPropertyOptional({ description: 'Season month filter (YYYY-MM). Defaults to current month when scope=seasonal.' })
+  @IsOptional()
+  @IsString()
+  seasonMonth?: string;
 }
 
 // ─── Common player DTOs ──────────────────────────────────
@@ -212,6 +222,9 @@ export class GameResultResponseDto {
 
   @ApiProperty({ type: [GameResultPlayerDto] })
   players!: GameResultPlayerDto[];
+
+  @ApiPropertyOptional({ type: [GameResultSessionDto] })
+  sessions?: GameResultSessionDto[];
 }
 
 export class GameResultDetailResponseDto extends GameResultResponseDto {
@@ -329,6 +342,17 @@ export class PlayerHistoryResponseDto {
 
 // ─── Leaderboard DTOs ────────────────────────────────────
 
+export class LeaderboardPlayerDto {
+  @ApiProperty()
+  @IsString()
+  displayName!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+}
+
 export class LeaderboardEntryDto {
   @ApiProperty()
   rank!: number;
@@ -347,6 +371,10 @@ export class LeaderboardEntryDto {
 
   @ApiProperty()
   completedAt!: Date;
+
+  @ApiPropertyOptional({ type: [LeaderboardPlayerDto] })
+  @IsOptional()
+  players?: LeaderboardPlayerDto[];
 }
 
 export class LeaderboardResponseDto {

@@ -177,8 +177,14 @@ export function AnnouncementsSection() {
   const getContent = (a: Announcement) =>
     locale === "vi" ? a.contentVi || a.content : a.content;
 
-  // Find featured pinned announcement
-  const pinnedAnnouncement = announcements.find((a) => a.isPinned);
+  // Find featured pinned announcement overall (newest updated pinned announcement)
+  const pinnedAnnouncement = announcements
+    .filter((a) => a.isPinned)
+    .sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.publishedAt || a.createdAt).getTime();
+      const timeB = new Date(b.updatedAt || b.publishedAt || b.createdAt).getTime();
+      return timeB - timeA;
+    })[0];
 
   // Filter by active tab
   const filteredAnnouncements = announcements.filter((a) => {
@@ -186,7 +192,7 @@ export function AnnouncementsSection() {
     return a.type === activeTab;
   });
 
-  // Grid items: show all matching announcements in the active tab (including pinned)
+  // Grid items: show matching announcements in the active tab (excluding the featured pinned banner)
   const gridItems = filteredAnnouncements.slice(0, 6);
 
   // For the modal layout:
@@ -239,7 +245,7 @@ export function AnnouncementsSection() {
         </div>
 
         {/* Featured pinned announcement banner at the top */}
-        {activeTab === "all" && pinnedAnnouncement && (
+        {pinnedAnnouncement && (
           <Link
             href={`/announcements/${getSlug(pinnedAnnouncement)}`}
             onClick={(e) => {

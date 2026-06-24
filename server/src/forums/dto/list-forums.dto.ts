@@ -2,6 +2,7 @@ import { IsOptional, IsInt, Min, Max, IsString, IsUUID, IsIn, IsEnum } from 'cla
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ForumPostType } from '../../entities/ForumPostType';
+import { ForumThreadStatus } from '../../entities/ForumThreadStatus';
 
 export class ListForumsDto {
   @ApiPropertyOptional({
@@ -88,4 +89,12 @@ export class ListForumsDto {
   @IsOptional()
   @IsEnum(ForumPostType, { message: 'forums.invalid_post_type' })
   postType?: ForumPostType;
+
+  @ApiPropertyOptional({
+    enum: ForumThreadStatus,
+    example: 'OPEN',
+  })
+  @IsOptional()
+  @IsEnum(ForumThreadStatus, { message: 'forums.invalid_status' })
+  status?: ForumThreadStatus;
 }

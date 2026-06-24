@@ -40,6 +40,7 @@ export class ForumService {
     month,
     year,
     postType,
+    status,
   }: any,
     user?: { userId?: string; role?: string },
     locale: Locale = 'en',) {
@@ -62,6 +63,11 @@ export class ForumService {
     if (postType) {
       clauses.push(`t."postType" = ?`);
       params.push(postType);
+    }
+
+    if (status) {
+      clauses.push(`t."status" = ?`);
+      params.push(status);
     }
 
     // Filter by month/year
@@ -104,7 +110,7 @@ export class ForumService {
     const rows = await this.em.execute(
       `
       select t."id", t."slug", t."title", t."content", t."score", 
-             t."viewCount", t."isPinned", t."postType",
+             t."viewCount", t."isPinned", t."postType", t."status",
              t."createdAt", t."updatedAt", t."imageUrl",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
              a."badgeImageUrl" as "authorBadgeImageUrl",
@@ -142,6 +148,7 @@ export class ForumService {
         viewCount: row.viewCount,
         isPinned: row.isPinned,
         postType: row.postType,
+        status: row.status,
         imgUrl: row.imageUrl,
         author: {
           id: row.authorId,

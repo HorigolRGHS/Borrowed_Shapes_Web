@@ -292,7 +292,7 @@ export function AnnouncementsSection() {
                       <Clock className="w-3.5 h-3.5" />
                       {formatDate(pinnedAnnouncement.publishedAt)}
                     </span>
-                    <span className="text-sm font-bold text-amber-500 group-hover:text-amber-400 flex items-center gap-1 transition-colors ml-auto">
+                    <span className="text-sm font-bold text-amber-500 group-hover:text-amber-400 flex items-center gap-1 transition-colors">
                       {t("home.announcements_section.read_more")}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>

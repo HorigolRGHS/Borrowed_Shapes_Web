@@ -891,7 +891,6 @@
     "hero_title_highlight": "Leader",
     "hero_title_rest": "board",
     "stats_total_runs": "Completed Runs",
-    "stats_updated": "Updated live",
     "top_3": "TOP 3",
     "full_rankings": "Full Rankings",
     "col_rank": "#",
@@ -908,9 +907,6 @@
     "modal_completed_date": "Completed Date",
     "modal_players": "Players",
     "modal_close": "Close",
-    "live": "Live",
-    "all_time_active": "All-Time Active",
-    "season_active": "Season Active",
     "ranked": "Ranked",
     "unranked": "Unranked"
   }

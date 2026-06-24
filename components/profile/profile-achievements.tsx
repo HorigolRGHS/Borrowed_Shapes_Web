@@ -93,15 +93,27 @@ function formatSeasonMonth(seasonMonthStr?: string | null): string {
   }
 }
 
+function formatUTCDate(dateStr?: string | null): string {
+  if (!dateStr) return "—";
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "—";
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  } catch {
+    return "—";
+  }
+}
+
 function formatSeasonLabel(seasonKey: string, expiresAt: string | null, isActive: boolean, t: (k: string) => string): string {
-  const expiryDate = expiresAt ? formatDate(expiresAt) : "";
-  if (isActive && expiryDate) {
-    return `${t("profile.achievements.expires_label")} ${expiryDate}`;
+  const formattedSeason = formatSeasonMonth(seasonKey);
+  const label = `${t("profile.achievements.season_label")} ${formattedSeason}`;
+  if (!isActive) {
+    return `${label} (${t("profile.achievements.expired_label").toLowerCase()})`;
   }
-  if (!isActive && expiryDate) {
-    return `${t("profile.achievements.expired_label")} ${expiryDate}`;
-  }
-  return seasonKey;
+  return label;
 }
 
 /* ------------------------------------------------------------------ */
@@ -378,7 +390,7 @@ function AchievementDetailModal({
                   {t("profile.achievements.expired_label")}
                 </span>
                 <span className="text-sm text-red-500 dark:text-red-400/80">
-                  {formatDate(achievement.expiresAt)}
+                  {formatUTCDate(achievement.expiresAt)}
                 </span>
               </div>
             ) : (
@@ -388,7 +400,7 @@ function AchievementDetailModal({
                   {t("profile.achievements.expires_label")}
                 </span>
                 <span className="text-sm font-medium text-foreground dark:text-white">
-                  {formatDate(achievement.expiresAt)}
+                  {formatUTCDate(achievement.expiresAt)}
                 </span>
               </div>
             )
@@ -661,69 +673,78 @@ export function ProfileAchievements({ equippedAchievementId }: { equippedAchieve
         </div>
       </div>
 
-      {/* Permanent section */}
-      {filteredPermanent.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Star className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-            <h3 className="text-base font-bold text-foreground dark:text-white">
-              {t("profile.achievements.section_permanent")}
-            </h3>
-            <span className="text-sm text-muted-foreground dark:text-gray-500">
-              {filteredPermanent.length}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filteredPermanent.map((ach) => (
-              <AchievementCard
-                key={ach.id}
-                achievement={ach}
-                isEquipped={localEquippedId === ach.id}
-                onClick={() => setSelectedAchievement(ach)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      <div className="max-h-[600px] overflow-y-auto pr-1.5 custom-scroll space-y-6">
+        {/* Permanent section */}
+        {filteredPermanent.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+              <h3 className="text-base font-bold text-foreground dark:text-white">
+                {t("profile.achievements.section_permanent")}
+              </h3>
+              <span className="text-sm text-muted-foreground dark:text-gray-500">
+                {filteredPermanent.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filteredPermanent.map((ach) => (
+                <AchievementCard
+                  key={ach.id}
+                  achievement={ach}
+                  isEquipped={localEquippedId === ach.id}
+                  onClick={() => setSelectedAchievement(ach)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Seasonal sections */}
-      {filteredSeasonal.map((group) => (
-        <section key={group.seasonKey}>
-          <div className="flex items-center gap-2 mb-1">
-            <Zap className={`h-4 w-4 ${group.isActive ? "text-amber-500 dark:text-amber-400" : "text-gray-500"}`} />
-            <h3 className="text-base font-bold text-foreground dark:text-white">
-              {t("profile.achievements.section_seasonal")}
-            </h3>
-            <span className="text-sm text-muted-foreground dark:text-gray-500">
-              {group.achievements.length}
-            </span>
-          </div>
-          <p className={`text-xs mb-4 flex items-center gap-1.5 ${group.isActive ? "text-amber-400" : "text-red-400/70"}`}>
-            <Zap className="h-3 w-3" />
-            {formatSeasonLabel(group.seasonKey, group.expiresAt, group.isActive, t)}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {group.achievements.map((ach) => (
-              <AchievementCard
-                key={ach.id}
-                achievement={ach}
-                isEquipped={localEquippedId === ach.id}
-                onClick={() => setSelectedAchievement(ach)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+        {/* Seasonal sections */}
+        {filteredSeasonal.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+              <h3 className="text-base font-bold text-foreground dark:text-white">
+                {t("profile.achievements.section_seasonal")}
+              </h3>
+              <span className="text-sm text-muted-foreground dark:text-gray-500">
+                {filteredSeasonal.reduce((acc, g) => acc + g.achievements.length, 0)}
+              </span>
+            </div>
 
-      {/* Empty state */}
-      {filteredPermanent.length === 0 && filteredSeasonal.length === 0 && (
-        <div className="rounded-2xl border border-border dark:border-white/10 border-dashed bg-card/20 p-12 text-center text-muted-foreground">
-          {search
-            ? t("achievements.no_achievements")
-            : t("achievements.no_achievements")
-          }
-        </div>
-      )}
+            <div className="space-y-6">
+              {filteredSeasonal.map((group) => (
+                <div key={group.seasonKey} className="space-y-2">
+                  <p className={`text-xs flex items-center gap-1.5 font-semibold ${group.isActive ? "text-amber-400" : "text-red-400/70"}`}>
+                    <Zap className="h-3 w-3" />
+                    {formatSeasonLabel(group.seasonKey, group.expiresAt, group.isActive, t)}
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {group.achievements.map((ach) => (
+                      <AchievementCard
+                        key={ach.id}
+                        achievement={ach}
+                        isEquipped={localEquippedId === ach.id}
+                        onClick={() => setSelectedAchievement(ach)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Empty state */}
+        {filteredPermanent.length === 0 && filteredSeasonal.length === 0 && (
+          <div className="rounded-2xl border border-border dark:border-white/10 border-dashed bg-card/20 p-12 text-center text-muted-foreground">
+            {search
+              ? t("achievements.no_achievements")
+              : t("achievements.no_achievements")
+            }
+          </div>
+        )}
+      </div>
 
       {/* Detail modal */}
       <AchievementDetailModal

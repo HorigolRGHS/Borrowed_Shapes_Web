@@ -4,6 +4,7 @@ import { User } from '../entities/User';
 import { GameProfile } from '../entities/GameProfile';
 import { UserAchievement } from '../entities/UserAchievement';
 import { Achievement } from '../entities/Achievement';
+import { getEffectiveExpiresAt } from '../achievements/achievements.service';
 import { AuditLog } from '../entities/AuditLog';
 import { AuditActionType } from '../entities/AuditActionType';
 import { R2StorageService } from '../storage/r2-storage.service';
@@ -123,7 +124,8 @@ export class AccountService {
             throw new ForbiddenException('Achievement not unlocked or does not exist');
           }
           const achievement = await this.em.findOne(Achievement, { id: dto.equippedAchievementId });
-          if (achievement?.type === 'SEASONAL' && achievement.expiresAt && new Date(achievement.expiresAt) < new Date()) {
+          const expiresAt = getEffectiveExpiresAt(achievement?.type, achievement?.seasonMonth, achievement?.expiresAt);
+          if (achievement?.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
             throw new ForbiddenException('Achievement season has expired');
           }
           gameProfile.equippedAchievementId = achievement as any;

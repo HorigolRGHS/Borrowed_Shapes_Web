@@ -147,11 +147,6 @@ export default function LeaderboardPage() {
               {t("leaderboard.tab_seasonal")} ({getSeasonalMonthLabel()})
             </button>
           </div>
-          
-          <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-xs font-mono font-medium">
-            <span className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-ping shrink-0" />
-            {t("leaderboard.live")}
-          </span>
         </div>
 
         {/* Dynamic Stats Banner */}
@@ -171,14 +166,6 @@ export default function LeaderboardPage() {
                   {isLoading ? "..." : total}
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-col items-start sm:items-end text-xs text-muted-foreground font-sans relative z-10">
-              <span className="text-green-600 dark:text-green-400 font-rajdhani font-bold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full animate-pulse" />
-                {activeTab === "all-time" ? t("leaderboard.all_time_active") : t("leaderboard.season_active")}
-              </span>
-              <span>{t("leaderboard.stats_updated")}</span>
             </div>
           </div>
         </div>

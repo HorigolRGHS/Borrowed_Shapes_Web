@@ -881,14 +881,13 @@
   },
   "leaderboard": {
     "page_title": "Bảng Xếp Hạng",
-    "tab_all_time": "Mọi Thời Đại",
+    "tab_all_time": "Toàn bộ",
     "tab_seasonal": "Theo Mùa Giải",
     "season_label": "Mùa giải",
     "hero_subtitle": "XẾP HẠNG",
     "hero_title_highlight": "Bảng",
     "hero_title_rest": "Xếp Hạng",
     "stats_total_runs": "Lượt Chơi Hoàn Thành",
-    "stats_updated": "Cập nhật trực tiếp",
     "top_3": "TOP 3",
     "full_rankings": "Bảng Xếp Hạng Chi Tiết",
     "col_rank": "#",
@@ -905,9 +904,6 @@
     "modal_completed_date": "Ngày Hoàn Thành",
     "modal_players": "Người Chơi",
     "modal_close": "Đóng",
-    "live": "Trực tiếp",
-    "all_time_active": "Bảng xếp hạng toàn bộ đang hoạt động",
-    "season_active": "Bảng xếp hạng mùa giải đang hoạt động",
     "ranked": "Xếp hạng",
     "unranked": "Chưa xếp hạng"
   }

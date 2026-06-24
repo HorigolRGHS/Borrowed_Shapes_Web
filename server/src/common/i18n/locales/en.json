@@ -149,7 +149,7 @@
     "related_success": "Related pages resolved",
     "too_many_related_slugs": "At most 30 related slugs may be requested at once"
   },
-  "forum": {
+  "forums": {
     "list_success": "Forums retrieved successfully",
     "detail_success": "Thread details retrieved successfully",
     "create_success": "Thread created successfully",

@@ -149,7 +149,7 @@
     "related_success": "Đã phân giải các slug liên quan",
     "too_many_related_slugs": "Mỗi lần chỉ có thể yêu cầu tối đa 30 slug liên quan"
   },
-  "forum": {
+  "forums": {
     "list_success": "Lấy danh sách forums thành công",
     "detail_success": "Lấy chi tiết bài viết thành công",
     "create_success": "Tạo bài viết thành công",

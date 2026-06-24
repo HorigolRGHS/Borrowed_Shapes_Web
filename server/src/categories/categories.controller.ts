@@ -35,6 +35,15 @@ export class CategoryController {
     return okResponse('category.list_success', data, 'GET /category');
   }
 
+  // List all unofficial categories
+  @Public()
+  @Get('unofficial')
+  @ApiOperation({ summary: 'List all unofficial forum categories' })
+  async findAllUnofficial(@Req() req: Request): Promise<ApiResponseDto<any>> {
+    const data = await this.categoryService.findAllUnofficial();
+    return okResponse('category.list_success', data, 'GET /category/unofficial');
+  }
+
   // Get category detail
   @Public()
   @Get(':id')

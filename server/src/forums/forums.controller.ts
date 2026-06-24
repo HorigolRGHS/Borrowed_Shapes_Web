@@ -10,6 +10,8 @@ import {
   HttpCode,
   HttpStatus,
   Headers,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ForumService } from './forums.service';
 import { CreateForumDto } from './dto/create-forums.dto';
@@ -22,6 +24,10 @@ import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import {
+  ThreadImageUploadRequestDto,
+  ThreadImageUploadResponseDto,
+} from './dto/thread-image-upload.dto';
+import {
   ApiTags,
   ApiOperation,
   ApiResponse,
@@ -31,9 +37,11 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('Forum')
-@Controller('forum')
+@Controller('forums')
 export class ForumController {
-  constructor(private readonly forumService: ForumService) { }
+  constructor(
+    private readonly forumService: ForumService,
+  ) { }
 
   // List threads (public)
   @Public()
@@ -49,7 +57,7 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
     const data = await this.forumService.list(query, user, locale);
-    return okResponse('forum.list_success', data, 'GET /forum');
+    return okResponse('forums.list_success', data, 'GET /forums');
   }
 
   @Public()
@@ -63,7 +71,7 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
     const data = await this.forumService.findOneBySlug(slug, locale, user);
-    return okResponse('forum.detail_success', data, `GET /forum/slug/${slug}`);
+    return okResponse('forums.detail_success', data, `GET /forums/slug/${slug}`);
   }
 
   // Get thread detail (public)
@@ -83,7 +91,7 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
     const data = await this.forumService.findOneById(id, locale);
-    return okResponse('forum.detail_success', data, `GET /forum/id/${id}`);
+    return okResponse('forums.detail_success', data, `GET /forums/id/${id}`);
   }
 
   // Create thread (requires auth)
@@ -99,8 +107,8 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
     const isAdmin = user.role === 'ADMIN';
-    await this.forumService.create(createForumDto, user.userId, isAdmin, locale);
-    return okResponse('forum.create_success', null, 'POST /forum');
+    const newThread = await this.forumService.create(createForumDto, user.userId, isAdmin, locale);
+    return okResponse('forums.create_success', newThread, 'POST /forums');
   }
 
   // Update thread (requires auth, author only)
@@ -121,7 +129,7 @@ export class ForumController {
     const isAdmin = user.role === 'ADMIN';
     const locale = resolveLocale(acceptLanguage);
     await this.forumService.update(id, updateForumDto, user.userId, isAdmin, locale);
-    return okResponse('forum.update_success', null, `PATCH /forum/${id}`);
+    return okResponse('forums.update_success', null, `PATCH /forums/${id}`);
   }
 
   // Delete thread (requires auth, author or admin)
@@ -139,7 +147,7 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
     await this.forumService.remove(id, user.userId, isAdmin);
-    return okResponse('forum.delete_success', null, `DELETE /forum/${id}`);
+    return okResponse('forums.delete_success', null, `DELETE /forums/${id}`);
   }
 
   // Vote on thread (requires auth, value = 1 | -1)
@@ -158,6 +166,24 @@ export class ForumController {
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.forumService.vote(id, user.userId, dto.value);
-    return okResponse('forum.vote_success', data, `POST /forum/${id}/vote`);
+    return okResponse('forums.vote_success', data, `POST /forums/${id}/vote`);
+  }
+
+  @Post('upload')
+  @ApiOperation({ summary: 'Create presigned upload URL for forum thread image' })
+  async uploadThreadImage(
+    @Body() dto: ThreadImageUploadRequestDto,
+    @CurrentUser() user: RequestUser,
+  ): Promise<ApiResponseDto<ThreadImageUploadResponseDto>> {
+    if (!user?.userId) {
+      throw new ForbiddenException('forums.unauthenticated');
+    }
+
+    const data = await this.forumService.uploadThreadImage(dto, user.userId);
+    return okResponse(
+      'forums.thread_image_upload_url_created',
+      data,
+      'POST /forums/upload',
+    );
   }
 }

@@ -49,7 +49,7 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
         </span>
         <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
-      
+
       <DropdownMenuContent align="end" className="w-64 bg-card border-border dark:bg-[#0f0f1a] dark:border-[#1e1e3a] text-foreground dark:text-white rounded-xl shadow-2xl p-2 mt-2">
         <DropdownMenuLabel className="px-2 py-3 flex flex-col gap-1">
           <span className="font-bold truncate">{displayName}</span>
@@ -63,7 +63,7 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-border dark:bg-[#1e1e3a]" />
-        
+
         <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mt-1">
           <Link href="/profile" className="flex items-center gap-3">
             <User className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
@@ -77,18 +77,18 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
             {t("header.download") || "Download"}
           </Link>
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mb-1">
           <Link href="/auth/change-password" className="flex items-center gap-3">
             <Lock className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
             {t("auth.change_password") || "Change Password"}
           </Link>
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator className="bg-border dark:bg-[#1e1e3a]" />
-        
-        <DropdownMenuItem 
-          onClick={() => handleLogout()} 
+
+        <DropdownMenuItem
+          onClick={() => handleLogout()}
           className="cursor-pointer focus:bg-destructive/10 focus:text-destructive dark:focus:bg-red-500/10 dark:focus:text-red-400 text-destructive dark:text-red-500 rounded-lg px-3 py-2.5 mt-1"
         >
           <LogOut className="h-4 w-4 mr-3" />

@@ -1,6 +1,7 @@
-import { IsOptional, IsInt, Min, Max, IsString, IsUUID, IsIn } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString, IsUUID, IsIn, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ForumPostType } from '../../entities/ForumPostType';
 
 export class ListForumsDto {
   @ApiPropertyOptional({
@@ -44,7 +45,7 @@ export class ListForumsDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['score', 'createdAt', 'updatedAt'], { message: 'forum.invalid_sort_field' })
+  @IsIn(['score', 'createdAt', 'updatedAt'], { message: 'forums.invalid_sort_field' })
   sortBy?: 'score' | 'createdAt' | 'updatedAt' = 'createdAt';
 
   @ApiPropertyOptional({
@@ -54,7 +55,7 @@ export class ListForumsDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['asc', 'desc'], { message: 'forum.invalid_sort_order' })
+  @IsIn(['asc', 'desc'], { message: 'forums.invalid_sort_order' })
   order?: 'asc' | 'desc' = 'desc';
 
   @ApiPropertyOptional({
@@ -79,4 +80,12 @@ export class ListForumsDto {
   @IsInt()
   @Min(2000)
   year?: number;
+
+  @ApiPropertyOptional({
+    enum: ForumPostType,
+    example: 'GENERAL',
+  })
+  @IsOptional()
+  @IsEnum(ForumPostType, { message: 'forums.invalid_post_type' })
+  postType?: ForumPostType;
 }

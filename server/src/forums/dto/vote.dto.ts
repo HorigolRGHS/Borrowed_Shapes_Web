@@ -7,6 +7,6 @@ export class VoteDto {
     example: 1,
     description: '1 for upvote, -1 for downvote',
   })
-  @IsIn([1, -1], { message: 'forum.vote_value_invalid' })
+  @IsIn([1, -1], { message: 'forums.vote_value_invalid' })
   value!: 1 | -1;
 }

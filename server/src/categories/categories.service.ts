@@ -6,7 +6,7 @@ import { UpdateCategoryDto } from './dto/update-categories.dto';
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager) { }
 
   // List all categories, sorted by displayOrder
   async findAll() {
@@ -15,7 +15,7 @@ export class CategoryService {
       select c."id", c."name", c."name_vi", c."slug", c."slug_vi",
              c."description", c."description_vi", c."iconUrl",
              c."isOfficial", c."displayOrder",
-             count(t."id") as "threadCount"
+             COUNT(t."id") as "threadCount"
       from web."ForumCategory" c
       left join web."ForumThread" t on t."categoryId" = c."id"
       group by c."id"
@@ -30,32 +30,55 @@ export class CategoryService {
     }));
   }
 
+  // List all categories, sorted by displayOrder
+  async findAllUnofficial() {
+    const rows = await this.em.execute(
+      `
+      select c."id", c."name", c."name_vi", c."slug", c."slug_vi",
+             c."description", c."description_vi", c."iconUrl",
+             c."isOfficial", c."displayOrder",
+             COUNT(t."id") as "threadCount"
+      from web."ForumCategory" c
+      left join web."ForumThread" t on t."categoryId" = c."id"
+      where c."isOfficial" = false
+      group by c."id"
+      order by c."displayOrder" asc
+      `,
+      [],
+    );
+
+    return rows.map((row: any) => ({
+      ...row,
+      threadCount: Number(row.threadCount || 0),
+    }));
+  }
+
   // Get category by ID
   async findOne(id: string) {
-  const category = await this.em.findOne(ForumCategory, { id });
-  if (!category) throw new NotFoundException('category.not_found');
+    const category = await this.em.findOne(ForumCategory, { id });
+    if (!category) throw new NotFoundException('category.not_found');
 
-  const countRes = await this.em.execute(
-    `select count(1) as cnt from web."ForumThread" where "categoryId" = ?`,
-    [id],
-  );
+    const countRes = await this.em.execute(
+      `select count(1) as cnt from web."ForumThread" where "categoryId" = ?`,
+      [id],
+    );
 
-  const threadCount = Number(countRes?.[0]?.cnt || 0);
+    const threadCount = Number(countRes?.[0]?.cnt || 0);
 
-  return {
-    id: category.id,
-    name: category.name,
-    name_vi: category.nameVi,
-    slug: category.slug,
-    slug_vi: category.slugVi,
-    description: category.description,
-    description_vi: category.descriptionVi,
-    iconUrl: category.iconUrl,
-    isOfficial: category.isOfficial,
-    displayOrder: category.displayOrder,
-    threadCount,
-  };
-}
+    return {
+      id: category.id,
+      name: category.name,
+      name_vi: category.nameVi,
+      slug: category.slug,
+      slug_vi: category.slugVi,
+      description: category.description,
+      description_vi: category.descriptionVi,
+      iconUrl: category.iconUrl,
+      isOfficial: category.isOfficial,
+      displayOrder: category.displayOrder,
+      threadCount,
+    };
+  }
 
   // Create category
   async create(dto: CreateCategoryDto) {
@@ -68,8 +91,8 @@ export class CategoryService {
     const slug = this.slugify(dto.slug?.trim() || dto.name);
     const slugVi = this.slugify(dto.slugVi?.trim() || dto.nameVi);
 
-    if (!slug) {throw new BadRequestException('category.slug_required');}
-    if (!slugVi) {throw new BadRequestException('category.slug_vi_required');}
+    if (!slug) { throw new BadRequestException('category.slug_required'); }
+    if (!slugVi) { throw new BadRequestException('category.slug_vi_required'); }
 
     const existingSlug = await this.em.findOne(ForumCategory, { slug });
     if (existingSlug) throw new BadRequestException('category.slug_conflict');
@@ -98,126 +121,126 @@ export class CategoryService {
     });
 
     try {
-    await this.em.persist(category).flush();
-    return null;
-  } catch (error) {
-    console.error('Error creating category:', error); 
-    throw error;
-  }
+      await this.em.persist(category).flush();
+      return null;
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
   }
 
   // Update category
-async update(id: string, dto: UpdateCategoryDto) {
-  const category = await this.em.findOne(ForumCategory, { id });
-  if (!category) throw new NotFoundException('category.not_found');
+  async update(id: string, dto: UpdateCategoryDto) {
+    const category = await this.em.findOne(ForumCategory, { id });
+    if (!category) throw new NotFoundException('category.not_found');
 
-  // Update name
-  if (dto.name !== undefined) {
-    const trimmed = dto.name.trim();
+    // Update name
+    if (dto.name !== undefined) {
+      const trimmed = dto.name.trim();
 
-    if (!trimmed) {
-      throw new BadRequestException('category.name_required');
+      if (!trimmed) {
+        throw new BadRequestException('category.name_required');
+      }
+
+      if (trimmed !== category.name) {
+        const existing = await this.em.findOne(ForumCategory, {
+          name: trimmed,
+        });
+
+        if (existing && existing.id !== category.id) {
+          throw new BadRequestException('category.name_conflict');
+        }
+      }
+
+      category.name = trimmed;
     }
 
-    if (trimmed !== category.name) {
-      const existing = await this.em.findOne(ForumCategory, {
-        name: trimmed,
-      });
+    // Update Vietnamese name
+    if (dto.nameVi !== undefined) {
+      const trimmed = dto.nameVi.trim();
 
-      if (existing && existing.id !== category.id) {
-        throw new BadRequestException('category.name_conflict');
+      if (!trimmed) {
+        throw new BadRequestException('category.name_vi_required');
+      }
+
+      if (trimmed !== category.nameVi) {
+        const existing = await this.em.findOne(ForumCategory, {
+          nameVi: trimmed,
+        });
+
+        if (existing && existing.id !== category.id) {
+          throw new BadRequestException('category.name_vi_conflict');
+        }
+      }
+
+      category.nameVi = trimmed;
+    }
+
+    // Update slug
+    if (dto.slug !== undefined) {
+      const newSlug = this.slugify(dto.slug.trim() || category.name);
+
+      if (!newSlug) {
+        throw new BadRequestException('category.slug_required');
+      }
+      if (newSlug !== category.slug) {
+        const existing = await this.em.findOne(ForumCategory, {
+          slug: newSlug,
+        });
+
+        if (existing && existing.id !== category.id) {
+          throw new BadRequestException('category.slug_conflict');
+        }
+
+        category.slug = newSlug;
       }
     }
 
-    category.name = trimmed;
-  }
+    // Update Vietnamese slug
+    if (dto.slugVi !== undefined) {
+      const newSlugVi = this.slugify(dto.slugVi.trim() || category.nameVi);
 
-  // Update Vietnamese name
-  if (dto.nameVi !== undefined) {
-    const trimmed = dto.nameVi.trim();
+      if (!newSlugVi) {
+        throw new BadRequestException('category.slug_vi_required');
+      }
+      if (newSlugVi !== category.slugVi) {
+        const existing = await this.em.findOne(ForumCategory, {
+          slugVi: newSlugVi,
+        });
 
-    if (!trimmed) {
-      throw new BadRequestException('category.name_vi_required');
-    }
+        if (existing && existing.id !== category.id) {
+          throw new BadRequestException('category.slug_vi_conflict');
+        }
 
-    if (trimmed !== category.nameVi) {
-      const existing = await this.em.findOne(ForumCategory, {
-        nameVi: trimmed,
-      });
-
-      if (existing && existing.id !== category.id) {
-        throw new BadRequestException('category.name_vi_conflict');
+        category.slugVi = newSlugVi;
       }
     }
 
-    category.nameVi = trimmed;
-  }
-
-  // Update slug
-  if (dto.slug !== undefined) {
-    const newSlug = this.slugify(dto.slug.trim() || category.name);
-
-    if (!newSlug) {
-      throw new BadRequestException('category.slug_required');
+    // Update descriptions
+    if (dto.description !== undefined) {
+      category.description = dto.description?.trim() ?? null;
     }
-    if (newSlug !== category.slug) {
-      const existing = await this.em.findOne(ForumCategory, {
-        slug: newSlug,
-      });
 
-      if (existing && existing.id !== category.id) {
-        throw new BadRequestException('category.slug_conflict');
-      }
-
-      category.slug = newSlug;
+    if (dto.descriptionVi !== undefined) {
+      category.descriptionVi = dto.descriptionVi?.trim() ?? null;
     }
-  }
 
-  // Update Vietnamese slug
-  if (dto.slugVi !== undefined) {
-    const newSlugVi = this.slugify(dto.slugVi.trim() || category.nameVi);
-
-    if (!newSlugVi) {
-      throw new BadRequestException('category.slug_vi_required');
+    // Update icon
+    if (dto.iconUrl !== undefined) {
+      category.iconUrl = dto.iconUrl ?? null;
     }
-    if (newSlugVi !== category.slugVi) {
-      const existing = await this.em.findOne(ForumCategory, {
-        slugVi: newSlugVi,
-      });
 
-      if (existing && existing.id !== category.id) {
-        throw new BadRequestException('category.slug_vi_conflict');
-      }
-
-      category.slugVi = newSlugVi;
+    // Update flags
+    if (dto.isOfficial !== undefined) {
+      category.isOfficial = dto.isOfficial;
     }
-  }
 
-  // Update descriptions
-  if (dto.description !== undefined) {
-    category.description = dto.description?.trim() ?? null;
-  }
+    if (dto.displayOrder !== undefined) {
+      category.displayOrder = dto.displayOrder;
+    }
 
-  if (dto.descriptionVi !== undefined) {
-    category.descriptionVi = dto.descriptionVi?.trim() ?? null;
-  }
-
-  // Update icon
-  if (dto.iconUrl !== undefined) {
-    category.iconUrl = dto.iconUrl ?? null;
-  }
-
-  // Update flags
-  if (dto.isOfficial !== undefined) {
-    category.isOfficial = dto.isOfficial;
-  }
-
-  if (dto.displayOrder !== undefined) {
-    category.displayOrder = dto.displayOrder;
-  }
-
-  await this.em.flush();
-  return null;
+    await this.em.flush();
+    return null;
   }
 
   // Delete category
@@ -233,9 +256,9 @@ async update(id: string, dto: UpdateCategoryDto) {
     if (!s) return '';
     const normalized = s.normalize('NFD');
     const withoutAccents = normalized
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'd')
-    .replace(/[\u0300-\u036f]/g, '');
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .replace(/[\u0300-\u036f]/g, '');
     const lowercase = withoutAccents.toLowerCase();
     const withDashes = lowercase.replace(/\s+/g, '-');
     const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');

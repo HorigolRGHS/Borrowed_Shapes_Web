@@ -74,7 +74,7 @@ export class ForumController {
     return okResponse('forums.detail_success', data, `GET /forums/slug/${slug}`);
   }
 
-  // Get thread detail (public)
+  // Get thread detail
   @Roles('ADMIN')
   @Get('id/:id')
   @ApiOperation({

@@ -150,6 +150,8 @@ export class ForumService {
         postType: row.postType,
         status: row.status,
         imgUrl: row.imageUrl,
+        id: row.id,
+        slug: row.slug,
         author: {
           id: row.authorId,
           displayName: row.authorName,
@@ -165,9 +167,7 @@ export class ForumService {
         updatedAt: row.updatedAt,
       };
 
-      return user?.role === 'ADMIN'
-        ? { ...base, id: row.id }
-        : { ...base, slug: row.slug };
+      return base;
     });
 
     return {

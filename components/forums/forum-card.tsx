@@ -26,6 +26,7 @@ export function ForumCard({ item }: { item: any }) {
   const { t } = useI18n();
   const hasImage = item.imgUrl?.trim();
 
+  console.log("item: ", item)
   return (
     <Link href={`/forums/${encodeURIComponent(item.slug)}`}>
       <div className={`

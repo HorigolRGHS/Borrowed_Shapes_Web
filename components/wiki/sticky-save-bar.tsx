@@ -1,6 +1,6 @@
 "use client";
 
-import { Circle } from "lucide-react";
+import { Check, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18/i18n-context";
 
@@ -26,20 +26,28 @@ export function StickySaveBar({
   const { t } = useI18n();
 
   return (
-    <div className="sticky bottom-0 z-10 border-t bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
-      <div className="mx-auto flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {isDirty && (
-            <>
-              <Circle className="h-2 w-2 fill-current" />
-              <span>{t("wiki.edit.unsaved_indicator")}</span>
-            </>
+    <div className="pointer-events-none sticky bottom-4 z-10 mt-6 flex justify-center px-4">
+      <div className="pointer-events-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-full border border-border/60 bg-background/80 py-2 pl-5 pr-2 shadow-lg shadow-black/20 backdrop-blur-md supports-backdrop-filter:bg-background/60">
+        <div className="flex items-center gap-2 text-sm">
+          {isDirty ? (
+            <span className="flex items-center gap-2 text-amber-500">
+              <Circle className="h-2 w-2 fill-current animate-pulse" />
+              <span className="font-medium">
+                {t("wiki.edit.unsaved_indicator")}
+              </span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <Check className="h-3.5 w-3.5" />
+              <span>{t("wiki.edit.saved_indicator")}</span>
+            </span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant="ghost"
+            size="sm"
             onClick={onCancel}
             disabled={saving}
           >
@@ -48,6 +56,8 @@ export function StickySaveBar({
           <Button
             type="button"
             variant="outline"
+            size="sm"
+            className="rounded-full"
             onClick={onSaveDraft}
             disabled={!canSubmitDraft || saving}
           >
@@ -55,6 +65,8 @@ export function StickySaveBar({
           </Button>
           <Button
             type="button"
+            size="sm"
+            className="rounded-full"
             onClick={onPublish}
             disabled={!canPublish || saving}
           >

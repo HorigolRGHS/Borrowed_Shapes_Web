@@ -9,6 +9,7 @@ export interface TocItem {
 // Match ATX-style headings only at the start of a line, ignoring fenced code blocks.
 // Strategy: split into lines, track whether we're inside a ``` block, parse otherwise.
 export function extractToc(markdown: string): TocItem[] {
+  if (!markdown) return [];
   const lines = markdown.split('\n');
   const items: TocItem[] = [];
   const idCounts = new Map<string, number>();

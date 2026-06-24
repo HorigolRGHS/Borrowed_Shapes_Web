@@ -57,5 +57,7 @@ AGENTS.md
 docs/
 .superpowers/
 .playwright-mcp/
+.agents/
+skills-lock.json
 
 SampleFigma/

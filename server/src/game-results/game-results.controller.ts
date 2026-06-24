@@ -9,11 +9,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { GameResultService } from './game-results.service';
 import {
@@ -33,7 +29,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @ApiTags('Game Results')
 @Controller('game-results')
 export class GameResultController {
-  constructor(private readonly gameResultService: GameResultService) { }
+  constructor(private readonly gameResultService: GameResultService) {}
 
   @Get()
   @Roles('ADMIN')
@@ -52,7 +48,7 @@ export class GameResultController {
   }
 
   @Get('user/me')
-  @Roles('USER')
+  @Roles('USER', 'ADMIN')
   @ApiOperation({ summary: 'Get current user play history' })
   @ApiResponse({ status: 200, type: PlayerHistoryResponseDto })
   async findMyHistory(

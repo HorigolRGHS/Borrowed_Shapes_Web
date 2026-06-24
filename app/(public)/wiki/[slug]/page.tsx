@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchWikiBySlug } from "@/lib/wiki/api";
 import { WikiContentRenderer } from "@/components/wiki/wiki-content-renderer";
 import { WikiToc } from "@/components/wiki/wiki-toc";
+import { extractToc } from "@/lib/wiki/markdown-toc";
 import { WikiInfobox } from "@/components/wiki/wiki-infobox";
 import { WikiPageShell } from "@/components/wiki/wiki-page-shell";
 import { WikiPageHeader } from "@/components/wiki/wiki-page-header";
@@ -12,11 +13,13 @@ import { fetchRelatedTitles } from "@/lib/wiki/related-api";
 import {
   wikiMetadataSchema,
   emptyWikiMetadata,
+  isWikiMetadataEmpty,
 } from "@/models/dtos/wiki-metadata.dto";
 import enDict from "@/locales/en.json";
 import viDict from "@/locales/vi.json";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { WikiLocaleSync } from "@/components/wiki/wiki-locale-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -60,10 +63,11 @@ export default async function WikiDetailPage({
   }
 
   const isVi = detail.matchedSlugLocale === "vi";
-  const title = isVi ? detail.titleVi : detail.title;
-  const content = isVi
-    ? detail.latestRevision.contentVi
-    : detail.latestRevision.content;
+  const title = (isVi ? detail.titleVi : detail.title) || detail.title;
+  const content =
+    (isVi ? detail.latestRevision.contentVi : detail.latestRevision.content) ||
+    detail.latestRevision.content ||
+    "";
   const author = detail.latestRevision.author?.displayName ?? "—";
   const updated = new Date(detail.updatedAt);
 
@@ -78,6 +82,8 @@ export default async function WikiDetailPage({
       : {}),
   };
   const parsedMeta = wikiMetadataSchema.safeParse(merged);
+  const hasInfobox = parsedMeta.success && !isWikiMetadataEmpty(parsedMeta.data);
+  const hasToc = extractToc(content).length > 0;
   const relatedSlugs = parsedMeta.success ? parsedMeta.data.relatedPages : [];
   const relatedTitles =
     relatedSlugs.length > 0
@@ -102,7 +108,7 @@ export default async function WikiDetailPage({
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
+    <main className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">
           Wiki
@@ -137,15 +143,17 @@ export default async function WikiDetailPage({
           </>
         }
         infobox={
-          <WikiInfobox
-            metadata={detail.metadataJson}
-            title={title}
-            locale={uiLocale}
-            relatedTitles={relatedTitles}
-            i18n={infoboxI18n}
-          />
+          hasInfobox ? (
+            <WikiInfobox
+              metadata={detail.metadataJson}
+              title={title}
+              locale={uiLocale}
+              relatedTitles={relatedTitles}
+              i18n={infoboxI18n}
+            />
+          ) : undefined
         }
-        toc={<WikiToc markdown={content} />}
+        toc={hasToc ? <WikiToc markdown={content} /> : undefined}
       />
     </main>
   );

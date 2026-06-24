@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsString, IsIn, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+  IsIn,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class ListGameResultsQueryDto {
@@ -25,32 +34,41 @@ export class ListGameResultsQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by completion status' })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ obj, key }) => obj[key] === 'true' || obj[key] === true)
   @IsBoolean()
   isCompleted?: boolean;
 
-  @ApiPropertyOptional({ description: 'Search by lobby name or code (case-insensitive)' })
+  @ApiPropertyOptional({
+    description: 'Search by lobby name or code (case-insensitive)',
+  })
   @IsOptional()
   @IsString()
   search?: string;
 
   @ApiPropertyOptional({ description: 'Filter by visibility' })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ obj, key }) => obj[key] === 'true' || obj[key] === true)
   @IsBoolean()
   isPrivate?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter runs started from this date (ISO 8601)' })
+  @ApiPropertyOptional({
+    description: 'Filter runs started from this date (ISO 8601)',
+  })
   @IsOptional()
   @IsDateString()
   startFrom?: string;
 
-  @ApiPropertyOptional({ description: 'Filter runs started until this date (ISO 8601)' })
+  @ApiPropertyOptional({
+    description: 'Filter runs started until this date (ISO 8601)',
+  })
   @IsOptional()
   @IsDateString()
   startTo?: string;
 
-  @ApiPropertyOptional({ enum: ['startedAt', 'completedAt', 'totalTimeSec'], default: 'startedAt' })
+  @ApiPropertyOptional({
+    enum: ['startedAt', 'completedAt', 'totalTimeSec'],
+    default: 'startedAt',
+  })
   @IsOptional()
   @IsIn(['startedAt', 'completedAt', 'totalTimeSec'])
   sortBy?: 'startedAt' | 'completedAt' | 'totalTimeSec' = 'startedAt';
@@ -59,6 +77,17 @@ export class ListGameResultsQueryDto {
   @IsOptional()
   @IsIn(['asc', 'desc'])
   order?: 'asc' | 'desc' = 'desc';
+
+  @ApiPropertyOptional({ description: 'Filter search term (q)' })
+  @IsOptional()
+  @IsString()
+  q?: string;
+
+  @ApiPropertyOptional({ enum: ['newest', 'oldest', 'fastest'], description: 'Sort mode' })
+  @IsOptional()
+  @IsString()
+  @IsIn(['newest', 'oldest', 'fastest'])
+  sort?: 'newest' | 'oldest' | 'fastest';
 }
 
 export class LeaderboardQueryDto {
@@ -242,16 +271,37 @@ export class PlayerHistoryRunDto {
   id!: string;
 
   @ApiPropertyOptional()
+  lobbyCode?: string;
+
+  @ApiPropertyOptional()
   lobbyName?: string;
 
-  @ApiProperty({ description: 'Role of the player in this run' })
-  playerRole!: 'HOST' | 'PLAYER';
+  @ApiProperty()
+  isPrivate!: boolean;
+
+  @ApiProperty({ description: 'Number of playable levels' })
+  totalLevels!: number;
+
+  @ApiProperty({ description: 'Total sessions in the run' })
+  totalSessions!: number;
+
+  @ApiProperty()
+  isCompleted!: boolean;
 
   @ApiPropertyOptional()
   totalTimeSec?: number;
 
   @ApiProperty()
   startedAt!: Date;
+
+  @ApiPropertyOptional()
+  completedAt?: Date;
+
+  @ApiProperty({ type: [GameResultPlayerDto] })
+  players!: GameResultPlayerDto[];
+
+  @ApiProperty({ description: 'Role of the player in this run' })
+  playerRole!: 'HOST' | 'PLAYER';
 }
 
 export class PlayerHistoryResponseDto {

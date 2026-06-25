@@ -54,7 +54,7 @@ export function PublicHeader() {
   const navLinks = [
     { href: "/", label: t("header.home") || "Home" },
     { href: "/wiki", label: t("header.wiki") || "Wiki" },
-    { href: "/forum", label: t("header.forum") || "Forum" },
+    { href: "/forums", label: t("header.forum") || "Forum" },
     { href: "/leaderboard", label: t("header.leaderboard") || "Leaderboard" },
     { href: "/download", label: t("header.download") || "Download" },
   ];

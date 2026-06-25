@@ -67,6 +67,7 @@ export default function DashboardLayout({
     { href: "/dashboard/audit-logs", label: t("admin.auditLogs.nav") || "Audit Log" },
     { href: "/dashboard/wiki", label: "Wiki" },
     { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts" },
+    { href: "/dashboard/forums", label: t("forums.title") || "Forums" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
     { href: "/dashboard/announcements", label: t("common.announcements") },
     { href: "/dashboard/downloads", label: t("admin.download.nav_label") || "Download" },
@@ -127,9 +128,9 @@ export default function DashboardLayout({
           <div className="flex items-center gap-1">
             <LanguageDropdown />
             <ThemeToggle />
-            <UserMenu 
-              displayName={user.displayName ?? ""} 
-              role={user.role} 
+            <UserMenu
+              displayName={user.displayName ?? ""}
+              role={user.role}
               imgUrl={user.imgUrl && user.imgUrl.trim().length > 0 ? (user.imgUrl.startsWith('http') || user.imgUrl.startsWith('/api/') ? user.imgUrl : `/api${user.imgUrl.startsWith('/') ? '' : '/'}${user.imgUrl}`) : undefined}
             />
           </div>

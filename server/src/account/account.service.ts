@@ -10,6 +10,7 @@ import { User } from '../entities/User';
 import { GameProfile } from '../entities/GameProfile';
 import { UserAchievement } from '../entities/UserAchievement';
 import { Achievement } from '../entities/Achievement';
+import { getEffectiveExpiresAt } from '../achievements/achievements.service';
 import { AuditLog } from '../entities/AuditLog';
 import { AuditActionType } from '../entities/AuditActionType';
 import { UserOnlineStatus } from '../entities/UserOnlineStatus';
@@ -29,8 +30,6 @@ import { GameRun } from '../entities/GameRun';
 import { GameSession } from '../entities/GameSession';
 import { ForumThread } from '../entities/ForumThread';
 import { ForumComment } from '../entities/ForumComment';
-import { DownloadLog } from '../entities/DownloadLog';
-import { FileAsset } from '../entities/FileAsset';
 
 import {
   AdminAccountQueryDto,
@@ -91,7 +90,7 @@ export class AccountService {
     private configService: ConfigService,
     private authService: AuthService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   private getPublicBaseUrl(): string {
     return this.configService
@@ -242,6 +241,10 @@ export class AccountService {
           const achievement = await this.em.findOne(Achievement, {
             id: dto.equippedAchievementId,
           });
+          const expiresAt = getEffectiveExpiresAt(achievement?.type ?? '', achievement?.seasonMonth, achievement?.expiresAt);
+          if (achievement?.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+            throw new ForbiddenException('Achievement season has expired');
+          }
           gameProfile.equippedAchievementId = achievement as any;
           updated = true;
           oldValues['equippedAchievementId'] = oldEquipped;
@@ -298,12 +301,12 @@ export class AccountService {
         updatedGameProfile?.equippedAchievementId?.id ?? null,
       equippedAchievement: updatedGameProfile?.equippedAchievementId
         ? {
-            id: updatedGameProfile.equippedAchievementId.id,
-            name: updatedGameProfile.equippedAchievementId.name,
-            badgeImageUrl:
-              updatedGameProfile.equippedAchievementId.badgeImageUrl,
-            type: updatedGameProfile.equippedAchievementId.type,
-          }
+          id: updatedGameProfile.equippedAchievementId.id,
+          name: updatedGameProfile.equippedAchievementId.name,
+          badgeImageUrl:
+            updatedGameProfile.equippedAchievementId.badgeImageUrl,
+          type: updatedGameProfile.equippedAchievementId.type,
+        }
         : null,
     };
   }
@@ -465,16 +468,16 @@ export class AccountService {
       updatedAt: user.updatedAt,
       gameProfile: gameProfile
         ? {
-            id: gameProfile.id,
-            totalPlayTime: Number(gameProfile.totalPlayTime || 0),
-            totalSessions: gameProfile.totalSessions,
-            totalWins: gameProfile.totalWins,
-            totalLosses: gameProfile.totalLosses,
-            totalAbandoned: gameProfile.totalAbandoned,
-            equippedAchievementId:
-              gameProfile.equippedAchievementId?.id || null,
-            equippedAchievement,
-          }
+          id: gameProfile.id,
+          totalPlayTime: Number(gameProfile.totalPlayTime || 0),
+          totalSessions: gameProfile.totalSessions,
+          totalWins: gameProfile.totalWins,
+          totalLosses: gameProfile.totalLosses,
+          totalAbandoned: gameProfile.totalAbandoned,
+          equippedAchievementId:
+            gameProfile.equippedAchievementId?.id || null,
+          equippedAchievement,
+        }
         : null,
     };
   }
@@ -566,15 +569,15 @@ export class AccountService {
       items: logs.map((log) => {
         const actor = log.userId
           ? {
-              id: log.userId.id,
-              email: String(log.userId.email),
-              displayName: String(log.userId.displayName),
-              imgUrl: getProxyAvatarUrl(
-                log.userId.imgUrl,
-                log.userId.id,
-                log.userId.updatedAt || new Date(),
-              ),
-            }
+            id: log.userId.id,
+            email: String(log.userId.email),
+            displayName: String(log.userId.displayName),
+            imgUrl: getProxyAvatarUrl(
+              log.userId.imgUrl,
+              log.userId.id,
+              log.userId.updatedAt || new Date(),
+            ),
+          }
           : null;
 
         return {
@@ -1014,8 +1017,7 @@ export class AccountService {
     if (query.range === DashboardRange.DAYS_7) days = 7;
     else if (query.range === DashboardRange.DAYS_90) days = 90;
 
-    const knex = this.em.getConnection().getKnex();
-    
+
     // Summary
     const [
       totalThreads,

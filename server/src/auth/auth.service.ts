@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
@@ -97,6 +98,7 @@ function generateOtp(length = 6): string {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private em: EntityManager,
     private redis: RedisService,
@@ -778,7 +780,7 @@ export class AuthService {
       });
       if (existingStatus) {
         if (platform) {
-          existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter(p => p !== platform);
+          existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter((p: string) => p !== platform);
           if (existingStatus.onlinePlatforms.length === 0) {
             existingStatus.isOnline = false;
           }
@@ -852,7 +854,7 @@ export class AuthService {
         });
         if (existingStatus) {
           if (session.platform) {
-            existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter(p => p !== session.platform);
+            existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter((p: string) => p !== session.platform);
             if (existingStatus.onlinePlatforms.length === 0) {
               existingStatus.isOnline = false;
             }

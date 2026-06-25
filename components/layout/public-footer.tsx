@@ -53,7 +53,7 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/forum" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                <Link href="/forums" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
                   {t("footer.forum")}
                 </Link>
               </li>

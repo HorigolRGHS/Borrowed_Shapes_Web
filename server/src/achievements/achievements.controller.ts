@@ -11,9 +11,12 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 
 import type { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import {
   ApiTags,
@@ -21,12 +24,13 @@ import {
   ApiResponse,
   ApiBody,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 
 import { AchievementService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
-import { AchievementResponseDto } from './dto/achievements-response.dto';
+import { AchievementResponseDto, AchievementUploadResponseDto } from './dto/achievements-response.dto';
 import { UserAchievementResponseDto } from './dto/user-achievements-response.dto';
 import { UnlockAchievementDto, UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -182,6 +186,29 @@ export class AchievementController {
     );
   }
 
+  @Get('user/me/showcase')
+  @ApiOperation({ summary: 'Get achievement showcase for current user profile' })
+  async findShowcase(
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
+  ) {
+    if (!user.gameProfileId) {
+      return okResponse(
+        'achievements.showcase_success',
+        { permanent: [], seasonal: [], stats: { totalEarned: 0, permanentEarned: 0, seasonalEarned: 0 } },
+        `${req.method} ${req.path}`,
+      );
+    }
+
+    const data = await this.achievementService.findShowcaseForUser(user.gameProfileId);
+
+    return okResponse(
+      'achievements.showcase_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
+  }
+
   @Get(':id/users')
   async findUsersByAchievement(
     @Param('id') id: string,
@@ -246,6 +273,50 @@ export class AchievementController {
     }
     const data = await this.achievementService.unlock(user.gameProfileId, dto.criteriaCode);
     return okResponse('achievements.unlocked_success', data, `${req.method} ${req.path}`);
+  }
+
+  @Post('upload')
+  @Roles('ADMIN')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Admin: upload an achievement badge image' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, type: AchievementUploadResponseDto })
+  async upload(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<AchievementUploadResponseDto>> {
+    if (!file) {
+      throw new BadRequestException('achievements.upload_missing');
+    }
+
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimes.includes(file.mimetype)) {
+      throw new BadRequestException('achievements.upload_invalid_type');
+    }
+
+    const url = await this.achievementService.uploadBadge(
+      file.buffer,
+      file.mimetype,
+      file.originalname,
+    );
+
+    return okResponse(
+      'achievements.uploaded',
+      { url },
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Post()

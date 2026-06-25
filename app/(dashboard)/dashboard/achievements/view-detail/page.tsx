@@ -191,6 +191,60 @@ export default function AchievementViewDetailPage() {
   };
 
   // --- Edit form helpers (matching list page pattern) ---
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("achievements.upload_too_large") || "File exceeds 5MB limit");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("achievements.upload_invalid_type") || "Invalid image type");
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await axios.post("/api/achievements/upload", form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = res.data ?? res;
+      if (data?.success && data?.data?.url) {
+        const url = data.data.url;
+        setFormData((prev) => ({ ...prev, badgeImageUrl: url }));
+        setFormErrors((prev) => {
+          const copy = { ...prev };
+          delete copy.badgeImageUrl;
+          return copy;
+        });
+        toast.success(t("achievements.uploaded") || "Uploaded successfully");
+      } else {
+        throw new Error(data?.message || "Upload failed");
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      const message = err.response?.data?.message || t("achievements.upload_failed") || "Failed to upload image";
+      toast.error(t(message) || message);
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const validateField = (field: string, value: string, type?: string): string => {
     switch (field) {
       case "name":
@@ -357,9 +411,9 @@ export default function AchievementViewDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="min-h-screen bg-background text-foreground">
         <main className="px-8 py-8">
-          <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">
+          <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">
             {t("achievements.loading_achievements")}
           </div>
         </main>
@@ -370,7 +424,7 @@ export default function AchievementViewDetailPage() {
   if (!achievement) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-background text-foreground">
       <main className="px-8 py-8 max-w-6xl mx-auto">
         {/* Back link */}
         <button
@@ -383,10 +437,10 @@ export default function AchievementViewDetailPage() {
 
         {/* Page title */}
         <div className="mb-8">
-          <h2 className="text-4xl font-bold text-white sm:text-2xl">
+          <h2 className="text-4xl font-bold text-foreground sm:text-2xl">
             {t("achievements.detail_page_title")}
           </h2>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             {t("achievements.detail_page_subtitle")}{achievement.name}
           </p>
           <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
@@ -395,9 +449,9 @@ export default function AchievementViewDetailPage() {
         {/* Main content */}
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           {/* Left column - Badge card */}
-          <div className="rounded-[16px] border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm">
+          <div className="rounded-[16px] border border-border bg-card/60 p-6 backdrop-blur-sm">
             {/* Badge image */}
-            <div className="relative mx-auto h-48 w-48 overflow-hidden rounded-[16px] border-2 border-amber-500/30 bg-slate-950">
+            <div className="relative mx-auto h-48 w-48 overflow-hidden rounded-[16px] border-2 border-amber-500/30 bg-background">
               <img
                 src={achievement.badgeImageUrl}
                 alt={achievement.name}
@@ -409,7 +463,7 @@ export default function AchievementViewDetailPage() {
             </div>
 
             {/* Name + type badge */}
-            <h3 className="mt-4 text-center text-xl font-bold text-white">
+            <h3 className="mt-4 text-center text-xl font-bold text-foreground">
               {achievement.name}
             </h3>
             <div className="mt-3 flex justify-center">
@@ -448,20 +502,20 @@ export default function AchievementViewDetailPage() {
           </div>
 
           {/* Right column - Info */}
-          <div className="rounded-[16px] border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm">
-            <h3 className="mb-6 text-lg font-semibold text-white">
+          <div className="rounded-[16px] border border-border bg-card/60 p-6 backdrop-blur-sm">
+            <h3 className="mb-6 text-lg font-semibold text-foreground">
               {t("achievements.info_title")}
             </h3>
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   {t("achievements.achievement_id_label")}
                 </div>
                 <div className="mt-1 text-sm text-slate-200">{achievement.id}</div>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   {t("achievements.criteria_code_label")}
                 </div>
                 <div className="mt-1">
@@ -472,7 +526,7 @@ export default function AchievementViewDetailPage() {
               </div>
 
               <div className="sm:col-span-2">
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   {t("achievements.description_label")}
                 </div>
                 <div className="mt-1 text-sm leading-6 text-slate-200">
@@ -483,7 +537,7 @@ export default function AchievementViewDetailPage() {
               </div>
 
               <div>
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   {t("achievements.type_label")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-200">
@@ -491,7 +545,7 @@ export default function AchievementViewDetailPage() {
                 </div>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   {t("achievements.total_users_achieved_label")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-200">
@@ -517,22 +571,22 @@ export default function AchievementViewDetailPage() {
               </div>
             </AlertDialogHeader>
 
-            <div className="rounded-[12px] border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+            <div className="rounded-[12px] border border-border bg-background/60 p-4 space-y-2">
               <AlertDialogDescription>
                 {t("achievements.delete_confirm")} {t("achievements.delete_confirm_undone")}
               </AlertDialogDescription>
               <div className="pt-2 space-y-1.5 text-sm">
-                <div className="text-slate-400">
+                <div className="text-muted-foreground">
                   {t("achievements.delete_name_label")}{" "}
-                  <span className="font-bold text-white">{achievement.name}</span>
+                  <span className="font-bold text-foreground">{achievement.name}</span>
                 </div>
-                <div className="text-slate-400">
+                <div className="text-muted-foreground">
                   {t("achievements.delete_code_label")}{" "}
                   <code className="font-mono text-slate-200">{achievement.criteriaCode}</code>
                 </div>
-                <div className="text-slate-400">
+                <div className="text-muted-foreground">
                   {t("achievements.delete_earned_by_label")}{" "}
-                  <span className="font-bold text-white">{achievement.earnedCount ?? 0} {t("achievements.delete_players")}</span>
+                  <span className="font-bold text-foreground">{achievement.earnedCount ?? 0} {t("achievements.delete_players")}</span>
                 </div>
               </div>
               {(achievement.earnedCount ?? 0) > 0 && (
@@ -573,7 +627,7 @@ export default function AchievementViewDetailPage() {
             <DialogHeader>
               <div className="flex items-center gap-3">
                 {achievement.badgeImageUrl && (
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
                     <img src={achievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
                   </div>
                 )}
@@ -596,7 +650,7 @@ export default function AchievementViewDetailPage() {
 
             {/* Search */}
             <div className="relative max-w-sm">
-              <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+              <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
                 <Search className="h-4 w-4" />
               </span>
               <Input
@@ -610,17 +664,17 @@ export default function AchievementViewDetailPage() {
 
             <ScrollArea className="max-h-[55vh]">
               {loadingUsers ? (
-                <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+                <div className="rounded-[12px] border border-border bg-slate-900/40 p-8 text-center text-muted-foreground">
                   {t("achievements.loading_users")}
                 </div>
               ) : achievementUsers.length > 0 ? (
-                <div className="rounded-[12px] border border-slate-800 overflow-hidden">
+                <div className="rounded-[12px] border border-border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-slate-800 hover:bg-transparent">
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_player")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_profile_id")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_earned_date")}</TableHead>
+                      <TableRow className="border-border hover:bg-transparent">
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.users_col_player")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.users_col_profile_id")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.users_col_earned_date")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -633,19 +687,19 @@ export default function AchievementViewDetailPage() {
                         .map((u) => {
                           const initials = u.displayName.charAt(0).toUpperCase();
                           return (
-                            <TableRow key={u.id} className="border-slate-800 hover:bg-slate-800/50">
+                            <TableRow key={u.id} className="border-border hover:bg-muted/50">
                               <TableCell>
                                 <div className="flex items-center gap-3">
                                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/80 text-sm font-bold text-white">
                                     {initials}
                                   </div>
-                                  <span className="font-medium text-white">{u.displayName}</span>
+                                  <span className="font-medium text-foreground">{u.displayName}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="text-sm text-slate-300">{u.id}</div>
+                                <div className="text-sm text-muted-foreground">{u.id}</div>
                               </TableCell>
-                              <TableCell className="text-slate-300 text-sm">
+                              <TableCell className="text-muted-foreground text-sm">
                                 {u.earnedAt
                                   ? new Date(u.earnedAt).toLocaleDateString()
                                   : t("achievements.unknown")}
@@ -657,7 +711,7 @@ export default function AchievementViewDetailPage() {
                   </Table>
                 </div>
               ) : (
-                <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+                <div className="rounded-[12px] border border-border bg-slate-900/40 p-8 text-center text-muted-foreground">
                   {t("achievements.no_users_found")}
                 </div>
               )}
@@ -706,7 +760,7 @@ export default function AchievementViewDetailPage() {
             >
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <Label className="mb-2 block text-slate-300">{t('achievements.name_label')}</Label>
+                  <Label className="mb-2 block text-muted-foreground">{t('achievements.name_label')}</Label>
                   <Input
                     type="text"
                     value={formData.name}
@@ -719,7 +773,7 @@ export default function AchievementViewDetailPage() {
                   )}
                 </div>
                 <div>
-                  <Label className="mb-2 block text-slate-300">{t('achievements.criteria_code_label')}</Label>
+                  <Label className="mb-2 block text-muted-foreground">{t('achievements.criteria_code_label')}</Label>
                   <Input
                     type="text"
                     value={formData.criteriaCode}
@@ -734,7 +788,7 @@ export default function AchievementViewDetailPage() {
               </div>
 
               <div>
-                <Label className="mb-2 block text-slate-300">{t('achievements.description_label')}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t('achievements.description_label')}</Label>
                 <AchievementDescriptionEditor
                   data={formData.description}
                   onChange={(data) => handleFieldChange("description", data)}
@@ -747,21 +801,39 @@ export default function AchievementViewDetailPage() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <Label className="mb-2 block text-slate-300">{t('achievements.badge_url_label')}</Label>
-                  <Input
-                    type="url"
-                    value={formData.badgeImageUrl}
-                    onChange={(e) => handleFieldChange("badgeImageUrl", e.target.value)}
-                    onBlur={() => handleFieldBlur("badgeImageUrl")}
-                    className={formTouched.badgeImageUrl && formErrors.badgeImageUrl ? "border-rose-500 focus-visible:ring-rose-500" : ""}
-                  />
+                  <Label className="mb-2 block text-muted-foreground">{t('achievements.badge_url_label')}</Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isUploadingImage}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full border-dashed border-muted-foreground/30 hover:border-amber-500/50 hover:bg-amber-500/5"
+                    >
+                      {isUploadingImage ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                          {t("achievements.uploading")}
+                        </span>
+                      ) : (
+                        t("achievements.choose_badge_image")
+                      )}
+                    </Button>
+                  </div>
                   {formTouched.badgeImageUrl && formErrors.badgeImageUrl && (
                     <p className="mt-1.5 text-xs text-rose-400">{formErrors.badgeImageUrl}</p>
                   )}
-                  {formData.badgeImageUrl && !formErrors.badgeImageUrl && (
+                  {formData.badgeImageUrl && (
                     <div className="mt-4">
-                      <p className="mb-2 text-sm text-slate-400">{t("achievements.preview")}</p>
-                      <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[12px] border border-amber-500/30 bg-slate-900">
+                      <p className="mb-2 text-sm text-muted-foreground">{t("achievements.preview")}</p>
+                      <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[12px] border border-amber-500/30 bg-card">
                         <img
                           key={formData.badgeImageUrl}
                           src={formData.badgeImageUrl}
@@ -776,7 +848,7 @@ export default function AchievementViewDetailPage() {
                   )}
                 </div>
                 <div>
-                  <Label className="mb-2 block text-slate-300">{t('achievements.type_label')}</Label>
+                  <Label className="mb-2 block text-muted-foreground">{t('achievements.type_label')}</Label>
                   <Select
                     value={formData.type}
                     onValueChange={(value) => {
@@ -812,7 +884,7 @@ export default function AchievementViewDetailPage() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className={formData.type === 'SEASONAL' ? 'relative' : 'hidden'}>
-                  <Label className="mb-2 block text-slate-300">{t('achievements.season_month_label')}</Label>
+                  <Label className="mb-2 block text-muted-foreground">{t('achievements.season_month_label')}</Label>
                   <MonthPicker
                     value={formData.seasonMonth}
                     onChange={(val) => {
@@ -825,12 +897,12 @@ export default function AchievementViewDetailPage() {
                     <p className="mt-1.5 text-xs text-rose-400">{formErrors.seasonMonth}</p>
                   )}
                   {formData.seasonMonth && (
-                    <div className="mt-2 text-sm text-slate-100">{t('achievements.selected_label')} {formData.seasonMonth}</div>
+                    <div className="mt-2 text-sm text-foreground">{t('achievements.selected_label')} {formData.seasonMonth}</div>
                   )}
                 </div>
                 {formData.type === 'SEASONAL' && (
                   <div className="relative">
-                    <Label className="mb-2 block text-slate-300">{t('achievements.expires_at_label')}</Label>
+                    <Label className="mb-2 block text-muted-foreground">{t('achievements.expires_at_label')}</Label>
                     <Input
                       disabled
                       ref={expiresRef}

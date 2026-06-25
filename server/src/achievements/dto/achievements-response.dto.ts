@@ -30,3 +30,8 @@ export class AchievementResponseDto {
   earnedCount?: number;
 
 }
+
+export class AchievementUploadResponseDto {
+  @ApiProperty({ example: 'https://pub-x.r2.dev/achievement/uuid.png' })
+  url!: string;
+}

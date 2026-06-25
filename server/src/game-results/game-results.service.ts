@@ -30,6 +30,24 @@ export class GameResultService {
   async findAllPaginated(
     query: ListGameResultsQueryDto,
   ): Promise<GameResultListResponseDto> {
+    // Normalize q to search
+    if (query.q && !query.search) {
+      query.search = query.q;
+    }
+    // Normalize sort to sortBy and order
+    if (query.sort) {
+      if (query.sort === 'newest') {
+        query.sortBy = 'startedAt';
+        query.order = 'desc';
+      } else if (query.sort === 'oldest') {
+        query.sortBy = 'startedAt';
+        query.order = 'asc';
+      } else if (query.sort === 'fastest') {
+        query.sortBy = 'totalTimeSec';
+        query.order = 'asc';
+      }
+    }
+
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
@@ -50,9 +68,7 @@ export class GameResultService {
     }
 
     if (query.search) {
-      conditions.push(
-        '(gr."lobbyName" ILIKE ? OR gr."lobbyCode" ILIKE ?)',
-      );
+      conditions.push('(gr."lobbyName" ILIKE ? OR gr."lobbyCode" ILIKE ?)');
       const pattern = `%${query.search}%`;
       params.push(pattern, pattern);
     }
@@ -83,11 +99,12 @@ export class GameResultService {
     // Sort
     const sortBy = query.sortBy ?? 'startedAt';
     const order = query.order ?? 'desc';
-    const sortColumn = {
-      startedAt: '"startedAt"',
-      completedAt: '"completedAt"',
-      totalTimeSec: '"totalTimeSec"',
-    }[sortBy] ?? '"startedAt"';
+    const sortColumn =
+      {
+        startedAt: '"startedAt"',
+        completedAt: '"completedAt"',
+        totalTimeSec: '"totalTimeSec"',
+      }[sortBy] ?? '"startedAt"';
 
     // Data
     const dataSql = `
@@ -103,6 +120,7 @@ export class GameResultService {
     const items: GameResultResponseDto[] = [];
     for (const row of rows || []) {
       const players = await this.getRunPlayers(row.id);
+      const sessions = await this.getRunSessions(row.id);
       items.push({
         id: row.id,
         lobbyCode: row.lobbyCode ?? undefined,
@@ -115,6 +133,7 @@ export class GameResultService {
         startedAt: row.startedAt,
         completedAt: row.completedAt ?? undefined,
         players,
+        sessions,
       });
     }
 
@@ -159,6 +178,24 @@ export class GameResultService {
     gameProfileId: string,
     query: ListGameResultsQueryDto,
   ): Promise<PlayerHistoryResponseDto> {
+    // Normalize q to search
+    if (query.q && !query.search) {
+      query.search = query.q;
+    }
+    // Normalize sort to sortBy and order
+    if (query.sort) {
+      if (query.sort === 'newest') {
+        query.sortBy = 'startedAt';
+        query.order = 'desc';
+      } else if (query.sort === 'oldest') {
+        query.sortBy = 'startedAt';
+        query.order = 'asc';
+      } else if (query.sort === 'fastest') {
+        query.sortBy = 'totalTimeSec';
+        query.order = 'asc';
+      }
+    }
+
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
@@ -209,28 +246,47 @@ export class GameResultService {
     const countResult = await this.em.execute(countSql, [gameProfileId]);
     const total = Number(countResult[0]?.count || 0);
 
+    // Sort
+    const sortBy = query.sortBy ?? 'startedAt';
+    const order = query.order ?? 'desc';
+    const sortColumn =
+      {
+        startedAt: 'gr."startedAt"',
+        completedAt: 'gr."completedAt"',
+        totalTimeSec: 'gr."totalTimeSec"',
+      }[sortBy] ?? 'gr."startedAt"';
+
     // Runs with player role
     const dataSql = `
       SELECT
-        gr.id,
-        gr."lobbyName",
-        gr."totalTimeSec",
-        gr."startedAt",
+        gr.*,
         grp."isHost"
       FROM game."GameRun" gr
-      INNER JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id AND grp."gameProfileId" = ?
-      ORDER BY gr."startedAt" DESC, gr.id DESC
+      INNER JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+      WHERE grp."gameProfileId" = ?
+      ORDER BY ${sortColumn} ${order}, gr.id DESC
       LIMIT ? OFFSET ?
     `;
     const rows = await this.em.execute(dataSql, [gameProfileId, limit, offset]);
 
-    const items: PlayerHistoryRunDto[] = (rows || []).map((row: any) => ({
-      id: row.id,
-      lobbyName: row.lobbyName ?? undefined,
-      playerRole: row.isHost ? 'HOST' : 'PLAYER',
-      totalTimeSec: row.totalTimeSec ?? undefined,
-      startedAt: row.startedAt,
-    }));
+    const items: PlayerHistoryRunDto[] = [];
+    for (const row of rows || []) {
+      const players = await this.getRunPlayers(row.id);
+      items.push({
+        id: row.id,
+        lobbyCode: row.lobbyCode ?? undefined,
+        lobbyName: row.lobbyName ?? undefined,
+        isPrivate: row.isPrivate,
+        totalLevels: row.totalLevels,
+        totalSessions: row.totalLevels + 1,
+        isCompleted: row.isCompleted,
+        totalTimeSec: row.totalTimeSec ?? undefined,
+        startedAt: row.startedAt,
+        completedAt: row.completedAt ?? undefined,
+        players,
+        playerRole: row.isHost ? 'HOST' : 'PLAYER',
+      });
+    }
 
     return {
       playerInfo,
@@ -250,13 +306,43 @@ export class GameResultService {
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
 
+    const conditions: string[] = [
+      'gr."isCompleted" = true',
+      'gr."totalTimeSec" IS NOT NULL',
+    ];
+    const params: any[] = [];
+
+    if (query.scope === 'seasonal') {
+      let month = query.seasonMonth;
+      if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+        month = new Date().toISOString().slice(0, 7);
+      }
+      const year = parseInt(month.split('-')[0], 10);
+      const monthNum = parseInt(month.split('-')[1], 10);
+      const startOfTarget = new Date(Date.UTC(year, monthNum - 1, 1));
+      const startOfNext = new Date(Date.UTC(year, monthNum, 1));
+
+      conditions.push('gr."completedAt" >= ?');
+      conditions.push('gr."completedAt" < ?');
+      params.push(startOfTarget, startOfNext);
+
+      // Filter by registered seasonal teams for the season month (YYYY-MM-01)
+      const seasonMonthDateStr = `${year}-${String(monthNum).padStart(2, '0')}-01`;
+      conditions.push(
+        'gr."lobbyCode" IN (SELECT st.code FROM game."SeasonTeam" st WHERE st."seasonMonth" = ?)',
+      );
+      params.push(seasonMonthDateStr);
+    }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+
     // Count total completed runs
     const countSql = `
       SELECT COUNT(*) as count
       FROM game."GameRun" gr
-      WHERE gr."isCompleted" = true AND gr."totalTimeSec" IS NOT NULL
+      ${whereClause}
     `;
-    const countResult = await this.em.execute(countSql);
+    const countResult = await this.em.execute(countSql, params);
     const total = Number(countResult[0]?.count || 0);
 
     // Leaderboard: fastest completed runs with lobby name and player count
@@ -268,22 +354,30 @@ export class GameResultService {
         gr."completedAt",
         (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = gr.id) as "totalPlayers"
       FROM game."GameRun" gr
-      WHERE gr."isCompleted" = true AND gr."totalTimeSec" IS NOT NULL
+      ${whereClause}
       ORDER BY gr."totalTimeSec" ASC, gr."completedAt" ASC
       LIMIT ? OFFSET ?
     `;
-    const rows = await this.em.execute(dataSql, [limit, offset]);
+    const dataParams = [...params, limit, offset];
+    const rows = await this.em.execute(dataSql, dataParams);
 
-    const items: LeaderboardEntryDto[] = (rows || []).map(
-      (row: any, index: number) => ({
+    const items: LeaderboardEntryDto[] = [];
+    for (let index = 0; index < (rows || []).length; index++) {
+      const row = rows[index];
+      const runPlayers = await this.getRunPlayers(row.runId);
+      items.push({
         rank: offset + index + 1,
         runId: row.runId,
         lobbyName: row.lobbyName ?? undefined,
         totalPlayers: row.totalPlayers,
         totalTimeSec: row.totalTimeSec,
         completedAt: row.completedAt,
-      }),
-    );
+        players: runPlayers.map((p) => ({
+          displayName: p.displayName,
+          avatarUrl: p.avatarUrl,
+        })),
+      });
+    }
 
     return {
       items,
@@ -327,9 +421,7 @@ export class GameResultService {
     }));
   }
 
-  private async getRunSessions(
-    runId: string,
-  ): Promise<GameResultSessionDto[]> {
+  private async getRunSessions(runId: string): Promise<GameResultSessionDto[]> {
     const sessionSql = `
       SELECT
         gs.id,

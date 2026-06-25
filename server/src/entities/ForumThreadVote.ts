@@ -20,6 +20,6 @@ export class ForumThreadVote {
 }
 
 export enum ForumThreadVoteValue {
-  DOWNVOTE = -1,
-  UPVOTE = 1,
+  DOWN = '-1',
+  UP = '1',
 }

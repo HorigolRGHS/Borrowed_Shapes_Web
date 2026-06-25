@@ -118,7 +118,12 @@
     "invalid_type": "Loại thành tựu không hợp lệ",
     "type_required": "Loại thành tựu là bắt buộc",
     "season_month_must_be_string": "Tháng mùa phải là chuỗi ký tự",
-    "invalid_expires_at": "Ngày hết hạn phải là chuỗi ngày ISO hợp lệ"
+    "invalid_expires_at": "Ngày hết hạn phải là chuỗi ngày ISO hợp lệ",
+    "upload_too_large": "File vượt quá giới hạn 5MB",
+    "upload_invalid_type": "Loại file không được chấp nhận, chỉ cho phép JPEG, PNG, WebP, GIF",
+    "upload_missing": "Không có file được tải lên",
+    "upload_failed": "Tải lên thất bại",
+    "uploaded": "Tải huy hiệu thành tựu lên thành công"
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",
@@ -150,7 +155,7 @@
     "related_success": "Đã phân giải các slug liên quan",
     "too_many_related_slugs": "Mỗi lần chỉ có thể yêu cầu tối đa 30 slug liên quan"
   },
-  "forum": {
+  "forums": {
     "list_success": "Lấy danh sách forums thành công",
     "detail_success": "Lấy chi tiết bài viết thành công",
     "create_success": "Tạo bài viết thành công",
@@ -161,6 +166,7 @@
     "category_not_found": "Danh mục không tồn tại",
     "category_required": "Danh mục là bắt buộc",
     "category_invalid_uuid": "Danh mục phải là một UUID hợp lệ",
+    "category_official_admin_only": "Chỉ quản trị viên mới có thể đăng trong danh mục chính thức",
     "title_required": "Tiêu đề là bắt buộc",
     "title_must_be_string": "Tiêu đề phải là một chuỗi",
     "title_length_invalid": "Tiêu đề phải có từ 3 đến 200 ký tự",

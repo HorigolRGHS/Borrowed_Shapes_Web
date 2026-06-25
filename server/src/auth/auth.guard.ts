@@ -35,10 +35,36 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
+
+    if (isPublic) {
+      if (token) {
+        try {
+          const payload = await this.jwt.verifyAsync(token, {
+            secret: this.config.get<string>('JWT_SECRET', 'change-me-in-production'),
+          });
+          const userId = payload.sub as string | undefined;
+          const platform = (payload.pf ?? payload.platform) as string | undefined;
+          const sessionId = payload.sid as string | undefined;
+          const role = payload.role as string | undefined;
+          if (userId && platform && role) {
+            request.user = {
+              userId,
+              role,
+              platform,
+              sessionId,
+              gameProfileId: payload.gp ?? null,
+            };
+          }
+        } catch (e) {
+          // Ignore invalid or expired token on public routes
+        }
+      }
+      return true;
+    }
+
     if (!token) throw new UnauthorizedException('auth.unauthorized');
 
 

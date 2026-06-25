@@ -15,11 +15,20 @@ import { Web$46ForumPostType } from '../entities/Web$46ForumPostType';
 import { Web$46ForumThreadStatus } from '../entities/Web$46ForumThreadStatus';
 import { GameProfile } from '../entities/GameProfile';
 import { previewText } from '../common/utils/strip-markdown';
+import { resolveLocale, Locale } from '../common/utils/resolve-locale';
+import { ConfigService } from '@nestjs/config';
+import { R2StorageService } from '../storage/r2-storage.service';
+import { randomUUID } from 'crypto';
+import { ThreadImageUploadRequestDto, ThreadImageUploadResponseDto } from './dto/thread-image-upload.dto';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
 
 @Injectable()
 export class ForumService {
-  constructor(private readonly em: EntityManager) { }
+  constructor(
+    private readonly em: EntityManager,
+    private readonly storageService: R2StorageService,
+    private readonly configService: ConfigService,
+  ) { }
 
   // List: pagination + search + category + sort
   async list({
@@ -31,7 +40,11 @@ export class ForumService {
     order = 'desc',
     month,
     year,
-  }: any, user?: { userId?: string; role?: string }) {
+    postType,
+    status,
+  }: any,
+    user?: { userId?: string; role?: string },
+    locale: Locale = 'en',) {
     const offset = (page - 1) * limit;
     const clauses: string[] = [];
     const params: any[] = [];
@@ -48,6 +61,16 @@ export class ForumService {
       params.push(categoryId);
     }
 
+    if (postType) {
+      clauses.push(`t."postType" = ?`);
+      params.push(postType);
+    }
+
+    if (status) {
+      clauses.push(`t."status" = ?`);
+      params.push(status);
+    }
+
     // Filter by month/year
     if (year && month) {
       const startDate = new Date(year, month - 1, 1);
@@ -62,20 +85,21 @@ export class ForumService {
     }
 
     // ARCHIVED visibility:
-  // - Admin sees all
-  // - Authenticated non-admin sees ARCHIVED only when they are the author
-  // - Unauthenticated users or others don't see ARCHIVED
-  if (!(user && user.role === 'ADMIN')) {
-    if (user && user.userId) {
-      clauses.push(`(t."status" <> 'ARCHIVED' OR t."authorId" = ?)`);
-      params.push(user.userId);
-    } else {
-      clauses.push(`t."status" <> 'ARCHIVED'`);
+    // - Admin sees all
+    // - Authenticated non-admin sees ARCHIVED only when they are the author
+    // - Unauthenticated users or others don't see ARCHIVED
+    if (!(user && user.role === 'ADMIN')) {
+      if (user?.userId) {
+        clauses.push(`(t."status" <> 'ARCHIVED' OR t."authorId" = ?)`);
+        params.push(user.userId);
+      } else {
+        clauses.push(`t."status" <> 'ARCHIVED'`);
+      }
     }
-  }
 
     const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
-
+    const categoryNameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
+    const categorySlugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
     // Build order clause: isPinned DESC first, then sortBy with order
     const validSortFields = ['score', 'createdAt', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
@@ -86,12 +110,12 @@ export class ForumService {
     // Select specific columns to avoid leaking sensitive data
     const rows = await this.em.execute(
       `
-      select t."id", t."title", t."slug", t."content", t."imageUrl", t."score", 
+      select t."id", t."slug", t."title", t."content", t."score", 
              t."viewCount", t."isPinned", t."postType", t."status",
-             t."createdAt", t."updatedAt",
+             t."createdAt", t."updatedAt", t."imageUrl",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
              a."badgeImageUrl" as "authorBadgeImageUrl",
-             c."id" as "categoryId", c."name" as "categoryName", c."slug" as "categorySlug"
+             c."id" as "categoryId", ${categoryNameField} as "categoryName", ${categorySlugField} as "categorySlug"
       from web."ForumThread" t
       inner join auth."User" u on u."id" = t."authorId"
       left join game."GameProfile" gp on gp."userId" = u."id"
@@ -111,10 +135,41 @@ export class ForumService {
 
     const total = Number(countRes?.[0]?.cnt || 0);
 
-    const items = (rows || []).map((row: any) => ({
-      ...row,
-      content: previewText(row.content ?? '', 100),
-    }));
+    // const items = (rows || []).map((row: any) => ({
+    //   ...row,
+    //   content: previewText(row.content ?? '', 100),
+    // }));
+
+    const items = (rows || []).map((row: any) => {
+      const base = {
+        threadId: row.id,
+        title: row.title,
+        excerpt: previewText(row.content ?? '', 100),
+        score: row.score,
+        viewCount: row.viewCount,
+        isPinned: row.isPinned,
+        postType: row.postType,
+        status: row.status,
+        imgUrl: row.imageUrl,
+        id: row.id,
+        slug: row.slug,
+        author: {
+          id: row.authorId,
+          displayName: row.authorName,
+          imgUrl: row.authorAvatar,
+          badgeImageUrl: row.authorBadgeImageUrl,
+        },
+        category: {
+          id: row.categoryId,
+          name: row.categoryName,
+          slug: row.categorySlug,
+        },
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      };
+
+      return base;
+    });
 
     return {
       items,
@@ -122,49 +177,115 @@ export class ForumService {
     };
   }
 
-  // Detail + increment viewCount + sanitize author data
-  async findOne(id: string, user?: { userId?: string; role?: string }) {
-    const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
-    if (!thread) throw new NotFoundException('forum.thread_not_found');
+  // // Detail + increment viewCount + sanitize author data
+  // async findOne(id: string, user?: { userId?: string; role?: string }) {
+  //   const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
+  //   if (!thread) throw new NotFoundException('forums.thread_not_found');
 
-    // ARCHIVED visibility check before exposing or incrementing views
-  if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
-    const isAdmin = user && user.role === 'ADMIN';
-    const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
-    if (!isAdmin && !isAuthor) {
-      throw new NotFoundException('forum.thread_not_found');
+  //   // ARCHIVED visibility check before exposing or incrementing views
+  // if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
+  //   const isAdmin = user && user.role === 'ADMIN';
+  //   const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
+  //   if (!isAdmin && !isAuthor) {
+  //     throw new NotFoundException('forums.thread_not_found');
+  //   }
+  // }
+
+  //   // defensively increment viewCount on the entity and flush
+  //   thread.viewCount = (Number(thread.viewCount) || 0) + 1;
+  //   await this.em.flush();
+
+  //   const gp = await this.em.findOne(
+  //     GameProfile,
+  //     { userId: thread.authorId },
+  //     { populate: ['equippedAchievementId'] },
+  //   );
+
+  //   const badgeImageUrl =
+  //     gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
+
+  //   // Sanitize user data: exclude email, password, and other sensitive fields
+  //   const sanitizedAuthor = {
+  //     id: thread.authorId.id,
+  //     displayName: thread.authorId.displayName,
+  //     imgUrl: thread.authorId.imgUrl,
+  //     badgeImageUrl,
+  //   };
+
+  //   const sanitizedCategory = thread.categoryId
+  //   ? {
+  //     id: thread.categoryId.id,
+  //     name: thread.categoryId.name,
+  //     slug: thread.categoryId.slug
+  //   } : null;
+
+  //   // Return sanitized thread
+  //   return {
+  //     id: thread.id,
+  //     title: thread.title,
+  //     slug: thread.slug,
+  //     content: thread.content,
+  //     imageUrl: thread.imageUrl,
+  //     score: thread.score,
+  //     viewCount: thread.viewCount,
+  //     isPinned: thread.isPinned,
+  //     postType: thread.postType,
+  //     status: thread.status,
+  //     createdAt: thread.createdAt,
+  //     updatedAt: thread.updatedAt,
+  //     author: sanitizedAuthor,
+  //     category: sanitizedCategory,
+  //   };
+  // }
+
+
+  async findOneBySlug(
+    slug: string,
+    locale: Locale = 'en',
+    user?: { userId?: string; role?: string },
+  ) {
+    const thread = await this.em.findOne(ForumThread, { slug }, { populate: ['authorId', 'categoryId'] });
+    if (!thread) throw new NotFoundException('forums.thread_not_found');
+
+    if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
+      const isAdmin = user?.role === 'ADMIN';
+      const isAuthor = user?.userId && String(thread.authorId.id) === String(user.userId);
+      if (!isAdmin && !isAuthor) throw new NotFoundException('forums.thread_not_found');
     }
-  }
 
-    // defensively increment viewCount on the entity and flush
     thread.viewCount = (Number(thread.viewCount) || 0) + 1;
     await this.em.flush();
 
+    return await this.mapThreadDetail(thread, locale, user?.userId);
+  }
+
+  async findOneById(id: string, locale: Locale = 'en') {
+    const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
+    if (!thread) throw new NotFoundException('forums.thread_not_found');
+    return await this.mapThreadDetail(thread, locale);
+  }
+
+  private async mapThreadDetail(thread: ForumThread, locale: Locale, currentUserId?: string) {
+    const category = thread.categoryId;
     const gp = await this.em.findOne(
       GameProfile,
       { userId: thread.authorId },
       { populate: ['equippedAchievementId'] },
     );
 
+    let userVote: number | null = null;
+    if (currentUserId) {
+      const voteRows = await this.em.execute(
+        `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
+        [currentUserId, thread.id],
+      );
+      if (voteRows && voteRows.length > 0) {
+        userVote = Number(voteRows[0].value);
+      }
+    }
+
     const badgeImageUrl =
-      gp && (gp as any).equippedAchievement ? (gp as any).equippedAchievement.badgeImageUrl : null;
-
-    // Sanitize user data: exclude email, password, and other sensitive fields
-    const sanitizedAuthor = {
-      id: thread.authorId.id,
-      displayName: thread.authorId.displayName,
-      imgUrl: getProxyAvatarUrl(thread.authorId.imgUrl, thread.authorId.id, thread.authorId.updatedAt),
-      badgeImageUrl,
-    };
-
-    const sanitizedCategory = thread.categoryId
-    ? {
-      id: thread.categoryId.id,
-      name: thread.categoryId.name,
-      slug: thread.categoryId.slug
-    } : null;
-
-    // Return sanitized thread
+      gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
     return {
       id: thread.id,
       title: thread.title,
@@ -178,34 +299,49 @@ export class ForumService {
       status: thread.status,
       createdAt: thread.createdAt,
       updatedAt: thread.updatedAt,
-      author: sanitizedAuthor,
-      category: sanitizedCategory,
+      userVote,
+      author: {
+        id: thread.authorId.id,
+        displayName: thread.authorId.displayName,
+        imgUrl: thread.authorId.imgUrl,
+        badgeImageUrl,
+      },
+      category: category
+        ? {
+          id: category.id,
+          name: locale === 'vi' ? category.nameVi : category.name,
+          slug: locale === 'vi' ? category.slugVi : category.slug,
+        }
+        : null,
     };
   }
 
   // Create — auth required
-  async create(dto: CreateForumDto, authorId: string, isAdmin = false) {
+  async create(dto: CreateForumDto, authorId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
     // Validate input
     if ((dto.isPinned !== undefined) && !isAdmin) {
-      throw new ForbiddenException('forum.forbidden_admin_only');
+      throw new ForbiddenException('forums.forbidden_admin_only');
     }
     if (!dto.title || !dto.title.trim()) {
-      throw new BadRequestException('forum.title_required');
+      throw new BadRequestException('forums.title_required');
     }
     if (!dto.content || !dto.content.trim()) {
-      throw new BadRequestException('forum.content_required');
+      throw new BadRequestException('forums.content_required');
     }
     if (!dto.categoryId) {
-      throw new BadRequestException('forum.category_required');
+      throw new BadRequestException('forums.category_required');
     }
 
     // Check author exists
     const author = await this.em.findOne(User, { id: authorId });
-    if (!author) throw new BadRequestException('forum.invalid_author');
+    if (!author) throw new BadRequestException('forums.invalid_author');
 
     // Check category exists (required)
     const category = await this.em.findOne(ForumCategory, { id: dto.categoryId });
-    if (!category) throw new BadRequestException('forum.category_not_found');
+    if (!category) throw new BadRequestException('forums.category_not_found');
+    if (category.isOfficial && !isAdmin) {
+      throw new ForbiddenException('forums.category_official_admin_only');
+    }
 
     // Prepare thread data
     const now = new Date();
@@ -215,7 +351,7 @@ export class ForumService {
     // Check slug conflict
     const existingSlug = await this.em.findOne(ForumThread, { slug });
     if (existingSlug) {
-      throw new BadRequestException('forum.slug_conflict');
+      throw new BadRequestException('forums.slug_conflict');
     }
 
     // Create thread
@@ -234,29 +370,30 @@ export class ForumService {
     });
 
     await this.em.persistAndFlush(thread);
-    return null;
+    return await this.mapThreadDetail(thread, locale);
   }
 
   // Update — author only
-  async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false) {
+  async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
-    if (!thread) throw new NotFoundException('forum.thread_not_found');
+    if (!thread) throw new NotFoundException('forums.thread_not_found');
 
     // Check permission
     if (String(thread.authorId.id) !== String(userId)) {
-      throw new ForbiddenException('forum.forbidden_update');
+      throw new ForbiddenException('forums.forbidden_update');
     }
 
     // Update fields
+    // Check lại update ra 3 4 hình
     if (dto.title) {
       const trimmed = dto.title.trim();
-      if (!trimmed) throw new BadRequestException('forum.title_required');
+      if (!trimmed) throw new BadRequestException('forums.title_required');
       thread.title = trimmed;
     }
 
     if (dto.slug) {
       const newSlug = this.slugify(dto.slug.trim() || thread.title);
-      if (!newSlug) throw new BadRequestException('forum.slug_required');
+      if (!newSlug) throw new BadRequestException('forums.slug_required');
 
       // Check slug conflict (if different from current)
       if (newSlug !== thread.slug) {
@@ -265,7 +402,7 @@ export class ForumService {
           [newSlug, id],
         );
         if (existingSlug?.length) {
-          throw new BadRequestException('forum.slug_conflict');
+          throw new BadRequestException('forums.slug_conflict');
         }
       }
       thread.slug = newSlug;
@@ -273,18 +410,32 @@ export class ForumService {
 
     if (dto.content) {
       const trimmed = dto.content.trim();
-      if (!trimmed) throw new BadRequestException('forum.content_required');
+      if (!trimmed) throw new BadRequestException('forums.content_required');
       thread.content = trimmed;
     }
 
     if (dto.imageUrl !== undefined) {
+      if (thread.imageUrl && thread.imageUrl !== dto.imageUrl) {
+        try {
+          const idx = thread.imageUrl.indexOf('forums/');
+          if (idx !== -1) {
+            const key = thread.imageUrl.slice(idx);
+            await this.storageService.deleteObject(key);
+          }
+        } catch (e: any) {
+          console.error(`Failed to delete old R2 image ${thread.imageUrl}:`, e);
+        }
+      }
       thread.imageUrl = dto.imageUrl ?? null;
     }
 
     // Category: if provided, must exist (required)
-    if (dto.categoryId) {
+    if (dto.categoryId !== undefined) {
       const category = await this.em.findOne(ForumCategory, { id: dto.categoryId });
-      if (!category) throw new BadRequestException('forum.category_not_found');
+      if (!category) throw new BadRequestException('forums.category_not_found');
+      if (category.isOfficial && !isAdmin) {
+        throw new ForbiddenException('forums.category_official_admin_only');
+      }
       thread.categoryId = category;
     }
 
@@ -298,7 +449,7 @@ export class ForumService {
 
     if (dto.isPinned !== undefined) {
       if (!isAdmin) {
-        throw new ForbiddenException('forum.forbidden_admin_only');
+        throw new ForbiddenException('forums.forbidden_admin_only');
       }
       if (dto.isPinned !== undefined) thread.isPinned = dto.isPinned;
     }
@@ -312,11 +463,23 @@ export class ForumService {
   // Remove — author or ADMIN
   async remove(id: string, userId: string, isAdmin = false) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
-    if (!thread) throw new NotFoundException('forum.thread_not_found');
+    if (!thread) throw new NotFoundException('forums.thread_not_found');
 
     // Check permission
     if (!isAdmin && String(thread.authorId.id) !== String(userId)) {
-      throw new ForbiddenException('forum.forbidden_delete');
+      throw new ForbiddenException('forums.forbidden_delete');
+    }
+
+    if (thread.imageUrl) {
+      try {
+        const idx = thread.imageUrl.indexOf('forums/');
+        if (idx !== -1) {
+          const key = thread.imageUrl.slice(idx);
+          await this.storageService.deleteObject(key);
+        }
+      } catch (e: any) {
+        console.error(`Failed to delete R2 image ${thread.imageUrl}:`, e);
+      }
     }
 
     await this.em.removeAndFlush(thread);
@@ -326,10 +489,10 @@ export class ForumService {
   // Vote — value = 1 | -1, toggle behaviour
   async vote(threadId: string, userId: string, value: 1 | -1) {
     const thread = await this.em.findOne(ForumThread, { id: threadId });
-    if (!thread) throw new NotFoundException('forum.thread_not_found');
+    if (!thread) throw new NotFoundException('forums.thread_not_found');
 
     const user = await this.em.findOne(User, { id: userId });
-    if (!user) throw new BadRequestException('forum.invalid_user');
+    if (!user) throw new BadRequestException('forums.invalid_user');
 
     // Use raw SQL to reliably find existing vote
     const existingRows = await this.em.execute(
@@ -349,7 +512,7 @@ export class ForumService {
       } as any);
       thread.score = (thread.score || 0) + value;
       await this.em.persistAndFlush([vote, thread]);
-      return { result: 'voted', score: thread.score };
+      return { result: 'voted', score: thread.score, userVote: value };
     }
 
     if (existingValue === value) {
@@ -360,7 +523,7 @@ export class ForumService {
       );
       thread.score = (thread.score || 0) - value;
       await this.em.persistAndFlush([thread]);
-      return { result: 'unvoted', score: thread.score };
+      return { result: 'unvoted', score: thread.score, userVote: null };
     } else {
       // Change vote
       await this.em.execute(
@@ -369,7 +532,7 @@ export class ForumService {
       );
       thread.score = (thread.score || 0) + (value - existingValue);
       await this.em.persistAndFlush([thread]);
-      return { result: 'changed', score: thread.score };
+      return { result: 'changed', score: thread.score, userVote: value };
     }
   }
 
@@ -391,5 +554,40 @@ export class ForumService {
     const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
     const trimmed = cleaned.replace(/^-+|-+$/g, '');
     return trimmed.slice(0, 200);
+  }
+
+  async uploadThreadImage(dto: ThreadImageUploadRequestDto, userId: string): Promise<ThreadImageUploadResponseDto> {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (dto.fileSize > maxSize) {
+      throw new BadRequestException('forums.image_too_large');
+    }
+
+    const extByMime: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+    const threadId = dto.threadId ?? randomUUID();
+    const ext = extByMime[dto.mimeType] ?? 'png';
+    const key = `forums/${threadId}/thread-image/image.${ext}`;
+
+    const uploadUrl = await this.storageService.createUploadUrl({
+      key,
+      contentType: dto.mimeType,
+    });
+
+    const publicUrlBase = this.configService
+      .get<string>('R2_PUBLIC_DEV_URL', 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev')
+      .replace(/\/+$/, '');
+
+    return {
+      uploadUrl,
+      method: 'PUT',
+      key,
+      publicUrl: `${publicUrlBase}/${key}`,
+      headers: {
+        'Content-Type': dto.mimeType,
+      },
+    };
   }
 }

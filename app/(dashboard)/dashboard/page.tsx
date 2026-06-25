@@ -45,21 +45,51 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState("30d");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const res = await api.get(`/account/admin/dashboard/statistics?range=${range}`);
       setData(res.data || res);
     } catch (err: any) {
-      setError(t("admin.dashboard.statistics.loadFailed") || "Failed to load statistics.");
+      if (!silent) {
+        setError(t("admin.dashboard.statistics.loadFailed") || "Failed to load statistics.");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [range, t]);
 
   useEffect(() => {
     fetchData();
+
+    const STATISTICS_REFRESH_INTERVAL_MS = 30_000;
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchData(true);
+      }
+    }, STATISTICS_REFRESH_INTERVAL_MS);
+
+    const handleFocus = () => {
+      fetchData(true);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchData(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [fetchData]);
 
   const C = {
@@ -98,7 +128,7 @@ export default function DashboardPage() {
             {t("admin.dashboard.statistics.description") || "Overview of forum, gameplay, players, and downloads."}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <Select value={range} onValueChange={setRange}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder={t("admin.dashboard.statistics.range") || "Range"} />
@@ -109,9 +139,6 @@ export default function DashboardPage() {
               <SelectItem value="90d">{t("admin.dashboard.statistics.range90d") || "90 days"}</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" onClick={fetchData} disabled={loading} title={t("admin.dashboard.statistics.refresh") || "Refresh"}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          </Button>
         </div>
       </div>
 

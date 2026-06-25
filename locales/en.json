@@ -1,4 +1,20 @@
 {
+  "errors": {
+    "common": {
+      "backToHome": "Back to Home",
+      "tryAgain": "Try again"
+    },
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you are looking for may have been moved, deleted, or never existed in Borrowed Shapes."
+    },
+    "serverError": {
+      "code": "500",
+      "title": "Something went wrong",
+      "description": "Borrowed Shapes ran into an unexpected problem. Please try again later or return to the home page."
+    }
+  },
   "auth": {
     "login": "Log in",
     "email": "Email",
@@ -755,6 +771,12 @@
       "nav_label": "Accounts",
       "title": "Account Management",
       "subtitle": "View, search, edit, ban, unban, and delete user accounts.",
+      "total": "Total accounts",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageInfo": "Page {page} of {totalPages}"
+      },
       "search_placeholder": "Search by ID, name, or email...",
       "filters": {
         "all": "All",
@@ -915,10 +937,16 @@
         "empty": "No game versions uploaded yet.",
         "error": "Failed to load game versions.",
         "total": "Total versions",
+        "pagination": {
+          "previous": "Previous",
+          "next": "Next",
+          "pageInfo": "Page {page} of {totalPages}"
+        },
         "columns": {
           "version": "Version",
           "file_name": "File Name",
           "file_size": "File Size",
+          "downloads": "Downloads",
           "mime_type": "MIME Type",
           "uploaded_at": "Uploaded At",
           "status": "Status",
@@ -941,6 +969,7 @@
           "version": "Version",
           "file_path": "File Path",
           "file_size": "File Size",
+          "total_downloads": "Total downloads",
           "mime_type": "MIME Type",
           "uploaded_at": "Uploaded At",
           "updated_at": "Updated At",
@@ -968,6 +997,19 @@
       }
     },
     "accounts": {
+      "onlineStatus": {
+        "column": "Online Status",
+        "online": "Online",
+        "offline": "Offline",
+        "checking": "Checking...",
+        "unknown": "Unknown",
+        "web": "Web",
+        "game": "Game",
+        "webAndGame": "Web + Game",
+        "lastOnline": "Last: {time}",
+        "noRecentActivity": "No recent activity",
+        "presenceLoadFailed": "Failed to load online status."
+      },
       "online": {
         "webOnline": "Web Online",
         "gameOnline": "Game Online",
@@ -975,6 +1017,22 @@
         "unknown": "Unknown",
         "lastOnline": "Last online",
         "title": "Online Status"
+      },
+      "detail": {
+        "sessions": {
+          "checking": "Checking session...",
+          "noActiveSession": "No active session",
+          "activeSession": "{count} active session",
+          "activeSessions": "{count} active sessions",
+          "revoke": "Revoke Session",
+          "revokeDialogTitle": "Revoke session?",
+          "revokeDialogDescription": "This will log this user out of the selected active session.",
+          "revokeMultipleDialogDescription": "This user has {count} active sessions. This action will revoke the most recent active session.",
+          "revokeConfirm": "Revoke session",
+          "revokeSuccess": "Session revoked successfully.",
+          "revokeFailed": "Failed to revoke session.",
+          "loadFailed": "Failed to check active sessions."
+        }
       }
     }
   },
@@ -1210,5 +1268,138 @@
     "history_col_total_time": "Total Time",
     "history_col_played_date": "Played Date",
     "close": "Close"
+  },
+  "legal": {
+    "common": {
+      "projectName": "Borrowed Shapes",
+      "lastUpdated": "Last updated",
+      "backHome": "Back to home",
+      "contactPage": "Contact page",
+      "comingSoon": "Coming soon",
+      "externalLink": "Open link"
+    },
+    "contact": {
+      "metaTitle": "Contact | Borrowed Shapes",
+      "badge": "Borrowed Shapes",
+      "title": "Contact",
+      "description": "Want to share feedback, report an issue, ask about the game download, or follow the progress of Borrowed Shapes? You can reach the team through the channels below.",
+      "intro": "Borrowed Shapes is a 3D co-op game project with a supporting community web platform. We welcome feedback about gameplay experience, technical issues, forum content, wiki pages, and the download system.",
+      "methods": {
+        "facebook": {
+          "title": "Facebook",
+          "description": "Follow announcements, updates, and message the team through Facebook."
+        },
+        "email": {
+          "title": "Email",
+          "description": "Send detailed feedback, support questions, or account-related information."
+        },
+        "community": {
+          "title": "Community",
+          "description": "Join the community channel to discuss the game, find teammates, and follow new activities."
+        },
+        "project": {
+          "title": "Source / Project",
+          "description": "View technical information or follow development progress if the link is publicly available."
+        }
+      },
+      "noteTitle": "Note",
+      "note": "This contact page currently provides static contact information only. A direct contact form may be considered in a future version."
+    },
+    "privacy": {
+      "metaTitle": "Privacy Policy | Borrowed Shapes",
+      "badge": "Privacy",
+      "title": "Privacy Policy",
+      "lastUpdatedValue": "June 22, 2026",
+      "intro": "This policy explains how Borrowed Shapes collects, uses, and protects information when you use the website, account system, forum, wiki, leaderboard, download system, and related features.",
+      "sections": [
+        {
+          "title": "1. Information we may collect",
+          "body": "When you use Borrowed Shapes, the system may store information needed to operate the service, including:\n- Account information such as email, display name, avatar, and login method.\n- Session information such as login time, session status, platform, IP address, and basic device information.\n- User-generated content such as forum posts, comments, reports, responses, or wiki content if you have editing permissions.\n- Gameplay data such as game profile, achievements, game runs, session results, and related statistics.\n- Download history such as downloaded version, download time, and technical information needed for download statistics.\n- System logs and audit logs used for security, administration, and troubleshooting."
+        },
+        {
+          "title": "2. How we use information",
+          "body": "We use information to:\n- Create and manage user accounts.\n- Support login, logout, and secure session handling.\n- Display profiles, achievements, gameplay history, and community content.\n- Operate the forum, wiki, announcements, reports, and game download system.\n- Record administrative activity for transparency and security.\n- Detect errors, prevent abuse, spam, or harmful behavior.\n- Generate system-level statistics to improve the product experience."
+        },
+        {
+          "title": "3. Community content",
+          "body": "Content you post publicly on the forum, comments, or wiki may be visible to other users. You should avoid posting sensitive personal information or anything you do not want to make public."
+        },
+        {
+          "title": "4. Security and audit logs",
+          "body": "Actions such as login, logout, account updates, bans, unbans, report handling, or important data changes may be recorded in audit logs. These logs help administrators review system activity and troubleshoot issues."
+        },
+        {
+          "title": "5. Data sharing",
+          "body": "Borrowed Shapes does not sell users' personal data. Data is used only for operating the project, securing the system, generating internal statistics, and supporting users."
+        },
+        {
+          "title": "6. Data storage and protection",
+          "body": "We use reasonable measures to protect data, including admin permissions, session controls, and audit logging. However, no system can guarantee absolute security in every situation."
+        },
+        {
+          "title": "7. Policy changes",
+          "body": "This policy may be updated when new features are added or when system operations change. The latest version will be shown on this page."
+        },
+        {
+          "title": "8. Contact",
+          "body": "If you have questions about privacy or your data, please contact the Borrowed Shapes team through the Contact page."
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Terms of Service | Borrowed Shapes",
+      "badge": "Terms",
+      "title": "Terms of Service",
+      "lastUpdatedValue": "June 22, 2026",
+      "intro": "By using the Borrowed Shapes website, account system, forum, wiki, download system, or related features, you agree to follow the terms below.",
+      "ruleZero": {
+        "badge": "Supreme Clause",
+        "title": "Rule 0 — The Supreme Decree of Her Royal Highness",
+        "body": "By accessing, browsing, using, or continuing to remain within the services of Borrowed Shapes, the user solemnly confirms that they have read, understood, and voluntarily accepted this Rule 0. Accordingly, the user declares absolute loyalty to positive spirit, respect for the community, preservation of system order, and, within a purely entertainment-based context, service to the glorious greatness of Her Royal Highness.",
+        "note": "This clause is issued as a formally styled easter egg. It does not create any actual legal obligation, although smiling upon discovery is considered highly encouraged."
+      },
+      "sections": [
+        {
+          "title": "1. Introduction",
+          "body": "Borrowed Shapes is a 3D co-op game project with a supporting community web platform, including accounts, player profiles, forum, wiki, announcements, leaderboard, achievements, and game downloads."
+        },
+        {
+          "title": "2. User accounts",
+          "body": "You are responsible for keeping your login information secure and for activities that happen under your account. You should not share your account, attempt to access another user's account, or use false information to harm the system."
+        },
+        {
+          "title": "3. Community rules",
+          "body": "When using the forum, comments, reports, or community areas, you agree not to:\n- Post spam, harassment, insults, or harmful content.\n- Post misleading, deceptive, or false information.\n- Share content that is inappropriate for the project community.\n- Intentionally exploit bugs, damage the system, or disrupt the service.\n- Impersonate others or use an account for harmful purposes."
+        },
+        {
+          "title": "4. User-generated content",
+          "body": "You are responsible for the content you post. The moderation team may edit, hide, lock, or remove content that violates community rules or affects system operations."
+        },
+        {
+          "title": "5. Game downloads and builds",
+          "body": "Game builds are provided so users can experience Borrowed Shapes. You may not redistribute, modify, or use the builds in a way that misrepresents the project source without permission."
+        },
+        {
+          "title": "6. Gameplay, achievements, and leaderboard",
+          "body": "Gameplay data, achievements, play history, and leaderboard results may be recorded and displayed in the system. If cheating, exploit abuse, or data manipulation is detected, administrators may adjust, hide, or remove related results."
+        },
+        {
+          "title": "7. Administrative rights",
+          "body": "Administrators may handle reports, issue warnings, ban accounts, unban accounts, remove content, or take necessary actions to protect the community and the system."
+        },
+        {
+          "title": "8. Service changes",
+          "body": "Borrowed Shapes may change, update, suspend, or remove features during development. Some content, builds, or test data may change between versions."
+        },
+        {
+          "title": "9. Limitation of responsibility",
+          "body": "The project is developed for learning, product demonstration, and user experience purposes. We try to keep the system stable, but we do not guarantee that the service will always be error-free, uninterrupted, or suitable for every use case."
+        },
+        {
+          "title": "10. Contact",
+          "body": "If you have questions about these terms, please contact the Borrowed Shapes team through the Contact page."
+        }
+      ]
+    }
   }
 }

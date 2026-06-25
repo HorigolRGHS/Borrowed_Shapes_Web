@@ -41,9 +41,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans text-foreground dark:text-white">
-      <PublicHeader />
-
+    <>
       <main className="flex-1 container mx-auto px-4 pt-32 pb-16 max-w-6xl">
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12">
           <div className="flex flex-col md:flex-row items-center gap-6">
@@ -78,7 +76,7 @@ export default function ProfilePage() {
 
         <EditProfileModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} user={user} />
 
-        <Tabs defaultValue="downloads" className="w-full">
+        <Tabs defaultValue="achievements" className="w-full">
           <TabsList className="bg-card/50 border border-border dark:border-white/10 mb-8 flex flex-wrap h-auto p-1 rounded-xl w-full justify-start overflow-x-auto">
             <TabsTrigger value="achievements" className="gap-2 data-[state=active]:bg-amber-500 data-[state=active]:text-black py-2.5 px-4 rounded-lg">
               <Trophy className="w-4 h-4" />
@@ -121,8 +119,6 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </main>
-
-      <PublicFooter />
-    </div>
+    </>
   );
 }

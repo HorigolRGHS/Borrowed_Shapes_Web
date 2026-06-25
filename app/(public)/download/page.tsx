@@ -69,9 +69,7 @@ export default function DownloadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans">
-      <PublicHeader />
-
+    <>
       <main className="flex-1 flex flex-col items-center pt-32 pb-16 px-4">
         <div className="text-center mb-12 max-w-2xl">
           <h1 className="text-5xl md:text-6xl font-extrabold text-foreground dark:text-white mb-6">
@@ -94,24 +92,13 @@ export default function DownloadPage() {
           </div>
         )}
 
-        <PlatformSelector
-          selectedPlatform={selectedPlatform}
-          onSelectPlatform={setSelectedPlatform}
-        />
-
         <div className="w-full mt-8">
-          {latestVersion ? (
-            <DownloadCard
-              latestVersion={latestVersion}
-              loading={loadingLatest}
-              onDownload={() => latestVersion && handleDownload(latestVersion.id, latestVersion.fileVersion)}
-              selectedPlatform={selectedPlatform}
-            />
-          ) : (
-            <div className="text-center p-8 bg-muted/20 border border-border/50 rounded-xl">
-              <p className="text-muted-foreground">{t("download.no_version") || "No download version is available yet."}</p>
-            </div>
-          )}
+          <DownloadCard
+            latestVersion={latestVersion}
+            loading={loadingLatest}
+            onDownload={() => latestVersion && handleDownload(latestVersion.id, latestVersion.fileVersion)}
+            selectedPlatform={selectedPlatform}
+          />
         </div>
 
         {versions.length > 0 && (
@@ -124,8 +111,6 @@ export default function DownloadPage() {
           </div>
         )}
       </main>
-
-      <PublicFooter />
-    </div>
+    </>
   );
 }

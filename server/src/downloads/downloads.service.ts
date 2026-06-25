@@ -37,27 +37,66 @@ export class DownloadsService {
 
   // ─── 1. List game versions ───────────────────────────────
   async listVersions(query: GameVersionQueryDto) {
-    const { page = 1, limit = 10, search, sort = 'desc', version } = query;
+    const { page = 1, limit = 10, search, sortBy = 'uploadedAt', sort = 'desc', version } = query;
     const offset = (page - 1) * limit;
 
-    const qb = this.em.createQueryBuilder(FileAsset, 'f');
+    const allowedSortBy = ['uploadedAt', 'fileVersion', 'fileSize', 'downloadCount'];
+    const validSortBy = allowedSortBy.includes(sortBy) ? sortBy : 'uploadedAt';
+    const sortDirection = sort === 'asc' ? 'ASC' : 'DESC';
+
+    const knex = this.em.getConnection().getKnex();
+
+    // Base query for counting
+    const countQuery = knex('web.FileAsset as f').count('* as total');
+
+    // Base query for data
+    const dataQuery = knex('web.FileAsset as f')
+      .select([
+        'f.id',
+        'f.fileName',
+        'f.fileVersion',
+        'f.fileSize',
+        'f.mimeType',
+        'f.isActive',
+        'f.uploadedAt',
+        'f.updatedAt',
+        knex.raw('COALESCE(ds."downloadCount", 0)::int AS "downloadCount"')
+      ])
+      .leftJoin(
+        knex.raw(`(
+          SELECT "fileAssetId", COALESCE(SUM("downloadCount"), 0)::int AS "downloadCount"
+          FROM web."DownloadStats"
+          GROUP BY "fileAssetId"
+        ) as ds`),
+        'ds.fileAssetId',
+        'f.id'
+      )
+      .limit(limit)
+      .offset(offset);
 
     if (search) {
-      qb.andWhere({ fileName: { $ilike: `%${search}%` } });
-    }
-    if (version) {
-      qb.andWhere({ fileVersion: version });
+      countQuery.where('f.fileName', 'ilike', `%${search}%`);
+      dataQuery.where('f.fileName', 'ilike', `%${search}%`);
     }
 
-    const [items, total] = await Promise.all([
-      qb
-        .clone()
-        .orderBy({ uploadedAt: sort === 'asc' ? 'ASC' : 'DESC' })
-        .limit(limit)
-        .offset(offset)
-        .getResultList(),
-      qb.clone().getCount(),
+    if (version) {
+      countQuery.where('f.fileVersion', version);
+      dataQuery.where('f.fileVersion', version);
+    }
+
+    if (validSortBy === 'downloadCount') {
+      dataQuery.orderBy('downloadCount', sortDirection);
+      dataQuery.orderBy('f.uploadedAt', 'DESC');
+    } else {
+      dataQuery.orderBy(`f.${validSortBy}`, sortDirection);
+    }
+
+    const [[countResult], items] = await Promise.all([
+      countQuery,
+      dataQuery,
     ]);
+
+    const total = Number(countResult.total);
 
     // Determine latest version (most recently uploaded)
     const latestId = total > 0 ? await this.getLatestVersionId() : null;
@@ -72,6 +111,7 @@ export class DownloadsService {
         isActive: f.isActive,
         uploadedAt: f.uploadedAt,
         updatedAt: f.updatedAt,
+        downloadCount: Number(f.downloadCount || 0),
         isLatest: f.id === latestId,
       })),
       pagination: {

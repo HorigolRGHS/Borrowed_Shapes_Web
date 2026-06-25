@@ -10,7 +10,7 @@ const translations = { en, vi };
 
 interface I18nContextType {
   locale: Language;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
   setLocale: (lang: Language) => void;
 }
 
@@ -41,13 +41,22 @@ export function I18nProvider({
     window.location.reload();
   };
 
-  const t = (path: string) => {
+  const t = (path: string, vars?: Record<string, string | number>) => {
     const keys = path.split(".");
     let result: any = translations[locale];
     for (const key of keys) {
       result = result?.[key];
     }
-    return result || path;
+    
+    let text = result || path;
+    if (typeof text === 'string' && vars) {
+      return Object.entries(vars).reduce(
+        (res, [k, v]) => res.replaceAll(`{${k}}`, String(v)),
+        text
+      );
+    }
+    
+    return text;
   };
 
   return (

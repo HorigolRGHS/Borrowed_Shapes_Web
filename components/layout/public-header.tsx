@@ -23,6 +23,10 @@ export function PublicHeader() {
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev";
+  const logoUrl = `${R2_BASE}/Logo.jpg`;
 
   useEffect(() => {
     setUser(getUserProfile() as UserProfile | null);
@@ -66,9 +70,15 @@ export function PublicHeader() {
         <div className="container mx-auto px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)]">
-                B
-              </div>
+              {!imgError ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0">
+                  <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+                </div>
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] shrink-0">
+                  B
+                </div>
+              )}
               <span className="font-extrabold tracking-tight hidden sm:inline-block">
                 <span className="text-foreground dark:text-white">BORROWED</span>{" "}
                 <span className="text-amber-500 dark:text-amber-400">SHAPES</span>

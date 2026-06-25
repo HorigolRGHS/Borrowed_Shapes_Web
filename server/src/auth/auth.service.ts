@@ -37,6 +37,7 @@ import { GameProfile } from '../entities/GameProfile';
 import { Role } from '../entities/Role';
 import { SessionStatus } from '../entities/SessionStatus';
 import { AuditActionType } from '../entities/AuditActionType';
+import { UserOnlineStatus } from '../entities/UserOnlineStatus';
 
 const createId = () => randomUUID();
 
@@ -771,6 +772,25 @@ export class AuthService {
       ]);
     }
 
+    try {
+      const existingStatus = await this.em.findOne(UserOnlineStatus, {
+        userId: this.em.getReference(User, userId),
+      });
+      if (existingStatus) {
+        if (platform) {
+          existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter(p => p !== platform);
+          if (existingStatus.onlinePlatforms.length === 0) {
+            existingStatus.isOnline = false;
+          }
+        } else {
+          existingStatus.isOnline = false;
+          existingStatus.onlinePlatforms = [];
+        }
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to clear presence on logout for user ${userId}`);
+    }
+
     if (stored?.sessionId) {
       await this.em.nativeUpdate(
         UserSession,
@@ -825,6 +845,25 @@ export class AuthService {
 
       await this.redis.zrem(onlineZsetKey, session.sessionId);
       await this.redis.del(presenceDetailsKey(session.sessionId));
+
+      try {
+        const existingStatus = await this.em.findOne(UserOnlineStatus, {
+          userId: this.em.getReference(User, userId),
+        });
+        if (existingStatus) {
+          if (session.platform) {
+            existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter(p => p !== session.platform);
+            if (existingStatus.onlinePlatforms.length === 0) {
+              existingStatus.isOnline = false;
+            }
+          } else {
+            existingStatus.isOnline = false;
+            existingStatus.onlinePlatforms = [];
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Failed to clear presence on revoke for user ${userId}`);
+      }
 
       await this.em.nativeUpdate(
         UserSession,

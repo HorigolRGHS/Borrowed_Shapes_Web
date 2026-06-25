@@ -44,6 +44,7 @@ import { AdminUpdateAccountRoleDto } from './dto/admin-update-account-role.dto';
 import { AdminSystemAuditLogQueryDto } from './dto/admin-system-audit-log-query.dto';
 import { AuthService } from '../auth/auth.service';
 import { Role } from '../entities/Role';
+import { EmailService } from '../email/email.service';
 
 function maskSensitiveData(obj: any): any {
   if (obj === null || obj === undefined) return obj;
@@ -89,6 +90,7 @@ export class AccountService {
     private storageService: R2StorageService,
     private configService: ConfigService,
     private authService: AuthService,
+    private emailService: EmailService,
   ) {}
 
   private getPublicBaseUrl(): string {
@@ -790,6 +792,8 @@ export class AccountService {
       banExpiresAt: target.banExpiresAt,
     };
 
+    const hasChanged = !target.isBanned || target.banReason !== dto.reason.trim() || target.banExpiresAt?.getTime() !== expiresAt?.getTime();
+
     target.isBanned = true;
     target.bannedAt = new Date();
     target.banReason = dto.reason.trim();
@@ -822,6 +826,19 @@ export class AccountService {
 
     await this.em.flush();
 
+    if (hasChanged && target.email) {
+      try {
+        await this.emailService.sendAccountBannedEmail({
+          to: target.email as string,
+          displayName: target.displayName,
+          reason: dto.reason.trim(),
+          banExpiresAt: expiresAt,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to send ban notification email to user ${target.id}`);
+      }
+    }
+
     return this.getAdminUserDetails(targetUserId);
   }
 
@@ -843,6 +860,8 @@ export class AccountService {
       banReason: target.banReason,
       banExpiresAt: target.banExpiresAt,
     };
+
+    const hasChanged = target.isBanned === true;
 
     target.isBanned = false;
     target.bannedAt = undefined;
@@ -868,6 +887,17 @@ export class AccountService {
     this.em.persist(auditLog);
     await this.em.flush();
 
+    if (hasChanged && target.email) {
+      try {
+        await this.emailService.sendAccountUnbannedEmail({
+          to: target.email as string,
+          displayName: target.displayName,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to send unban notification email to user ${target.id}`);
+      }
+    }
+
     return this.getAdminUserDetails(targetUserId);
   }
 
@@ -890,6 +920,8 @@ export class AccountService {
     const oldValues = {
       deletedAt: target.deletedAt,
     };
+
+    const hasChanged = !target.deletedAt;
 
     target.deletedAt = new Date();
 
@@ -916,6 +948,17 @@ export class AccountService {
     );
 
     await this.em.flush();
+
+    if (hasChanged && target.email) {
+      try {
+        await this.emailService.sendAccountDeletedEmail({
+          to: target.email as string,
+          displayName: target.displayName,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to send deactivation notification email to user ${target.id}`);
+      }
+    }
 
     return this.getAdminUserDetails(targetUserId);
   }

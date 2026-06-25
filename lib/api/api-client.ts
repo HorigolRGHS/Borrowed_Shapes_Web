@@ -249,8 +249,13 @@ export const getUserProfile = (): any | null => {
 
 export const getAccessToken = () => getCookie("accessToken");
 
-export const handleLogout = () => {
+export const handleLogout = async () => {
   if (typeof window === "undefined") return;
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch (err) {
+    console.error("Failed to call logout API", err);
+  }
   document.cookie = "accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
   document.cookie = "refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
   localStorage.removeItem("user_profile");

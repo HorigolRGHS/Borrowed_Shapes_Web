@@ -1,4 +1,20 @@
 {
+  "errors": {
+    "common": {
+      "backToHome": "Về trang chủ",
+      "tryAgain": "Thử lại"
+    },
+    "notFound": {
+      "code": "404",
+      "title": "Không tìm thấy trang",
+      "description": "Trang bạn đang tìm có thể đã được di chuyển, bị xóa hoặc chưa từng tồn tại trong Borrowed Shapes."
+    },
+    "serverError": {
+      "code": "500",
+      "title": "Đã xảy ra lỗi",
+      "description": "Borrowed Shapes gặp một sự cố không mong muốn. Vui lòng thử lại sau hoặc quay về trang chủ."
+    }
+  },
   "auth": {
     "login": "Đăng nhập",
     "email": "Email",
@@ -752,6 +768,12 @@
       "nav_label": "Tài khoản",
       "title": "Quản lý tài khoản",
       "subtitle": "Xem, tìm kiếm, chỉnh sửa, cấm, gỡ cấm và xóa tài khoản người dùng.",
+      "total": "Tổng số tài khoản",
+      "pagination": {
+        "previous": "Trước",
+        "next": "Tiếp",
+        "pageInfo": "Trang {page} / {totalPages}"
+      },
       "search_placeholder": "Tìm theo ID, tên hoặc email...",
       "filters": {
         "all": "Tất cả",
@@ -912,10 +934,16 @@
         "empty": "Chưa có phiên bản game nào được tải lên.",
         "error": "Không thể tải danh sách phiên bản.",
         "total": "Tổng số phiên bản",
+        "pagination": {
+          "previous": "Trước",
+          "next": "Tiếp",
+          "pageInfo": "Trang {page} / {totalPages}"
+        },
         "columns": {
           "version": "Phiên bản",
           "file_name": "Tên file",
           "file_size": "Dung lượng",
+          "downloads": "Lượt tải",
           "mime_type": "MIME Type",
           "uploaded_at": "Ngày tải lên",
           "status": "Trạng thái",
@@ -938,6 +966,7 @@
           "version": "Phiên bản",
           "file_path": "Đường dẫn file",
           "file_size": "Dung lượng",
+          "total_downloads": "Tổng lượt tải",
           "mime_type": "MIME Type",
           "uploaded_at": "Ngày tải lên",
           "updated_at": "Ngày cập nhật",
@@ -965,6 +994,19 @@
       }
     },
     "accounts": {
+      "onlineStatus": {
+        "column": "Trạng thái Online",
+        "online": "Trực tuyến",
+        "offline": "Ngoại tuyến",
+        "checking": "Đang kiểm tra...",
+        "unknown": "Không xác định",
+        "web": "Web",
+        "game": "Game",
+        "webAndGame": "Web + Game",
+        "lastOnline": "Lần cuối: {time}",
+        "noRecentActivity": "Chưa có hoạt động gần đây",
+        "presenceLoadFailed": "Không thể tải trạng thái online."
+      },
       "online": {
         "webOnline": "Online (Web)",
         "gameOnline": "Online (Game)",
@@ -972,6 +1014,22 @@
         "unknown": "Không rõ",
         "lastOnline": "Lần cuối online",
         "title": "Trạng thái Online"
+      },
+      "detail": {
+        "sessions": {
+          "checking": "Đang kiểm tra phiên...",
+          "noActiveSession": "Không có phiên hoạt động",
+          "activeSession": "{count} phiên hoạt động",
+          "activeSessions": "{count} phiên hoạt động",
+          "revoke": "Thu hồi phiên",
+          "revokeDialogTitle": "Thu hồi phiên đăng nhập?",
+          "revokeDialogDescription": "Người dùng sẽ bị đăng xuất khỏi phiên hoạt động đã chọn.",
+          "revokeMultipleDialogDescription": "Người dùng này có {count} phiên hoạt động. Hành động này sẽ thu hồi phiên hoạt động mới nhất.",
+          "revokeConfirm": "Thu hồi phiên",
+          "revokeSuccess": "Đã thu hồi phiên đăng nhập.",
+          "revokeFailed": "Không thể thu hồi phiên đăng nhập.",
+          "loadFailed": "Không thể kiểm tra phiên hoạt động."
+        }
       }
     }
   },
@@ -1207,5 +1265,138 @@
     "history_col_total_time": "Tổng thời gian",
     "history_col_played_date": "Ngày chơi",
     "close": "Đóng"
+  },
+  "legal": {
+    "common": {
+      "projectName": "Borrowed Shapes",
+      "lastUpdated": "Cập nhật lần cuối",
+      "backHome": "Về trang chủ",
+      "contactPage": "Trang liên hệ",
+      "comingSoon": "Sắp ra mắt",
+      "externalLink": "Mở liên kết"
+    },
+    "contact": {
+      "metaTitle": "Liên hệ | Borrowed Shapes",
+      "badge": "Borrowed Shapes",
+      "title": "Liên hệ",
+      "description": "Bạn muốn góp ý, báo lỗi, hỏi về bản tải game hoặc theo dõi tiến độ của Borrowed Shapes? Hãy liên hệ với nhóm qua các kênh bên dưới.",
+      "intro": "Borrowed Shapes là dự án game co-op 3D kết hợp nền tảng web cộng đồng. Chúng tôi luôn hoan nghênh phản hồi về trải nghiệm chơi, lỗi kỹ thuật, nội dung diễn đàn, wiki và hệ thống tải game.",
+      "methods": {
+        "facebook": {
+          "title": "Facebook",
+          "description": "Theo dõi thông báo, cập nhật và gửi tin nhắn cho nhóm qua Facebook."
+        },
+        "email": {
+          "title": "Email",
+          "description": "Gửi phản hồi chi tiết, câu hỏi hỗ trợ hoặc thông tin liên quan đến tài khoản."
+        },
+        "community": {
+          "title": "Cộng đồng",
+          "description": "Tham gia kênh cộng đồng để trao đổi, tìm người chơi cùng và cập nhật hoạt động mới."
+        },
+        "project": {
+          "title": "Mã nguồn / Dự án",
+          "description": "Xem thông tin kỹ thuật hoặc theo dõi tiến độ phát triển nếu đường dẫn được công khai."
+        }
+      },
+      "noteTitle": "Lưu ý",
+      "note": "Hiện tại trang liên hệ chỉ hiển thị thông tin liên hệ tĩnh. Chức năng gửi biểu mẫu trực tiếp sẽ được cân nhắc ở các phiên bản sau."
+    },
+    "privacy": {
+      "metaTitle": "Chính sách bảo mật | Borrowed Shapes",
+      "badge": "Privacy",
+      "title": "Chính sách bảo mật",
+      "lastUpdatedValue": "22/06/2026",
+      "intro": "Chính sách này giải thích cách Borrowed Shapes thu thập, sử dụng và bảo vệ thông tin khi bạn sử dụng website, tài khoản, diễn đàn, wiki, bảng xếp hạng, hệ thống tải game và các tính năng liên quan.",
+      "sections": [
+        {
+          "title": "1. Thông tin chúng tôi có thể thu thập",
+          "body": "Khi bạn sử dụng Borrowed Shapes, hệ thống có thể lưu một số thông tin cần thiết để vận hành dịch vụ, bao gồm:\n- Thông tin tài khoản như email, tên hiển thị, ảnh đại diện và phương thức đăng nhập.\n- Thông tin phiên đăng nhập như thời điểm đăng nhập, trạng thái phiên, nền tảng, địa chỉ IP và thông tin thiết bị cơ bản.\n- Nội dung do bạn tạo như bài viết diễn đàn, bình luận, báo cáo, phản hồi hoặc nội dung wiki nếu bạn có quyền chỉnh sửa.\n- Dữ liệu gameplay như hồ sơ game, thành tích, lượt chơi, kết quả phiên chơi và thống kê liên quan.\n- Lịch sử tải game như phiên bản tải xuống, thời điểm tải và thông tin kỹ thuật cần thiết để thống kê lượt tải.\n- Nhật ký hệ thống và audit log để hỗ trợ bảo mật, quản trị và xử lý sự cố."
+        },
+        {
+          "title": "2. Cách chúng tôi sử dụng thông tin",
+          "body": "Thông tin được sử dụng để:\n- Tạo và quản lý tài khoản người dùng.\n- Cho phép đăng nhập, đăng xuất và duy trì phiên hoạt động an toàn.\n- Hiển thị hồ sơ, thành tích, lịch sử chơi và các nội dung cộng đồng.\n- Vận hành diễn đàn, wiki, thông báo, báo cáo vi phạm và hệ thống tải game.\n- Ghi nhận hoạt động quản trị nhằm đảm bảo minh bạch và bảo mật.\n- Phát hiện lỗi, ngăn chặn lạm dụng, spam hoặc hành vi gây hại.\n- Tổng hợp thống kê ở dạng hệ thống để cải thiện trải nghiệm sản phẩm."
+        },
+        {
+          "title": "3. Nội dung cộng đồng",
+          "body": "Các nội dung bạn đăng công khai trên diễn đàn, bình luận hoặc wiki có thể được người dùng khác nhìn thấy. Bạn không nên đăng thông tin cá nhân nhạy cảm hoặc thông tin mà bạn không muốn công khai."
+        },
+        {
+          "title": "4. Nhật ký bảo mật và audit log",
+          "body": "Một số hành động như đăng nhập, đăng xuất, cập nhật tài khoản, khóa/mở khóa tài khoản, xử lý báo cáo hoặc thay đổi dữ liệu quan trọng có thể được ghi vào audit log. Các log này giúp quản trị viên kiểm tra hoạt động hệ thống và xử lý sự cố."
+        },
+        {
+          "title": "5. Chia sẻ dữ liệu",
+          "body": "Borrowed Shapes không bán dữ liệu cá nhân của người dùng. Dữ liệu chỉ được sử dụng trong phạm vi vận hành dự án, bảo mật hệ thống, thống kê nội bộ và hỗ trợ người dùng."
+        },
+        {
+          "title": "6. Lưu trữ và bảo vệ dữ liệu",
+          "body": "Chúng tôi áp dụng các biện pháp hợp lý để bảo vệ dữ liệu, bao gồm phân quyền quản trị, kiểm soát phiên đăng nhập và ghi nhận audit log. Tuy nhiên, không có hệ thống nào có thể đảm bảo an toàn tuyệt đối trong mọi trường hợp."
+        },
+        {
+          "title": "7. Thay đổi chính sách",
+          "body": "Chính sách này có thể được cập nhật khi hệ thống có thêm tính năng mới hoặc thay đổi cách vận hành. Phiên bản mới sẽ được hiển thị trên trang này."
+        },
+        {
+          "title": "8. Liên hệ",
+          "body": "Nếu bạn có câu hỏi về quyền riêng tư hoặc dữ liệu của mình, hãy liên hệ với nhóm Borrowed Shapes qua trang Liên hệ."
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Điều khoản dịch vụ | Borrowed Shapes",
+      "badge": "Terms",
+      "title": "Điều khoản dịch vụ",
+      "lastUpdatedValue": "22/06/2026",
+      "intro": "Khi sử dụng website, tài khoản, diễn đàn, wiki, hệ thống tải game hoặc các tính năng liên quan của Borrowed Shapes, bạn đồng ý tuân thủ các điều khoản dưới đây.",
+      "ruleZero": {
+        "badge": "Điều khoản tối thượng",
+        "title": "Luật 0 — Sắc lệnh tối cao của Công chúa Điện hạ",
+        "body": "Bằng việc truy cập, duyệt, sử dụng hoặc tiếp tục hiện diện trong phạm vi dịch vụ của Borrowed Shapes, người dùng long trọng xác nhận rằng mình đã đọc, hiểu và tự nguyện chấp thuận Luật 0 này. Theo đó, người dùng tuyên bố tuyệt đối trung thành với tinh thần tích cực, tôn trọng cộng đồng, giữ gìn trật tự hệ thống, và trên phương diện hoàn toàn mang tính giải trí, phụng sự cho sự vĩ đại huy hoàng của Công chúa Điện hạ.",
+        "note": "=))"
+      },
+      "sections": [
+        {
+          "title": "1. Giới thiệu",
+          "body": "Borrowed Shapes là dự án game co-op 3D kết hợp nền tảng web cộng đồng, bao gồm các tính năng như tài khoản, hồ sơ người chơi, diễn đàn, wiki, thông báo, bảng xếp hạng, thành tích và tải bản game."
+        },
+        {
+          "title": "2. Tài khoản người dùng",
+          "body": "Bạn chịu trách nhiệm bảo mật thông tin đăng nhập của mình và các hoạt động diễn ra trên tài khoản. Bạn không nên chia sẻ tài khoản, cố gắng truy cập tài khoản của người khác hoặc sử dụng thông tin giả mạo để gây ảnh hưởng đến hệ thống."
+        },
+        {
+          "title": "3. Quy tắc cộng đồng",
+          "body": "Khi sử dụng diễn đàn, bình luận, báo cáo hoặc các khu vực cộng đồng, bạn đồng ý không:\n- Đăng nội dung spam, quấy rối, xúc phạm hoặc gây hại cho người khác.\n- Đăng nội dung sai lệch, lừa đảo hoặc gây hiểu nhầm.\n- Chia sẻ nội dung không phù hợp với môi trường cộng đồng của dự án.\n- Cố tình khai thác lỗi, phá hoại hệ thống hoặc làm gián đoạn dịch vụ.\n- Mạo danh người khác hoặc sử dụng tài khoản cho mục đích xấu."
+        },
+        {
+          "title": "4. Nội dung do người dùng tạo",
+          "body": "Bạn chịu trách nhiệm với nội dung mình đăng. Nhóm quản trị có thể chỉnh sửa, ẩn, khóa hoặc xóa nội dung vi phạm quy định cộng đồng hoặc ảnh hưởng đến hoạt động của hệ thống."
+        },
+        {
+          "title": "5. Tải game và sử dụng bản build",
+          "body": "Các bản tải game được cung cấp để người dùng trải nghiệm Borrowed Shapes. Bạn không được phân phối lại, chỉnh sửa hoặc sử dụng bản build theo cách gây hiểu nhầm về nguồn gốc dự án nếu chưa được phép."
+        },
+        {
+          "title": "6. Gameplay, thành tích và bảng xếp hạng",
+          "body": "Dữ liệu gameplay, thành tích, lịch sử chơi và bảng xếp hạng có thể được ghi nhận để hiển thị trong hệ thống. Nếu phát hiện hành vi gian lận, khai thác lỗi hoặc can thiệp dữ liệu, nhóm quản trị có thể điều chỉnh, ẩn hoặc xóa kết quả liên quan."
+        },
+        {
+          "title": "7. Quyền quản trị",
+          "body": "Quản trị viên có quyền xử lý báo cáo, cảnh báo, khóa tài khoản, mở khóa tài khoản, xóa nội dung hoặc thực hiện các hành động cần thiết để bảo vệ cộng đồng và hệ thống."
+        },
+        {
+          "title": "8. Thay đổi dịch vụ",
+          "body": "Borrowed Shapes có thể thay đổi, cập nhật, tạm ngưng hoặc gỡ bỏ một số tính năng trong quá trình phát triển. Một số nội dung, bản build hoặc dữ liệu thử nghiệm có thể thay đổi theo từng phiên bản."
+        },
+        {
+          "title": "9. Giới hạn trách nhiệm",
+          "body": "Dự án được phát triển cho mục đích học tập, trải nghiệm và giới thiệu sản phẩm. Chúng tôi cố gắng duy trì hệ thống ổn định, nhưng không đảm bảo rằng dịch vụ sẽ luôn không có lỗi, không bị gián đoạn hoặc phù hợp với mọi nhu cầu sử dụng."
+        },
+        {
+          "title": "10. Liên hệ",
+          "body": "Nếu bạn có câu hỏi về điều khoản dịch vụ, vui lòng liên hệ với nhóm Borrowed Shapes qua trang Liên hệ."
+        }
+      ]
+    }
   }
 }

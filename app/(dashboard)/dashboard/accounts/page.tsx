@@ -31,8 +31,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Search, ShieldAlert, ShieldCheck, Trash2, Edit, FileText, ArrowLeft, RefreshCw, AlertCircle } from "lucide-react";
+import { Search, ShieldAlert, ShieldCheck, Trash2, Edit, FileText, ArrowLeft, RefreshCw, AlertCircle, Eye } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "react-toastify";
 
 // CKEditor imports
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -133,6 +134,21 @@ interface UserItem {
   };
 }
 
+interface UserSessionItem {
+  id: string;
+  userId: string;
+  sessionId: string;
+  platform: string;
+  loginTime: string | Date;
+  logoutTime: string | Date | null;
+  deviceInfo: string | null;
+  ipAddress: string | null;
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'LOGGED_OUT' | string;
+  isActive: boolean;
+  isCurrent?: boolean;
+  lastActive?: string | null;
+}
+
 interface AuditLogItem {
   id: string;
   userId: string | null;
@@ -192,6 +208,14 @@ export default function AccountManagementPage() {
   const [banReasonError, setBanReasonError] = useState("");
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [sessions, setSessions] = useState<UserSessionItem[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [revokeModalOpen, setRevokeModalOpen] = useState(false);
+  const [sessionToRevoke, setSessionToRevoke] = useState<UserSessionItem | null>(null);
+  const [revokeLoading, setRevokeLoading] = useState(false);
+  const [sessionsChecked, setSessionsChecked] = useState(false);
+  const [presenceMap, setPresenceMap] = useState<Map<string, any>>(new Map());
+  const [presenceLoading, setPresenceLoading] = useState(false);
 
   useEffect(() => {
     const profile = getUserProfile();
@@ -222,15 +246,81 @@ export default function AccountManagementPage() {
     }
   }, [page, searchTrigger, roleFilter, statusFilter]);
 
+  const fetchPresenceData = useCallback(async () => {
+    setPresenceLoading(true);
+    try {
+      const res = await api.get('/presence');
+      const data = res.data || res || [];
+      const map = new Map();
+      if (Array.isArray(data)) {
+        data.forEach((p: any) => {
+          map.set(p.userId, p);
+        });
+      }
+      setPresenceMap(map);
+    } catch (err) {
+      console.error("Failed to fetch presence data", err);
+    } finally {
+      setPresenceLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchUsers().then(() => fetchPresenceData());
+  }, [fetchUsers, fetchPresenceData]);
+
+  // Polling presence
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchPresenceData();
+    };
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchPresenceData();
+      }
+    }, 15000); // 15s heartbeat check
+
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchPresenceData]);
 
   // API Call: Fetch details
+  const fetchUserSessions = async (id: string) => {
+    setSessionsLoading(true);
+    setSessionsChecked(false);
+    console.log("[RevokeSession] fetching sessions", id);
+    try {
+      const res = await api.get(`/sessions/admin/users/${id}`);
+      const data = res.data || res || [];
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error("[RevokeSession] failed to fetch sessions", err);
+      setSessions([]);
+    } finally {
+      setSessionsLoading(false);
+      setSessionsChecked(true);
+    }
+  };
+
+  useEffect(() => {
+    if (viewingDetail && selectedUser?.id) {
+      console.log("[RevokeSession] mounted/render", { userId: selectedUser.id, user: selectedUser });
+      fetchUserSessions(selectedUser.id);
+    } else {
+      setSessions([]);
+      setSessionsChecked(false);
+    }
+  }, [viewingDetail, selectedUser?.id]);
+
   const fetchUserDetails = async (id: string) => {
     try {
       const res = await api.get(`/account/admin/users/${id}`);
       setSelectedUser(res.data || res);
+      fetchUserSessions(id);
     } catch (err: any) {
       console.error(err);
     }
@@ -363,6 +453,21 @@ export default function AccountManagementPage() {
     }
   };
 
+  const submitRevokeSession = async () => {
+    if (!sessionToRevoke) return;
+    setRevokeLoading(true);
+    try {
+      await api.delete(`/sessions/${sessionToRevoke.id}`);
+      toast.success(t("admin.accounts.detail.sessions.revokeSuccess") || "Session revoked successfully.");
+      setRevokeModalOpen(false);
+      if (selectedUser) fetchUserSessions(selectedUser.id);
+    } catch (err: any) {
+      toast.error(t("admin.accounts.detail.sessions.revokeFailed") || "Failed to revoke session.");
+    } finally {
+      setRevokeLoading(false);
+    }
+  };
+
   const openAuditLogs = async () => {
     setAuditModalOpen(true);
     setAuditLoading(true);
@@ -383,22 +488,45 @@ export default function AccountManagementPage() {
     return <Badge variant="default" className="bg-green-600 hover:bg-green-700">{t("admin.account.filters.active") || "Active"}</Badge>;
   };
 
+  const getPresencePlatformLabel = (status: any) => {
+    const hasWeb = status.onlinePlatforms?.includes('web');
+    const hasGame = status.onlinePlatforms?.includes('game');
+    if (hasWeb && hasGame) return t("admin.accounts.onlineStatus.webAndGame") || "Web + Game";
+    if (hasWeb) return t("admin.accounts.onlineStatus.web") || "Web";
+    if (hasGame) return t("admin.accounts.onlineStatus.game") || "Game";
+    return "";
+  };
+
   const renderOnlineStatus = (u: UserItem) => {
-    if (!u.onlineStatus) return <Badge variant="outline" className="text-muted-foreground">{t("admin.accounts.online.unknown") || "Unknown"}</Badge>;
-    if (!u.onlineStatus.isOnline) return <Badge variant="outline" className="text-muted-foreground">{t("admin.accounts.online.offline") || "Offline"}</Badge>;
+    if (presenceLoading && presenceMap.size === 0) {
+      return (
+        <Badge variant="outline" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-muted-foreground bg-transparent border-muted-foreground/30">
+          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+          <span>{t("admin.accounts.onlineStatus.checking") || "Checking..."}</span>
+        </Badge>
+      );
+    }
+    const status = presenceMap.get(u.id);
+    const isOnline = status?.isOnline === true || (Array.isArray(status?.onlinePlatforms) && status.onlinePlatforms.length > 0);
+
+    if (!isOnline) {
+      return (
+        <Badge variant="outline" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-muted-foreground bg-transparent border-muted-foreground/30">
+          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+          <span>{t("admin.accounts.onlineStatus.offline") || "Offline"}</span>
+        </Badge>
+      );
+    }
     
+    const platformLabel = getPresencePlatformLabel(status);
+    const label = t("admin.accounts.onlineStatus.online") || "Online";
+    const fullLabel = platformLabel ? `${label} · ${platformLabel}` : label;
+
     return (
-      <div className="flex flex-col gap-1 sm:flex-row">
-        {u.onlineStatus.isWebOnline && (
-          <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 border-none">{t("admin.accounts.online.webOnline") || "Web Online"}</Badge>
-        )}
-        {u.onlineStatus.isGameOnline && (
-          <Badge variant="default" className="bg-blue-500 hover:bg-blue-600 border-none">{t("admin.accounts.online.gameOnline") || "Game Online"}</Badge>
-        )}
-        {!u.onlineStatus.isWebOnline && !u.onlineStatus.isGameOnline && (
-          <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 border-none">Online</Badge>
-        )}
-      </div>
+      <Badge variant="outline" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-emerald-500 border-emerald-500/30 bg-emerald-500/10">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+        <span>{fullLabel}</span>
+      </Badge>
     );
   };
 
@@ -409,6 +537,10 @@ export default function AccountManagementPage() {
 
   if (viewingDetail && selectedUser) {
     const isSelf = currentUser?.userId === selectedUser.id;
+    const activeSessions = sessions.filter(s => s.status === 'ACTIVE' || s.isActive);
+    const hasActiveSession = activeSessions.length > 0;
+    const mostRecentSession = hasActiveSession ? [...activeSessions].sort((a, b) => new Date(b.loginTime).getTime() - new Date(a.loginTime).getTime())[0] : null;
+
     return (
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         <div>
@@ -452,9 +584,9 @@ export default function AccountManagementPage() {
                   <span className="text-muted-foreground">{t("admin.accounts.online.title") || "Online Status"}:</span>
                   <div className="flex flex-col items-end gap-1">
                     {renderOnlineStatus(selectedUser)}
-                    {selectedUser.onlineStatus?.lastOnline && !selectedUser.onlineStatus?.isOnline && (
+                    {(!presenceMap.has(selectedUser.id)) && selectedUser.onlineStatus?.lastOnline && (
                       <span className="text-xs text-muted-foreground">
-                        {t("admin.accounts.online.lastOnline") || "Last online"}: {new Date(selectedUser.onlineStatus.lastOnline).toLocaleString()}
+                        {(t("admin.accounts.onlineStatus.lastOnline") || "Last: {time}").replace("{time}", new Date(selectedUser.onlineStatus.lastOnline).toLocaleString())}
                       </span>
                     )}
                   </div>
@@ -608,11 +740,63 @@ export default function AccountManagementPage() {
                       <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.actions.restore_account") || "Restore Account"}
                     </Button>
                   )}
+
+                  {!selectedUser.deletedAt && (
+                    <Button 
+                      variant="destructive" 
+                      className="w-full justify-start relative pr-32" 
+                      onClick={() => {
+                        setSessionToRevoke(mostRecentSession);
+                        setRevokeModalOpen(true);
+                      }}
+                      disabled={!hasActiveSession || !sessionsChecked || sessionsLoading}
+                    >
+                      <ShieldAlert className="mr-2 h-4 w-4"/> 
+                      {!sessionsChecked || sessionsLoading ? (
+                        t("admin.accounts.detail.sessions.checking") || "Checking session..."
+                      ) : !hasActiveSession ? (
+                        t("admin.accounts.detail.sessions.noActiveSession") || "No active session"
+                      ) : (
+                        <>
+                          <span className="truncate">{t("admin.accounts.detail.sessions.revoke") || "Revoke Session"}</span>
+                          <Badge variant="outline" className="absolute right-2 border-white/30 text-white bg-white/10 font-normal">
+                            {activeSessions.length === 1 
+                              ? (t("admin.accounts.detail.sessions.activeSession")?.replace("{count}", "1") || "1 active session") 
+                              : (t("admin.accounts.detail.sessions.activeSessions")?.replace("{count}", activeSessions.length.toString()) || `${activeSessions.length} active sessions`)
+                            }
+                          </Badge>
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
           </aside>
         </div>
+
+        {/* Revoke Session Modal */}
+        <Dialog open={revokeModalOpen} onOpenChange={setRevokeModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-red-500">{t("admin.accounts.detail.sessions.revokeDialogTitle") || "Revoke session?"}</DialogTitle>
+              <DialogDescription>
+                {activeSessions.length > 1
+                  ? (t("admin.accounts.detail.sessions.revokeMultipleDialogDescription") || "This user has {count} active sessions. This action will revoke the most recent active session.").replace("{count}", activeSessions.length.toString())
+                  : (t("admin.accounts.detail.sessions.revokeDialogDescription") || "This will log this user out of the selected active session.")
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setRevokeModalOpen(false)} disabled={revokeLoading}>
+                {t("admin.account.actions.cancel") || "Cancel"}
+              </Button>
+              <Button variant="destructive" onClick={submitRevokeSession} disabled={revokeLoading}>
+                {revokeLoading ? "..." : (t("admin.accounts.detail.sessions.revokeConfirm") || "Revoke session")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Modal */}
         <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
@@ -885,7 +1069,7 @@ export default function AccountManagementPage() {
                   <TableHead>{t("admin.account.columns.user") || "User"}</TableHead>
                   <TableHead>{t("admin.account.columns.role") || "Role"}</TableHead>
                   <TableHead>{t("admin.account.columns.status") || "Status"}</TableHead>
-                  <TableHead>{t("admin.accounts.online.title") || "Online"}</TableHead>
+                  <TableHead>{t("admin.accounts.onlineStatus.column") || "Online Status"}</TableHead>
                   <TableHead>{t("admin.account.columns.created_at") || "Created At"}</TableHead>
                   <TableHead className="text-right">{t("admin.account.columns.actions") || "Actions"}</TableHead>
                 </TableRow>
@@ -914,8 +1098,8 @@ export default function AccountManagementPage() {
                       <TableCell>{renderOnlineStatus(u)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelectedUser(u); setViewingDetail(true); }}>
-                          {t("admin.account.actions.view_profile") || "Details"}
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedUser(u); setViewingDetail(true); }}>
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -924,20 +1108,34 @@ export default function AccountManagementPage() {
               </TableBody>
             </Table>
           </div>
-          
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
-            </span>
-            <div className="space-x-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                Next
-              </Button>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between p-4 border-t mt-4">
+              <span className="text-sm text-muted-foreground">
+                {t("admin.account.total") || "Total accounts"}: {total}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1 || loading}
+                >
+                  {t("admin.account.pagination.previous") || "Previous"}
+                </Button>
+                <span className="text-sm font-medium px-2">
+                  {t("admin.account.pagination.pageInfo", { page, totalPages }) || `Page ${page} of ${totalPages}`}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages || loading}
+                >
+                  {t("admin.account.pagination.next") || "Next"}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

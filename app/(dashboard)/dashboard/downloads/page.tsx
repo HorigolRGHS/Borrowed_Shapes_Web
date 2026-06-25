@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { Info, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,7 @@ interface VersionItem {
   isLatest: boolean;
   isActive: boolean;
   filePath?: string;
+  downloadCount?: number;
 }
 
 interface Pagination {
@@ -63,7 +64,10 @@ export default function DownloadManagementPage() {
   const [error, setError] = useState<string | null>(null);
   
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 5;
+
+  const [sortBy, setSortBy] = useState("uploadedAt");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const [selectedVersion, setSelectedVersion] = useState<VersionItem | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -76,7 +80,7 @@ export default function DownloadManagementPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/downloads/versions?page=${page}&limit=${limit}`);
+      const response = await api.get(`/downloads/versions?page=${page}&limit=${limit}&sortBy=${sortBy}&sort=${sortOrder}`);
       
       // Handle the case where api-client automatically unwraps or not
       let data;
@@ -100,7 +104,7 @@ export default function DownloadManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, t]);
+  }, [page, limit, sortBy, sortOrder, t]);
 
   useEffect(() => {
     fetchVersions();
@@ -109,6 +113,22 @@ export default function DownloadManagementPage() {
   const handleUploadSuccess = () => {
     setPage(1); // Reset to first page
     fetchVersions();
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      if (sortOrder === "desc") {
+        setSortOrder("asc");
+      } else {
+        // Reset to default list state on 3rd click
+        setSortBy("uploadedAt");
+        setSortOrder("desc");
+      }
+    } else {
+      setSortBy(field);
+      setSortOrder("desc");
+    }
+    setPage(1);
   };
 
   const openDetails = (version: VersionItem) => {
@@ -166,8 +186,19 @@ export default function DownloadManagementPage() {
                     <TableHead className="w-[120px]">{t("admin.download.versions.columns.version") || "Version"}</TableHead>
                     <TableHead>{t("admin.download.versions.columns.file_name") || "File Name"}</TableHead>
                     <TableHead>{t("admin.download.versions.columns.file_size") || "File Size"}</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('downloadCount')}>
+                      <div className="flex items-center gap-1 hover:text-foreground transition-colors">
+                        {t("admin.download.versions.columns.downloads") || "Downloads"}
+                        {sortBy === 'downloadCount' ? (sortOrder === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />) : <ArrowUpDown className="h-4 w-4 text-muted-foreground/50" />}
+                      </div>
+                    </TableHead>
                     <TableHead>{t("admin.download.versions.columns.mime_type") || "MIME Type"}</TableHead>
-                    <TableHead>{t("admin.download.versions.columns.uploaded_at") || "Uploaded At"}</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('uploadedAt')}>
+                      <div className="flex items-center gap-1 hover:text-foreground transition-colors">
+                        {t("admin.download.versions.columns.uploaded_at") || "Uploaded At"}
+                        {sortBy === 'uploadedAt' ? (sortOrder === 'desc' ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />) : <ArrowUpDown className="h-4 w-4 text-muted-foreground/50" />}
+                      </div>
+                    </TableHead>
                     <TableHead>{t("admin.download.versions.columns.status") || "Status"}</TableHead>
                     <TableHead className="text-right">{t("admin.download.versions.columns.actions") || "Actions"}</TableHead>
                   </TableRow>
@@ -175,13 +206,13 @@ export default function DownloadManagementPage() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
+                      <TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
                         {t("admin.download.versions.loading") || "Loading versions..."}
                       </TableCell>
                     </TableRow>
                   ) : versions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
+                      <TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
                         {t("admin.download.versions.empty") || "No game versions uploaded yet."}
                       </TableCell>
                     </TableRow>
@@ -194,6 +225,7 @@ export default function DownloadManagementPage() {
                         <TableCell className="font-medium">{version.fileVersion}</TableCell>
                         <TableCell>{version.fileName}</TableCell>
                         <TableCell>{formatBytes(version.fileSize)}</TableCell>
+                        <TableCell>{Intl.NumberFormat('en-US').format(version.downloadCount || 0)}</TableCell>
                         <TableCell className="text-muted-foreground text-xs">{version.mimeType}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {new Date(version.uploadedAt).toLocaleDateString()}
@@ -234,9 +266,8 @@ export default function DownloadManagementPage() {
                               {t("admin.download.active.set_active") || "Set Active"}
                             </Button>
                           )}
-                          <Button variant="ghost" size="sm" onClick={() => openDetails(version)} className="gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openDetails(version)}>
                             <Info className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t("admin.download.versions.actions.details") || "Details"}</span>
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -247,7 +278,7 @@ export default function DownloadManagementPage() {
             </div>
             
             {/* Pagination UI */}
-            {pagination && pagination.totalPages > 1 && (
+            {pagination && pagination.total >= 6 && (
               <div className="flex items-center justify-between p-4 border-t">
                 <span className="text-sm text-muted-foreground">
                   {t("admin.download.versions.total") || "Total versions"}: {pagination.total}
@@ -262,7 +293,7 @@ export default function DownloadManagementPage() {
                     {t("admin.download.versions.actions.previous") || "Previous"}
                   </Button>
                   <span className="text-sm font-medium px-2">
-                    {page} / {pagination.totalPages}
+                    {t("admin.download.versions.pagination.pageInfo", { page, totalPages: pagination.totalPages }) || `Page ${page} of ${pagination.totalPages}`}
                   </span>
                   <Button
                     variant="outline"
@@ -313,6 +344,11 @@ export default function DownloadManagementPage() {
               <div className="grid grid-cols-3 gap-4 border-b pb-2 border-border/50">
                 <div className="col-span-1 text-sm font-medium text-muted-foreground">{t("admin.download.versions.details.file_size") || "File Size"}</div>
                 <div className="col-span-2 text-sm">{formatBytes(selectedVersion.fileSize)}</div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 border-b pb-2 border-border/50">
+                <div className="col-span-1 text-sm font-medium text-muted-foreground">{t("admin.download.versions.details.total_downloads") || "Total downloads"}</div>
+                <div className="col-span-2 text-sm">{Intl.NumberFormat('en-US').format(selectedVersion.downloadCount || 0)}</div>
               </div>
               
               <div className="grid grid-cols-3 gap-4 border-b pb-2 border-border/50">

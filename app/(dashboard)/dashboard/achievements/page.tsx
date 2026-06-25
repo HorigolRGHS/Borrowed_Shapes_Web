@@ -810,7 +810,7 @@ export default function AchievementsPage() {
           }
         }}
       >
-        <DialogContent className="max-w-2xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
+        <DialogContent className="max-w-3xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
           <DialogHeader>
             <DialogTitle>

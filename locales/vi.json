@@ -1070,5 +1070,33 @@
       "sort_alpha_asc": "Tên (A - Z)",
       "sort_alpha_desc": "Tên (Z - A)"
     }
+  },
+  "leaderboard": {
+    "page_title": "Bảng Xếp Hạng",
+    "tab_all_time": "Toàn bộ",
+    "tab_seasonal": "Theo Mùa Giải",
+    "season_label": "Mùa giải",
+    "hero_subtitle": "XẾP HẠNG",
+    "hero_title_highlight": "Bảng",
+    "hero_title_rest": "Xếp Hạng",
+    "stats_total_runs": "Lượt Chơi Hoàn Thành",
+    "top_3": "TOP 3",
+    "full_rankings": "Bảng Xếp Hạng Chi Tiết",
+    "col_rank": "#",
+    "col_lobby_name": "Đội / Phòng",
+    "col_players": "Người chơi",
+    "col_time": "Thời gian",
+    "col_date": "Ngày",
+    "your_ranking": "Hạng Của Bạn",
+    "global_rank": "Hạng Toàn Cầu",
+    "no_entries": "Chưa có lượt chơi nào trong bảng xếp hạng.",
+    "loading": "Đang tải bảng xếp hạng...",
+    "modal_rank": "Hạng",
+    "modal_completion_time": "Thời Gian Hoàn Thành",
+    "modal_completed_date": "Ngày Hoàn Thành",
+    "modal_players": "Người Chơi",
+    "modal_close": "Đóng",
+    "ranked": "Xếp hạng",
+    "unranked": "Chưa xếp hạng"
   }
 }

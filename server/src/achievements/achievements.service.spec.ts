@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { AchievementService } from './achievements.service';
+import { AchievementService, getEffectiveExpiresAt } from './achievements.service';
 import { Achievement, AchievementType } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { GameProfile } from '../entities/GameProfile';
@@ -157,6 +157,44 @@ describe('AchievementService', () => {
 
       expect(deleteSpy).not.toHaveBeenCalled();
       expect(em.removeAndFlush).toHaveBeenCalledWith(achievement);
+    });
+  });
+
+  describe('getEffectiveExpiresAt', () => {
+    it('should_return_original_expiresAt_when_type_is_not_SEASONAL (Normal)', () => {
+      const originalExpiresAt = new Date('2026-12-31T23:59:59.000Z');
+      const result = getEffectiveExpiresAt('PERMANENT', null, originalExpiresAt);
+      expect(result).toEqual(originalExpiresAt);
+    });
+
+    it('should_return_end_of_following_month_for_SEASONAL_achievement (Normal)', () => {
+      // April 2026 -> expiry should be end of May 2026 (May 31st)
+      const seasonMonth = '2026-04-01';
+      const result = getEffectiveExpiresAt('SEASONAL', seasonMonth, null);
+      expect(result?.getUTCFullYear()).toBe(2026);
+      expect(result?.getUTCMonth()).toBe(4); // May (0-indexed)
+      expect(result?.getUTCDate()).toBe(31);
+      expect(result?.getUTCHours()).toBe(23);
+      expect(result?.getUTCMinutes()).toBe(59);
+      expect(result?.getUTCSeconds()).toBe(59);
+    });
+
+    it('should_fallback_to_expiresAt_and_add_one_month_if_seasonMonth_is_missing (Abnormal)', () => {
+      // Original expiresAt is end of April (2026-04-30 23:59:59)
+      const originalExpiresAt = new Date('2026-04-30T23:59:59.000Z');
+      const result = getEffectiveExpiresAt('SEASONAL', null, originalExpiresAt);
+      expect(result?.getUTCFullYear()).toBe(2026);
+      expect(result?.getUTCMonth()).toBe(4); // May (0-indexed)
+      expect(result?.getUTCDate()).toBe(31);
+    });
+
+    it('should_correctly_wrap_year_when_seasonMonth_is_December (Boundary)', () => {
+      // December 2026 -> expiry should be end of January 2027 (January 31st)
+      const seasonMonth = '2026-12-01';
+      const result = getEffectiveExpiresAt('SEASONAL', seasonMonth, null);
+      expect(result?.getUTCFullYear()).toBe(2027);
+      expect(result?.getUTCMonth()).toBe(0); // January (0-indexed)
+      expect(result?.getUTCDate()).toBe(31);
     });
   });
 });

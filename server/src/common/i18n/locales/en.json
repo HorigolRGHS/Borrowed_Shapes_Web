@@ -154,7 +154,7 @@
     "related_success": "Related pages resolved",
     "too_many_related_slugs": "At most 30 related slugs may be requested at once"
   },
-  "forum": {
+  "forums": {
     "list_success": "Forums retrieved successfully",
     "detail_success": "Thread details retrieved successfully",
     "create_success": "Thread created successfully",
@@ -165,6 +165,7 @@
     "category_not_found": "Category not found",
     "category_required": "Category is required",
     "category_invalid_uuid": "Category must be a valid UUID",
+    "category_official_admin_only": "Only admins can post in official categories",
     "title_required": "Title is required",
     "title_must_be_string": "Title must be a string",
     "title_length_invalid": "Title must be between 3 and 200 characters",

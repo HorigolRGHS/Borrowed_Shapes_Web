@@ -154,7 +154,7 @@
     "related_success": "Đã phân giải các slug liên quan",
     "too_many_related_slugs": "Mỗi lần chỉ có thể yêu cầu tối đa 30 slug liên quan"
   },
-  "forum": {
+  "forums": {
     "list_success": "Lấy danh sách forums thành công",
     "detail_success": "Lấy chi tiết bài viết thành công",
     "create_success": "Tạo bài viết thành công",
@@ -165,6 +165,7 @@
     "category_not_found": "Danh mục không tồn tại",
     "category_required": "Danh mục là bắt buộc",
     "category_invalid_uuid": "Danh mục phải là một UUID hợp lệ",
+    "category_official_admin_only": "Chỉ quản trị viên mới có thể đăng trong danh mục chính thức",
     "title_required": "Tiêu đề là bắt buộc",
     "title_must_be_string": "Tiêu đề phải là một chuỗi",
     "title_length_invalid": "Tiêu đề phải có từ 3 đến 200 ký tự",

@@ -126,6 +126,7 @@
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",
+    "stats_success": "Lấy thống kê wiki thành công",
     "search_success": "Tìm kiếm hoàn tất",
     "detail_success": "Lấy chi tiết wiki thành công",
     "history_success": "Lấy lịch sử thành công",

@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { CalendarDays, UserRound } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
+import { cn } from "@/lib/utils";
 import type { WikiListItem } from "@/models/dtos/wiki.dto";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,23 +12,60 @@ interface Props {
   item: WikiListItem;
   showDraftBadge?: boolean;
   href?: string;
+  variant?: "default" | "public";
 }
 
-export function WikiCard({ item, showDraftBadge = false, href }: Props) {
+export function WikiCard({ item, showDraftBadge = false, href, variant = "default" }: Props) {
   const { t, locale } = useI18n();
-  const title = locale === "vi" ? item.titleVi : item.title;
-  const slug = (locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi));
-  const summary =
+  const defaultSlug = locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi);
+  const defaultSummary =
     locale === "vi"
       ? item.latestRevision?.summaryVi
       : item.latestRevision?.summary;
-  const linkHref = href ?? `/wiki/${encodeURIComponent(slug)}`;
+  const publicSlug = item.slug;
+  const publicSummary = item.latestRevision?.summary;
+  const linkHref = href ?? `/wiki/${encodeURIComponent(variant === "public" ? publicSlug : defaultSlug)}`;
+
+  if (variant === "default") {
+    return (
+      <Link href={linkHref} className="block group">
+        <Card className="h-full transition hover:border-primary/40 hover:shadow-sm">
+          <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+            <h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary">
+              {item.title}
+            </h3>
+            {showDraftBadge && !item.isPublished && (
+              <Badge variant="secondary" className="shrink-0">
+                {t("wiki.draft_badge")}
+              </Badge>
+            )}
+          </CardHeader>
+          {defaultSummary && (
+            <CardContent>
+              <p className="text-sm text-muted-foreground line-clamp-3">{defaultSummary}</p>
+            </CardContent>
+          )}
+          <CardFooter className="text-xs text-muted-foreground">
+            {item.latestRevision?.author?.displayName && (
+              <span>{item.latestRevision.author.displayName} · </span>
+            )}
+            <span>{new Date(item.updatedAt).toLocaleDateString(locale)}</span>
+          </CardFooter>
+        </Card>
+      </Link>
+    );
+  }
 
   return (
-    <Link href={linkHref} className="block group">
-      <Card className="h-full transition hover:border-primary/40 hover:shadow-sm">
-        <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
-          <h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary">
+    <Link href={linkHref} className="block h-full group">
+      <Card
+        className={cn(
+          "h-full overflow-hidden rounded-xl border border-[#252541] bg-[#11111d] text-slate-100 shadow-none transition duration-200",
+          "hover:border-amber-500/80 hover:shadow-[0_0_30px_rgba(245,158,11,0.16)]",
+        )}
+      >
+        <CardHeader className="flex min-h-[58px] flex-row items-start justify-between gap-2 border-b border-[#252541] px-5 py-4">
+          <h3 className="font-serif text-lg font-bold leading-snug text-white line-clamp-2 group-hover:text-amber-400">
             {item.title}
           </h3>
           {showDraftBadge && !item.isPublished && (
@@ -35,16 +74,22 @@ export function WikiCard({ item, showDraftBadge = false, href }: Props) {
             </Badge>
           )}
         </CardHeader>
-        {summary && (
-          <CardContent>
-            <p className="text-sm text-muted-foreground line-clamp-3">{summary}</p>
+        {publicSummary && (
+          <CardContent className="min-h-[96px] border-b border-[#252541] px-5 py-5">
+            <p className="text-sm leading-6 text-sky-200/80 line-clamp-3">{publicSummary}</p>
           </CardContent>
         )}
-        <CardFooter className="text-xs text-muted-foreground">
+        <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-slate-500">
           {item.latestRevision?.author?.displayName && (
-            <span>{item.latestRevision.author.displayName} · </span>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <UserRound className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{item.latestRevision.author.displayName}</span>
+            </span>
           )}
-          <span>{new Date(item.updatedAt).toLocaleDateString(locale)}</span>
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {new Date(item.updatedAt).toLocaleDateString(locale)}
+          </span>
         </CardFooter>
       </Card>
     </Link>

@@ -107,12 +107,25 @@
   "wiki": {
     "list_title": "Wiki",
     "list_subtitle": "Browse the knowledge base",
+    "hero_kicker": "KNOWLEDGE BASE",
+    "public_search_placeholder": "Search wiki articles...",
+    "load_failed": "Failed to load wiki list",
     "admin_title": "Wiki management",
+    "admin_search_placeholder": "Search by title or slug...",
+    "sort_by_updated": "Sort by Updated",
     "filter_all": "All",
     "col_title": "Title",
     "col_status": "Status",
     "col_updated": "Updated",
     "col_actions": "Actions",
+    "col_category": "Category",
+    "col_revisions": "Revisions",
+    "stats": {
+      "total_pages": "Total Pages",
+      "published": "Published",
+      "drafts": "Drafts",
+      "total_revisions": "Total Revisions"
+    },
     "col_date": "Date",
     "col_author": "Author",
     "col_summary": "Summary",
@@ -128,6 +141,7 @@
     "edit_button": "Edit",
     "delete_button": "Delete",
     "history_button": "History",
+    "view_history": "View history →",
     "rollback_button": "Rollback to this",
     "view_button": "View",
     "publish_button": "Publish",
@@ -153,6 +167,12 @@
     "edited_by": "Edited by {name} on {date}",
     "last_updated": "Updated {date}",
     "no_history": "No history",
+    "history_heading": "History — {title}",
+    "revisions_count": "{count} revisions",
+    "revision_at": "Revision @ {date}",
+    "by_author": "By {name}",
+    "diff_vs_previous": "Diff vs previous",
+    "cancel_button": "Cancel",
     "no_previous_revision": "This is the first revision",
     "diff_unchanged_collapsed": "{count} unchanged lines",
     "toc_title": "On this page",
@@ -709,6 +729,11 @@
       "download": "Download",
       "create_account": "Create Account"
     },
+    "knowledge_base_section": {
+      "label": "WIKI",
+      "title": "Knowledge Base",
+      "browse_full_wiki": "Browse Full Wiki"
+    },
     "announcements_section": {
       "label": "LATEST UPDATES",
       "title": "Announcements",
@@ -1045,7 +1070,8 @@
       "sort_oldest": "Oldest",
       "sort_recently_updated": "Recently Updated",
       "sort_highest_score": "Highest Score"
-    },
+    }
+  },
   "leaderboard": {
     "page_title": "Leaderboard",
     "tab_all_time": "All-Time",

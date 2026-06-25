@@ -6,6 +6,7 @@ import {
   WIKI_LIST_MAX_LIMIT,
   WIKI_SEARCH_MAX_LENGTH,
 } from './wiki-constants';
+import { WikiMetadataDto } from './wiki-metadata.dto';
 
 export class WikiListQueryDto {
   @ApiPropertyOptional({ minimum: 1, default: 1 })
@@ -81,6 +82,9 @@ export class WikiListItemDto {
   @ApiProperty()
   titleVi!: string;
 
+  @ApiProperty({ type: WikiMetadataDto, nullable: true })
+  metadataJson!: WikiMetadataDto | null;
+
   @ApiProperty()
   isPublished!: boolean;
 
@@ -89,6 +93,9 @@ export class WikiListItemDto {
 
   @ApiProperty({ nullable: true, type: WikiListItemRevisionDto })
   latestRevision!: WikiListItemRevisionDto | null;
+
+  @ApiProperty({ required: false })
+  revisionCount?: number;
 }
 
 export class WikiListResponseDto {

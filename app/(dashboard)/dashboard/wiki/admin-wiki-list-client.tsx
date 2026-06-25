@@ -1,17 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, History, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Eye,
+  FileText,
+  History,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
-import { fetchAdminWikiList, deleteWiki } from "@/lib/wiki/api";
-import type { WikiListResponse, WikiListItem } from "@/models/dtos/wiki.dto";
+import { fetchAdminWikiList, fetchAdminWikiStats, deleteWiki } from "@/lib/wiki/api";
+import type { WikiListResponse, WikiListItem, WikiAdminStats } from "@/models/dtos/wiki.dto";
+import type { WikiCategory } from "@/models/dtos/wiki-metadata.dto";
+import { categoryLabelKey } from "@/lib/wiki/category-label";
 import { WikiPagination } from "@/components/wiki/wiki-pagination";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -42,7 +55,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 type FilterMode = "all" | "published" | "draft";
 
@@ -54,8 +66,11 @@ export function AdminWikiListClient() {
   const filter: FilterMode = (sp.get("filter") as FilterMode) ?? "all";
 
   const [data, setData] = useState<WikiListResponse | null>(null);
+  const [stats, setStats] = useState<WikiAdminStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<"All" | WikiCategory>("All");
   const [pendingDelete, setPendingDelete] = useState<WikiListItem | null>(null);
   const [confirmInput, setConfirmInput] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -65,19 +80,22 @@ export function AdminWikiListClient() {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchAdminWikiList({ page, limit: 20 });
-      let items = result.items;
-      if (filter === "published") items = items.filter((i) => i.isPublished);
-      if (filter === "draft") items = items.filter((i) => !i.isPublished);
-      setData({ ...result, items });
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? "Load failed");
+      const [result, statsResult] = await Promise.all([
+        fetchAdminWikiList({ page, limit: 50 }),
+        fetchAdminWikiStats(),
+      ]);
+      setData(result);
+      setStats(statsResult);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      setError(err?.response?.data?.message ?? "Load failed");
     } finally {
       setLoading(false);
     }
-  }, [page, filter]);
+  }, [page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 
@@ -86,6 +104,44 @@ export function AdminWikiListClient() {
     if (next !== "all") params.set("filter", next);
     router.push(`/dashboard/wiki${params.toString() ? "?" + params : ""}`);
   };
+
+  const categories = useMemo(() => {
+    if (!data) return [];
+    const seen = new Set<string>();
+    const cats: WikiCategory[] = [];
+    for (const item of data.items) {
+      const cat = item.metadataJson?.category;
+      if (cat && !seen.has(cat)) {
+        seen.add(cat);
+        cats.push(cat);
+      }
+    }
+    return cats;
+  }, [data]);
+
+  const filteredItems = useMemo(() => {
+    if (!data) return [];
+    let items = data.items;
+
+    if (filter === "published") items = items.filter((i) => i.isPublished);
+    if (filter === "draft") items = items.filter((i) => !i.isPublished);
+
+    if (categoryFilter !== "All") {
+      items = items.filter((i) => i.metadataJson?.category === categoryFilter);
+    }
+
+    if (searchText.trim()) {
+      const q = searchText.trim().toLowerCase();
+      items = items.filter(
+        (i) =>
+          i.title.toLowerCase().includes(q) ||
+          i.titleVi.toLowerCase().includes(q) ||
+          i.slug.toLowerCase().includes(q),
+      );
+    }
+
+    return items;
+  }, [data, filter, categoryFilter, searchText]);
 
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
@@ -108,8 +164,9 @@ export function AdminWikiListClient() {
       setPendingDelete(null);
       setConfirmInput("");
       setDeleteError(null);
-    } catch (e: any) {
-      setDeleteError(e?.response?.data?.message ?? "Delete failed");
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      setDeleteError(err?.response?.data?.message ?? "Delete failed");
     } finally {
       setDeleting(false);
     }
@@ -117,6 +174,7 @@ export function AdminWikiListClient() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      {/* Header */}
       <header className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("wiki.admin_title")}</h1>
@@ -132,18 +190,101 @@ export function AdminWikiListClient() {
         </Button>
       </header>
 
-      <div className="mb-4 flex gap-2 items-center">
-        <Select value={filter} onValueChange={(v) => handleFilter(v as FilterMode)}>
-          <SelectTrigger className="w-[180px]">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {stats ? (
+          <>
+            <StatCard label={t("wiki.stats.total_pages")} value={stats.totalPages} />
+            <StatCard label={t("wiki.stats.published")} value={stats.published} />
+            <StatCard label={t("wiki.stats.drafts")} value={stats.drafts} />
+            <StatCard label={t("wiki.stats.total_revisions")} value={stats.totalRevisions} />
+          </>
+        ) : (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-lg border bg-card p-4">
+              <Skeleton className="h-4 w-20 mb-2" />
+              <Skeleton className="h-8 w-12" />
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder={t("wiki.admin_search_placeholder")}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      {/* Filters row */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        {/* Segmented status filter */}
+        <div className="inline-flex rounded-md border bg-muted p-0.5">
+          {(["all", "published", "draft"] as FilterMode[]).map((mode) => {
+            const label =
+              mode === "all"
+                ? t("wiki.filter_all")
+                : mode === "published"
+                  ? t("wiki.published_badge")
+                  : t("wiki.draft_badge");
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => handleFilter(mode)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-sm transition-colors",
+                  filter === mode
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sort (cosmetic) */}
+        <Select defaultValue="updated">
+          <SelectTrigger className="w-[180px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("wiki.filter_all")}</SelectItem>
-            <SelectItem value="published">{t("wiki.published_badge")}</SelectItem>
-            <SelectItem value="draft">{t("wiki.draft_badge")}</SelectItem>
+            <SelectItem value="updated">{t("wiki.sort_by_updated")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
+
+      {/* Category pills */}
+      {categories.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {(["All" as const, ...categories]).map((cat) => {
+            const selected = categoryFilter === cat;
+            const label = cat === "All" ? t("wiki.filter_all") : t(categoryLabelKey(cat));
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategoryFilter(cat)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  selected
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {error && (
         <Alert variant="destructive" className="mb-4">
@@ -151,13 +292,15 @@ export function AdminWikiListClient() {
         </Alert>
       )}
 
+      {/* Table */}
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>{t("wiki.col_title")}</TableHead>
+              <TableHead>{t("wiki.col_category")}</TableHead>
+              <TableHead>{t("wiki.col_revisions")}</TableHead>
               <TableHead>{t("wiki.col_status")}</TableHead>
-              <TableHead>{t("wiki.col_updated")}</TableHead>
               <TableHead className="w-[80px] text-right">{t("wiki.col_actions")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -165,24 +308,16 @@ export function AdminWikiListClient() {
             {loading &&
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={`s-${i}`}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-3/4 mb-2" />
-                    <Skeleton className="h-3 w-1/3" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-16" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Skeleton className="h-8 w-8 ml-auto" />
-                  </TableCell>
+                  <TableCell><Skeleton className="h-4 w-3/4 mb-2" /><Skeleton className="h-3 w-1/3" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                 </TableRow>
               ))}
-            {!loading && data && data.items.length === 0 && (
+            {!loading && filteredItems.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <p className="text-muted-foreground mb-4">
                     {t("wiki.empty_list")}
                   </p>
@@ -196,15 +331,27 @@ export function AdminWikiListClient() {
               </TableRow>
             )}
             {!loading &&
-              data?.items.map((item) => {
+              filteredItems.map((item) => {
                 const title = locale === "vi" ? item.titleVi : item.title;
+                const catLabel = item.metadataJson?.category
+                  ? t(categoryLabelKey(item.metadataJson.category))
+                  : "—";
                 return (
                   <TableRow key={item.id}>
                     <TableCell>
                       <div className="font-medium">{title}</div>
                       <div className="text-xs text-muted-foreground font-mono">
-                        {item.slug}
+                        /{item.slug}
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {catLabel}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                        <FileText className="h-3.5 w-3.5" />
+                        {item.revisionCount ?? 0}
+                      </span>
                     </TableCell>
                     <TableCell>
                       {item.isPublished ? (
@@ -212,9 +359,6 @@ export function AdminWikiListClient() {
                       ) : (
                         <Badge variant="secondary">{t("wiki.draft_badge")}</Badge>
                       )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">
-                      {new Date(item.updatedAt).toLocaleDateString(locale)}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -250,7 +394,7 @@ export function AdminWikiListClient() {
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link
-                              href={`/wiki/${encodeURIComponent((locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi)))}/history`}
+                              href={`/dashboard/wiki/${item.id}/history`}
                               className="gap-2"
                             >
                               <History className="h-4 w-4" />
@@ -288,6 +432,7 @@ export function AdminWikiListClient() {
         />
       )}
 
+      {/* Delete confirmation dialog */}
       <Dialog
         open={pendingDelete !== null}
         onOpenChange={(open) => {
@@ -347,5 +492,14 @@ export function AdminWikiListClient() {
         </DialogContent>
       </Dialog>
     </main>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      <p className="text-2xl font-bold mt-1">{value}</p>
+    </div>
   );
 }

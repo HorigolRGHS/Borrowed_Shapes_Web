@@ -18,7 +18,7 @@ import {
   WikiDiffChunkDto,
   WikiRevisionDiffResponseDto,
 } from '../dto/wiki-history.dto';
-import { RelatedPageDto } from '../dto/wiki-metadata.dto';
+import { RelatedPageDto, WikiMetadataDto } from '../dto/wiki-metadata.dto';
 import { diffLines } from 'diff';
 import { escapeLike } from '../../common/utils/sql-like';
 import type { Locale } from '../../common/utils/resolve-locale';
@@ -27,6 +27,7 @@ import {
   WikiPublicListResponseDto,
   WikiPublicDetailDto,
 } from '../dto/wiki-public.dto';
+import { WikiAdminStatsDto } from '../dto/wiki-admin-stats.dto';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -36,6 +37,14 @@ function clamp(n: number, min: number, max: number): number {
 @Injectable()
 export class WikiService {
   constructor(private em: EntityManager) {}
+
+  async getAdminStats(): Promise<WikiAdminStatsDto> {
+    const totalPages = await this.em.count(WikiPage, {});
+    const published = await this.em.count(WikiPage, { isPublished: true });
+    const drafts = totalPages - published;
+    const totalRevisions = await this.em.count(WikiRevision, {});
+    return { totalPages, published, drafts, totalRevisions };
+  }
 
   async list(
     query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
@@ -84,8 +93,20 @@ export class WikiService {
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
     if (includeAll) {
+      const pageIds = pages.map((p) => p.id);
+      const revCounts = new Map<string, number>();
+      if (pageIds.length > 0) {
+        const placeholders = pageIds.map(() => '?').join(', ');
+        const rows: { pageId: string; c: number }[] = await this.em.execute(
+          `SELECT "pageId", COUNT(*)::int AS c FROM web."WikiRevision" WHERE "pageId" IN (${placeholders}) GROUP BY "pageId"`,
+          pageIds,
+        );
+        for (const r of rows) {
+          revCounts.set(r.pageId, r.c);
+        }
+      }
       return {
-        items: pages.map((p) => this.toListItem(p)),
+        items: pages.map((p) => ({ ...this.toListItem(p), revisionCount: revCounts.get(p.id) ?? 0 })),
         total,
         page,
         limit,
@@ -114,6 +135,7 @@ export class WikiService {
       slugVi: p.slugVi,
       title: p.title,
       titleVi: p.titleVi,
+      metadataJson: (p.metadataJson as WikiMetadataDto | undefined) ?? null,
       isPublished: p.isPublished,
       updatedAt: p.updatedAt,
       latestRevision: rev
@@ -134,6 +156,7 @@ export class WikiService {
       id: p.id,
       slug: locale === 'vi' ? p.slugVi : p.slug,
       title: locale === 'vi' ? p.titleVi : p.title,
+      metadataJson: (p.metadataJson as WikiMetadataDto | undefined) ?? null,
       isPublished: p.isPublished,
       updatedAt: p.updatedAt,
       latestRevision: rev

@@ -15,6 +15,49 @@ const MIME_EXT_MAP: Record<string, string> = {
   'image/webp': '.webp',
   'image/gif': '.gif',
 };
+/**
+ * Calculate the effective expiration date for an achievement.
+ *
+ * - PERMANENT achievements: return the original expiresAt (usually null).
+ * - SEASONAL achievements: extend equippable period to the end of the
+ *   month AFTER the season month.
+ *
+ * Example: seasonMonth = '2026-04-01' (April 2026)
+ *   → original expiresAt = end of April (2026-04-30 23:59:59)
+ *   → effective expiresAt = end of May  (2026-05-31 23:59:59)
+ *   → user can equip during the entire month of May
+ *   → once June starts and new season achievements are awarded, this expires
+ */
+export function getEffectiveExpiresAt(
+  type: string,
+  seasonMonth?: string | Date | null,
+  expiresAt?: Date | string | null,
+): Date | null {
+  if (type !== 'SEASONAL') {
+    return expiresAt ? new Date(expiresAt) : null;
+  }
+
+  if (seasonMonth) {
+    // seasonMonth is always stored as 'YYYY-MM-01' (first day of the season month)
+    const date = new Date(seasonMonth);
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth(); // 0-indexed
+
+    // month + 2 with day 0 = last day of (month + 1)
+    // e.g. month=3 (April) → new Date(Date.UTC(year, month + 2, 0, 23, 59, 59, 999)) = May 31 23:59:59.999Z
+    return new Date(Date.UTC(year, month + 2, 0, 23, 59, 59, 999));
+  }
+
+  // Fallback: if seasonMonth is missing, derive from expiresAt
+  // expiresAt is typically end of the season month, so add 1 month
+  if (!expiresAt) return null;
+  const date = new Date(expiresAt);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth(); // 0-indexed
+
+  // month + 2 with day 0 = last day of (month + 1)
+  return new Date(Date.UTC(year, month + 2, 0, 23, 59, 59, 999));
+}
 
 @Injectable()
 export class AchievementService {
@@ -44,7 +87,7 @@ export class AchievementService {
       badgeImageUrl: row.badgeImageUrl,
       type: row.type,
       seasonMonth: row.seasonMonth,
-      expiresAt: row.expiresAt,
+      expiresAt: row.expiresAt ? new Date(row.expiresAt) : null,
       earnedCount: Number(row.earnedCount || 0),
     }));
   }
@@ -124,7 +167,7 @@ export class AchievementService {
       badgeImageUrl: row.badgeImageUrl,
       type: row.type,
       seasonMonth: row.seasonMonth,
-      expiresAt: row.expiresAt,
+      expiresAt: row.expiresAt ? new Date(row.expiresAt) : null,
       earnedCount: Number(row.earnedCount || 0),
     }));
 
@@ -244,7 +287,7 @@ export class AchievementService {
       badgeImageUrl: row.badgeImageUrl,
       type: row.type,
       seasonMonth: row.seasonMonth,
-      expiresAt: row.expiresAt,
+      expiresAt: row.expiresAt ? new Date(row.expiresAt) : null,
       earnedCount: Number(row.earnedCount || 0),
     }));
   }
@@ -315,7 +358,7 @@ export class AchievementService {
     for (const row of rows || []) {
       const owned = !!row.achievedAt;
       const isPermanent = row.type === 'PERMANENT';
-      const expiresAt = row.expiresAt ? new Date(row.expiresAt) : null;
+      const expiresAt = getEffectiveExpiresAt(row.type, row.seasonMonth, row.expiresAt);
       const isExpired = expiresAt ? expiresAt < now : false;
       const equippable = owned && (!isExpired || isPermanent);
 
@@ -333,7 +376,7 @@ export class AchievementService {
         badgeImageUrl: row.badgeImageUrl,
         type: row.type,
         seasonMonth: row.seasonMonth,
-        expiresAt: row.expiresAt,
+        expiresAt: expiresAt,
         owned,
         achievedAt: row.achievedAt ?? null,
         equippable,
@@ -342,8 +385,10 @@ export class AchievementService {
       if (isPermanent) {
         permanent.push(item);
       } else {
-        // Seasonal: skip unowned expired
-        if (!owned && isExpired) continue;
+        // Seasonal: skip unowned achievements if their season (earning period) has ended
+        const originalExpires = row.expiresAt ? new Date(row.expiresAt) : null;
+        const isSeasonEnded = originalExpires ? originalExpires < now : false;
+        if (!owned && isSeasonEnded) continue;
 
         const seasonKey = row.seasonMonth
           ? String(row.seasonMonth).slice(0, 7)
@@ -352,7 +397,7 @@ export class AchievementService {
         if (!seasonMap.has(seasonKey)) {
           seasonMap.set(seasonKey, {
             seasonKey,
-            expiresAt: row.expiresAt ?? null,
+            expiresAt: expiresAt ? expiresAt.toISOString() : null,
             isActive: !isExpired,
             achievements: [],
           });

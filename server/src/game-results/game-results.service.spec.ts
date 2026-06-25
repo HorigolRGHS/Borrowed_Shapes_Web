@@ -318,7 +318,8 @@ describe('GameResultService', () => {
       jest
         .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([leaderboardRow]);
+        .mockResolvedValueOnce([leaderboardRow])
+        .mockResolvedValueOnce([mockPlayerRow]);
 
       const result = await service.getLeaderboard({ page: 1, limit: 10 });
 
@@ -327,6 +328,8 @@ describe('GameResultService', () => {
       expect(result.items[0].lobbyName).toBe('Prismatic Elite');
       expect(result.items[0].totalPlayers).toBe(4);
       expect(result.items[0].totalTimeSec).toBe(120);
+      expect(result.items[0].players).toHaveLength(1);
+      expect(result.items[0].players?.[0].displayName).toBe('Player1');
     });
 
     it('should_return_empty_leaderboard_when_no_completed_runs (Boundary)', async () => {
@@ -355,11 +358,88 @@ describe('GameResultService', () => {
       jest
         .spyOn(em, 'execute')
         .mockResolvedValueOnce([{ count: 11 }])
-        .mockResolvedValueOnce(rows);
+        .mockResolvedValueOnce(rows)
+        .mockResolvedValueOnce([mockPlayerRow]);
 
       const result = await service.getLeaderboard({ page: 2, limit: 10 });
 
       expect(result.items[0].rank).toBe(11);
+      expect(result.items[0].players).toHaveLength(1);
+    });
+
+    it('should_filter_seasonal_leaderboard_by_given_month (Normal)', async () => {
+      const executeSpy = jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([{ count: 1 }])
+        .mockResolvedValueOnce([{
+          runId: 'run-1',
+          lobbyName: 'Seasonal Lobby',
+          totalTimeSec: 150,
+          completedAt: new Date('2026-06-15T12:00:00Z'),
+          totalPlayers: 2,
+        }])
+        .mockResolvedValueOnce([mockPlayerRow]);
+
+      const result = await service.getLeaderboard({
+        scope: 'seasonal',
+        seasonMonth: '2026-06',
+        page: 1,
+        limit: 10,
+      });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].lobbyName).toBe('Seasonal Lobby');
+      
+      const countCall = executeSpy.mock.calls[0];
+      expect(countCall[0]).toContain('"completedAt" >=');
+      expect(countCall[0]).toContain('"completedAt" <');
+      expect(countCall[0]).toContain('"lobbyCode" IN (SELECT st.code');
+      
+      const startParam = countCall[1][0];
+      const endParam = countCall[1][1];
+      const seasonMonthParam = countCall[1][2];
+      expect(startParam.getUTCFullYear()).toBe(2026);
+      expect(startParam.getUTCMonth()).toBe(5); // 0-indexed (June is 5)
+      expect(startParam.getUTCDate()).toBe(1);
+      expect(endParam.getUTCFullYear()).toBe(2026);
+      expect(endParam.getUTCMonth()).toBe(6); // 0-indexed (July is 6)
+      expect(endParam.getUTCDate()).toBe(1);
+      expect(seasonMonthParam).toBe('2026-06-01');
+    });
+
+    it('should_default_to_current_month_when_seasonal_has_invalid_month_format (Abnormal)', async () => {
+      const executeSpy = jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([{ count: 0 }])
+        .mockResolvedValueOnce([]);
+
+      await service.getLeaderboard({
+        scope: 'seasonal',
+        seasonMonth: 'invalid-month',
+      });
+
+      const countCall = executeSpy.mock.calls[0];
+      expect(countCall[0]).toContain('"completedAt" >=');
+      
+      const startParam = countCall[1][0];
+      const now = new Date();
+      expect(startParam.getUTCFullYear()).toBe(now.getUTCFullYear());
+      expect(startParam.getUTCMonth()).toBe(now.getUTCMonth());
+    });
+
+    it('should_return_empty_seasonal_leaderboard_when_no_runs_in_month (Boundary)', async () => {
+      jest
+        .spyOn(em, 'execute')
+        .mockResolvedValueOnce([{ count: 0 }])
+        .mockResolvedValueOnce([]);
+
+      const result = await service.getLeaderboard({
+        scope: 'seasonal',
+        seasonMonth: '2026-02',
+      });
+
+      expect(result.items).toHaveLength(0);
+      expect(result.total).toBe(0);
     });
   });
 

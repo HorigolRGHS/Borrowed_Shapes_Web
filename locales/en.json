@@ -1045,6 +1045,33 @@
       "sort_oldest": "Oldest",
       "sort_recently_updated": "Recently Updated",
       "sort_highest_score": "Highest Score"
-    }
+    },
+  "leaderboard": {
+    "page_title": "Leaderboard",
+    "tab_all_time": "All-Time",
+    "tab_seasonal": "Seasonal",
+    "season_label": "Season",
+    "hero_subtitle": "RANKINGS",
+    "hero_title_highlight": "Leader",
+    "hero_title_rest": "board",
+    "stats_total_runs": "Completed Runs",
+    "top_3": "TOP 3",
+    "full_rankings": "Full Rankings",
+    "col_rank": "#",
+    "col_lobby_name": "Team / Lobby",
+    "col_players": "Players",
+    "col_time": "Time",
+    "col_date": "Date",
+    "your_ranking": "Your Ranking",
+    "global_rank": "Global Rank",
+    "no_entries": "No leaderboard entries yet.",
+    "loading": "Loading leaderboard...",
+    "modal_rank": "Rank",
+    "modal_completion_time": "Completion Time",
+    "modal_completed_date": "Completed Date",
+    "modal_players": "Players",
+    "modal_close": "Close",
+    "ranked": "Ranked",
+    "unranked": "Unranked"
   }
 }

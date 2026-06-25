@@ -76,6 +76,15 @@ interface GameResult {
   startedAt: string;
   completedAt?: string;
   players: GameResultPlayer[];
+  sessions?: {
+    id: string;
+    levelId: string;
+    levelName: string;
+    levelOrder: number;
+    status: string;
+    result?: string;
+    completionTimeSec?: number;
+  }[];
 }
 
 interface LeaderboardEntry {
@@ -100,7 +109,7 @@ function formatDate(dateStr?: string): string {
 }
 
 export default function GameResultsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<Tab>("runs");
@@ -119,6 +128,7 @@ export default function GameResultsPage() {
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardPage, setLeaderboardPage] = useState(1);
   const [leaderboardTotalPages, setLeaderboardTotalPages] = useState(1);
+  const [leaderboardScope, setLeaderboardScope] = useState<"all-time" | "seasonal">("all-time");
 
   useEffect(() => {
     const profile = getUserProfile();
@@ -132,20 +142,35 @@ export default function GameResultsPage() {
   useEffect(() => {
     if (!user) return;
     if (activeTab === "runs") {
-      fetchRuns();
+      fetchRuns(true);
     }
   }, [user, activeTab, runsPage, statusFilter, visibilityFilter]);
 
   useEffect(() => {
     if (!user) return;
     if (activeTab === "leaderboard") {
-      fetchLeaderboard();
+      fetchLeaderboard(true);
     }
-  }, [user, activeTab, leaderboardPage]);
+  }, [user, activeTab, leaderboardPage, leaderboardScope]);
 
-  const fetchRuns = async () => {
+  // Polling every 10 seconds in the background
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      if (activeTab === "runs") {
+        fetchRuns(false);
+      } else if (activeTab === "leaderboard") {
+        fetchLeaderboard(false);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user, activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope]);
+
+  const fetchRuns = async (showLoading = true) => {
     try {
-      setRunsLoading(true);
+      if (showLoading) setRunsLoading(true);
       const params: Record<string, any> = {
         page: runsPage,
         limit: ITEMS_PER_PAGE,
@@ -165,15 +190,19 @@ export default function GameResultsPage() {
     } catch (error) {
       console.error("Failed to fetch game results:", error);
     } finally {
-      setRunsLoading(false);
+      if (showLoading) setRunsLoading(false);
     }
   };
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (showLoading = true) => {
     try {
-      setLeaderboardLoading(true);
+      if (showLoading) setLeaderboardLoading(true);
       const response = await axios.get("/api/game-results/leaderboard", {
-        params: { page: leaderboardPage, limit: ITEMS_PER_PAGE },
+        params: {
+          page: leaderboardPage,
+          limit: ITEMS_PER_PAGE,
+          scope: leaderboardScope,
+        },
       });
 
       if (response.data?.success) {
@@ -184,7 +213,7 @@ export default function GameResultsPage() {
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
     } finally {
-      setLeaderboardLoading(false);
+      if (showLoading) setLeaderboardLoading(false);
     }
   };
 
@@ -394,7 +423,16 @@ export default function GameResultsPage() {
                                   </span>
                                   <span className="flex items-center gap-1.5 text-muted-foreground">
                                     <Globe className="h-3.5 w-3.5 text-emerald-400" />
-                                    {run.totalLevels} {t("gameResults.levels")}
+                                    {run.sessions && run.sessions.length > 0 ? (
+                                      <span>
+                                        {(() => {
+                                          const latest = run.sessions[run.sessions.length - 1];
+                                          return latest.levelOrder === 0 ? "Lobby" : `Level ${latest.levelOrder}`;
+                                        })()}
+                                      </span>
+                                    ) : (
+                                      <span>{run.totalLevels} {t("gameResults.levels")}</span>
+                                    )}
                                   </span>
                                   <span className="flex items-center gap-1.5">
                                     <Clock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -512,12 +550,42 @@ export default function GameResultsPage() {
           {activeTab === "leaderboard" && (
             <>
               <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-amber-400" />
                     <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
                       {t("gameResults.leaderboard_title")}
                     </h3>
+                  </div>
+
+                  {/* Leaderboard Scope Selector */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setLeaderboardScope("all-time");
+                        setLeaderboardPage(1);
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        leaderboardScope === "all-time"
+                          ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
+                          : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t("leaderboard.tab_all_time")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLeaderboardScope("seasonal");
+                        setLeaderboardPage(1);
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        leaderboardScope === "seasonal"
+                          ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
+                          : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t("leaderboard.tab_seasonal")} ({new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short", year: "numeric" })})
+                    </button>
                   </div>
                 </div>
 

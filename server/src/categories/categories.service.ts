@@ -3,23 +3,40 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { ForumCategory } from '../entities/ForumCategory';
 import { CreateCategoryDto } from './dto/create-categories.dto';
 import { UpdateCategoryDto } from './dto/update-categories.dto';
+import { ConfigService } from '@nestjs/config';
+import { R2StorageService } from '../storage/r2-storage.service';
+import { randomUUID } from 'crypto';
+import { CategoryImageUploadRequestDto, CategoryImageUploadResponseDto } from './dto/category-image-upload.dto';
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly em: EntityManager) { }
+  constructor(
+    private readonly em: EntityManager,
+    private readonly storageService: R2StorageService,
+    private readonly configService: ConfigService,
+  ) { }
 
   // List all categories, sorted by displayOrder
-  async findAll() {
+  // List all categories, sorted alphabetically by name
+  async findAll(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
+    const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
+    const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
+    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
+    const sortOrder = order === 'desc' ? 'desc' : 'asc';
+
     const rows = await this.em.execute(
       `
-      select c."id", c."name", c."name_vi", c."slug", c."slug_vi",
-             c."description", c."description_vi", c."iconUrl",
-             c."isOfficial", c."displayOrder",
+      select c."id", ${nameField} as "name", ${slugField} as "slug",
+             ${descField} as "description", c."iconUrl",
+             c."isOfficial",
+             c."name" as "nameEn", c."name_vi" as "nameVi",
+             c."slug" as "slugEn", c."slug_vi" as "slugVi",
+             c."description" as "descriptionEn", c."description_vi" as "descriptionVi",
              COUNT(t."id") as "threadCount"
       from web."ForumCategory" c
       left join web."ForumThread" t on t."categoryId" = c."id"
       group by c."id"
-      order by c."displayOrder" asc
+      order by ${nameField} ${sortOrder}
       `,
       [],
     );
@@ -30,19 +47,27 @@ export class CategoryService {
     }));
   }
 
-  // List all categories, sorted by displayOrder
-  async findAllUnofficial() {
+  // List all unofficial categories, sorted alphabetically by name
+  async findAllUnofficial(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
+    const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
+    const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
+    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
+    const sortOrder = order === 'desc' ? 'desc' : 'asc';
+
     const rows = await this.em.execute(
       `
-      select c."id", c."name", c."name_vi", c."slug", c."slug_vi",
-             c."description", c."description_vi", c."iconUrl",
-             c."isOfficial", c."displayOrder",
+      select c."id", ${nameField} as "name", ${slugField} as "slug",
+             ${descField} as "description", c."iconUrl",
+             c."isOfficial",
+             c."name" as "nameEn", c."name_vi" as "nameVi",
+             c."slug" as "slugEn", c."slug_vi" as "slugVi",
+             c."description" as "descriptionEn", c."description_vi" as "descriptionVi",
              COUNT(t."id") as "threadCount"
       from web."ForumCategory" c
       left join web."ForumThread" t on t."categoryId" = c."id"
       where c."isOfficial" = false
       group by c."id"
-      order by c."displayOrder" asc
+      order by ${nameField} ${sortOrder}
       `,
       [],
     );
@@ -54,29 +79,36 @@ export class CategoryService {
   }
 
   // Get category by ID
-  async findOne(id: string) {
-    const category = await this.em.findOne(ForumCategory, { id });
-    if (!category) throw new NotFoundException('category.not_found');
+  async findOne(id: string, locale: 'en' | 'vi') {
+    const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
+    const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
+    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
 
-    const countRes = await this.em.execute(
-      `select count(1) as cnt from web."ForumThread" where "categoryId" = ?`,
+    const rows = await this.em.execute(
+      `
+      select c."id", ${nameField} as "name", ${slugField} as "slug",
+             ${descField} as "description", c."iconUrl",
+             c."isOfficial",
+             c."name" as "nameEn", c."name_vi" as "nameVi",
+             c."slug" as "slugEn", c."slug_vi" as "slugVi",
+             c."description" as "descriptionEn", c."description_vi" as "descriptionVi",
+             COUNT(t."id") as "threadCount"
+      from web."ForumCategory" c
+      left join web."ForumThread" t on t."categoryId" = c."id"
+      where c."id" = ?
+      group by c."id"
+      `,
       [id],
     );
 
-    const threadCount = Number(countRes?.[0]?.cnt || 0);
+    if (!rows || rows.length === 0) {
+      throw new NotFoundException('category.not_found');
+    }
 
+    const row = rows[0];
     return {
-      id: category.id,
-      name: category.name,
-      name_vi: category.nameVi,
-      slug: category.slug,
-      slug_vi: category.slugVi,
-      description: category.description,
-      description_vi: category.descriptionVi,
-      iconUrl: category.iconUrl,
-      isOfficial: category.isOfficial,
-      displayOrder: category.displayOrder,
-      threadCount,
+      ...row,
+      threadCount: Number(row.threadCount || 0),
     };
   }
 
@@ -109,6 +141,7 @@ export class CategoryService {
 
     // Create category
     const category = this.em.create(ForumCategory, {
+      id: dto.id || undefined,
       name: dto.name.trim(),
       nameVi: dto.nameVi.trim(),
       slug,
@@ -117,12 +150,11 @@ export class CategoryService {
       descriptionVi: dto.descriptionVi?.trim() ?? null,
       iconUrl: dto.iconUrl ?? null,
       isOfficial: dto.isOfficial ?? false,
-      displayOrder: dto.displayOrder ?? 0,
     });
 
     try {
       await this.em.persist(category).flush();
-      return null;
+      return category;
     } catch (error) {
       console.error('Error creating category:', error);
       throw error;
@@ -227,16 +259,27 @@ export class CategoryService {
 
     // Update icon
     if (dto.iconUrl !== undefined) {
-      category.iconUrl = dto.iconUrl ?? null;
+      const oldIconUrl = category.iconUrl;
+      const newIconUrl = dto.iconUrl ?? null;
+
+      if (oldIconUrl && oldIconUrl !== newIconUrl) {
+        try {
+          const idx = oldIconUrl.indexOf('categories/');
+          if (idx !== -1) {
+            const key = oldIconUrl.slice(idx);
+            await this.storageService.deleteObject(key);
+          }
+        } catch (e: any) {
+          console.error(`Failed to delete old R2 category icon ${oldIconUrl}:`, e);
+        }
+      }
+
+      category.iconUrl = newIconUrl;
     }
 
     // Update flags
     if (dto.isOfficial !== undefined) {
       category.isOfficial = dto.isOfficial;
-    }
-
-    if (dto.displayOrder !== undefined) {
-      category.displayOrder = dto.displayOrder;
     }
 
     await this.em.flush();
@@ -247,6 +290,19 @@ export class CategoryService {
   async remove(id: string) {
     const category = await this.em.findOne(ForumCategory, { id });
     if (!category) throw new NotFoundException('category.not_found');
+
+    if (category.iconUrl) {
+      try {
+        const idx = category.iconUrl.indexOf('categories/');
+        if (idx !== -1) {
+          const key = category.iconUrl.slice(idx);
+          await this.storageService.deleteObject(key);
+        }
+      } catch (e: any) {
+        console.error(`Failed to delete R2 category icon ${category.iconUrl}:`, e);
+      }
+    }
+
     await this.em.remove(category).flush();
     return null;
   }
@@ -264,5 +320,40 @@ export class CategoryService {
     const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
     const trimmed = cleaned.replace(/^-+|-+$/g, '');
     return trimmed.slice(0, 200);
+  }
+
+  async uploadCategoryIcon(dto: CategoryImageUploadRequestDto): Promise<CategoryImageUploadResponseDto> {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (dto.fileSize > maxSize) {
+      throw new BadRequestException('category.image_too_large');
+    }
+
+    const extByMime: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+    const categoryId = dto.categoryId ?? randomUUID();
+    const ext = extByMime[dto.mimeType] ?? 'png';
+    const key = `categories/${categoryId}.${ext}`;
+
+    const uploadUrl = await this.storageService.createUploadUrl({
+      key,
+      contentType: dto.mimeType,
+    });
+
+    const publicUrlBase = this.configService
+      .get<string>('R2_PUBLIC_DEV_URL', 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev')
+      .replace(/\/+$/, '');
+
+    return {
+      uploadUrl,
+      method: 'PUT',
+      key,
+      publicUrl: `${publicUrlBase}/${key}`,
+      headers: {
+        'Content-Type': dto.mimeType,
+      },
+    };
   }
 }

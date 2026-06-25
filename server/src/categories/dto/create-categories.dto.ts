@@ -45,9 +45,8 @@ export class CreateCategoryDto {
   @IsBoolean()
   isOfficial?: boolean;
 
-  @ApiPropertyOptional({ example: 0 })
+  @ApiPropertyOptional({ example: '3bcdd74c-a56f-4e1a-ad62-581be8d9cdca' })
   @IsOptional()
-  @IsInt()
-  @Min(0)
-  displayOrder?: number;
+  @IsString()
+  id?: string;
 }

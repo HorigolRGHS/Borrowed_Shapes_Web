@@ -95,13 +95,17 @@ export default function ForumDetailPage() {
   });
 
   useEffect(() => {
-    setUser(getUserProfile());
-    fetchCategories();
+    const profile = getUserProfile();
+    setUser(profile);
+    fetchCategories(profile);
   }, []);
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (currentUser?: any) => {
     try {
-      const response = await axios.get("/api/category/unofficial");
+      const userProfile = currentUser || getUserProfile();
+      const isAdmin = userProfile?.role === "ADMIN";
+      const url = isAdmin ? "/api/category" : "/api/category/unofficial";
+      const response = await axios.get(url);
       if (response.data?.success) {
         setCategories(response.data.data || []);
       }
@@ -256,7 +260,6 @@ export default function ForumDetailPage() {
     setIsViewFull(!isViewFull)
   }
 
-  console.log("user: ", user)
   if (loading) {
     return (
       <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
@@ -280,7 +283,6 @@ export default function ForumDetailPage() {
       </div>
     );
   }
-  console.log("thread ", thread);
 
   const isAuthor = user && (String(user.id) === String(thread.author?.id) || user.role === 'ADMIN');
 

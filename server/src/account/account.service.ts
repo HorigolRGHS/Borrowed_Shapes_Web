@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
+import { raw } from '@mikro-orm/core';
 import { User } from '../entities/User';
 import { GameProfile } from '../entities/GameProfile';
 import { UserAchievement } from '../entities/UserAchievement';
@@ -35,6 +36,8 @@ import {
   AdminAccountQueryDto,
   AccountFilterRole,
   AccountFilterStatus,
+  AccountSortBy,
+  SortOrder,
 } from './dto/admin-account-query.dto';
 import { AdminUpdateAccountProfileDto } from './dto/admin-update-account-profile.dto';
 import { AdminBanAccountDto } from './dto/admin-ban-account.dto';
@@ -353,7 +356,7 @@ export class AccountService {
   // ─── ADMIN ACCOUNT MANAGEMENT ──────────────────────────────
 
   async getAdminUsers(query: AdminAccountQueryDto) {
-    const { page = 1, limit = 10, search, role, status } = query;
+    const { page = 1, limit = 10, search, role, status, sortBy = AccountSortBy.CREATED_AT, sort = SortOrder.DESC } = query;
     const qb = this.em.createQueryBuilder(User, 'u');
 
     if (search) {
@@ -380,7 +383,22 @@ export class AccountService {
       }
     }
 
-    qb.orderBy({ createdAt: 'DESC' });
+    if (sortBy === AccountSortBy.ROLE) {
+      qb.orderBy({ role: sort, createdAt: 'DESC' });
+    } else if (sortBy === AccountSortBy.STATUS) {
+      qb.orderBy({
+        [raw('CASE WHEN u."deletedAt" IS NOT NULL THEN 3 WHEN u."isBanned" = true THEN 2 ELSE 1 END')]: sort,
+        createdAt: 'DESC'
+      });
+    } else if (sortBy === AccountSortBy.ONLINE_STATUS) {
+      qb.orderBy({
+        [raw('COALESCE((SELECT "isOnline" FROM auth."UserOnlineStatus" os WHERE os."userId" = u.id), false)')]: sort,
+        createdAt: 'DESC'
+      });
+    } else {
+      qb.orderBy({ createdAt: sort });
+    }
+
     qb.limit(limit).offset((page - 1) * limit);
 
     const [users, total] = await qb.getResultAndCount();

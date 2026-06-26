@@ -29,21 +29,35 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
 
   // For email display, let's try to get from local user profile if available
   let email = "";
+  let badgeImageUrl = "";
   if (typeof window !== "undefined") {
     const p = getUserProfile();
     if (p && p.email) {
       email = p.email;
+    }
+    if (p && p.equippedAchievement?.badgeImageUrl) {
+      badgeImageUrl = p.equippedAchievement.badgeImageUrl;
     }
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 group p-1 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-        <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-xs shadow-md overflow-hidden">
-          {imgUrl && !imgError ? (
-            <img src={imgUrl} alt={displayName} className="w-full h-full object-cover" onError={() => setImgError(true)} />
-          ) : (
-            initials
+        <div className="relative flex h-10 w-10 items-center justify-center">
+          <div className={`absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-xs shadow-md overflow-hidden z-0 flex items-center justify-center ${badgeImageUrl ? "rounded-md" : "rounded-full"}`}>
+            {imgUrl && !imgError ? (
+              <img src={imgUrl} alt={displayName} className="w-full h-full object-cover" onError={() => setImgError(true)} />
+            ) : (
+              initials
+            )}
+          </div>
+          {badgeImageUrl && (
+            <img 
+              src={badgeImageUrl} 
+              alt="" 
+              aria-hidden="true" 
+              className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+            />
           )}
         </div>
         <span className="max-w-[12ch] truncate text-sm font-medium text-foreground hidden sm:block">

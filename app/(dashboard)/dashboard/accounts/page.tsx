@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Search, ShieldAlert, ShieldCheck, Trash2, Edit, FileText, ArrowLeft, RefreshCw, AlertCircle, Eye } from "lucide-react";
+import { Search, ShieldAlert, ShieldCheck, Trash2, Edit, FileText, ArrowLeft, RefreshCw, AlertCircle, Eye, ArrowUp, ArrowDown, ChevronsUpDown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "react-toastify";
 
@@ -183,10 +183,13 @@ export default function AccountManagementPage() {
   // Filters & Pagination
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchTrigger, setSearchTrigger] = useState(0);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sort, setSort] = useState("desc");
 
   // Details View
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
@@ -232,6 +235,8 @@ export default function AccountManagementPage() {
         limit: "10",
         role: roleFilter,
         status: statusFilter,
+        sortBy,
+        sort,
       });
       if (search) params.append("search", search);
 
@@ -239,12 +244,13 @@ export default function AccountManagementPage() {
       const data = res.data || res;
       setUsers(data.items || []);
       setTotalPages(data.pagination?.totalPages || 1);
+      setTotal(data.pagination?.total || data.items?.length || 0);
     } catch (err: any) {
       setError(err.message || t("admin.account.messages.generic_error"));
     } finally {
       setLoading(false);
     }
-  }, [page, searchTrigger, roleFilter, statusFilter]);
+  }, [page, searchTrigger, roleFilter, statusFilter, sortBy, sort]);
 
   const fetchPresenceData = useCallback(async () => {
     setPresenceLoading(true);
@@ -336,8 +342,20 @@ export default function AccountManagementPage() {
     setSearch("");
     setRoleFilter("ALL");
     setStatusFilter("ALL");
+    setSortBy("createdAt");
+    setSort("desc");
     setPage(1);
     setSearchTrigger(prev => prev + 1);
+  };
+
+  const toggleSort = (field: string) => {
+    setPage(1);
+    if (sortBy === field) {
+      setSort(sort === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSort(field === "createdAt" ? "desc" : "asc");
+    }
   };
 
   const openEditModal = () => {
@@ -1029,7 +1047,7 @@ export default function AccountManagementPage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-4">
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1); }}>
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
@@ -1039,7 +1057,7 @@ export default function AccountManagementPage() {
                   <SelectItem value="ADMIN">{t("admin.account.filters.admin") || "Admin"}</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -1067,10 +1085,30 @@ export default function AccountManagementPage() {
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead>{t("admin.account.columns.user") || "User"}</TableHead>
-                  <TableHead>{t("admin.account.columns.role") || "Role"}</TableHead>
-                  <TableHead>{t("admin.account.columns.status") || "Status"}</TableHead>
-                  <TableHead>{t("admin.accounts.onlineStatus.column") || "Online Status"}</TableHead>
-                  <TableHead>{t("admin.account.columns.created_at") || "Created At"}</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('role')}>
+                    <div className="flex items-center gap-1 hover:text-foreground">
+                      {t("admin.account.columns.role") || "Role"}
+                      {sortBy === 'role' ? (sort === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />) : <ChevronsUpDown className="w-4 h-4 text-muted-foreground/50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('status')}>
+                    <div className="flex items-center gap-1 hover:text-foreground">
+                      {t("admin.account.columns.status") || "Status"}
+                      {sortBy === 'status' ? (sort === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />) : <ChevronsUpDown className="w-4 h-4 text-muted-foreground/50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('onlineStatus')}>
+                    <div className="flex items-center gap-1 hover:text-foreground">
+                      {t("admin.accounts.onlineStatus.column") || "Online Status"}
+                      {sortBy === 'onlineStatus' ? (sort === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />) : <ChevronsUpDown className="w-4 h-4 text-muted-foreground/50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('createdAt')}>
+                    <div className="flex items-center gap-1 hover:text-foreground">
+                      {t("admin.account.columns.created_at") || "Created At"}
+                      {sortBy === 'createdAt' ? (sort === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />) : <ChevronsUpDown className="w-4 h-4 text-muted-foreground/50" />}
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">{t("admin.account.columns.actions") || "Actions"}</TableHead>
                 </TableRow>
               </TableHeader>

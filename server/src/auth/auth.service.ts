@@ -1041,7 +1041,7 @@ export class AuthService {
       bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
       banReason: user.banReason ?? null,
       banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
-      equippedAchievementId: gameProfile?.equippedAchievementId
+      equippedAchievement: gameProfile?.equippedAchievementId
         ? {
             id: gameProfile.equippedAchievementId.id,
             name: gameProfile.equippedAchievementId.name,

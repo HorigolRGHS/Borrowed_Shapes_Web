@@ -2,6 +2,18 @@ import { IsOptional, IsString, IsEnum, IsInt, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
+export enum AccountSortBy {
+  ROLE = 'role',
+  STATUS = 'status',
+  ONLINE_STATUS = 'onlineStatus',
+  CREATED_AT = 'createdAt',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 export enum AccountFilterRole {
   ALL = 'ALL',
   USER = 'USER',
@@ -44,4 +56,14 @@ export class AdminAccountQueryDto {
   @IsOptional()
   @IsEnum(AccountFilterStatus)
   status?: AccountFilterStatus = AccountFilterStatus.ALL;
+
+  @ApiPropertyOptional({ enum: AccountSortBy, default: AccountSortBy.CREATED_AT })
+  @IsOptional()
+  @IsEnum(AccountSortBy)
+  sortBy?: AccountSortBy = AccountSortBy.CREATED_AT;
+
+  @ApiPropertyOptional({ enum: SortOrder, default: SortOrder.DESC })
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sort?: SortOrder = SortOrder.DESC;
 }

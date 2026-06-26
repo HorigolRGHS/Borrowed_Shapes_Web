@@ -4,11 +4,13 @@ import { CategoryService } from './categories.service';
 import { CategoryController } from './categories.controller';
 import { ForumCategory } from '../entities/ForumCategory';
 import { AuthModule } from '../auth/auth.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([ForumCategory]),
     AuthModule,
+    StorageModule,
   ],
   controllers: [CategoryController],
   providers: [CategoryService],

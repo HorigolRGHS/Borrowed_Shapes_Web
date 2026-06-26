@@ -255,8 +255,6 @@ export default function ForumsPage() {
     );
   }
 
-  console.log("threads data", threads);
-
   // Hiển thị danh sách categories nếu chưa chọn
   if (!selectedCategory) {
     return (
@@ -296,7 +294,7 @@ export default function ForumsPage() {
         </main>
         <CreateThreadModal
           open={showCreate}
-          categories={categories.filter((c) => !c.isOfficial)}
+          categories={user?.role === "ADMIN" ? categories : categories.filter((c) => !c.isOfficial)}
           form={form}
           setForm={setForm}
           onClose={() => {
@@ -378,7 +376,7 @@ export default function ForumsPage() {
       </main>
       <CreateThreadModal
         open={showCreate}
-        categories={categories.filter((c) => !c.isOfficial)}
+        categories={user?.role === "ADMIN" ? categories : categories.filter((c) => !c.isOfficial)}
         form={form}
         setForm={setForm}
         onClose={() => {

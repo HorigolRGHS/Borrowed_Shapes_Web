@@ -10,16 +10,19 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+  Query,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { CategoryService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-categories.dto';
 import { UpdateCategoryDto } from './dto/update-categories.dto';
+import { CategoryImageUploadRequestDto, CategoryImageUploadResponseDto } from './dto/category-image-upload.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { resolveLocale } from '../common/utils/resolve-locale';
 
 @ApiTags('Category')
 @Controller('category')
@@ -30,8 +33,12 @@ export class CategoryController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List all forum categories' })
-  async findAll(@Req() req: Request): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.findAll();
+  async findAll(
+    @Req() req: Request,
+    @Query('order') order?: 'asc' | 'desc',
+  ): Promise<ApiResponseDto<any>> {
+    const locale = resolveLocale(req.headers['accept-language']);
+    const data = await this.categoryService.findAll(locale, order);
     return okResponse('category.list_success', data, 'GET /category');
   }
 
@@ -39,8 +46,12 @@ export class CategoryController {
   @Public()
   @Get('unofficial')
   @ApiOperation({ summary: 'List all unofficial forum categories' })
-  async findAllUnofficial(@Req() req: Request): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.findAllUnofficial();
+  async findAllUnofficial(
+    @Req() req: Request,
+    @Query('order') order?: 'asc' | 'desc',
+  ): Promise<ApiResponseDto<any>> {
+    const locale = resolveLocale(req.headers['accept-language']);
+    const data = await this.categoryService.findAllUnofficial(locale, order);
     return okResponse('category.list_success', data, 'GET /category/unofficial');
   }
 
@@ -53,8 +64,24 @@ export class CategoryController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.findOne(id);
+    const locale = resolveLocale(req.headers['accept-language']);
+    const data = await this.categoryService.findOne(id, locale);
     return okResponse('category.detail_success', data, `GET /category/${id}`);
+  }
+
+  @Roles('ADMIN')
+  @Post('upload')
+  @ApiOperation({ summary: 'Create presigned upload URL for category icon image' })
+  async uploadCategoryIcon(
+    @Body() dto: CategoryImageUploadRequestDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<CategoryImageUploadResponseDto>> {
+    const data = await this.categoryService.uploadCategoryIcon(dto);
+    return okResponse(
+      'category.image_upload_url_created',
+      data,
+      'POST /category/upload',
+    );
   }
 
   // Create category

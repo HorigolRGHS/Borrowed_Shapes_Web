@@ -176,68 +176,6 @@ export class ForumService {
     };
   }
 
-  // // Detail + increment viewCount + sanitize author data
-  // async findOne(id: string, user?: { userId?: string; role?: string }) {
-  //   const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId', 'categoryId'] });
-  //   if (!thread) throw new NotFoundException('forums.thread_not_found');
-
-  //   // ARCHIVED visibility check before exposing or incrementing views
-  // if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
-  //   const isAdmin = user && user.role === 'ADMIN';
-  //   const isAuthor = user && user.userId && String(thread.authorId.id) === String(user.userId);
-  //   if (!isAdmin && !isAuthor) {
-  //     throw new NotFoundException('forums.thread_not_found');
-  //   }
-  // }
-
-  //   // defensively increment viewCount on the entity and flush
-  //   thread.viewCount = (Number(thread.viewCount) || 0) + 1;
-  //   await this.em.flush();
-
-  //   const gp = await this.em.findOne(
-  //     GameProfile,
-  //     { userId: thread.authorId },
-  //     { populate: ['equippedAchievementId'] },
-  //   );
-
-  //   const badgeImageUrl =
-  //     gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
-
-  //   // Sanitize user data: exclude email, password, and other sensitive fields
-  //   const sanitizedAuthor = {
-  //     id: thread.authorId.id,
-  //     displayName: thread.authorId.displayName,
-  //     imgUrl: thread.authorId.imgUrl,
-  //     badgeImageUrl,
-  //   };
-
-  //   const sanitizedCategory = thread.categoryId
-  //   ? {
-  //     id: thread.categoryId.id,
-  //     name: thread.categoryId.name,
-  //     slug: thread.categoryId.slug
-  //   } : null;
-
-  //   // Return sanitized thread
-  //   return {
-  //     id: thread.id,
-  //     title: thread.title,
-  //     slug: thread.slug,
-  //     content: thread.content,
-  //     imageUrl: thread.imageUrl,
-  //     score: thread.score,
-  //     viewCount: thread.viewCount,
-  //     isPinned: thread.isPinned,
-  //     postType: thread.postType,
-  //     status: thread.status,
-  //     createdAt: thread.createdAt,
-  //     updatedAt: thread.updatedAt,
-  //     author: sanitizedAuthor,
-  //     category: sanitizedCategory,
-  //   };
-  // }
-
-
   async findOneBySlug(
     slug: string,
     locale: Locale = 'en',

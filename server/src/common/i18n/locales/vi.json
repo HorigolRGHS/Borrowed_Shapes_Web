@@ -4,7 +4,8 @@
     "request_failed": "Yêu cầu thất bại",
     "internal_server_error": "Lỗi máy chủ nội bộ",
     "invalid_json_payload": "Dữ liệu JSON không hợp lệ",
-    "forbidden": "Bạn không có quyền truy cập vào tài nguyên này"
+    "forbidden": "Bạn không có quyền truy cập vào tài nguyên này",
+    "cancel": "Hủy"
   },
   "auth": {
     "google_not_configured": "Đăng nhập Google chưa được cấu hình",
@@ -126,6 +127,7 @@
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",
+    "stats_success": "Lấy thống kê wiki thành công",
     "search_success": "Tìm kiếm hoàn tất",
     "detail_success": "Lấy chi tiết wiki thành công",
     "history_success": "Lấy lịch sử thành công",
@@ -271,5 +273,71 @@
   "account": {
     "profile_updated": "Cập nhật hồ sơ thành công",
     "avatar_upload_url_created": "Tạo liên kết upload ảnh đại diện thành công"
+  },
+  "admin": {
+    "download": {
+      "active": {
+        "badge": "Đang phát hành",
+        "current": "Phiên bản hiện tại",
+        "set_active": "Chọn phát hành",
+        "title": "Chọn phiên bản phát hành",
+        "description": "Phiên bản này sẽ trở thành bản tải khuyến nghị trên trang Download công khai. Phiên bản đang phát hành trước đó sẽ chuyển sang ngừng hỗ trợ nhưng vẫn nằm trong danh sách phiên bản.",
+        "warning": "Dùng chức năng này khi bản mới upload bị lỗi và bạn muốn người dùng tải một bản cũ ổn định hơn.",
+        "confirm": "Xác nhận",
+        "success": "Cập nhật phiên bản phát hành thành công.",
+        "error": "Cập nhật phiên bản phát hành thất bại.",
+        "inactive_badge": "Ngừng hỗ trợ",
+        "summary_title": "Phiên bản đang phát hành",
+        "no_active": "Chưa chọn phiên bản phát hành.",
+        "summary_note": "Người dùng sẽ tải phiên bản này từ trang Download công khai.",
+        "inactive_note": "Vẫn hiển thị trong danh sách phiên bản, nhưng không phải bản tải khuyến nghị.",
+        "current_version": "Phiên bản đang phát hành",
+        "new_version": "Phiên bản mới sẽ phát hành"
+      }
+    }
+  },
+  "download": {
+    "active_version": "Phiên bản đang phát hành",
+    "no_version": "Chưa có phiên bản tải xuống.",
+    "recommended_version": "Phiên bản khuyến nghị",
+    "other_versions": "Các phiên bản khác",
+    "inactive_version": "Ngừng hỗ trợ",
+    "not_recommended": "Không khuyến nghị"
+  },
+  "contact": {
+    "eyebrow": "Hỗ trợ & phản hồi",
+    "title": "Liên hệ với Borrowed Shapes",
+    "description": "Bạn cần hỗ trợ về tài khoản, tải game, diễn đàn, thành tích, kết quả chơi hoặc muốn báo lỗi? Hãy liên hệ với đội ngũ Borrowed Shapes qua kênh chính thức của dự án.",
+    "lastUpdated": "Cập nhật lần cuối: 21/06/2026",
+    "card": {
+      "title": "Liên hệ qua Facebook",
+      "description": "Cách nhanh nhất để gửi câu hỏi, báo lỗi hoặc góp ý cho đội ngũ Borrowed Shapes là liên hệ qua trang Facebook chính thức của dự án.",
+      "cta": "Mở Facebook",
+      "secondaryNote": "Nếu bạn báo lỗi, vui lòng mô tả rõ vấn đề, kèm các bước tái hiện lỗi, trình duyệt/thiết bị đang dùng và ảnh chụp màn hình nếu có."
+    },
+    "topics": [
+      "Tài khoản & đăng nhập",
+      "Tải game",
+      "Báo lỗi website hoặc game",
+      "Forum, Wiki & bình luận",
+      "Kết quả chơi, bảng xếp hạng & thành tích",
+      "Báo cáo nội dung vi phạm",
+      "Góp ý cải thiện sản phẩm"
+    ],
+    "privacyReminder": "Không gửi mật khẩu, mã xác thực, access token, refresh token hoặc thông tin nhạy cảm qua tin nhắn. Đội ngũ Borrowed Shapes sẽ không bao giờ yêu cầu bạn cung cấp mật khẩu.",
+    "faq": [
+      {
+        "q": "Tôi không đăng nhập được thì làm sao?",
+        "a": "Hãy thử kiểm tra email/mật khẩu, dùng chức năng quên mật khẩu hoặc đăng nhập lại bằng Google nếu bạn đã dùng Google Login."
+      },
+      {
+        "q": "Tôi tải game không được thì làm sao?",
+        "a": "Hãy vào trang Download, chọn phiên bản được đánh dấu là khuyến nghị/đang phát hành và thử tải lại với kết nối mạng ổn định."
+      },
+      {
+        "q": "Tôi muốn báo cáo nội dung vi phạm thì làm sao?",
+        "a": "Bạn có thể dùng tính năng report trên website nếu có, hoặc gửi đường dẫn/nội dung cần kiểm tra qua kênh liên hệ chính thức."
+      }
+    ]
   }
 }

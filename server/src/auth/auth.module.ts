@@ -27,6 +27,6 @@ import { EmailModule } from '../email/email.module';
     AuthRateLimitGuard,
     { provide: APP_GUARD, useExisting: AuthGuard },
   ],
-  exports: [AuthGuard, JwtModule],
+  exports: [AuthGuard, JwtModule, AuthService],
 })
 export class AuthModule {}

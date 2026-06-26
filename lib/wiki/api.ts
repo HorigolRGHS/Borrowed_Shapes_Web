@@ -10,6 +10,7 @@ import type {
   WikiUpdateRequest,
   WikiRollbackRequest,
   WikiUploadResponse,
+  WikiAdminStats,
 } from "@/models/dtos/wiki.dto";
 
 export interface WikiListQuery {
@@ -35,6 +36,11 @@ export async function fetchAdminWikiList(
   const res = await bffFetchJson<WikiListResponse>("GET", "/api/wiki/admin", {
     params: query as Record<string, unknown>,
   });
+  return res.data;
+}
+
+export async function fetchAdminWikiStats(): Promise<WikiAdminStats> {
+  const res = await bffFetchJson<WikiAdminStats>("GET", "/api/wiki/admin/stats");
   return res.data;
 }
 

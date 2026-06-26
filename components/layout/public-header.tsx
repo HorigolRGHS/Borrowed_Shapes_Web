@@ -23,13 +23,17 @@ export function PublicHeader() {
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev";
+  const logoUrl = `${R2_BASE}/Logo.jpg`;
 
   useEffect(() => {
     setUser(getUserProfile() as UserProfile | null);
     setMounted(true);
     const handler = (e: any) => setUser(e.detail);
     window.addEventListener("api:profile-updated" as any, handler);
-    
+
     const handleScroll = () => {
       if (window.scrollY > 20) {
         setScrolled(true);
@@ -37,7 +41,7 @@ export function PublicHeader() {
         setScrolled(false);
       }
     };
-    
+
     window.addEventListener("scroll", handleScroll);
     handleScroll();
 
@@ -58,18 +62,23 @@ export function PublicHeader() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full h-16 flex items-center ${
-          scrolled
-            ? "bg-background/95 backdrop-blur-md border-b border-border shadow-md dark:bg-[#07070f]/95 dark:border-[#1e1e3a] dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
-            : "bg-transparent border-transparent"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full h-16 flex items-center ${scrolled
+          ? "bg-background/95 backdrop-blur-md border-b border-border shadow-md dark:bg-[#07070f]/95 dark:border-[#1e1e3a] dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+          : "bg-transparent border-transparent"
+          }`}
       >
         <div className="container mx-auto px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)]">
-                B
-              </div>
+              {!imgError ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0">
+                  <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+                </div>
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] shrink-0">
+                  B
+                </div>
+              )}
               <span className="font-extrabold tracking-tight hidden sm:inline-block">
                 <span className="text-foreground dark:text-white">BORROWED</span>{" "}
                 <span className="text-amber-500 dark:text-amber-400">SHAPES</span>
@@ -83,15 +92,13 @@ export function PublicHeader() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`relative px-4 py-2 text-sm rounded-md group transition-colors ${
-                      isActive ? "text-foreground dark:text-white" : "text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
-                    }`}
+                    className={`relative px-4 py-2 text-sm rounded-md group transition-colors ${isActive ? "text-foreground dark:text-white" : "text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
+                      }`}
                   >
                     {link.label}
                     <span
-                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-500 to-orange-500 transition-transform origin-left ${
-                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                      }`}
+                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-500 to-orange-500 transition-transform origin-left ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                        }`}
                     />
                   </Link>
                 );
@@ -148,11 +155,10 @@ export function PublicHeader() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-                    isActive
-                      ? "bg-accent text-accent-foreground dark:bg-white/5 dark:text-white"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
-                  }`}
+                  className={`px-4 py-3 rounded-lg font-medium transition-colors ${isActive
+                    ? "bg-accent text-accent-foreground dark:bg-white/5 dark:text-white"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                    }`}
                 >
                   {link.label}
                 </Link>

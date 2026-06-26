@@ -22,6 +22,7 @@ import { UserMenu } from "@/components/user-menu";
 interface UserProfile {
   displayName?: string;
   role?: string;
+  imgUrl?: string;
 }
 
 export default function DashboardLayout({
@@ -63,7 +64,9 @@ export default function DashboardLayout({
 
   const navItems = [
     { href: "/dashboard", label: t("common.dashboard") },
-    { href: "/dashboard/wiki", label: "Wiki" },
+    { href: "/dashboard/audit-logs", label: t("admin.auditLogs.nav") || "Audit Log" },
+    { href: "/dashboard/wiki", label: t("header.wiki") },
+    { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts" },
     { href: "/dashboard/forums", label: t("forums.title") || "Forums" },
     { href: "/dashboard/categories", label: t("forums.dashboard.categories") || "Categories" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
@@ -95,8 +98,10 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex bg-muted/40">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card p-4">
-        <h2 className="text-xl font-bold px-2 mb-6">Admin Panel</h2>
+      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card p-4 sticky top-0 h-screen overflow-y-auto">
+        <h2 className="text-xl font-bold px-2 mb-6 hover:opacity-80 transition-opacity">
+          <Link href="/">Admin Panel</Link>
+        </h2>
         {NavList}
       </aside>
 
@@ -114,20 +119,21 @@ export default function DashboardLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-4">
-                <SheetTitle className="text-xl font-bold mb-6">
-                  Admin Panel
+                <SheetTitle className="text-xl font-bold mb-6 hover:opacity-80 transition-opacity text-left">
+                  <Link href="/">Admin Panel</Link>
                 </SheetTitle>
                 {NavList}
               </SheetContent>
             </Sheet>
-            <h1 className={cn("text-lg font-semibold truncate")}>
-              {t("common.dashboard")}
-            </h1>
           </div>
           <div className="flex items-center gap-1">
             <LanguageDropdown />
             <ThemeToggle />
-            <UserMenu displayName={user.displayName ?? ""} role={user.role} />
+            <UserMenu
+              displayName={user.displayName ?? ""}
+              role={user.role}
+              imgUrl={user.imgUrl && user.imgUrl.trim().length > 0 ? (user.imgUrl.startsWith('http') || user.imgUrl.startsWith('/api/') ? user.imgUrl : `/api${user.imgUrl.startsWith('/') ? '' : '/'}${user.imgUrl}`) : undefined}
+            />
           </div>
         </header>
 

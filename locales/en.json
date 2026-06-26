@@ -1,4 +1,20 @@
 {
+  "errors": {
+    "common": {
+      "backToHome": "Back to Home",
+      "tryAgain": "Try again"
+    },
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you are looking for may have been moved, deleted, or never existed in Borrowed Shapes."
+    },
+    "serverError": {
+      "code": "500",
+      "title": "Something went wrong",
+      "description": "Borrowed Shapes ran into an unexpected problem. Please try again later or return to the home page."
+    }
+  },
   "auth": {
     "login": "Log in",
     "email": "Email",
@@ -72,7 +88,31 @@
     "otp_sent_desc_2": ". Please enter it below.",
     "reset_password_desc": "Enter your new password to complete the reset.",
     "copy": "Copy",
-    "copy_success": "Copied!"
+    "copy_success": "Copied!",
+    "ban": {
+      "title": "Account Banned",
+      "message": "Your account has been banned.",
+      "reason": "Reason",
+      "no_reason": "No reason provided.",
+      "expires_at": "Expires At",
+      "duration": "Duration",
+      "permanent": "Permanent",
+      "go_to_login": "Go to Login"
+    },
+    "status": {
+      "banned_title": "Account Banned",
+      "banned_message": "Your account has been banned.",
+      "deleted_title": "Account Deleted",
+      "deleted_message": "Your account has been deleted.",
+      "deleted_description": "This account can no longer access the system.",
+      "reason": "Reason",
+      "no_reason": "No reason provided.",
+      "expires_at": "Expires At",
+      "deleted_at": "Deleted At",
+      "duration": "Duration",
+      "permanent": "Permanent",
+      "go_to_login": "Go to Login"
+    }
   },
   "common": {
     "home": "Home",
@@ -88,7 +128,8 @@
     "theme_system": "System",
     "theme_toggle_label": "Toggle theme",
     "site_brand": "Borrowed Shapes Wiki",
-    "game_results": "Game Results"
+    "game_results": "Game Results",
+    "cancel": "Cancel"
   },
   "validation": {
     "invalid_email": "Invalid email address",
@@ -107,12 +148,25 @@
   "wiki": {
     "list_title": "Wiki",
     "list_subtitle": "Browse the knowledge base",
+    "hero_kicker": "KNOWLEDGE BASE",
+    "public_search_placeholder": "Search wiki articles...",
+    "load_failed": "Failed to load wiki list",
     "admin_title": "Wiki management",
+    "admin_search_placeholder": "Search by title or slug...",
+    "sort_by_updated": "Sort by Updated",
     "filter_all": "All",
     "col_title": "Title",
     "col_status": "Status",
     "col_updated": "Updated",
     "col_actions": "Actions",
+    "col_category": "Category",
+    "col_revisions": "Revisions",
+    "stats": {
+      "total_pages": "Total Pages",
+      "published": "Published",
+      "drafts": "Drafts",
+      "total_revisions": "Total Revisions"
+    },
     "col_date": "Date",
     "col_author": "Author",
     "col_summary": "Summary",
@@ -128,6 +182,7 @@
     "edit_button": "Edit",
     "delete_button": "Delete",
     "history_button": "History",
+    "view_history": "View history →",
     "rollback_button": "Rollback to this",
     "view_button": "View",
     "publish_button": "Publish",
@@ -153,6 +208,12 @@
     "edited_by": "Edited by {name} on {date}",
     "last_updated": "Updated {date}",
     "no_history": "No history",
+    "history_heading": "History — {title}",
+    "revisions_count": "{count} revisions",
+    "revision_at": "Revision @ {date}",
+    "by_author": "By {name}",
+    "diff_vs_previous": "Diff vs previous",
+    "cancel_button": "Cancel",
     "no_previous_revision": "This is the first revision",
     "diff_unchanged_collapsed": "{count} unchanged lines",
     "toc_title": "On this page",
@@ -480,7 +541,13 @@
     "cta_tag": "SEASON 2 — THE HEXAGON EXPANSION",
     "cta_title": "Ready to Play?",
     "cta_button": "DOWNLOAD",
-    "description": "Experience the ultimate adventure. Download the latest version of Borrowed Shapes and start your journey today."
+    "description": "Experience the ultimate adventure. Download the latest version of Borrowed Shapes and start your journey today.",
+    "active_version": "Active Version",
+    "no_version": "No download version is available yet.",
+    "recommended_version": "Recommended Version",
+    "other_versions": "Other Versions",
+    "inactive_version": "Inactive",
+    "not_recommended": "Not recommended"
   },
   "profile": {
     "title": "Profile",
@@ -709,6 +776,11 @@
       "download": "Download",
       "create_account": "Create Account"
     },
+    "knowledge_base_section": {
+      "label": "WIKI",
+      "title": "Knowledge Base",
+      "browse_full_wiki": "Browse Full Wiki"
+    },
     "announcements_section": {
       "label": "LATEST UPDATES",
       "title": "Announcements",
@@ -731,6 +803,202 @@
     }
   },
   "admin": {
+    "dashboard": {
+      "statistics": {
+        "title": "Statistics Dashboard",
+        "description": "Overview of forum, gameplay, players, and downloads.",
+        "refresh": "Refresh",
+        "loading": "Loading statistics...",
+        "loadFailed": "Failed to load statistics.",
+        "range": "Range",
+        "range7d": "7 days",
+        "range30d": "30 days",
+        "range90d": "90 days",
+        "totalForumThreads": "Total Forum Threads",
+        "totalGameSessions": "Total Game Sessions",
+        "totalUsers": "Total Users",
+        "totalDownloads": "Total Downloads",
+        "forumActivity": "Forum Activity",
+        "gameplayActivity": "Gameplay Activity",
+        "userGrowth": "User Growth",
+        "downloadTrend": "Download Trend",
+        "noData": "No data available."
+      }
+    },
+    "auditLogs": {
+      "rowsPerPage": "Rows per page",
+      "nav": "Audit Log",
+      "title": "System Audit Log",
+      "description": "View system-wide activity and administrative actions.",
+      "searchPlaceholder": "Search actor, entity, or ID...",
+      "filters": "Filters",
+      "actionType": "Action type",
+      "allActions": "All actions",
+      "entityName": "Entity",
+      "entityId": "Entity ID",
+      "actor": "Actor",
+      "systemActor": "System",
+      "ipAddress": "IP address",
+      "timestamp": "Time",
+      "details": "Details",
+      "oldValue": "Old value",
+      "newValue": "New value",
+      "from": "From",
+      "to": "To",
+      "reset": "Reset",
+      "noData": "No audit logs found.",
+      "loadFailed": "Failed to load audit logs.",
+      "pageOf": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "actions": {
+        "CREATE": "Create",
+        "UPDATE": "Update",
+        "DELETE": "Delete",
+        "LOGIN": "Login",
+        "LOGOUT": "Logout",
+        "REVOKE_SESSION": "Revoke Session",
+        "BAN_USER": "Ban User",
+        "UNBAN_USER": "Unban User",
+        "PROCESS_REPORT": "Process Report"
+      }
+    },
+    "account": {
+      "nav_label": "Accounts",
+      "title": "Account Management",
+      "subtitle": "View, search, edit, ban, unban, and delete user accounts.",
+      "total": "Total accounts",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageInfo": "Page {page} of {totalPages}"
+      },
+      "search_placeholder": "Search by ID, name, or email...",
+      "filters": {
+        "all": "All",
+        "user": "User",
+        "admin": "Admin",
+        "active": "Active",
+        "banned": "Banned",
+        "deleted": "Deleted",
+        "clear": "Clear Filter"
+      },
+      "columns": {
+        "user": "User",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "created_at": "Created At",
+        "actions": "Actions"
+      },
+      "actions": {
+        "view_profile": "View Profile",
+        "edit_account": "Edit Account",
+        "view_audit_log": "View Audit Log",
+        "ban_account": "Ban Account",
+        "unban_account": "Unban Account",
+        "delete_account": "Delete Account",
+        "back": "Back to Accounts",
+        "save": "Save",
+        "cancel": "Cancel",
+        "confirm_ban": "Confirm Ban",
+        "confirm_unban": "Confirm Unban",
+        "confirm_delete": "Confirm Delete",
+        "restore_account": "Restore Account",
+        "confirm_restore": "Confirm Restore"
+      },
+      "detail": {
+        "title": "Account Detail",
+        "subtitle": "Managing user: {name}",
+        "account_information": "Account Information",
+        "user_id": "User ID",
+        "created_at": "Created At",
+        "updated_at": "Updated At",
+        "ban_details": "Ban Details",
+        "ban_reason": "Ban Reason",
+        "expiration_date": "Expiration Date",
+        "permanent": "Permanent",
+        "no_reason": "No reason provided",
+        "profile_summary": "Profile Summary",
+        "action_panel": "Actions",
+        "game_profile": "Game Profile",
+        "display_name": "Display Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "deleted_at": "Deleted At",
+        "banned_at": "Banned At",
+        "game_profile_id": "Game Profile ID",
+        "total_sessions": "Total Sessions",
+        "total_wins": "Total Wins",
+        "total_losses": "Total Losses",
+        "total_abandoned": "Total Abandoned",
+        "total_play_time": "Total Play Time",
+        "equipped_achievement": "Equipped Achievement"
+      },
+      "modal": {
+        "edit_title": "Edit Account",
+        "display_name": "Display Name",
+        "avatar_url": "Avatar URL",
+        "role": "Role",
+        "role_readonly_hint": "Role management is not included in this task.",
+        "ban_title": "Ban Account",
+        "ban_description": "Are you sure you want to ban {name}?",
+        "ban_reason": "Ban Reason",
+        "ban_expiration": "Expiration Date (Optional)",
+        "unban_title": "Unban Account",
+        "unban_description": "Are you sure you want to restore access to this user?",
+        "delete_title": "Delete Account",
+        "delete_warning": "Warning: Account will be soft deleted and no longer accessible.",
+        "audit_title": "Audit Log for {name}",
+        "ban_reason_editor_hint": "Describe why this account is being banned.",
+        "ban_reason_plain_required": "Ban reason is required.",
+        "ban_reason_plain_too_long": "Ban reason must be at most 500 characters.",
+        "restore_title": "Restore Account",
+        "restore_description": "This account will be restored and can access the system again unless it is still banned."
+      },
+      "role": {
+        "title": "Role",
+        "user": "User",
+        "admin": "Admin",
+        "change": "Change Role",
+        "changeRole": "Change Role",
+        "currentRole": "Current Role",
+        "newRole": "New Role",
+        "promoteConfirmTitle": "Grant Admin Privileges?",
+        "promoteConfirmDescription": "This account will gain access to all administrative functions. Are you sure you want to proceed?",
+        "demoteConfirmTitle": "Revoke Admin Privileges?",
+        "demoteConfirmDescription": "This account will lose access to all administrative functions. Are you sure you want to proceed?",
+        "selfDemoteBlocked": "You cannot revoke your own admin privileges.",
+        "lastAdminBlocked": "Cannot revoke privileges of the last active administrator.",
+        "updateSuccess": "Account role updated successfully.",
+        "updateFailed": "Failed to update account role.",
+        "noChange": "Role was not changed.",
+        "save": "Save Role",
+        "cancel": "Cancel"
+      },
+      "empty": {
+        "no_users": "No users found.",
+        "no_audit_logs": "No audit logs found for this user."
+      },
+      "messages": {
+        "update_success": "Account updated successfully.",
+        "ban_success": "Account banned successfully.",
+        "unban_success": "Account unbanned successfully.",
+        "delete_success": "Account deleted successfully.",
+        "generic_error": "Something went wrong. Please try again.",
+        "restore_success": "Account restored successfully."
+      },
+      "validation": {
+        "display_name_required": "Display name is required.",
+        "display_name_too_short": "Display name must be at least 2 characters.",
+        "display_name_too_long": "Display name must be at most 50 characters.",
+        "ban_reason_required": "Ban reason is required.",
+        "ban_reason_too_long": "Ban reason must be at most 500 characters.",
+        "ban_expiration_future": "Expiration date must be in the future.",
+        "invalid_avatar": "Invalid avatar URL"
+      }
+    },
     "download": {
       "nav_label": "Download",
       "title": "Download Management",
@@ -765,10 +1033,16 @@
         "empty": "No game versions uploaded yet.",
         "error": "Failed to load game versions.",
         "total": "Total versions",
+        "pagination": {
+          "previous": "Previous",
+          "next": "Next",
+          "pageInfo": "Page {page} of {totalPages}"
+        },
         "columns": {
           "version": "Version",
           "file_name": "File Name",
           "file_size": "File Size",
+          "downloads": "Downloads",
           "mime_type": "MIME Type",
           "uploaded_at": "Uploaded At",
           "status": "Status",
@@ -791,14 +1065,223 @@
           "version": "Version",
           "file_path": "File Path",
           "file_size": "File Size",
+          "total_downloads": "Total downloads",
           "mime_type": "MIME Type",
           "uploaded_at": "Uploaded At",
           "updated_at": "Updated At",
           "latest_status": "Latest Status",
           "close": "Close"
         }
+      },
+      "active": {
+        "badge": "Active",
+        "current": "Current Version",
+        "set_active": "Set Active",
+        "title": "Set Active Download Version",
+        "description": "This version will become the recommended download on the public Download page. The previous active version will become inactive but will remain in the version list.",
+        "warning": "Use this when the newest upload has issues and you want users to download a stable older version.",
+        "confirm": "Confirm",
+        "success": "Active download version updated successfully.",
+        "error": "Failed to update active download version.",
+        "inactive_badge": "Inactive",
+        "summary_title": "Current Public Download",
+        "no_active": "No active version selected.",
+        "summary_note": "Users will download this version from the public Download page.",
+        "inactive_note": "Visible in the version list, but not used as the recommended download.",
+        "current_version": "Current active version",
+        "new_version": "New active version"
+      }
+    },
+    "accounts": {
+      "onlineStatus": {
+        "column": "Online Status",
+        "online": "Online",
+        "offline": "Offline",
+        "checking": "Checking...",
+        "unknown": "Unknown",
+        "web": "Web",
+        "game": "Game",
+        "webAndGame": "Web + Game",
+        "lastOnline": "Last: {time}",
+        "noRecentActivity": "No recent activity",
+        "presenceLoadFailed": "Failed to load online status."
+      },
+      "online": {
+        "webOnline": "Web Online",
+        "gameOnline": "Game Online",
+        "offline": "Offline",
+        "unknown": "Unknown",
+        "lastOnline": "Last online",
+        "title": "Online Status"
+      },
+      "detail": {
+        "sessions": {
+          "checking": "Checking session...",
+          "noActiveSession": "No active session",
+          "activeSession": "{count} active session",
+          "activeSessions": "{count} active sessions",
+          "revoke": "Revoke Session",
+          "revokeDialogTitle": "Revoke session?",
+          "revokeDialogDescription": "This will log this user out of the selected active session.",
+          "revokeMultipleDialogDescription": "This user has {count} active sessions. This action will revoke the most recent active session.",
+          "revokeConfirm": "Revoke session",
+          "revokeSuccess": "Session revoked successfully.",
+          "revokeFailed": "Failed to revoke session.",
+          "loadFailed": "Failed to check active sessions."
+        }
       }
     }
+  },
+  "about_us": {
+    "nav_label": "About Us",
+    "hero": {
+      "eyebrow": "THE TEAM BEHIND THE SHAPES",
+      "title": "Hall of Fame",
+      "subtitle": "Meet the creators, builders, testers, and storytellers behind Borrowed Shapes."
+    },
+    "stats": {
+      "members": "6 Members",
+      "adventure": "1 Co-op Adventure",
+      "scrum": "Scrum Team",
+      "platform": "Game + Web Platform"
+    },
+    "team": {
+      "title": "Meet the Crew",
+      "subtitle": "Each member carries a role, a responsibility, and a piece of the world we built together.",
+      "roles": {
+        "sm": "Scrum Master",
+        "tl": "Technical Leader",
+        "doc": "Document Lead",
+        "dl": "Diagram Lead",
+        "qa": "Quality Assurance",
+        "des": "Designer Lead"
+      },
+      "specialties": {
+        "sm": "Sprint Guardian",
+        "tl": "System Architect",
+        "doc": "Documentation Keeper",
+        "dl": "Diagram Crafter",
+        "qa": "Bug Hunter",
+        "des": "Visual Shapeshifter"
+      },
+      "descriptions": {
+        "sm": "Manage Scrum activities, coordinate Sprint planning and reviews, monitor project progress, manage Product Backlog priorities, communicate with stakeholders, and ensure the project follows Scrum practices throughout development.",
+        "tl": "Design technical architecture for web systems and gameplay mechanics, manage database and networking structures, review technical implementation, and maintain overall system stability and code quality.",
+        "doc": "Prepare, maintain, organize, and standardize project reports, technical documentation, formatting guidelines, and document version control.",
+        "dl": "Design and maintain technical diagrams including class diagrams, sequence diagrams, activity diagrams, use case diagrams, workflows, database relationship diagrams, and system architecture visualizations to support analysis and development activities.",
+        "qa": "Execute testing activities, validate Sprint deliverables, track defects, verify gameplay and system quality, and ensure completed features satisfy the Definition of Done (DoD).",
+        "des": "Design UI/UX layouts, gameplay visuals, interaction flows, visual assets, and maintain visual consistency across game and web systems."
+      }
+    },
+    "closing": {
+      "title": "Built by many hands, shaped as one.",
+      "description": "Borrowed Shapes is not only a game project, but also a shared journey of planning, designing, building, testing, and improving together.",
+      "primary_cta": "Explore the Game",
+      "secondary_cta": "Download the Game"
+    }
+  },
+  "contact_page": {
+    "hero": {
+      "badge": "Support & Community",
+      "title": "Contact Borrowed Shapes",
+      "description": "Do you need help with your account, downloading the game, reporting a gameplay bug, or giving feedback to Borrowed Shapes? This page helps you choose the right contact channel so our development team can respond and assist you faster."
+    },
+    "cards": {
+      "account": {
+        "title": "Account Support",
+        "description": "For issues regarding registration, login, Google Login, forgotten passwords, player profiles, avatars, and download history.",
+        "cta": "Manage Account"
+      },
+      "bug": {
+        "title": "Report Game or Website Bugs",
+        "description": "Submit bugs related to gameplay, co-op missions, game downloads, forums, wikis, leaderboards, or website features.",
+        "cta": "Report on Forum"
+      },
+      "suggestion": {
+        "title": "Community Feedback",
+        "description": "Share your ideas for maps, characters, missions, achievements, wikis, or improvements to make Borrowed Shapes more fun and playable.",
+        "cta": "Discuss with Community"
+      },
+      "dev": {
+        "title": "Contact Developers",
+        "description": "For direct communication with the development team, including collaborations, critical feedback, or issues not suitable for public posting.",
+        "cta": "Send Email"
+      }
+    },
+    "before_contact": {
+      "title": "Before You Contact Us",
+      "description": "To save time waiting for a response, you can quickly check some of the items below before submitting a support request.",
+      "items": [
+        "Check if you are using the latest game version on the Download page.",
+        "Try logging out and logging back in if the error is related to your account or session.",
+        "Search the Forum or Wiki to see if your issue has already been resolved.",
+        "Prepare screenshots or error messages if available."
+      ]
+    },
+    "bug_report": {
+      "title": "When reporting a bug, please include",
+      "items": [
+        "The game version or website URL where the error occurred.",
+        "The device, operating system, and browser you are using.",
+        "Clear steps to reproduce the bug.",
+        "Screenshots, a short video, or error message content if available.",
+        "The time the error occurred and the related account if the error involves profiles, downloads, or play history."
+      ]
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "What should I do if I can't log in?",
+      "a1": "Please check your email, password, and internet connection, then try logging in again. If you use Google Login, make sure your Google account is active. If the error persists, please send a description of the error and a screenshot to the development team.",
+      "q2": "What should I do if I can't download the game?",
+      "a2": "Please check your internet connection, available storage on your device, and try downloading again from the Download page. If the download link has expired or is not working, return to the Download page to get a new link.",
+      "q3": "How do I report inappropriate content on the forum?",
+      "a3": "Please use the report function if available on the post or comment. The report will be sent to the moderation team for review according to community guidelines.",
+      "q4": "Where should I send gameplay feedback or new map suggestions?",
+      "a4": "You can create a post in the Forum with the Suggestion type or discuss it in community threads. Clear feedback with specific examples will help the development team evaluate it better."
+    }
+  },
+  "contact": {
+    "eyebrow": "Support & Feedback",
+    "title": "Contact Borrowed Shapes",
+    "description": "Need help with your account, downloads, forum, achievements, gameplay results, or a bug report? Contact the Borrowed Shapes team through the project’s official channel.",
+    "lastUpdated": "Last updated: 21/06/2026",
+    "card": {
+      "title": "Contact us on Facebook",
+      "description": "The fastest way to send questions, bug reports, or feedback to the Borrowed Shapes team is through the project’s official Facebook page.",
+      "cta": "Open Facebook",
+      "secondaryNote": "If you are reporting a bug, please describe the issue clearly and include reproduction steps, browser/device information, and screenshots if available."
+    },
+    "topics": [
+      "Account & login",
+      "Game download",
+      "Website or game bugs",
+      "Forum, Wiki & comments",
+      "Gameplay results, leaderboards & achievements",
+      "Content reports",
+      "Product feedback"
+    ],
+    "privacyReminder": "Do not send passwords, verification codes, access tokens, refresh tokens, or sensitive information through messages. The Borrowed Shapes team will never ask for your password.",
+    "faq": [
+      {
+        "q": "I cannot log in. What should I do?",
+        "a": "Check your email/password, try the forgot password flow, or sign in again with Google if you use Google Login."
+      },
+      {
+        "q": "I cannot download the game. What should I do?",
+        "a": "Go to the Download page, choose the recommended/active version, and try again with a stable internet connection."
+      },
+      {
+        "q": "How do I report inappropriate content?",
+        "a": "Use the report feature on the website if available, or send the relevant link/content through the official contact channel."
+      }
+    ]
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "empty": "No records found"
   },
   "gameResults": {
     "management_title": "Game Results Management",
@@ -881,6 +1364,139 @@
     "history_col_total_time": "Total Time",
     "history_col_played_date": "Played Date",
     "close": "Close"
+  },
+  "legal": {
+    "common": {
+      "projectName": "Borrowed Shapes",
+      "lastUpdated": "Last updated",
+      "backHome": "Back to home",
+      "contactPage": "Contact page",
+      "comingSoon": "Coming soon",
+      "externalLink": "Open link"
+    },
+    "contact": {
+      "metaTitle": "Contact | Borrowed Shapes",
+      "badge": "Borrowed Shapes",
+      "title": "Contact",
+      "description": "Want to share feedback, report an issue, ask about the game download, or follow the progress of Borrowed Shapes? You can reach the team through the channels below.",
+      "intro": "Borrowed Shapes is a 3D co-op game project with a supporting community web platform. We welcome feedback about gameplay experience, technical issues, forum content, wiki pages, and the download system.",
+      "methods": {
+        "facebook": {
+          "title": "Facebook",
+          "description": "Follow announcements, updates, and message the team through Facebook."
+        },
+        "email": {
+          "title": "Email",
+          "description": "Send detailed feedback, support questions, or account-related information."
+        },
+        "community": {
+          "title": "Community",
+          "description": "Join the community channel to discuss the game, find teammates, and follow new activities."
+        },
+        "project": {
+          "title": "Source / Project",
+          "description": "View technical information or follow development progress if the link is publicly available."
+        }
+      },
+      "noteTitle": "Note",
+      "note": "This contact page currently provides static contact information only. A direct contact form may be considered in a future version."
+    },
+    "privacy": {
+      "metaTitle": "Privacy Policy | Borrowed Shapes",
+      "badge": "Privacy",
+      "title": "Privacy Policy",
+      "lastUpdatedValue": "June 22, 2026",
+      "intro": "This policy explains how Borrowed Shapes collects, uses, and protects information when you use the website, account system, forum, wiki, leaderboard, download system, and related features.",
+      "sections": [
+        {
+          "title": "1. Information we may collect",
+          "body": "When you use Borrowed Shapes, the system may store information needed to operate the service, including:\n- Account information such as email, display name, avatar, and login method.\n- Session information such as login time, session status, platform, IP address, and basic device information.\n- User-generated content such as forum posts, comments, reports, responses, or wiki content if you have editing permissions.\n- Gameplay data such as game profile, achievements, game runs, session results, and related statistics.\n- Download history such as downloaded version, download time, and technical information needed for download statistics.\n- System logs and audit logs used for security, administration, and troubleshooting."
+        },
+        {
+          "title": "2. How we use information",
+          "body": "We use information to:\n- Create and manage user accounts.\n- Support login, logout, and secure session handling.\n- Display profiles, achievements, gameplay history, and community content.\n- Operate the forum, wiki, announcements, reports, and game download system.\n- Record administrative activity for transparency and security.\n- Detect errors, prevent abuse, spam, or harmful behavior.\n- Generate system-level statistics to improve the product experience."
+        },
+        {
+          "title": "3. Community content",
+          "body": "Content you post publicly on the forum, comments, or wiki may be visible to other users. You should avoid posting sensitive personal information or anything you do not want to make public."
+        },
+        {
+          "title": "4. Security and audit logs",
+          "body": "Actions such as login, logout, account updates, bans, unbans, report handling, or important data changes may be recorded in audit logs. These logs help administrators review system activity and troubleshoot issues."
+        },
+        {
+          "title": "5. Data sharing",
+          "body": "Borrowed Shapes does not sell users' personal data. Data is used only for operating the project, securing the system, generating internal statistics, and supporting users."
+        },
+        {
+          "title": "6. Data storage and protection",
+          "body": "We use reasonable measures to protect data, including admin permissions, session controls, and audit logging. However, no system can guarantee absolute security in every situation."
+        },
+        {
+          "title": "7. Policy changes",
+          "body": "This policy may be updated when new features are added or when system operations change. The latest version will be shown on this page."
+        },
+        {
+          "title": "8. Contact",
+          "body": "If you have questions about privacy or your data, please contact the Borrowed Shapes team through the Contact page."
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Terms of Service | Borrowed Shapes",
+      "badge": "Terms",
+      "title": "Terms of Service",
+      "lastUpdatedValue": "June 22, 2026",
+      "intro": "By using the Borrowed Shapes website, account system, forum, wiki, download system, or related features, you agree to follow the terms below.",
+      "ruleZero": {
+        "badge": "Supreme Clause",
+        "title": "Rule 0 — The Supreme Decree of Her Royal Highness",
+        "body": "By accessing, browsing, using, or continuing to remain within the services of Borrowed Shapes, the user solemnly confirms that they have read, understood, and voluntarily accepted this Rule 0. Accordingly, the user declares absolute loyalty to positive spirit, respect for the community, preservation of system order, and, within a purely entertainment-based context, service to the glorious greatness of Her Royal Highness.",
+        "note": "This clause is issued as a formally styled easter egg. It does not create any actual legal obligation, although smiling upon discovery is considered highly encouraged."
+      },
+      "sections": [
+        {
+          "title": "1. Introduction",
+          "body": "Borrowed Shapes is a 3D co-op game project with a supporting community web platform, including accounts, player profiles, forum, wiki, announcements, leaderboard, achievements, and game downloads."
+        },
+        {
+          "title": "2. User accounts",
+          "body": "You are responsible for keeping your login information secure and for activities that happen under your account. You should not share your account, attempt to access another user's account, or use false information to harm the system."
+        },
+        {
+          "title": "3. Community rules",
+          "body": "When using the forum, comments, reports, or community areas, you agree not to:\n- Post spam, harassment, insults, or harmful content.\n- Post misleading, deceptive, or false information.\n- Share content that is inappropriate for the project community.\n- Intentionally exploit bugs, damage the system, or disrupt the service.\n- Impersonate others or use an account for harmful purposes."
+        },
+        {
+          "title": "4. User-generated content",
+          "body": "You are responsible for the content you post. The moderation team may edit, hide, lock, or remove content that violates community rules or affects system operations."
+        },
+        {
+          "title": "5. Game downloads and builds",
+          "body": "Game builds are provided so users can experience Borrowed Shapes. You may not redistribute, modify, or use the builds in a way that misrepresents the project source without permission."
+        },
+        {
+          "title": "6. Gameplay, achievements, and leaderboard",
+          "body": "Gameplay data, achievements, play history, and leaderboard results may be recorded and displayed in the system. If cheating, exploit abuse, or data manipulation is detected, administrators may adjust, hide, or remove related results."
+        },
+        {
+          "title": "7. Administrative rights",
+          "body": "Administrators may handle reports, issue warnings, ban accounts, unban accounts, remove content, or take necessary actions to protect the community and the system."
+        },
+        {
+          "title": "8. Service changes",
+          "body": "Borrowed Shapes may change, update, suspend, or remove features during development. Some content, builds, or test data may change between versions."
+        },
+        {
+          "title": "9. Limitation of responsibility",
+          "body": "The project is developed for learning, product demonstration, and user experience purposes. We try to keep the system stable, but we do not guarantee that the service will always be error-free, uninterrupted, or suitable for every use case."
+        },
+        {
+          "title": "10. Contact",
+          "body": "If you have questions about these terms, please contact the Borrowed Shapes team through the Contact page."
+        }
+      ]
+    }
   },
   "forums": {
     "title": "Forums",
@@ -1072,34 +1688,48 @@
       "toast_cat_failed": "Operation failed",
       "sort_alpha_asc": "Name (A - Z)",
       "sort_alpha_desc": "Name (Z - A)"
-    },
-    "leaderboard": {
-      "page_title": "Leaderboard",
-      "tab_all_time": "All-Time",
-      "tab_seasonal": "Seasonal",
-      "season_label": "Season",
-      "hero_subtitle": "RANKINGS",
-      "hero_title_highlight": "Leader",
-      "hero_title_rest": "board",
-      "stats_total_runs": "Completed Runs",
-      "top_3": "TOP 3",
-      "full_rankings": "Full Rankings",
-      "col_rank": "#",
-      "col_lobby_name": "Team / Lobby",
-      "col_players": "Players",
-      "col_time": "Time",
-      "col_date": "Date",
-      "your_ranking": "Your Ranking",
-      "global_rank": "Global Rank",
-      "no_entries": "No leaderboard entries yet.",
-      "loading": "Loading leaderboard...",
-      "modal_rank": "Rank",
-      "modal_completion_time": "Completion Time",
-      "modal_completed_date": "Completed Date",
-      "modal_players": "Players",
-      "modal_close": "Close",
-      "ranked": "Ranked",
-      "unranked": "Unranked"
+    }
+  },
+  "leaderboard": {
+    "page_title": "Leaderboard",
+    "tab_all_time": "All-Time",
+    "tab_seasonal": "Seasonal",
+    "season_label": "Season",
+    "hero_subtitle": "RANKINGS",
+    "hero_title_highlight": "Leader",
+    "hero_title_rest": "board",
+    "stats_total_runs": "Completed Runs",
+    "top_3": "TOP 3",
+    "full_rankings": "Full Rankings",
+    "col_rank": "#",
+    "col_lobby_name": "Team / Lobby",
+    "col_players": "Players",
+    "col_time": "Time",
+    "col_date": "Date",
+    "your_ranking": "Your Ranking",
+    "global_rank": "Global Rank",
+    "no_entries": "No leaderboard entries yet.",
+    "loading": "Loading leaderboard...",
+    "modal_rank": "Rank",
+    "modal_completion_time": "Completion Time",
+    "modal_completed_date": "Completed Date",
+    "modal_players": "Players",
+    "modal_close": "Close",
+    "ranked": "Ranked",
+    "unranked": "Unranked"
+  }
+},
+"admin": {
+  "account": {
+    "sort": {
+      "sortByRole": "Sort by role",
+      "sortByStatus": "Sort by status",
+      "sortByOnlineStatus": "Sort by online status",
+      "sortByCreatedAt": "Sort by created date",
+      "ascending": "Ascending",
+      "descending": "Descending"
     }
   }
+}
+}
 }

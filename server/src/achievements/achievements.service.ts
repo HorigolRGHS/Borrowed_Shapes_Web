@@ -87,7 +87,7 @@ export class AchievementService {
       badgeImageUrl: row.badgeImageUrl,
       type: row.type,
       seasonMonth: row.seasonMonth,
-      expiresAt: row.expiresAt ? new Date(row.expiresAt) : null,
+      expiresAt: row.expiresAt ? new Date(row.expiresAt) : undefined,
       earnedCount: Number(row.earnedCount || 0),
     }));
   }
@@ -167,7 +167,7 @@ export class AchievementService {
       badgeImageUrl: row.badgeImageUrl,
       type: row.type,
       seasonMonth: row.seasonMonth,
-      expiresAt: row.expiresAt ? new Date(row.expiresAt) : null,
+      expiresAt: row.expiresAt ? new Date(row.expiresAt) : undefined,
       earnedCount: Number(row.earnedCount || 0),
     }));
 
@@ -287,7 +287,7 @@ export class AchievementService {
       badgeImageUrl: row.badgeImageUrl,
       type: row.type,
       seasonMonth: row.seasonMonth,
-      expiresAt: row.expiresAt ? new Date(row.expiresAt) : null,
+      expiresAt: row.expiresAt ? new Date(row.expiresAt) : undefined,
       earnedCount: Number(row.earnedCount || 0),
     }));
   }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useI18n } from "@/lib/i18/i18n-context";
-import { api, syncProfile } from "@/lib/api/api-client";
+import { api, syncProfile, getUserProfile } from "@/lib/api/api-client";
 import { toast } from "react-toastify";
 import {
   Trophy,
@@ -14,6 +14,7 @@ import {
   X,
   Compass,
   Clock,
+  User,
 } from "lucide-react";
 import {
   Dialog,
@@ -281,6 +282,14 @@ function AchievementDetailModal({
   isEquipping: boolean;
 }) {
   const { t } = useI18n();
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setUserProfile(getUserProfile());
+    }
+  }, []);
+
   if (!achievement) return null;
 
   const isExpiredOwned = achievement.owned && !achievement.equippable && achievement.type === "SEASONAL";
@@ -296,16 +305,24 @@ function AchievementDetailModal({
         <div className="relative px-6 pt-8 pb-6 bg-gradient-to-b from-muted/50 to-transparent dark:from-[#0f1025] dark:to-transparent">
           <div className="absolute inset-0 bg-gradient-to-b from-sky-500/5 via-transparent to-transparent pointer-events-none" />
           <div className={`
-            relative mx-auto flex h-24 w-24 items-center justify-center rounded-2xl border
+            relative mx-auto flex h-28 w-28 items-center justify-center rounded-2xl
             ${achievement.owned && !isExpiredOwned
-              ? "border-sky-500/30 bg-muted/10 dark:bg-[#0c0e20] shadow-[0_0_30px_rgba(56,189,248,0.1)]"
-              : "border-border dark:border-gray-700/50 bg-muted/5 dark:bg-[#0c0e20]"
+              ? "bg-transparent shadow-[0_0_30px_rgba(56,189,248,0.15)]"
+              : "bg-transparent"
             }
           `}>
+            <div className="absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20 bg-muted border-2 border-border overflow-hidden z-0">
+              {userProfile?.imgUrl ? (
+                <img src={userProfile.imgUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-10 h-10 text-muted-foreground" />
+              )}
+            </div>
             <img
               src={achievement.badgeImageUrl}
-              alt={achievement.name}
-              className={`h-16 w-16 object-contain ${
+              alt=""
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-md ${
                 !achievement.owned
                   ? "grayscale opacity-40"
                   : isExpiredOwned
@@ -617,11 +634,14 @@ export function ProfileAchievements({ equippedAchievementId }: { equippedAchieve
           <>
             <div className="hidden sm:block flex-1" />
             <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-2">
-              <div className="h-10 w-10 rounded-lg overflow-hidden border border-amber-500/40 bg-muted/10 dark:bg-[#0c0e20] flex items-center justify-center">
+              <div className="relative h-12 w-12 flex items-center justify-center">
+                <div className="absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 rounded-md bg-muted border-2 border-border overflow-hidden flex items-center justify-center">
+                  <User className="w-5 h-5 text-muted-foreground" />
+                </div>
                 <img
                   src={equippedAchievement.badgeImageUrl}
                   alt={equippedAchievement.name}
-                  className="h-8 w-8 object-contain"
+                  className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain"
                 />
               </div>
               <div>

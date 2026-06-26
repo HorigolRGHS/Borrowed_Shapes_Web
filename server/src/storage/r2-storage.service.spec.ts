@@ -30,7 +30,7 @@ describe('R2StorageService.putObject', () => {
     await svc.putObject('wiki/abc.png', buf, 'image/png');
 
     expect(send).toHaveBeenCalledTimes(1);
-    const cmd = send.mock.calls[0][0];
+    const cmd = send.mock.calls[0][0] as any;
     expect(cmd).toBeInstanceOf(PutObjectCommand);
     expect(cmd.input).toMatchObject({
       Bucket: 'bws',

@@ -541,7 +541,7 @@ describe('WikiService.findBySlugs', () => {
 
 describe('WikiService public mappers (locale)', () => {
   let service: WikiService;
-  let em: { findAndCount: jest.Mock; findOne: jest.Mock };
+  let em: { findAndCount: jest.Mock; findOne: jest.Mock; execute: jest.Mock };
 
   const page = () => ({
     id: 'p1',
@@ -549,7 +549,7 @@ describe('WikiService public mappers (locale)', () => {
     slugVi: 'hiep-si-rong',
     title: 'Dragon Knight',
     titleVi: 'Hiệp sĩ rồng',
-    metadataJson: null,
+    metadataJson: { category: 'Mechanic', tags: ['borrow'], tags_vi: ['mượn'], stats: {}, relatedPages: [] },
     isPublished: true,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-02'),
@@ -568,6 +568,7 @@ describe('WikiService public mappers (locale)', () => {
     em = {
       findAndCount: jest.fn().mockResolvedValue([[page()], 1]),
       findOne: jest.fn().mockResolvedValue(page()),
+      execute: jest.fn().mockResolvedValue([{ pageId: 'p1', c: 3 }]),
     };
     const moduleRef = await Test.createTestingModule({
       providers: [WikiService, { provide: EntityManager, useValue: em }],
@@ -580,6 +581,7 @@ describe('WikiService public mappers (locale)', () => {
     const item = out.items[0] as any;
     expect(item.title).toBe('Dragon Knight');
     expect(item.slug).toBe('dragon-knight');
+    expect(item.metadataJson).toEqual({ category: 'Mechanic', tags: ['borrow'], tags_vi: ['mượn'], stats: {}, relatedPages: [] });
     expect(item).not.toHaveProperty('titleVi');
     expect(item).not.toHaveProperty('slugVi');
     expect(item).not.toHaveProperty('content');
@@ -633,6 +635,7 @@ describe('WikiService public mappers (locale)', () => {
     expect(item.title).toBe('Hiệp sĩ rồng');
     expect(item.slug).toBe('hiep-si-rong');
     expect(item.latestRevision.summary).toBe('VI summary');
+    expect(item.metadataJson?.category).toBe('Mechanic');
     expect(item).not.toHaveProperty('titleVi');
     expect(item).not.toHaveProperty('slugVi');
   });
@@ -644,5 +647,42 @@ describe('WikiService public mappers (locale)', () => {
     expect(item).toHaveProperty('titleVi', 'Hiệp sĩ rồng');
     expect(item.slug).toBe('dragon-knight');
     expect(item.title).toBe('Dragon Knight');
+    expect(item.metadataJson?.category).toBe('Mechanic');
+  });
+});
+
+describe('WikiService.getAdminStats', () => {
+  let service: WikiService;
+  let em: { count: jest.Mock };
+
+  beforeEach(async () => {
+    em = {
+      count: jest.fn()
+        .mockResolvedValueOnce(10)   // totalPages
+        .mockResolvedValueOnce(7)    // published
+        .mockResolvedValueOnce(25),  // totalRevisions
+    };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        WikiService,
+        { provide: EntityManager, useValue: em },
+      ],
+    }).compile();
+    service = moduleRef.get(WikiService);
+  });
+
+  it('returns correct shape with drafts computed', async () => {
+    const stats = await service.getAdminStats();
+    expect(stats).toEqual({
+      totalPages: 10,
+      published: 7,
+      drafts: 3,
+      totalRevisions: 25,
+    });
+  });
+
+  it('calls em.count three times', async () => {
+    await service.getAdminStats();
+    expect(em.count).toHaveBeenCalledTimes(3);
   });
 });

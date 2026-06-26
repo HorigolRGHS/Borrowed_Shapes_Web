@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
 
@@ -55,11 +58,22 @@ export function AuthCard({ logo, title, description, children, footer, className
 }
 
 export function AuthLogo() {
+  const [imgError, setImgError] = useState(false);
+  
+  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev";
+  const logoUrl = `${R2_BASE}/Logo.jpg`;
+
   return (
     <div className="flex items-center gap-2">
-      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)]">
-        <span className="text-white font-bold font-orbitron text-[14px]">B</span>
-      </div>
+      {!imgError ? (
+        <div className="w-9 h-9 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)] overflow-hidden shrink-0">
+          <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+        </div>
+      ) : (
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)] shrink-0">
+          <span className="text-white font-bold font-orbitron text-[14px]">B</span>
+        </div>
+      )}
       <span className="text-white font-orbitron text-[11px] tracking-[0.08em]">
         BORROWED<span className="text-cyan-400"> SHAPES</span>
       </span>

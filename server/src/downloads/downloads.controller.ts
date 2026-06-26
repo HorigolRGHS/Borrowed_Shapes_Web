@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Query,
   Body,
@@ -45,6 +46,19 @@ export class DownloadsController {
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.listVersions(query);
     return okResponse('downloads.list_versions_success', data, `${req.method} ${req.path}`);
+  }
+
+  /**
+   * GET /downloads/active-version
+   * Public — Get the currently active game version.
+   */
+  @Public()
+  @Get('active-version')
+  @ApiOperation({ summary: 'Get the active game version for public download' })
+  async getActiveVersion(@Req() req: Request): Promise<ApiResponseDto<any>> {
+    const data = await this.downloadsService.getActiveVersion();
+    // Return null data if no active version found, so frontend can show empty state.
+    return okResponse('downloads.active_version_success', data, `${req.method} ${req.path}`);
   }
 
   /**
@@ -135,6 +149,26 @@ export class DownloadsController {
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.confirmUpload(dto);
     return okResponse('downloads.upload_confirmed', data, `${req.method} ${req.path}`);
+  }
+
+  /**
+   * PATCH /downloads/admin/versions/:id/active
+   * Admin only — Set a specific version as the active version.
+   */
+  @Roles('ADMIN')
+  @Patch('admin/versions/:id/active')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Set active download version (Admin)',
+    description: 'Sets the specified version as active and deactivates all others.',
+  })
+  async setActiveVersion(
+    @Param('id') id: string,
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    const data = await this.downloadsService.setActiveVersion(id, user);
+    return okResponse('downloads.set_active_success', data, `${req.method} ${req.path}`);
   }
 
   // ─── Helper: Optional JWT extraction ─────────────────────

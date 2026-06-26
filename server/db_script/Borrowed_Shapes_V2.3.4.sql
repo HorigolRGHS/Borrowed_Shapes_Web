@@ -600,9 +600,14 @@ CREATE TABLE web."FileAsset" (
   "filePath"    TEXT        NOT NULL,
   "fileSize"    BIGINT      NOT NULL,
   "mimeType"    TEXT        NOT NULL,
+  "isActive"    BOOLEAN     NOT NULL DEFAULT FALSE,
   "uploadedAt"  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt"   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS "FileAsset_one_active_idx"
+ON web."FileAsset" ((true))
+WHERE "isActive" = TRUE;
 
 -- ─── DownloadLog ─────────────────────────────────────────
 CREATE TABLE web."DownloadLog" (

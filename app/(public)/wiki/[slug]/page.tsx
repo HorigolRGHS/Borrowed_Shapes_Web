@@ -137,7 +137,7 @@ export default async function WikiDetailPage({
             <Separator className="my-8" />
             <Button asChild variant="link" className="px-0">
               <Link href={`/wiki/${encodeURIComponent(slug)}/history`}>
-                View history →
+                {dict.wiki.view_history}
               </Link>
             </Button>
           </>

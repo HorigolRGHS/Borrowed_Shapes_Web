@@ -43,25 +43,25 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans text-foreground dark:text-white">
-      <PublicHeader />
-
+    <>
       <main className="flex-1 container mx-auto px-4 pt-32 pb-16 max-w-6xl">
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/20 bg-muted border-2 border-border overflow-hidden">
-              {user.imgUrl ? (
-                <img src={user.imgUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <UserIcon className="w-12 h-12 text-muted-foreground" />
-              )}
-              {user.equippedAchievement && (
-                <div className="absolute -inset-3 border-4 border-amber-500/50 rounded-full z-10 pointer-events-none" />
-              )}
+            <div className="relative w-32 h-32 flex items-center justify-center">
+              <div className={`absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shadow-lg shadow-amber-500/20 bg-muted border-2 border-border overflow-hidden z-0 ${user.equippedAchievement?.badgeImageUrl ? "rounded-xl" : "rounded-full"}`}>
+                {user.imgUrl ? (
+                  <img src={user.imgUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <UserIcon className="w-10 h-10 text-muted-foreground" />
+                )}
+              </div>
               {user.equippedAchievement?.badgeImageUrl && (
-                <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-background rounded-full border-2 border-amber-500 flex items-center justify-center overflow-hidden z-20">
-                  <img src={user.equippedAchievement.badgeImageUrl} alt="Frame" className="w-full h-full object-cover" />
-                </div>
+                <img 
+                  src={user.equippedAchievement.badgeImageUrl} 
+                  alt="" 
+                  aria-hidden="true" 
+                  className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-md" 
+                />
               )}
             </div>
             <div className="text-center md:text-left">
@@ -80,7 +80,7 @@ export default function ProfilePage() {
 
         <EditProfileModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} user={user} />
 
-        <Tabs defaultValue="downloads" className="w-full">
+        <Tabs defaultValue="achievements" className="w-full">
           <TabsList className="bg-card/50 border border-border dark:border-white/10 mb-8 flex flex-wrap h-auto p-1 rounded-xl w-full justify-start overflow-x-auto">
             <TabsTrigger value="achievements" className="gap-2 data-[state=active]:bg-amber-500 data-[state=active]:text-black py-2.5 px-4 rounded-lg">
               <Trophy className="w-4 h-4" />
@@ -119,8 +119,6 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </main>
-
-      <PublicFooter />
-    </div>
+    </>
   );
 }

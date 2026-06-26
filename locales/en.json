@@ -997,6 +997,14 @@
         "ban_reason_too_long": "Ban reason must be at most 500 characters.",
         "ban_expiration_future": "Expiration date must be in the future.",
         "invalid_avatar": "Invalid avatar URL"
+      },
+      "sort": {
+        "sortByRole": "Sort by role",
+        "sortByStatus": "Sort by status",
+        "sortByOnlineStatus": "Sort by online status",
+        "sortByCreatedAt": "Sort by created date",
+        "ascending": "Ascending",
+        "descending": "Descending"
       }
     },
     "download": {
@@ -1718,18 +1726,4 @@
     "ranked": "Ranked",
     "unranked": "Unranked"
   }
-},
-"admin": {
-  "account": {
-    "sort": {
-      "sortByRole": "Sort by role",
-      "sortByStatus": "Sort by status",
-      "sortByOnlineStatus": "Sort by online status",
-      "sortByCreatedAt": "Sort by created date",
-      "ascending": "Ascending",
-      "descending": "Descending"
-    }
-  }
-}
-}
 }

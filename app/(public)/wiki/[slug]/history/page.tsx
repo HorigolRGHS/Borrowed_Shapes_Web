@@ -42,7 +42,7 @@ export default async function WikiHistoryPage({
 
   return (
     <>
-      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} currentPath="/history" />
+      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} pathSuffix="/history" />
       <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">Wiki</Link>

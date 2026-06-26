@@ -24,7 +24,6 @@ export default function ForumCategorySelector({
 
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
-  console.log("categories: ", categories);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
       {categories.map((cat) => (
@@ -64,9 +63,10 @@ export default function ForumCategorySelector({
             </div>
           </div>
 
-          <p className="text-slate-750 dark:text-slate-300 text-sm line-clamp-2">
-            {cat.description}
-          </p>
+          <div
+            className="text-slate-750 dark:text-slate-300 text-sm line-clamp-2"
+            dangerouslySetInnerHTML={{ __html: cat.description || "" }}
+          />
         </div>
       ))}
     </div>

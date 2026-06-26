@@ -62,7 +62,7 @@ export default async function WikiRevisionPage({
 
   return (
     <>
-      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} currentPath={`/history/${revisionId}`} />
+      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} pathSuffix={`/history/${revisionId}`} />
       <main className="container mx-auto px-4 py-8 pt-24 max-w-5xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">Wiki</Link>

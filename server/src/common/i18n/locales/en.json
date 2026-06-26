@@ -127,6 +127,7 @@
   },
   "wiki": {
     "list_success": "Wiki list retrieved",
+    "stats_success": "Wiki stats retrieved",
     "search_success": "Search completed",
     "detail_success": "Wiki detail retrieved",
     "history_success": "History retrieved",

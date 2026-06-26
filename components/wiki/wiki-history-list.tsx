@@ -137,7 +137,7 @@ export function WikiHistoryList({
           basePath={basePathHistory}
         />
         <p className="text-sm text-muted-foreground mt-4 text-center">
-          {total} revisions
+          {t("wiki.revisions_count").replace("{count}", String(total))}
         </p>
       </div>
     );
@@ -228,7 +228,7 @@ export function WikiHistoryList({
         basePath={basePathHistory}
       />
       <p className="text-sm text-muted-foreground mt-4 text-center">
-        {total} revisions
+        {t("wiki.revisions_count").replace("{count}", String(total))}
       </p>
     </div>
   );

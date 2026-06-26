@@ -65,7 +65,7 @@ export default function DashboardLayout({
   const navItems = [
     { href: "/dashboard", label: t("common.dashboard") },
     { href: "/dashboard/audit-logs", label: t("admin.auditLogs.nav") || "Audit Log" },
-    { href: "/dashboard/wiki", label: "Wiki" },
+    { href: "/dashboard/wiki", label: t("header.wiki") },
     { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts" },
     { href: "/dashboard/forums", label: t("forums.title") || "Forums" },
     { href: "/dashboard/achievements", label: t("common.achievements") },

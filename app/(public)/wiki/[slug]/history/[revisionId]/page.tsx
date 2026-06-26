@@ -109,16 +109,10 @@ export default async function WikiRevisionPage({
 
   return (
     <>
-      <WikiLocaleSync
-        slug={detail.slug}
-        slugVi={detail.slug}
-        pathSuffix={`/history/${revisionId}`}
-      />
-      <main className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
+      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} pathSuffix={`/history/${revisionId}`} />
+      <main className="container mx-auto px-4 py-8 pt-24 max-w-5xl">
         <nav className="text-sm text-muted-foreground mb-4">
-          <Link href="/wiki" className="hover:text-foreground">
-            {dict.wiki.list_title}
-          </Link>
+          <Link href="/wiki" className="hover:text-foreground">Wiki</Link>
           <span className="mx-2">›</span>
           <Link
             href={`/wiki/${encodeURIComponent(slug)}`}
@@ -131,7 +125,7 @@ export default async function WikiRevisionPage({
             href={`/wiki/${encodeURIComponent(slug)}/history`}
             className="hover:text-foreground"
           >
-            {dict.wiki.history_button}
+            History
           </Link>
           <span className="mx-2">›</span>
           <span className="text-foreground">{revisionId.slice(0, 8)}…</span>

@@ -47,35 +47,35 @@ export default async function WikiHistoryPage({
 
   return (
     <>
-      <WikiLocaleSync slug={detail.slug} slugVi={detail.slug} pathSuffix="/history" />
+      <WikiLocaleSync slug={detail.slug} slugVi={detail.slugVi} pathSuffix="/history" />
       <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
-      <nav className="text-sm text-muted-foreground mb-4">
-        <Link href="/wiki" className="hover:text-foreground">{dict.wiki.list_title}</Link>
-        <span className="mx-2">›</span>
-        <Link
-          href={`/wiki/${encodeURIComponent(slug)}`}
-          className="hover:text-foreground"
-        >
-          {title}
-        </Link>
-        <span className="mx-2">›</span>
-        <span className="text-foreground">{dict.wiki.history_button}</span>
-      </nav>
+        <nav className="text-sm text-muted-foreground mb-4">
+          <Link href="/wiki" className="hover:text-foreground">{dict.wiki.list_title}</Link>
+          <span className="mx-2">›</span>
+          <Link
+            href={`/wiki/${encodeURIComponent(slug)}`}
+            className="hover:text-foreground"
+          >
+            {title}
+          </Link>
+          <span className="mx-2">›</span>
+          <span className="text-foreground">{dict.wiki.history_button}</span>
+        </nav>
 
-      <h1 className="text-2xl font-bold tracking-tight mb-6">
-        {dict.wiki.history_heading.replace('{title}', title)}
-      </h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-6">
+          {dict.wiki.history_heading.replace('{title}', title)}
+        </h1>
 
-      <WikiHistoryList
-        pageId={detail.id}
-        slug={slug}
-        items={history.items}
-        total={history.total}
-        page={history.page}
-        totalPages={history.totalPages}
-        expectedLatestRevisionId={detail.latestRevision.id}
-      />
-    </main>
+        <WikiHistoryList
+          pageId={detail.id}
+          slug={slug}
+          items={history.items}
+          total={history.total}
+          page={history.page}
+          totalPages={history.totalPages}
+          expectedLatestRevisionId={detail.latestRevision.id}
+        />
+      </main>
     </>
   );
 }

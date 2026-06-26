@@ -993,6 +993,14 @@
         "ban_reason_too_long": "Lý do cấm tối đa 500 ký tự.",
         "ban_expiration_future": "Ngày hết hạn phải nằm trong tương lai.",
         "invalid_avatar": "URL ảnh đại diện không hợp lệ"
+      },
+      "sort": {
+        "sortByRole": "Sắp xếp theo vai trò",
+        "sortByStatus": "Sắp xếp theo trạng thái",
+        "sortByOnlineStatus": "Sắp xếp theo trạng thái online",
+        "sortByCreatedAt": "Sắp xếp theo ngày tạo",
+        "ascending": "Tăng dần",
+        "descending": "Giảm dần"
       }
     },
     "download": {
@@ -1714,17 +1722,4 @@
     "ranked": "Xếp hạng",
     "unranked": "Chưa xếp hạng"
   }
-},
-"admin": {
-  "account": {
-    "sort": {
-      "sortByRole": "Sắp xếp theo vai trò",
-      "sortByStatus": "Sắp xếp theo trạng thái",
-      "sortByOnlineStatus": "Sắp xếp theo trạng thái online",
-      "sortByCreatedAt": "Sắp xếp theo ngày tạo",
-      "ascending": "Tăng dần",
-      "descending": "Giảm dần"
-    }
-  }
-}
 }

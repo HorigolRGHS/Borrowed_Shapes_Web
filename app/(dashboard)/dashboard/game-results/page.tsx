@@ -76,6 +76,15 @@ interface GameResult {
   startedAt: string;
   completedAt?: string;
   players: GameResultPlayer[];
+  sessions?: {
+    id: string;
+    levelId: string;
+    levelName: string;
+    levelOrder: number;
+    status: string;
+    result?: string;
+    completionTimeSec?: number;
+  }[];
 }
 
 interface LeaderboardEntry {
@@ -100,7 +109,7 @@ function formatDate(dateStr?: string): string {
 }
 
 export default function GameResultsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<Tab>("runs");
@@ -119,6 +128,7 @@ export default function GameResultsPage() {
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardPage, setLeaderboardPage] = useState(1);
   const [leaderboardTotalPages, setLeaderboardTotalPages] = useState(1);
+  const [leaderboardScope, setLeaderboardScope] = useState<"all-time" | "seasonal">("all-time");
 
   useEffect(() => {
     const profile = getUserProfile();
@@ -132,20 +142,35 @@ export default function GameResultsPage() {
   useEffect(() => {
     if (!user) return;
     if (activeTab === "runs") {
-      fetchRuns();
+      fetchRuns(true);
     }
   }, [user, activeTab, runsPage, statusFilter, visibilityFilter]);
 
   useEffect(() => {
     if (!user) return;
     if (activeTab === "leaderboard") {
-      fetchLeaderboard();
+      fetchLeaderboard(true);
     }
-  }, [user, activeTab, leaderboardPage]);
+  }, [user, activeTab, leaderboardPage, leaderboardScope]);
 
-  const fetchRuns = async () => {
+  // Polling every 10 seconds in the background
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      if (activeTab === "runs") {
+        fetchRuns(false);
+      } else if (activeTab === "leaderboard") {
+        fetchLeaderboard(false);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user, activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope]);
+
+  const fetchRuns = async (showLoading = true) => {
     try {
-      setRunsLoading(true);
+      if (showLoading) setRunsLoading(true);
       const params: Record<string, any> = {
         page: runsPage,
         limit: ITEMS_PER_PAGE,
@@ -165,15 +190,19 @@ export default function GameResultsPage() {
     } catch (error) {
       console.error("Failed to fetch game results:", error);
     } finally {
-      setRunsLoading(false);
+      if (showLoading) setRunsLoading(false);
     }
   };
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (showLoading = true) => {
     try {
-      setLeaderboardLoading(true);
+      if (showLoading) setLeaderboardLoading(true);
       const response = await axios.get("/api/game-results/leaderboard", {
-        params: { page: leaderboardPage, limit: ITEMS_PER_PAGE },
+        params: {
+          page: leaderboardPage,
+          limit: ITEMS_PER_PAGE,
+          scope: leaderboardScope,
+        },
       });
 
       if (response.data?.success) {
@@ -184,7 +213,7 @@ export default function GameResultsPage() {
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
     } finally {
-      setLeaderboardLoading(false);
+      if (showLoading) setLeaderboardLoading(false);
     }
   };
 
@@ -266,30 +295,30 @@ export default function GameResultsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-background text-foreground flex">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-y-auto px-8 py-8">
           {/* Header */}
           <div className="mb-8 flex flex-col gap-4">
             <div>
-              <h2 className="text-4xl font-bold text-white sm:text-2xl">{t("gameResults.management_title")}</h2>
+              <h2 className="text-4xl font-bold text-foreground sm:text-2xl">{t("gameResults.management_title")}</h2>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="max-w-3xl">
-                <p className="text-sm leading-7 text-slate-400">{t("gameResults.management_subtitle")}</p>
+                <p className="text-sm leading-7 text-muted-foreground">{t("gameResults.management_subtitle")}</p>
                 <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
               </div>
 
               {/* Tab switcher */}
-              <div className="flex items-center gap-1 rounded-lg border border-slate-700 p-1 shrink-0 self-start md:self-auto">
+              <div className="flex items-center gap-1 rounded-lg border border-border p-1 shrink-0 self-start md:self-auto">
                 <button
                   id="tab-runs"
                   onClick={() => { setActiveTab("runs"); setRunsPage(1); }}
                   className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
                     activeTab === "runs"
                       ? "bg-amber-500 text-white"
-                      : "text-slate-400 hover:text-white"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t("gameResults.tab_runs")}
@@ -300,7 +329,7 @@ export default function GameResultsPage() {
                   className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
                     activeTab === "leaderboard"
                       ? "bg-amber-500 text-white"
-                      : "text-slate-400 hover:text-white"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t("gameResults.tab_leaderboard")}
@@ -349,38 +378,38 @@ export default function GameResultsPage() {
           {activeTab === "runs" && (
             <>
               {runsLoading ? (
-                <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">
+                <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">
                   {t("gameResults.loading")}
                 </div>
               ) : (
                 <>
-                  <div className="rounded-[12px] border border-slate-800 bg-slate-900/60 overflow-hidden">
+                  <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden">
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-slate-800 hover:bg-transparent">
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_run_id")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_lobby")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_details")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_status_type")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_timeline")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("gameResults.col_actions")}</TableHead>
+                        <TableRow className="border-border hover:bg-transparent">
+                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_run_id")}</TableHead>
+                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_lobby")}</TableHead>
+                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_details")}</TableHead>
+                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_status_type")}</TableHead>
+                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_timeline")}</TableHead>
+                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("gameResults.col_actions")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {runs.length > 0 ? (
                           runs.map((run) => (
-                            <TableRow key={run.id} className="border-slate-800 hover:bg-slate-800/50">
+                            <TableRow key={run.id} className="border-border hover:bg-muted/50">
                               {/* Run ID */}
-                              <TableCell className="text-slate-400 font-mono text-sm">
+                              <TableCell className="text-muted-foreground font-mono text-sm">
                                 {run.id.slice(0, 8)}
                               </TableCell>
 
                               {/* Lobby */}
                               <TableCell>
                                 <div className="flex flex-col">
-                                  <span className="font-medium text-white">{run.lobbyName || "—"}</span>
+                                  <span className="font-medium text-foreground">{run.lobbyName || "—"}</span>
                                   {run.lobbyCode && (
-                                    <span className="text-xs text-slate-500">Code: {run.lobbyCode}</span>
+                                    <span className="text-xs text-muted-foreground">Code: {run.lobbyCode}</span>
                                   )}
                                 </div>
                               </TableCell>
@@ -388,17 +417,26 @@ export default function GameResultsPage() {
                               {/* Details */}
                               <TableCell>
                                 <div className="flex flex-col gap-1 text-sm">
-                                  <span className="flex items-center gap-1.5 text-slate-300">
+                                  <span className="flex items-center gap-1.5 text-muted-foreground">
                                     <Users className="h-3.5 w-3.5 text-orange-400" />
                                     {run.players?.length || 0} {t("gameResults.players")}
                                   </span>
-                                  <span className="flex items-center gap-1.5 text-slate-300">
+                                  <span className="flex items-center gap-1.5 text-muted-foreground">
                                     <Globe className="h-3.5 w-3.5 text-emerald-400" />
-                                    {run.totalLevels} {t("gameResults.levels")}
+                                    {run.sessions && run.sessions.length > 0 ? (
+                                      <span>
+                                        {(() => {
+                                          const latest = run.sessions[run.sessions.length - 1];
+                                          return latest.levelOrder === 0 ? "Lobby" : `Level ${latest.levelOrder}`;
+                                        })()}
+                                      </span>
+                                    ) : (
+                                      <span>{run.totalLevels} {t("gameResults.levels")}</span>
+                                    )}
                                   </span>
                                   <span className="flex items-center gap-1.5">
-                                    <Clock className="h-3.5 w-3.5 text-slate-400" />
-                                    <span className={run.totalTimeSec ? "text-amber-400 font-semibold" : "text-slate-500"}>
+                                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <span className={run.totalTimeSec ? "text-amber-400 font-semibold" : "text-muted-foreground"}>
                                       {formatTime(run.totalTimeSec)}
                                     </span>
                                   </span>
@@ -422,7 +460,7 @@ export default function GameResultsPage() {
                                     variant="outline"
                                     className={`${BADGE_BASE_CLASS} w-32 justify-center ${
                                       run.isPrivate
-                                        ? "border-slate-500/70 bg-slate-500/10 text-slate-300"
+                                        ? "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
                                         : "border-sky-500/70 bg-sky-500/10 text-sky-300"
                                     }`}
                                   >
@@ -433,7 +471,7 @@ export default function GameResultsPage() {
 
                               {/* Timeline */}
                               <TableCell>
-                                <div className="flex flex-col gap-0.5 text-sm text-slate-400">
+                                <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
                                   <span>{t("gameResults.start")}: {formatDate(run.startedAt)}</span>
                                   <span>{t("gameResults.end")}: {formatDate(run.completedAt)}</span>
                                 </div>
@@ -443,7 +481,7 @@ export default function GameResultsPage() {
                               <TableCell className="text-center">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                       <ChevronDown className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -467,7 +505,7 @@ export default function GameResultsPage() {
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                            <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                               {t("gameResults.no_runs")}
                             </TableCell>
                           </TableRow>
@@ -511,35 +549,65 @@ export default function GameResultsPage() {
           {/* LEADERBOARD TAB */}
           {activeTab === "leaderboard" && (
             <>
-              <div className="rounded-[12px] border border-slate-800 bg-slate-900/60 overflow-hidden p-6">
-                <div className="flex items-center justify-between mb-6">
+              <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-amber-400" />
-                    <h3 className="text-lg font-bold uppercase tracking-wider text-white">
+                    <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
                       {t("gameResults.leaderboard_title")}
                     </h3>
+                  </div>
+
+                  {/* Leaderboard Scope Selector */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setLeaderboardScope("all-time");
+                        setLeaderboardPage(1);
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        leaderboardScope === "all-time"
+                          ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
+                          : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t("leaderboard.tab_all_time")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLeaderboardScope("seasonal");
+                        setLeaderboardPage(1);
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        leaderboardScope === "seasonal"
+                          ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
+                          : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t("leaderboard.tab_seasonal")} ({new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short", year: "numeric" })})
+                    </button>
                   </div>
                 </div>
 
                 {leaderboardLoading ? (
-                  <div className="p-12 text-center text-slate-400">
+                  <div className="p-12 text-center text-muted-foreground">
                     {t("gameResults.loading")}
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-slate-800 hover:bg-transparent">
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_rank")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_team_lobby")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("gameResults.col_total_players")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("gameResults.col_total_time")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-right">{t("gameResults.col_completed_date")}</TableHead>
+                      <TableRow className="border-border hover:bg-transparent">
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_rank")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_team_lobby")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("gameResults.col_total_players")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_total_time")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-right">{t("gameResults.col_completed_date")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {leaderboard.length > 0 ? (
                         leaderboard.map((entry) => (
-                          <TableRow key={entry.runId} className="border-slate-800 hover:bg-slate-800/50">
+                          <TableRow key={entry.runId} className="border-border hover:bg-muted/50">
                             {/* Rank */}
                             <TableCell>
                               <div className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${getRankBadgeClass(entry.rank)}`}>
@@ -548,12 +616,12 @@ export default function GameResultsPage() {
                             </TableCell>
 
                             {/* Team / Lobby Name */}
-                            <TableCell className="font-medium text-white">
+                            <TableCell className="font-medium text-foreground">
                               {entry.lobbyName || "—"}
                             </TableCell>
 
                             {/* Total Players */}
-                            <TableCell className="text-center text-slate-300">
+                            <TableCell className="text-center text-muted-foreground">
                               {entry.totalPlayers}
                             </TableCell>
 
@@ -565,14 +633,14 @@ export default function GameResultsPage() {
                             </TableCell>
 
                             {/* Completed Date */}
-                            <TableCell className="text-right text-slate-400">
+                            <TableCell className="text-right text-muted-foreground">
                               {formatDate(entry.completedAt)}
                             </TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-12 text-slate-400">
+                          <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                             {t("gameResults.no_leaderboard")}
                           </TableCell>
                         </TableRow>
@@ -622,7 +690,7 @@ export default function GameResultsPage() {
             <AlertDialogDescription>
               {t("gameResults.delete_confirm")}
               <br />
-              <span className="text-xs text-slate-500 mt-1 block">
+              <span className="text-xs text-muted-foreground mt-1 block">
                 {t("gameResults.delete_confirm_undone")}
               </span>
             </AlertDialogDescription>

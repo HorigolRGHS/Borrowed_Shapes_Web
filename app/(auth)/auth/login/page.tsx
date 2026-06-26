@@ -39,6 +39,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<any>(null);
   const [shake, setShake] = useState(false);
 
   useEffect(() => {
@@ -109,6 +110,58 @@ export default function LoginPage() {
         </span>
       }
     >
+      {statusError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/20 p-4 rounded-md space-y-3">
+          <div className="font-bold text-red-500 mb-2">
+             {statusError.code === "ACCOUNT_BANNED" 
+                ? (t("auth.status.banned_message") || "Your account has been banned.")
+                : (t("auth.status.deleted_message") || "Your account has been deleted.")}
+          </div>
+          
+          {statusError.code === "ACCOUNT_BANNED" ? (
+            <>
+              <div>
+                <span className="text-sm font-semibold text-red-500 mb-1 block">
+                  {t("auth.status.reason") || "Reason"}:
+                </span>
+                <p className="text-sm text-gray-200">
+                  {statusError.ban?.reason || t("auth.status.no_reason") || "No reason provided."}
+                </p>
+              </div>
+              
+              <div className="border-t border-red-500/10 pt-3">
+                <span className="text-sm font-semibold text-red-500 mb-1 block">
+                  {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
+                    ? (t("auth.status.duration") || "Duration") + ":"
+                    : (t("auth.status.expires_at") || "Expires At") + ":"}
+                </span>
+                <p className="text-sm font-mono text-gray-200">
+                  {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
+                    ? t("auth.status.permanent") || "Permanent"
+                    : new Date(statusError.ban?.banExpiresAt).toLocaleString()}
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-200 mb-2">
+                {t("auth.status.deleted_description") || "This account can no longer access the system."}
+              </p>
+              {statusError.deleted?.deletedAt && (
+                <div className="border-t border-red-500/10 pt-3">
+                  <span className="text-sm font-semibold text-red-500 mb-1 block">
+                    {t("auth.status.deleted_at") || "Deleted At"}:
+                  </span>
+                  <p className="text-sm font-mono text-gray-200">
+                    {new Date(statusError.deleted.deletedAt).toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
       <GoogleButton href="/api/auth/google/start?platform=web" className="mb-3">
         {t("auth.continue_with_google")}
       </GoogleButton>

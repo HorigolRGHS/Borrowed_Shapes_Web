@@ -19,9 +19,18 @@ export interface WikiListItem {
   slugVi: string;
   title: string;
   titleVi: string;
+  metadataJson?: WikiMetadata | null;
   isPublished: boolean;
   updatedAt: string;
   latestRevision: WikiListItemRevision | null;
+  revisionCount?: number;
+}
+
+export interface WikiAdminStats {
+  totalPages: number;
+  published: number;
+  drafts: number;
+  totalRevisions: number;
 }
 
 export interface WikiListResponse {

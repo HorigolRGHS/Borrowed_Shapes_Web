@@ -4,7 +4,8 @@
     "request_failed": "Request failed",
     "internal_server_error": "Internal server error",
     "invalid_json_payload": "Invalid JSON payload",
-    "forbidden": "You do not have permission to access this resource"
+    "forbidden": "You do not have permission to access this resource",
+    "cancel": "Cancel"
   },
   "auth": {
     "google_not_configured": "Google Login is not configured",
@@ -117,10 +118,16 @@
     "invalid_type": "Invalid achievement type",
     "type_required": "Achievement type is required",
     "season_month_must_be_string": "Season month must be a string",
-    "invalid_expires_at": "Expiration date must be a valid ISO date string"
+    "invalid_expires_at": "Expiration date must be a valid ISO date string",
+    "upload_too_large": "Upload exceeds the 5MB limit",
+    "upload_invalid_type": "Upload type rejected; only JPEG, PNG, WebP, GIF allowed",
+    "upload_missing": "No file provided",
+    "upload_failed": "Upload failed",
+    "uploaded": "Achievement badge uploaded successfully"
   },
   "wiki": {
     "list_success": "Wiki list retrieved",
+    "stats_success": "Wiki stats retrieved",
     "search_success": "Search completed",
     "detail_success": "Wiki detail retrieved",
     "history_success": "History retrieved",
@@ -149,7 +156,7 @@
     "related_success": "Related pages resolved",
     "too_many_related_slugs": "At most 30 related slugs may be requested at once"
   },
-  "forum": {
+  "forums": {
     "list_success": "Forums retrieved successfully",
     "detail_success": "Thread details retrieved successfully",
     "create_success": "Thread created successfully",
@@ -160,6 +167,7 @@
     "category_not_found": "Category not found",
     "category_required": "Category is required",
     "category_invalid_uuid": "Category must be a valid UUID",
+    "category_official_admin_only": "Only admins can post in official categories",
     "title_required": "Title is required",
     "title_must_be_string": "Title must be a string",
     "title_length_invalid": "Title must be between 3 and 200 characters",
@@ -265,5 +273,71 @@
   "account": {
     "profile_updated": "Profile updated successfully",
     "avatar_upload_url_created": "Avatar upload URL created successfully"
+  },
+  "admin": {
+    "download": {
+      "active": {
+        "badge": "Active",
+        "current": "Current Version",
+        "set_active": "Set Active",
+        "title": "Set Active Download Version",
+        "description": "This version will become the recommended download on the public Download page. The previous active version will become inactive but will remain in the version list.",
+        "warning": "Use this when the newest upload has issues and you want users to download a stable older version.",
+        "confirm": "Confirm",
+        "success": "Active download version updated successfully.",
+        "error": "Failed to update active download version.",
+        "inactive_badge": "Inactive",
+        "summary_title": "Current Public Download",
+        "no_active": "No active version selected.",
+        "summary_note": "Users will download this version from the public Download page.",
+        "inactive_note": "Visible in the version list, but not used as the recommended download.",
+        "current_version": "Current active version",
+        "new_version": "New active version"
+      }
+    }
+  },
+  "download": {
+    "active_version": "Active Version",
+    "no_version": "No download version is available yet.",
+    "recommended_version": "Recommended Version",
+    "other_versions": "Other Versions",
+    "inactive_version": "Inactive",
+    "not_recommended": "Not recommended"
+  },
+  "contact": {
+    "eyebrow": "Support & Feedback",
+    "title": "Contact Borrowed Shapes",
+    "description": "Need help with your account, downloads, forum, achievements, gameplay results, or a bug report? Contact the Borrowed Shapes team through the project’s official channel.",
+    "lastUpdated": "Last updated: 21/06/2026",
+    "card": {
+      "title": "Contact us on Facebook",
+      "description": "The fastest way to send questions, bug reports, or feedback to the Borrowed Shapes team is through the project’s official Facebook page.",
+      "cta": "Open Facebook",
+      "secondaryNote": "If you are reporting a bug, please describe the issue clearly and include reproduction steps, browser/device information, and screenshots if available."
+    },
+    "topics": [
+      "Account & login",
+      "Game download",
+      "Website or game bugs",
+      "Forum, Wiki & comments",
+      "Gameplay results, leaderboards & achievements",
+      "Content reports",
+      "Product feedback"
+    ],
+    "privacyReminder": "Do not send passwords, verification codes, access tokens, refresh tokens, or sensitive information through messages. The Borrowed Shapes team will never ask for your password.",
+    "faq": [
+      {
+        "q": "I cannot log in. What should I do?",
+        "a": "Check your email/password, try the forgot password flow, or sign in again with Google if you use Google Login."
+      },
+      {
+        "q": "I cannot download the game. What should I do?",
+        "a": "Go to the Download page, choose the recommended/active version, and try again with a stable internet connection."
+      },
+      {
+        "q": "How do I report inappropriate content?",
+        "a": "Use the report feature on the website if available, or send the relevant link/content through the official contact channel."
+      }
+    ]
   }
 }

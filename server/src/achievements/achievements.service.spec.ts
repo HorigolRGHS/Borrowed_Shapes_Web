@@ -1,14 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { AchievementService } from './achievements.service';
+import { AchievementService, getEffectiveExpiresAt } from './achievements.service';
 import { Achievement, AchievementType } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { GameProfile } from '../entities/GameProfile';
+import { ConfigService } from '@nestjs/config';
+import { R2StorageService } from '../storage/r2-storage.service';
 
 describe('AchievementService', () => {
   let service: AchievementService;
   let em: EntityManager;
+  let r2StorageService: R2StorageService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,11 +30,32 @@ describe('AchievementService', () => {
             count: jest.fn(),
           },
         },
+        {
+          provide: R2StorageService,
+          useValue: {
+            putObject: jest.fn(),
+            deleteObject: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'R2_PUBLIC_BASE_URL') return 'https://pub-x.r2.dev';
+              return null;
+            }),
+            getOrThrow: jest.fn((key: string) => {
+              if (key === 'R2_PUBLIC_DEV_URL') return 'https://pub-x.r2.dev';
+              throw new Error(`Config key ${key} not found`);
+            }),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AchievementService>(AchievementService);
     em = module.get<EntityManager>(EntityManager);
+    r2StorageService = module.get<R2StorageService>(R2StorageService);
   });
 
   it('should be defined', () => {
@@ -61,7 +85,7 @@ describe('AchievementService', () => {
     it('should throw NotFoundException if not found (Abnormal)', async () => {
       jest.spyOn(em, 'findOne').mockResolvedValue(null);
 
-      await expect(service.findOne('1')).rejects.toThrow('Achievement not found');
+      await expect(service.findOne('1')).rejects.toThrow('achievements.not_found');
     });
   });
 
@@ -83,5 +107,94 @@ describe('AchievementService', () => {
     });
   });
 
-  // Add more tests as needed for other methods
+  describe('uploadBadge', () => {
+    it('should upload a badge image to R2 and return the public URL (Normal)', async () => {
+      const buffer = Buffer.from('fake-image');
+      jest.spyOn(r2StorageService, 'putObject').mockResolvedValue(undefined as any);
+
+      const result = await service.uploadBadge(buffer, 'image/png', 'badge.png');
+      expect(result.startsWith('https://pub-x.r2.dev/achievement/')).toBe(true);
+      expect(result.endsWith('.png')).toBe(true);
+      expect(r2StorageService.putObject).toHaveBeenCalledWith(
+        expect.stringContaining('achievement/'),
+        buffer,
+        'image/png',
+      );
+    });
+
+    it('should throw BadRequestException if MIME type is invalid (Abnormal)', async () => {
+      const buffer = Buffer.from('fake-file');
+      await expect(service.uploadBadge(buffer, 'application/pdf', 'file.pdf')).rejects.toThrow();
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete the achievement and its R2 badge image if badge image is on R2 (Normal)', async () => {
+      const achievement = new Achievement();
+      achievement.id = 'a1';
+      achievement.badgeImageUrl = 'https://pub-x.r2.dev/achievement/some-uuid.png';
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(achievement as any);
+      jest.spyOn(em, 'removeAndFlush').mockResolvedValue(undefined as any);
+      jest.spyOn(r2StorageService, 'deleteObject').mockResolvedValue(undefined as any);
+
+      await service.delete('a1');
+
+      expect(r2StorageService.deleteObject).toHaveBeenCalledWith('achievement/some-uuid.png');
+      expect(em.removeAndFlush).toHaveBeenCalledWith(achievement);
+    });
+
+    it('should delete the achievement but not call R2 deleteObject if badge image is not on R2 (Boundary)', async () => {
+      const achievement = new Achievement();
+      achievement.id = 'a1';
+      achievement.badgeImageUrl = 'https://external-site.com/avatar.png';
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(achievement as any);
+      jest.spyOn(em, 'removeAndFlush').mockResolvedValue(undefined as any);
+      const deleteSpy = jest.spyOn(r2StorageService, 'deleteObject').mockClear();
+
+      await service.delete('a1');
+
+      expect(deleteSpy).not.toHaveBeenCalled();
+      expect(em.removeAndFlush).toHaveBeenCalledWith(achievement);
+    });
+  });
+
+  describe('getEffectiveExpiresAt', () => {
+    it('should_return_original_expiresAt_when_type_is_not_SEASONAL (Normal)', () => {
+      const originalExpiresAt = new Date('2026-12-31T23:59:59.000Z');
+      const result = getEffectiveExpiresAt('PERMANENT', null, originalExpiresAt);
+      expect(result).toEqual(originalExpiresAt);
+    });
+
+    it('should_return_end_of_following_month_for_SEASONAL_achievement (Normal)', () => {
+      // April 2026 -> expiry should be end of May 2026 (May 31st)
+      const seasonMonth = '2026-04-01';
+      const result = getEffectiveExpiresAt('SEASONAL', seasonMonth, null);
+      expect(result?.getUTCFullYear()).toBe(2026);
+      expect(result?.getUTCMonth()).toBe(4); // May (0-indexed)
+      expect(result?.getUTCDate()).toBe(31);
+      expect(result?.getUTCHours()).toBe(23);
+      expect(result?.getUTCMinutes()).toBe(59);
+      expect(result?.getUTCSeconds()).toBe(59);
+    });
+
+    it('should_fallback_to_expiresAt_and_add_one_month_if_seasonMonth_is_missing (Abnormal)', () => {
+      // Original expiresAt is end of April (2026-04-30 23:59:59)
+      const originalExpiresAt = new Date('2026-04-30T23:59:59.000Z');
+      const result = getEffectiveExpiresAt('SEASONAL', null, originalExpiresAt);
+      expect(result?.getUTCFullYear()).toBe(2026);
+      expect(result?.getUTCMonth()).toBe(4); // May (0-indexed)
+      expect(result?.getUTCDate()).toBe(31);
+    });
+
+    it('should_correctly_wrap_year_when_seasonMonth_is_December (Boundary)', () => {
+      // December 2026 -> expiry should be end of January 2027 (January 31st)
+      const seasonMonth = '2026-12-01';
+      const result = getEffectiveExpiresAt('SEASONAL', seasonMonth, null);
+      expect(result?.getUTCFullYear()).toBe(2027);
+      expect(result?.getUTCMonth()).toBe(0); // January (0-indexed)
+      expect(result?.getUTCDate()).toBe(31);
+    });
+  });
 });

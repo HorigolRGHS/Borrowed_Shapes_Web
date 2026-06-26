@@ -530,20 +530,20 @@ export default function AnnouncementsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-background text-foreground flex">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-y-auto px-8 py-8">
           <div className="mb-8">
             <div className="mb-6 max-w-3xl">
-              <h2 className="text-4xl font-bold text-white sm:text-2xl">{t("announcements.management_title")}</h2>
-              <p className="mt-4 text-sm leading-7 text-slate-400">{t("announcements.management_subtitle")}</p>
+              <h2 className="text-4xl font-bold text-foreground sm:text-2xl">{t("announcements.management_title")}</h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">{t("announcements.management_subtitle")}</p>
               <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
             </div>
 
             {/* Search + Create */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative flex-1 max-w-lg">
-                {/* <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+                {/* <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
                   <Search className="h-4 w-4" />
                 </span>
                 <Input
@@ -620,20 +620,20 @@ export default function AnnouncementsPage() {
           </div>
 
           {loading ? (
-            <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">{t("announcements.loading")}</div>
+            <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">{t("announcements.loading")}</div>
           ) : (
             <>
               {/* Table */}
-              <div className="rounded-[12px] border border-slate-800 bg-slate-900/60 overflow-hidden">
+              <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("announcements.col_title")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("announcements.col_type")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("announcements.col_status")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("announcements.col_pinned")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("announcements.col_published_at")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("announcements.col_actions")}</TableHead>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("announcements.col_title")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("announcements.col_type")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("announcements.col_status")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("announcements.col_pinned")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("announcements.col_published_at")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("announcements.col_actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -641,12 +641,12 @@ export default function AnnouncementsPage() {
                       filteredAnnouncements.map((a) => {
                         const status = getStatus(a);
                         return (
-                          <TableRow key={a.id} className="border-slate-800 hover:bg-slate-800/50">
+                          <TableRow key={a.id} className="border-border hover:bg-muted/50">
                             {/* Title + Author */}
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="font-medium text-white truncate max-w-[280px]">{locale === "vi" ? a.titleVi : a.title}</span>
-                                <span className="text-xs text-slate-500">
+                                <span className="font-medium text-foreground truncate max-w-[280px]">{locale === "vi" ? a.titleVi : a.title}</span>
+                                <span className="text-xs text-muted-foreground">
                                   {t("announcements.by_author")} {a.author?.displayName || "Unknown"}
                                 </span>
                               </div>
@@ -670,11 +670,11 @@ export default function AnnouncementsPage() {
                                   {t("announcements.pinned_yes")}
                                 </Badge>
                               ) : (
-                                <span className="text-slate-500">{t("announcements.pinned_no")}</span>
+                                <span className="text-muted-foreground">{t("announcements.pinned_no")}</span>
                               )}
                             </TableCell>
                             {/* Published At */}
-                            <TableCell className="text-slate-400">
+                            <TableCell className="text-muted-foreground">
                               {a.publishedAt
                                 ? new Date(a.publishedAt).toLocaleDateString("en-US", {
                                   year: "numeric",
@@ -687,7 +687,7 @@ export default function AnnouncementsPage() {
                             <TableCell className="text-center">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white">
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                     <ChevronDown className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -734,7 +734,7 @@ export default function AnnouncementsPage() {
                       })
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                           {t("announcements.no_announcements")}
                         </TableCell>
                       </TableRow>
@@ -809,7 +809,7 @@ export default function AnnouncementsPage() {
             {/* Title EN + Title VI */}
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_title_en")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_title_en")}</Label>
                 <Input
                   type="text"
                   value={formData.title}
@@ -822,7 +822,7 @@ export default function AnnouncementsPage() {
                 )}
               </div>
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_title_vi")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_title_vi")}</Label>
                 <Input
                   type="text"
                   value={formData.titleVi}
@@ -839,7 +839,7 @@ export default function AnnouncementsPage() {
             {/* Slug EN + Slug VI */}
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_slug_en")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_slug_en")}</Label>
                 <Input
                   type="text"
                   value={formData.slug}
@@ -855,7 +855,7 @@ export default function AnnouncementsPage() {
                 )}
               </div>
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_slug_vi")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_slug_vi")}</Label>
                 <Input
                   type="text"
                   value={formData.slugVi}
@@ -875,7 +875,7 @@ export default function AnnouncementsPage() {
             {/* Summary EN + Summary VI */}
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_summary_en")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_summary_en")}</Label>
                 <Input
                   type="text"
                   value={formData.summary}
@@ -888,7 +888,7 @@ export default function AnnouncementsPage() {
                 )}
               </div>
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_summary_vi")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_summary_vi")}</Label>
                 <Input
                   type="text"
                   value={formData.summaryVi}
@@ -904,7 +904,7 @@ export default function AnnouncementsPage() {
 
             {/* Content EN */}
             <div>
-              <Label className="mb-2 block text-slate-300">{t("announcements.form_content_en")}</Label>
+              <Label className="mb-2 block text-muted-foreground">{t("announcements.form_content_en")}</Label>
               <AnnouncementContentEditor
                 data={formData.content}
                 onChange={(html) => handleFieldChange("content", html)}
@@ -917,7 +917,7 @@ export default function AnnouncementsPage() {
 
             {/* Content VI */}
             <div>
-              <Label className="mb-2 block text-slate-300">{t("announcements.form_content_vi")}</Label>
+              <Label className="mb-2 block text-muted-foreground">{t("announcements.form_content_vi")}</Label>
               <AnnouncementContentEditor
                 data={formData.contentVi}
                 onChange={(html) => handleFieldChange("contentVi", html)}
@@ -931,7 +931,7 @@ export default function AnnouncementsPage() {
             {/* Type + Pinned + Publish Now */}
             <div className="grid gap-5 sm:grid-cols-3">
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_type")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_type")}</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
@@ -949,14 +949,14 @@ export default function AnnouncementsPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-3">
-                <Label className="text-slate-300">{t("announcements.form_is_pinned")}</Label>
+                <Label className="text-muted-foreground">{t("announcements.form_is_pinned")}</Label>
                 <Switch
                   checked={formData.isPinned}
                   onCheckedChange={(checked) => setFormData({ ...formData, isPinned: checked })}
                 />
               </div>
               <div className="flex flex-col gap-3">
-                <Label className="text-slate-300">{t("announcements.form_is_published")}</Label>
+                <Label className="text-muted-foreground">{t("announcements.form_is_published")}</Label>
                 <Switch
                   checked={formData.isPublished}
                   onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked, publishedAt: checked ? "" : formData.publishedAt })}
@@ -967,7 +967,7 @@ export default function AnnouncementsPage() {
             {/* Schedule Publish Date — only shown when not publishing immediately */}
             {!formData.isPublished && (
               <div>
-                <Label className="mb-2 block text-slate-300">{t("announcements.form_published_at")}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t("announcements.form_published_at")}</Label>
                 <Input
                   type="datetime-local"
                   value={formData.publishedAt}
@@ -1021,16 +1021,16 @@ export default function AnnouncementsPage() {
             </div>
           </AlertDialogHeader>
 
-          <div className="rounded-[12px] border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+          <div className="rounded-[12px] border border-border bg-background/60 p-4 space-y-2">
             <AlertDialogDescription>
               {t("announcements.delete_confirm")} {t("announcements.delete_confirm_undone")}
             </AlertDialogDescription>
             <div className="pt-2 space-y-1.5 text-sm">
-              <div className="text-slate-400">
+              <div className="text-muted-foreground">
                 {t("announcements.delete_name_label")}{" "}
-                <span className="font-bold text-white">{deleteAnnouncement?.title}</span>
+                <span className="font-bold text-foreground">{deleteAnnouncement?.title}</span>
               </div>
-              <div className="text-slate-400">
+              <div className="text-muted-foreground">
                 {t("announcements.delete_type_label")}{" "}
                 <code className="font-mono text-slate-200">{deleteAnnouncement?.type}</code>
               </div>
@@ -1067,17 +1067,17 @@ export default function AnnouncementsPage() {
           </DialogHeader>
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
 
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div className="flex items-center justify-between pb-4 border-b border-border">
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-slate-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setViewingAnnouncement(null)}
               >
                 &larr; {t("announcements.back")}
               </Button>
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-500 font-medium">
+              <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium">
                 {t("announcements.detail_subtitle")}
               </span>
             </div>
@@ -1087,7 +1087,7 @@ export default function AnnouncementsPage() {
             <div className="mt-4 space-y-6">
               {/* Title & Metadata */}
               <div>
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold text-foreground">
                   {locale === "vi" ? viewingAnnouncement.titleVi : viewingAnnouncement.title}
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -1102,7 +1102,7 @@ export default function AnnouncementsPage() {
                       {t("announcements.filter_pinned")}
                     </Badge>
                   )}
-                  <span className="text-xs text-slate-500 ml-2">
+                  <span className="text-xs text-muted-foreground ml-2">
                     {t("announcements.by_author")} {viewingAnnouncement.author?.displayName || "Unknown"}
                   </span>
                 </div>
@@ -1110,8 +1110,8 @@ export default function AnnouncementsPage() {
 
               {/* Time boxes */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-4">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block mb-1">
+                <div className="rounded-[12px] border border-border bg-background/40 p-4">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block mb-1">
                     {t("announcements.published_time")}
                   </span>
                   <span className="text-sm font-medium text-slate-200">
@@ -1120,16 +1120,16 @@ export default function AnnouncementsPage() {
                       : "—"}
                   </span>
                 </div>
-                <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-4">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block mb-1">
+                <div className="rounded-[12px] border border-border bg-background/40 p-4">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block mb-1">
                     {t("announcements.created_time")}
                   </span>
                   <span className="text-sm font-medium text-slate-200">
                     {new Date(viewingAnnouncement.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US")}
                   </span>
                 </div>
-                <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-4">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block mb-1">
+                <div className="rounded-[12px] border border-border bg-background/40 p-4">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block mb-1">
                     {t("announcements.updated_time")}
                   </span>
                   <span className="text-sm font-medium text-slate-200">
@@ -1140,10 +1140,10 @@ export default function AnnouncementsPage() {
 
               {/* URL Slug */}
               <div className="space-y-1.5">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block">
                   {t("announcements.url_slug")}
                 </span>
-                <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 px-4 py-2.5 font-mono text-sm text-slate-300 max-w-fit">
+                <div className="rounded-[12px] border border-border bg-background/40 px-4 py-2.5 font-mono text-sm text-muted-foreground max-w-fit">
                   {locale === "vi" ? viewingAnnouncement.slugVi : viewingAnnouncement.slug}
                 </div>
               </div>
@@ -1151,10 +1151,10 @@ export default function AnnouncementsPage() {
               {/* Summary */}
               {((locale === "vi" && viewingAnnouncement.summaryVi) || (locale === "en" && viewingAnnouncement.summary)) && (
                 <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block">
                     {t("announcements.summary")}
                   </span>
-                  <div className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300 leading-relaxed">
+                  <div className="rounded-[12px] border border-border bg-background/40 p-4 text-sm text-muted-foreground leading-relaxed">
                     {locale === "vi" ? viewingAnnouncement.summaryVi : viewingAnnouncement.summary}
                   </div>
                 </div>
@@ -1162,11 +1162,11 @@ export default function AnnouncementsPage() {
 
               {/* Content */}
               <div className="space-y-1.5">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 font-medium block">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium block">
                   {t("announcements.full_content")}
                 </span>
                 <div
-                  className="rounded-[12px] border border-slate-800 bg-slate-950/40 p-5 text-sm text-slate-300 leading-relaxed ck-content ck-editor__editable"
+                  className="rounded-[12px] border border-border bg-background/40 p-5 text-sm text-muted-foreground leading-relaxed ck-content ck-editor__editable"
                   dangerouslySetInnerHTML={{
                     __html: locale === "vi" ? viewingAnnouncement.contentVi : viewingAnnouncement.content
                   }}
@@ -1174,7 +1174,7 @@ export default function AnnouncementsPage() {
               </div>
 
               {/* Actions Footer */}
-              <div className="flex items-center gap-3 pt-6 border-t border-slate-800">
+              <div className="flex items-center gap-3 pt-6 border-t border-border">
                 <Button
                   variant="outline"
                   onClick={() => setViewingAnnouncement(null)}

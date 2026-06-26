@@ -16,6 +16,7 @@ import { User } from '../entities/User';
 import { Role } from '../entities/Role';
 import { UserSession } from '../entities/UserSession';
 import { SessionStatus } from '../entities/SessionStatus';
+import { ensureAccountActive } from './auth-utils';
 
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
@@ -34,10 +35,36 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
+
+    if (isPublic) {
+      if (token) {
+        try {
+          const payload = await this.jwt.verifyAsync(token, {
+            secret: this.config.get<string>('JWT_SECRET', 'change-me-in-production'),
+          });
+          const userId = payload.sub as string | undefined;
+          const platform = (payload.pf ?? payload.platform) as string | undefined;
+          const sessionId = payload.sid as string | undefined;
+          const role = payload.role as string | undefined;
+          if (userId && platform && role) {
+            request.user = {
+              userId,
+              role,
+              platform,
+              sessionId,
+              gameProfileId: payload.gp ?? null,
+            };
+          }
+        } catch (e) {
+          // Ignore invalid or expired token on public routes
+        }
+      }
+      return true;
+    }
+
     if (!token) throw new UnauthorizedException('auth.unauthorized');
 
 
@@ -76,22 +103,11 @@ export class AuthGuard implements CanActivate {
         { fields: ['id', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
       );
 
-      if (!user || user.deletedAt) {
+      if (!user) {
         throw new UnauthorizedException('auth.unauthorized');
       }
 
-      const now = new Date();
-      if (user.isBanned) {
-        if (user.banExpiresAt && user.banExpiresAt <= now) {
-          user.isBanned = false;
-          user.bannedAt = undefined;
-          user.banReason = undefined;
-          user.banExpiresAt = undefined;
-          await this.em.flush();
-        } else {
-          throw new ForbiddenException(user.banReason ?? 'auth.account_banned');
-        }
-      }
+      await ensureAccountActive(user as User, this.em);
 
       request.user = {
         userId: user.id,

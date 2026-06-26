@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   NestInterceptor,
+  StreamableFile,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -56,6 +57,10 @@ export class StandardApiResponseInterceptor<T>
 
     return next.handle().pipe(
       map((data) => {
+        if (data instanceof StreamableFile) {
+          return data as any;
+        }
+
         if (isStandardShape(data)) {
           data.message = this.i18n.t(data.message, lang);
           return data as ApiResponseDto<T>;
@@ -75,6 +80,12 @@ export class StandardApiResponseInterceptor<T>
         );
       }),
       tap((result) => {
+        if (result instanceof StreamableFile) {
+          const durationMs = Date.now() - startedAt;
+          this.logger.log(`${request.method} ${request.originalUrl ?? request.url} duration=${durationMs}ms [StreamableFile]`);
+          return;
+        }
+
         const method = request.method;
         const path = request.originalUrl ?? request.url ?? '';
         const durationMs = Date.now() - startedAt;

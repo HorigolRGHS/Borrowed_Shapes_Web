@@ -4,6 +4,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { UserSessionResponseDto, SessionMeResponseDto } from './dto/sessions.dto';
 
 @ApiTags('Sessions')
@@ -23,6 +24,14 @@ export class SessionsController {
   @ApiResponse({ status: 200, type: [UserSessionResponseDto] })
   listSessions(@CurrentUser() user: RequestUser): Promise<UserSessionResponseDto[]> {
     return this.sessionsService.listSessions(user.userId, user.platform);
+  }
+
+  @Roles('ADMIN')
+  @Get('admin/users/:userId')
+  @ApiOperation({ summary: 'List sessions of a specific user (Admin only)' })
+  @ApiResponse({ status: 200, type: [UserSessionResponseDto] })
+  listSessionsForAdmin(@Param('userId') userId: string, @CurrentUser() admin: RequestUser): Promise<UserSessionResponseDto[]> {
+    return this.sessionsService.listSessions(userId, admin.platform);
   }
 
   @Delete(':id')

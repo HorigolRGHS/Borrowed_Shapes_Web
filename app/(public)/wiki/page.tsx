@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { fetchWikiList } from "@/lib/wiki/api";
-import { WikiList } from "@/components/wiki/wiki-list";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { WikiPublicList, WikiPublicListSkeleton } from "@/components/wiki/wiki-public-list";
 import type { WikiListResponse } from "@/models/dtos/wiki.dto";
 
 export const metadata: Metadata = { title: "Wiki" };
@@ -23,28 +22,22 @@ export default async function WikiListPage({
     data = await fetchWikiList({ page, limit: 20, q });
   } catch (err: unknown) {
     const e = err as { response?: { data?: { message?: string } } };
-    errorMessage = e?.response?.data?.message ?? "Failed to load wiki list";
+    errorMessage = e?.response?.data?.message ?? "load_failed";
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Wiki</h1>
-      </header>
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
-      {data && (
-        <Suspense fallback={<WikiList.Skeleton />}>
-          <WikiList
+    <main className="min-h-screen bg-[#060711] px-4 pb-16 pt-24 text-white">
+      <section className="mx-auto max-w-6xl">
+        <Suspense fallback={<WikiPublicListSkeleton />}>
+          <WikiPublicList
             data={data}
             basePath="/wiki"
             extraParams={q ? { q } : undefined}
+            query={q}
+            errorMessage={errorMessage}
           />
         </Suspense>
-      )}
+      </section>
     </main>
   );
 }

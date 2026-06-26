@@ -126,6 +126,60 @@ export default function AchievementsPage() {
   const expiresRef = useRef<HTMLInputElement | null>(null);
   const isClosingRef = useRef(false);
 
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("achievements.upload_too_large") || "File exceeds 5MB limit");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("achievements.upload_invalid_type") || "Invalid image type");
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await axios.post("/api/achievements/upload", form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = res.data ?? res;
+      if (data?.success && data?.data?.url) {
+        const url = data.data.url;
+        setFormData((prev) => ({ ...prev, badgeImageUrl: url }));
+        setFormErrors((prev) => {
+          const copy = { ...prev };
+          delete copy.badgeImageUrl;
+          return copy;
+        });
+        toast.success(t("achievements.uploaded") || "Uploaded successfully");
+      } else {
+        throw new Error(data?.message || "Upload failed");
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      const message = err.response?.data?.message || t("achievements.upload_failed") || "Failed to upload image";
+      toast.error(t(message) || message);
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const validateField = (field: string, value: string, type?: string): string => {
     switch (field) {
       case "name":
@@ -513,13 +567,13 @@ export default function AchievementsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-background text-foreground flex">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-y-auto px-8 py-8">
           <div className="mb-8">
             <div className="mb-6 max-w-3xl">
-              <h2 className="text-4xl font-bold text-white sm:text-2xl">{t("achievements.management_title")}</h2>
-              <p className="mt-4 text-sm leading-7 text-slate-400">{t("achievements.management_subtitle")}</p>
+              <h2 className="text-4xl font-bold text-foreground sm:text-2xl">{t("achievements.management_title")}</h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">{t("achievements.management_subtitle")}</p>
               <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
             </div>
 
@@ -527,7 +581,7 @@ export default function AchievementsPage() {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-1 items-center gap-3">
                 <div className="relative flex-1 max-w-lg">
-                  <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
                     <Search className="h-4 w-4" />
                   </span>
                   <Input
@@ -565,7 +619,7 @@ export default function AchievementsPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 shrink-0 text-slate-400 hover:text-white"
+                  className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground"
                   onClick={() => {
                     setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
                     setCurrentPage(1);
@@ -594,37 +648,37 @@ export default function AchievementsPage() {
           </div>
 
           {loading ? (
-            <div className="rounded-[12px] border border-slate-800 bg-slate-900 p-12 text-center text-slate-400">{t("achievements.loading_achievements")}</div>
+            <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">{t("achievements.loading_achievements")}</div>
           ) : (
             <>
               {/* Table */}
-              <div className="rounded-[12px] border border-slate-800 bg-slate-900/60 overflow-hidden">
+              <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_achievement")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_criteria_code")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_type_season")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.col_expiration")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("achievements.col_total_earned")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium text-center">{t("achievements.col_actions")}</TableHead>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.col_achievement")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.col_criteria_code")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.col_type_season")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.col_expiration")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("achievements.col_total_earned")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("achievements.col_actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedAchievements.length > 0 ? (
                       paginatedAchievements.map((achievement) => (
-                        <TableRow key={achievement.id} className="border-slate-800 hover:bg-slate-800/50">
+                        <TableRow key={achievement.id} className="border-border hover:bg-muted/50">
                           {/* Achievement: image + name */}
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
                                 <img
                                   src={achievement.badgeImageUrl}
                                   alt={achievement.name}
                                   className="h-full w-full object-cover"
                                 />
                               </div>
-                              <span className="font-medium text-white">{achievement.name}</span>
+                              <span className="font-medium text-foreground">{achievement.name}</span>
                             </div>
                           </TableCell>
                           {/* Criteria Code */}
@@ -640,27 +694,27 @@ export default function AchievementsPage() {
                                 {achievement.type}
                               </Badge>
                               {achievement.type === "SEASONAL" && achievement.seasonMonth && (
-                                <span className="text-xs text-slate-500 w-28 text-center">
+                                <span className="text-xs text-muted-foreground w-28 text-center">
                                   {achievement.seasonMonth.slice(0, 10)}
                                 </span>
                               )}
                             </div>
                           </TableCell>
                           {/* Expiration */}
-                          <TableCell className="text-slate-400">
+                          <TableCell className="text-muted-foreground">
                             {achievement.expiresAt
                               ? new Date(achievement.expiresAt).toLocaleDateString()
                               : "—"}
                           </TableCell>
                           {/* Total earned */}
-                          <TableCell className="text-center font-semibold text-white">
+                          <TableCell className="text-center font-semibold text-foreground">
                             {achievement.earnedCount ?? 0}
                           </TableCell>
                           {/* Actions dropdown */}
                           <TableCell className="text-center">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                   <ChevronDown className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -700,7 +754,7 @@ export default function AchievementsPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                           {t('achievements.no_achievements')}
                         </TableCell>
                       </TableRow>
@@ -756,7 +810,7 @@ export default function AchievementsPage() {
           }
         }}
       >
-        <DialogContent className="max-w-2xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
+        <DialogContent className="max-w-3xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
           <DialogHeader>
             <DialogTitle>
@@ -780,7 +834,7 @@ export default function AchievementsPage() {
           >
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-slate-300">{t('achievements.name_label')}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t('achievements.name_label')}</Label>
                 <Input
                   type="text"
                   value={formData.name}
@@ -793,7 +847,7 @@ export default function AchievementsPage() {
                 )}
               </div>
               <div>
-                <Label className="mb-2 block text-slate-300">{t('achievements.criteria_code_label')}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t('achievements.criteria_code_label')}</Label>
                 <Input
                   type="text"
                   value={formData.criteriaCode}
@@ -808,7 +862,7 @@ export default function AchievementsPage() {
             </div>
 
             <div>
-              <Label className="mb-2 block text-slate-300">{t('achievements.description_label')}</Label>
+              <Label className="mb-2 block text-muted-foreground">{t('achievements.description_label')}</Label>
               <AchievementDescriptionEditor
                 data={formData.description}
                 onChange={(data) => handleFieldChange("description", data)}
@@ -818,25 +872,43 @@ export default function AchievementsPage() {
                 <p className="mt-1.5 text-xs text-rose-400">{formErrors.description}</p>
               )}
             </div>
-            <div className="grid gap-5 sm:grid-cols-2">
+             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-slate-300">{t('achievements.badge_url_label')}</Label>
-                <Input
-                  type="url"
-                  value={formData.badgeImageUrl}
-                  onChange={(e) => handleFieldChange("badgeImageUrl", e.target.value)}
-                  onBlur={() => handleFieldBlur("badgeImageUrl")}
-                  className={formTouched.badgeImageUrl && formErrors.badgeImageUrl ? "border-rose-500 focus-visible:ring-rose-500" : ""}
-                />
+                <Label className="mb-2 block text-muted-foreground">{t('achievements.badge_url_label')}</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isUploadingImage}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-dashed border-muted-foreground/30 hover:border-amber-500/50 hover:bg-amber-500/5"
+                  >
+                    {isUploadingImage ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                        {t("achievements.uploading")}
+                      </span>
+                    ) : (
+                      t("achievements.choose_badge_image")
+                    )}
+                  </Button>
+                </div>
                 {formTouched.badgeImageUrl && formErrors.badgeImageUrl && (
                   <p className="mt-1.5 text-xs text-rose-400">{formErrors.badgeImageUrl}</p>
                 )}
-                {formData.badgeImageUrl && !formErrors.badgeImageUrl && (
+                {formData.badgeImageUrl && (
                   <div className="mt-4">
-                    <p className="mb-2 text-sm text-slate-400">
+                    <p className="mb-2 text-sm text-muted-foreground">
                       {t("achievements.preview")}
                     </p>
-                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[12px] border border-amber-500/30 bg-slate-900">
+                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[12px] border border-amber-500/30 bg-card">
                       <img
                         key={formData.badgeImageUrl}
                         src={formData.badgeImageUrl}
@@ -852,7 +924,7 @@ export default function AchievementsPage() {
                 )}
               </div>
               <div>
-                <Label className="mb-2 block text-slate-300">{t('achievements.type_label')}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t('achievements.type_label')}</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => {
@@ -887,7 +959,7 @@ export default function AchievementsPage() {
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div className={formData.type === 'SEASONAL' ? 'relative' : 'hidden'}>
-                <Label className="mb-2 block text-slate-300">{t('achievements.season_month_label')}</Label>
+                <Label className="mb-2 block text-muted-foreground">{t('achievements.season_month_label')}</Label>
                 <MonthPicker
                   value={formData.seasonMonth}
                   onChange={(val) => {
@@ -900,12 +972,12 @@ export default function AchievementsPage() {
                   <p className="mt-1.5 text-xs text-rose-400">{formErrors.seasonMonth}</p>
                 )}
                 {formData.seasonMonth && (
-                  <div className="mt-2 text-sm text-slate-100">{t('achievements.selected_label')} {formData.seasonMonth}</div>
+                  <div className="mt-2 text-sm text-foreground">{t('achievements.selected_label')} {formData.seasonMonth}</div>
                 )}
               </div>
               {formData.type === 'SEASONAL' && (
                 <div className="relative">
-                  <Label className="mb-2 block text-slate-300">{t('achievements.expires_at_label')}</Label>
+                  <Label className="mb-2 block text-muted-foreground">{t('achievements.expires_at_label')}</Label>
                   <Input
                     disabled
                     ref={expiresRef}
@@ -961,22 +1033,22 @@ export default function AchievementsPage() {
             </div>
           </AlertDialogHeader>
 
-          <div className="rounded-[12px] border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+          <div className="rounded-[12px] border border-border bg-background/60 p-4 space-y-2">
             <AlertDialogDescription>
               {t("achievements.delete_confirm")} {t("achievements.delete_confirm_undone")}
             </AlertDialogDescription>
             <div className="pt-2 space-y-1.5 text-sm">
-              <div className="text-slate-400">
+              <div className="text-muted-foreground">
                 {t("achievements.delete_name_label")}{" "}
-                <span className="font-bold text-white">{deleteAchievement?.name}</span>
+                <span className="font-bold text-foreground">{deleteAchievement?.name}</span>
               </div>
-              <div className="text-slate-400">
+              <div className="text-muted-foreground">
                 {t("achievements.delete_code_label")}{" "}
                 <code className="font-mono text-slate-200">{deleteAchievement?.criteriaCode}</code>
               </div>
-              <div className="text-slate-400">
+              <div className="text-muted-foreground">
                 {t("achievements.delete_earned_by_label")}{" "}
-                <span className="font-bold text-white">{deleteAchievement?.earnedCount ?? 0} {t("achievements.delete_players")}</span>
+                <span className="font-bold text-foreground">{deleteAchievement?.earnedCount ?? 0} {t("achievements.delete_players")}</span>
               </div>
             </div>
             {(deleteAchievement?.earnedCount ?? 0) > 0 && (
@@ -1020,7 +1092,7 @@ export default function AchievementsPage() {
           <DialogHeader>
             <div className="flex items-center gap-3">
               {selectedAchievement?.badgeImageUrl && (
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
                   <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
                 </div>
               )}
@@ -1043,7 +1115,7 @@ export default function AchievementsPage() {
 
           {/* Search */}
           <div className="relative max-w-sm">
-            <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-slate-500">
+            <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
               <Search className="h-4 w-4" />
             </span>
             <Input
@@ -1057,17 +1129,17 @@ export default function AchievementsPage() {
 
           <ScrollArea className="max-h-[55vh]">
             {loadingUsers ? (
-              <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+              <div className="rounded-[12px] border border-border bg-slate-900/40 p-8 text-center text-muted-foreground">
                 {t("achievements.loading_users")}
               </div>
             ) : achievementUsers.length > 0 ? (
-              <div className="rounded-[12px] border border-slate-800 overflow-hidden">
+              <div className="rounded-[12px] border border-border overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_player")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_profile_id")}</TableHead>
-                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">{t("achievements.users_col_earned_date")}</TableHead>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.users_col_player")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.users_col_profile_id")}</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("achievements.users_col_earned_date")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1080,19 +1152,19 @@ export default function AchievementsPage() {
                       .map((u) => {
                         const initials = u.displayName.charAt(0).toUpperCase();
                         return (
-                          <TableRow key={u.id} className="border-slate-800 hover:bg-slate-800/50">
+                          <TableRow key={u.id} className="border-border hover:bg-muted/50">
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/80 text-sm font-bold text-white">
                                   {initials}
                                 </div>
-                                <span className="font-medium text-white">{u.displayName}</span>
+                                <span className="font-medium text-foreground">{u.displayName}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm text-slate-300">{u.id}</div>
+                              <div className="text-sm text-muted-foreground">{u.id}</div>
                             </TableCell>
-                            <TableCell className="text-slate-300 text-sm">
+                            <TableCell className="text-muted-foreground text-sm">
                               {u.earnedAt
                                 ? new Date(u.earnedAt).toLocaleDateString()
                                 : t("achievements.unknown")}
@@ -1104,7 +1176,7 @@ export default function AchievementsPage() {
                 </Table>
               </div>
             ) : (
-              <div className="rounded-[12px] border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+              <div className="rounded-[12px] border border-border bg-slate-900/40 p-8 text-center text-muted-foreground">
                 {t("achievements.no_users_found")}
               </div>
             )}

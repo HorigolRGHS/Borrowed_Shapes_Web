@@ -54,6 +54,8 @@ export function DownloadCard({ latestVersion, loading, onDownload, selectedPlatf
         >
           {loading ? (
             <span className="animate-pulse">{t("download.downloading")}</span>
+          ) : !latestVersion ? (
+            t("download.coming_soon")
           ) : !isWindows ? (
             t("download.coming_soon")
           ) : (

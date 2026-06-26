@@ -6,9 +6,11 @@ import { BookOpen, ArrowRight } from "lucide-react";
 import { fetchWikiList } from "@/lib/wiki/api";
 import { WikiCard } from "@/components/wiki/wiki-card";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18/i18n-context";
 import type { WikiListResponse } from "@/models/dtos/wiki.dto";
 
 export function KnowledgeBaseSection() {
+  const { t } = useI18n();
   const [data, setData] = useState<WikiListResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,10 +31,10 @@ export function KnowledgeBaseSection() {
         {/* Section header */}
         <div className="mb-10">
           <span className="text-sm font-bold tracking-widest text-amber-500 uppercase">
-            WIKI
+            {t("home.knowledge_base_section.label")}
           </span>
           <h2 className="mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground dark:text-white">
-            Knowledge Base
+            {t("home.knowledge_base_section.title")}
           </h2>
           <div className="mt-3 h-1 w-20 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
         </div>
@@ -49,7 +51,7 @@ export function KnowledgeBaseSection() {
           <Button asChild variant="outline" className="group px-6 py-3 text-base">
             <Link href="/wiki">
               <BookOpen className="mr-2 h-4 w-4" />
-              Browse Full Wiki
+              {t("home.knowledge_base_section.browse_full_wiki")}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>

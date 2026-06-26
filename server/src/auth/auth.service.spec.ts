@@ -86,7 +86,7 @@ describe('AuthService', () => {
       });
       mockEm.create.mockImplementationOnce((_, data) => ({ ...data, id: 'user_1' }));
 
-      const result = await service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1');
+      const result = await service.register({ email: 'a@b.com', password: 'password123', displayName: 'Test User' }, '127.0.0.1');
 
       expect(mockEm.transactional).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({ userId: 'user_1', email: 'a@b.com' });
@@ -99,7 +99,7 @@ describe('AuthService', () => {
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
-        service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1'),
+        service.register({ email: 'a@b.com', password: 'password123', displayName: 'Test User' }, '127.0.0.1'),
       ).rejects.toThrow('auth.email_in_use');
     });
 
@@ -121,7 +121,7 @@ describe('AuthService', () => {
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
-        service.register({ email: 'a@b.com', password: 'password123' }, '127.0.0.1'),
+        service.register({ email: 'a@b.com', password: 'password123', displayName: 'Test User' }, '127.0.0.1'),
       ).rejects.toThrow('auth.unique_field_in_use');
     });
   });

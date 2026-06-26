@@ -5,13 +5,16 @@ import { AchievementService } from './achievements.service';
 import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { AuthModule } from '../auth/auth.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([Achievement, UserAchievement]),
     AuthModule,
+    StorageModule,
   ],
   controllers: [AchievementController],
   providers: [AchievementService],
+  exports: [AchievementService],
 })
 export class AchievementModule { }

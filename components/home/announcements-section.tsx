@@ -177,8 +177,14 @@ export function AnnouncementsSection() {
   const getContent = (a: Announcement) =>
     locale === "vi" ? a.contentVi || a.content : a.content;
 
-  // Find featured pinned announcement
-  const pinnedAnnouncement = announcements.find((a) => a.isPinned);
+  // Find featured pinned announcement overall (newest updated pinned announcement)
+  const pinnedAnnouncement = announcements
+    .filter((a) => a.isPinned)
+    .sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.publishedAt || a.createdAt).getTime();
+      const timeB = new Date(b.updatedAt || b.publishedAt || b.createdAt).getTime();
+      return timeB - timeA;
+    })[0];
 
   // Filter by active tab
   const filteredAnnouncements = announcements.filter((a) => {
@@ -186,7 +192,7 @@ export function AnnouncementsSection() {
     return a.type === activeTab;
   });
 
-  // Grid items: show all matching announcements in the active tab (including pinned)
+  // Grid items: show matching announcements in the active tab (excluding the featured pinned banner)
   const gridItems = filteredAnnouncements.slice(0, 6);
 
   // For the modal layout:
@@ -239,7 +245,7 @@ export function AnnouncementsSection() {
         </div>
 
         {/* Featured pinned announcement banner at the top */}
-        {activeTab === "all" && pinnedAnnouncement && (
+        {pinnedAnnouncement && (
           <Link
             href={`/announcements/${getSlug(pinnedAnnouncement)}`}
             onClick={(e) => {
@@ -286,7 +292,7 @@ export function AnnouncementsSection() {
                       <Clock className="w-3.5 h-3.5" />
                       {formatDate(pinnedAnnouncement.publishedAt)}
                     </span>
-                    <span className="text-sm font-bold text-amber-500 group-hover:text-amber-400 flex items-center gap-1 transition-colors ml-auto">
+                    <span className="text-sm font-bold text-amber-500 group-hover:text-amber-400 flex items-center gap-1 transition-colors">
                       {t("home.announcements_section.read_more")}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
@@ -416,7 +422,7 @@ export function AnnouncementsSection() {
             {/* Close Button */}
             <button
               onClick={closeAnnouncement}
-              className="absolute top-4 right-4 p-2 rounded-full bg-background/50 dark:bg-white/5 hover:bg-card dark:hover:bg-white/10 text-white hover:text-foreground transition-all z-50 cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-full bg-background/50 dark:bg-white/5 hover:bg-card dark:hover:bg-white/10 text-foreground/80 dark:text-white hover:text-foreground transition-all z-50 cursor-pointer"
               aria-label="Close dialog"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -424,7 +430,7 @@ export function AnnouncementsSection() {
               </svg>
             </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-background dark:bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
               {/* Main content */}
               <article className="lg:col-span-2">
                 {/* Header gradient area */}
@@ -474,7 +480,7 @@ export function AnnouncementsSection() {
 
                   {/* Summary blockquote */}
                   {getSummary(selectedAnnouncement) && (
-                    <blockquote className="border-l-4 border-amber-500/50 bg-[#16162a] dark:bg-[#16162a] px-5 py-4 rounded-r-lg mb-8 text-muted-foreground dark:text-gray-300 italic text-base leading-relaxed">
+                    <blockquote className="border-l-4 border-amber-500/50 bg-muted/40 dark:bg-[#16162a] px-5 py-4 rounded-r-lg mb-8 text-muted-foreground dark:text-gray-300 italic text-base leading-relaxed">
                       {getSummary(selectedAnnouncement)}
                     </blockquote>
                   )}

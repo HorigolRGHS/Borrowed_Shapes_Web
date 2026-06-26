@@ -160,36 +160,61 @@ html {
   .ck.ck-editor__editable_inline {
     min-height: 100px;
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #111827 !important;
+    border-color: hsl(var(--border)) !important;
   }
 
   .ck-editor__editable p,
   .ck-editor__editable span,
   .ck-editor__editable li {
-    color: #000000 !important;
+    color: #111827 !important;
   }
 
   .ck.ck-editor__editable_inline.ck-placeholder::before {
     color: #666 !important;
   }
 
-  /* Wiki editor (.wiki-ck-editor) phai theo theme app, KHONG bi ep trang/den
-     nhu override mac dinh o tren (vốn danh cho editor achievements). Rule nay
-     nam cung @layer components va specific hon nen thang cho rieng wiki. */
-  .wiki-ck-editor .ck-editor__editable,
-  .wiki-ck-editor .ck.ck-editor__editable_inline {
-    background: hsl(var(--background)) !important;
-    color: hsl(var(--foreground)) !important;
+  html.dark .ck.ck-editor__main > .ck-editor__editable,
+  [data-theme="dark"] .ck.ck-editor__main > .ck-editor__editable {
+    background: #0f0f1a !important;
+    color: #f9fafb !important;
+    border-color: #1e1e3a !important;
   }
 
-  .wiki-ck-editor .ck-editor__editable p,
-  .wiki-ck-editor .ck-editor__editable span,
-  .wiki-ck-editor .ck-editor__editable li {
-    color: hsl(var(--foreground)) !important;
+  html.dark .ck-editor__editable p,
+  html.dark .ck-editor__editable span,
+  html.dark .ck-editor__editable li,
+  [data-theme="dark"] .ck-editor__editable p,
+  [data-theme="dark"] .ck-editor__editable span,
+  [data-theme="dark"] .ck-editor__editable li {
+    color: #f9fafb !important;
   }
 
-  .wiki-ck-editor .ck.ck-editor__editable_inline.ck-placeholder::before {
+  html.dark .ck.ck-editor__editable_inline.ck-placeholder::before,
+  [data-theme="dark"] .ck.ck-editor__editable_inline.ck-placeholder::before {
     color: hsl(var(--muted-foreground)) !important;
+  }
+
+  html.dark .ck.ck-toolbar,
+  [data-theme="dark"] .ck.ck-toolbar {
+    background: #111827 !important;
+    border-color: #1e1e3a !important;
+  }
+
+  html.dark .ck.ck-button,
+  [data-theme="dark"] .ck.ck-button {
+    color: #e5e7eb !important;
+  }
+
+  html.dark .ck.ck-button:hover,
+  [data-theme="dark"] .ck.ck-button:hover {
+    background: #1f2937 !important;
+  }
+
+  html.dark .ck.ck-dropdown__panel,
+  [data-theme="dark"] .ck.ck-dropdown__panel {
+    background: #111827 !important;
+    border-color: #1e1e3a !important;
   }
 }
 

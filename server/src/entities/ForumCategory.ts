@@ -30,7 +30,4 @@ export class ForumCategory {
   @Property({ type: 'boolean' })
   isOfficial: boolean & Opt = false;
 
-  @Property({ type: 'integer' })
-  displayOrder: number & Opt = 0;
-
 }

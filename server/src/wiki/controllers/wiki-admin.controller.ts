@@ -13,6 +13,7 @@ import { WikiDetailResponseDto } from '../dto/wiki-detail.dto';
 import { WikiCreateRequestDto } from '../dto/wiki-create.dto';
 import { WikiUpdateRequestDto } from '../dto/wiki-update.dto';
 import { WikiRollbackRequestDto } from '../dto/wiki-rollback.dto';
+import { WikiAdminStatsDto } from '../dto/wiki-admin-stats.dto';
 import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 
 @ApiTags('Wiki Admin')
@@ -33,6 +34,16 @@ export class WikiAdminController {
   ): Promise<ApiResponseDto<WikiListResponseDto>> {
     const data = await this.wikiService.list(query, true);
     return okResponse('wiki.list_success', data, `${req.method} ${req.path}`);
+  }
+
+  @Get('admin/stats')
+  @ApiOperation({ summary: 'Admin: wiki statistics' })
+  @ApiResponse({ status: 200, type: WikiAdminStatsDto })
+  async stats(
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<WikiAdminStatsDto>> {
+    const data = await this.wikiService.getAdminStats();
+    return okResponse('wiki.stats_success', data, `${req.method} ${req.path}`);
   }
 
   @Get('admin/:id')

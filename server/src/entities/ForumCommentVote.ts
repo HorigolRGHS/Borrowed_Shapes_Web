@@ -20,5 +20,6 @@ export class ForumCommentVote {
 }
 
 export enum ForumCommentVoteValue {
-  '-1' = '-1',
+  DOWN = '-1',
+  UP = '1',
 }

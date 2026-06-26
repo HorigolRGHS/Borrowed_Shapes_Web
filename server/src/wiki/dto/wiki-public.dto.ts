@@ -30,6 +30,9 @@ export class WikiPublicListItemDto {
   @ApiProperty()
   title!: string;
 
+  @ApiProperty({ type: WikiMetadataDto, nullable: true })
+  metadataJson!: WikiMetadataDto | null;
+
   @ApiProperty()
   isPublished!: boolean;
 

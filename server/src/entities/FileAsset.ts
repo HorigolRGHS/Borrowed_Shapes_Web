@@ -22,6 +22,9 @@ export class FileAsset {
   @Property({ type: 'text' })
   mimeType!: string;
 
+  @Property({ type: 'boolean', default: false })
+  isActive: boolean = false;
+
   @Property({ type: 'datetime', defaultRaw: `now()` })
   uploadedAt!: Date & Opt;
 

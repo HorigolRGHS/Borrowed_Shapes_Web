@@ -24,7 +24,7 @@ export function OlderVersions({ versions, onDownload, loadingId }: OlderVersions
         className="w-full flex items-center justify-between p-4 bg-card/50 hover:bg-card border border-border dark:border-white/10 rounded-2xl transition-colors text-left"
       >
         <span className="font-bold tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors">
-          {t("download.view_older_versions")}
+          {t("download.other_versions") || "Other Versions"}
         </span>
         <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
@@ -46,9 +46,13 @@ export function OlderVersions({ versions, onDownload, loadingId }: OlderVersions
                   <tr key={v.id} className="border-b border-border dark:border-white/5 hover:bg-muted/50 dark:hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 font-medium text-foreground dark:text-white flex items-center gap-2">
                       {v.fileVersion}
-                      {v.isLatest && (
-                        <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full border border-primary/30">
-                          ★ {t("download.latest")}
+                      {v.isActive ? (
+                        <span className="bg-amber-500/20 text-amber-600 dark:text-amber-500 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30">
+                          ★ {t("download.recommended_version") || "Recommended"}
+                        </span>
+                      ) : (
+                        <span className="bg-muted text-muted-foreground text-[10px] px-2 py-0.5 rounded-full border border-border">
+                          {t("download.inactive_version") || "Older / Inactive"}
                         </span>
                       )}
                     </td>

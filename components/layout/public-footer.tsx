@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useI18n } from "@/lib/i18/i18n-context";
 
 export function PublicFooter() {
   const { t } = useI18n();
+  const [imgError, setImgError] = useState(false);
+  
+  const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev";
+  const logoUrl = `${R2_BASE}/Logo.jpg`;
 
   return (
     <footer className="bg-background dark:bg-[#07070f] border-t border-border dark:border-[#1e1e3a]">
@@ -13,9 +18,15 @@ export function PublicFooter() {
           {/* Left block: Brand */}
           <div className="md:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-2 group w-fit">
-              <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:shadow-orange-500/40 transition-shadow">
-                <span className="font-bold text-white text-lg">B</span>
-              </div>
+              {!imgError ? (
+                <div className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0">
+                  <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:shadow-orange-500/40 transition-shadow shrink-0">
+                  <span className="font-bold text-white text-lg">B</span>
+                </div>
+              )}
               <span className="font-black text-lg tracking-wider text-foreground dark:text-white">
                 BORROWED SHAPES
               </span>
@@ -66,26 +77,22 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-3">
               <li>
-                {/* TODO: add route later */}
-                <Link href="#" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
-                  {t("footer.about")}
+                <Link href="/about-us" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                  {t("footer.about") || "About Us"}
                 </Link>
               </li>
               <li>
-                {/* TODO: add route later */}
-                <Link href="#" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                <Link href="/contact" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
                   {t("footer.contact")}
                 </Link>
               </li>
               <li>
-                {/* TODO: add route later */}
-                <Link href="#" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                <Link href="/privacy" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
                   {t("footer.privacy")}
                 </Link>
               </li>
               <li>
-                {/* TODO: add route later */}
-                <Link href="#" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                <Link href="/terms" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
                   {t("footer.terms")}
                 </Link>
               </li>

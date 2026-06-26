@@ -193,8 +193,8 @@ export class WikiRevisionService {
         });
       }
 
-      if (dto.slug !== page.slug) validateSlugOrThrow(dto.slug);
-      if (dto.slugVi !== page.slugVi) validateSlugOrThrow(dto.slugVi);
+      if (dto.slug !== undefined && dto.slug !== page.slug) validateSlugOrThrow(dto.slug);
+      if (dto.slugVi !== undefined && dto.slugVi !== page.slugVi) validateSlugOrThrow(dto.slugVi);
 
       const willPublish = dto.isPublished === true && page.isPublished === false;
       const effectiveContent = dto.content;
@@ -236,10 +236,10 @@ export class WikiRevisionService {
         };
       }
 
-      page.slug = dto.slug;
-      page.slugVi = dto.slugVi;
-      page.title = dto.title;
-      page.titleVi = dto.titleVi;
+      if (dto.slug !== undefined) page.slug = dto.slug;
+      if (dto.slugVi !== undefined) page.slugVi = dto.slugVi;
+      if (dto.title !== undefined) page.title = dto.title;
+      if (dto.titleVi !== undefined) page.titleVi = dto.titleVi;
       page.metadataJson = compactMetadata(dto.metadataJson);
       if (dto.isPublished !== undefined) page.isPublished = dto.isPublished;
 

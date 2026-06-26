@@ -4,7 +4,8 @@
     "request_failed": "Request failed",
     "internal_server_error": "Internal server error",
     "invalid_json_payload": "Invalid JSON payload",
-    "forbidden": "You do not have permission to access this resource"
+    "forbidden": "You do not have permission to access this resource",
+    "cancel": "Cancel"
   },
   "auth": {
     "google_not_configured": "Google Login is not configured",
@@ -272,5 +273,71 @@
   "account": {
     "profile_updated": "Profile updated successfully",
     "avatar_upload_url_created": "Avatar upload URL created successfully"
+  },
+  "admin": {
+    "download": {
+      "active": {
+        "badge": "Active",
+        "current": "Current Version",
+        "set_active": "Set Active",
+        "title": "Set Active Download Version",
+        "description": "This version will become the recommended download on the public Download page. The previous active version will become inactive but will remain in the version list.",
+        "warning": "Use this when the newest upload has issues and you want users to download a stable older version.",
+        "confirm": "Confirm",
+        "success": "Active download version updated successfully.",
+        "error": "Failed to update active download version.",
+        "inactive_badge": "Inactive",
+        "summary_title": "Current Public Download",
+        "no_active": "No active version selected.",
+        "summary_note": "Users will download this version from the public Download page.",
+        "inactive_note": "Visible in the version list, but not used as the recommended download.",
+        "current_version": "Current active version",
+        "new_version": "New active version"
+      }
+    }
+  },
+  "download": {
+    "active_version": "Active Version",
+    "no_version": "No download version is available yet.",
+    "recommended_version": "Recommended Version",
+    "other_versions": "Other Versions",
+    "inactive_version": "Inactive",
+    "not_recommended": "Not recommended"
+  },
+  "contact": {
+    "eyebrow": "Support & Feedback",
+    "title": "Contact Borrowed Shapes",
+    "description": "Need help with your account, downloads, forum, achievements, gameplay results, or a bug report? Contact the Borrowed Shapes team through the project’s official channel.",
+    "lastUpdated": "Last updated: 21/06/2026",
+    "card": {
+      "title": "Contact us on Facebook",
+      "description": "The fastest way to send questions, bug reports, or feedback to the Borrowed Shapes team is through the project’s official Facebook page.",
+      "cta": "Open Facebook",
+      "secondaryNote": "If you are reporting a bug, please describe the issue clearly and include reproduction steps, browser/device information, and screenshots if available."
+    },
+    "topics": [
+      "Account & login",
+      "Game download",
+      "Website or game bugs",
+      "Forum, Wiki & comments",
+      "Gameplay results, leaderboards & achievements",
+      "Content reports",
+      "Product feedback"
+    ],
+    "privacyReminder": "Do not send passwords, verification codes, access tokens, refresh tokens, or sensitive information through messages. The Borrowed Shapes team will never ask for your password.",
+    "faq": [
+      {
+        "q": "I cannot log in. What should I do?",
+        "a": "Check your email/password, try the forgot password flow, or sign in again with Google if you use Google Login."
+      },
+      {
+        "q": "I cannot download the game. What should I do?",
+        "a": "Go to the Download page, choose the recommended/active version, and try again with a stable internet connection."
+      },
+      {
+        "q": "How do I report inappropriate content?",
+        "a": "Use the report feature on the website if available, or send the relevant link/content through the official contact channel."
+      }
+    ]
   }
 }

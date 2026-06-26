@@ -29,8 +29,12 @@ export default function DownloadPage() {
       const items = data?.data?.items || [];
       
       setVersions(items);
-      if (items.length > 0) {
-        setLatestVersion(items.find((i: any) => i.isLatest) || items[0]);
+      const activeVersion = items.find((i: any) => i.isActive);
+      
+      if (activeVersion) {
+        setLatestVersion(activeVersion);
+      } else {
+        setLatestVersion(items.length > 0 ? items[0] : null);
       }
     } catch (error) {
       console.error("Failed to fetch versions:", error);
@@ -65,9 +69,7 @@ export default function DownloadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans">
-      <PublicHeader />
-
+    <>
       <main className="flex-1 flex flex-col items-center pt-32 pb-16 px-4">
         <div className="text-center mb-12 max-w-2xl">
           <h1 className="text-5xl md:text-6xl font-extrabold text-foreground dark:text-white mb-6">
@@ -90,11 +92,6 @@ export default function DownloadPage() {
           </div>
         )}
 
-        <PlatformSelector
-          selectedPlatform={selectedPlatform}
-          onSelectPlatform={setSelectedPlatform}
-        />
-
         <div className="w-full mt-8">
           <DownloadCard
             latestVersion={latestVersion}
@@ -104,14 +101,16 @@ export default function DownloadPage() {
           />
         </div>
 
-        <OlderVersions
-          versions={versions}
-          onDownload={handleDownload}
-          loadingId={loadingId}
-        />
+        {versions.length > 0 && (
+          <div className="mt-16 w-full">
+            <OlderVersions
+              versions={versions}
+              onDownload={handleDownload}
+              loadingId={loadingId}
+            />
+          </div>
+        )}
       </main>
-
-      <PublicFooter />
-    </div>
+    </>
   );
 }

@@ -229,7 +229,7 @@ export class GameResultResponseDto {
 
 export class GameResultDetailResponseDto extends GameResultResponseDto {
   @ApiProperty({ type: [GameResultSessionDto] })
-  sessions!: GameResultSessionDto[];
+  declare sessions: GameResultSessionDto[];
 }
 
 export class GameResultListResponseDto {

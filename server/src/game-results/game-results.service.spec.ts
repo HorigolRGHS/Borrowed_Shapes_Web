@@ -212,7 +212,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_rows_null (Boundary)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce(null);
+      jest.spyOn(em, 'execute').mockResolvedValueOnce(null as any);
 
       await expect(service.findOne('null-result')).rejects.toThrow(
         NotFoundException,
@@ -395,9 +395,9 @@ describe('GameResultService', () => {
       expect(countCall[0]).toContain('"completedAt" <');
       expect(countCall[0]).toContain('"lobbyCode" IN (SELECT st.code');
       
-      const startParam = countCall[1][0];
-      const endParam = countCall[1][1];
-      const seasonMonthParam = countCall[1][2];
+      const startParam = countCall[1]![0];
+      const endParam = countCall[1]![1];
+      const seasonMonthParam = countCall[1]![2];
       expect(startParam.getUTCFullYear()).toBe(2026);
       expect(startParam.getUTCMonth()).toBe(5); // 0-indexed (June is 5)
       expect(startParam.getUTCDate()).toBe(1);
@@ -421,7 +421,7 @@ describe('GameResultService', () => {
       const countCall = executeSpy.mock.calls[0];
       expect(countCall[0]).toContain('"completedAt" >=');
       
-      const startParam = countCall[1][0];
+      const startParam = countCall[1]![0];
       const now = new Date();
       expect(startParam.getUTCFullYear()).toBe(now.getUTCFullYear());
       expect(startParam.getUTCMonth()).toBe(now.getUTCMonth());

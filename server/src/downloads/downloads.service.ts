@@ -12,6 +12,8 @@ import { FileAsset } from '../entities/FileAsset';
 import { DownloadLog } from '../entities/DownloadLog';
 import { DownloadStats } from '../entities/DownloadStats';
 import { User } from '../entities/User';
+import { AuditLog } from '../entities/AuditLog';
+import { AuditActionType } from '../entities/AuditActionType';
 import { GameVersionQueryDto } from './dto/game-version-query.dto';
 import { CreateUploadUrlDto } from './dto/create-upload-url.dto';
 import { ConfirmUploadDto } from './dto/confirm-upload.dto';
@@ -35,27 +37,66 @@ export class DownloadsService {
 
   // ─── 1. List game versions ───────────────────────────────
   async listVersions(query: GameVersionQueryDto) {
-    const { page = 1, limit = 10, search, sort = 'desc', version } = query;
+    const { page = 1, limit = 10, search, sortBy = 'uploadedAt', sort = 'desc', version } = query;
     const offset = (page - 1) * limit;
 
-    const qb = this.em.createQueryBuilder(FileAsset, 'f');
+    const allowedSortBy = ['uploadedAt', 'fileVersion', 'fileSize', 'downloadCount'];
+    const validSortBy = allowedSortBy.includes(sortBy) ? sortBy : 'uploadedAt';
+    const sortDirection = sort === 'asc' ? 'ASC' : 'DESC';
+
+    const knex = this.em.getConnection().getKnex();
+
+    // Base query for counting
+    const countQuery = knex('web.FileAsset as f').count('* as total');
+
+    // Base query for data
+    const dataQuery = knex('web.FileAsset as f')
+      .select([
+        'f.id',
+        'f.fileName',
+        'f.fileVersion',
+        'f.fileSize',
+        'f.mimeType',
+        'f.isActive',
+        'f.uploadedAt',
+        'f.updatedAt',
+        knex.raw('COALESCE(ds."downloadCount", 0)::int AS "downloadCount"')
+      ])
+      .leftJoin(
+        knex.raw(`(
+          SELECT "fileAssetId", COALESCE(SUM("downloadCount"), 0)::int AS "downloadCount"
+          FROM web."DownloadStats"
+          GROUP BY "fileAssetId"
+        ) as ds`),
+        'ds.fileAssetId',
+        'f.id'
+      )
+      .limit(limit)
+      .offset(offset);
 
     if (search) {
-      qb.andWhere({ fileName: { $ilike: `%${search}%` } });
-    }
-    if (version) {
-      qb.andWhere({ fileVersion: version });
+      countQuery.where('f.fileName', 'ilike', `%${search}%`);
+      dataQuery.where('f.fileName', 'ilike', `%${search}%`);
     }
 
-    const [items, total] = await Promise.all([
-      qb
-        .clone()
-        .orderBy({ uploadedAt: sort === 'asc' ? 'ASC' : 'DESC' })
-        .limit(limit)
-        .offset(offset)
-        .getResultList(),
-      qb.clone().getCount(),
+    if (version) {
+      countQuery.where('f.fileVersion', version);
+      dataQuery.where('f.fileVersion', version);
+    }
+
+    if (validSortBy === 'downloadCount') {
+      dataQuery.orderBy('downloadCount', sortDirection);
+      dataQuery.orderBy('f.uploadedAt', 'DESC');
+    } else {
+      dataQuery.orderBy(`f.${validSortBy}`, sortDirection);
+    }
+
+    const [[countResult], items] = await Promise.all([
+      countQuery,
+      dataQuery,
     ]);
+
+    const total = Number(countResult.total);
 
     // Determine latest version (most recently uploaded)
     const latestId = total > 0 ? await this.getLatestVersionId() : null;
@@ -67,8 +108,10 @@ export class DownloadsService {
         fileVersion: f.fileVersion,
         fileSize: Number(f.fileSize),
         mimeType: f.mimeType,
+        isActive: f.isActive,
         uploadedAt: f.uploadedAt,
         updatedAt: f.updatedAt,
+        downloadCount: Number(f.downloadCount || 0),
         isLatest: f.id === latestId,
       })),
       pagination: {
@@ -88,6 +131,67 @@ export class DownloadsService {
       .limit(1)
       .getSingleResult();
     return latest?.id ?? null;
+  }
+
+  // ─── Active Version Management ───────────────────────────────
+  async getActiveVersion() {
+    let active = await this.em.findOne(FileAsset, { isActive: true });
+    
+    if (!active) {
+      // Fallback to latest
+      active = await this.em
+        .createQueryBuilder(FileAsset, 'f')
+        .orderBy({ uploadedAt: 'DESC' })
+        .limit(1)
+        .getSingleResult();
+    }
+
+    if (!active) return null;
+
+    return {
+      id: active.id,
+      fileName: active.fileName,
+      fileVersion: active.fileVersion,
+      fileSize: Number(active.fileSize),
+      mimeType: active.mimeType,
+      isActive: active.isActive,
+      uploadedAt: active.uploadedAt,
+      updatedAt: active.updatedAt,
+    };
+  }
+
+  async setActiveVersion(id: string, adminUser: { userId: string }) {
+    return await this.em.transactional(async (em) => {
+      const target = await em.findOneOrFail(FileAsset, { id });
+      const previousActive = await em.findOne(FileAsset, { isActive: true });
+
+      if (previousActive?.id !== target.id) {
+        // Set all to false
+        await em.nativeUpdate(FileAsset, {}, { isActive: false });
+        
+        // Set target to true
+        target.isActive = true;
+        await em.persistAndFlush(target);
+
+        // Record AuditLog
+        const log = em.create(AuditLog, {
+          userId: adminUser.userId,
+          actionType: AuditActionType.UPDATE,
+          entityName: 'FileAsset',
+          entityId: target.id,
+          oldValue: previousActive ? { id: previousActive.id, fileVersion: previousActive.fileVersion } : null,
+          newValue: { id: target.id, fileVersion: target.fileVersion },
+        });
+        await em.persistAndFlush(log);
+      }
+
+      return {
+        id: target.id,
+        fileName: target.fileName,
+        fileVersion: target.fileVersion,
+        isActive: target.isActive,
+      };
+    });
   }
 
   // ─── 2. Request download ─────────────────────────────────
@@ -348,6 +452,7 @@ export class DownloadsService {
       filePath: dto.filePath,
       fileSize: BigInt(dto.fileSize),
       mimeType: dto.mimeType,
+      isActive: false,
     });
 
     try {

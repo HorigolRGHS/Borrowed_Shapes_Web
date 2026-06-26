@@ -66,16 +66,16 @@ export default async function WikiHistoryPage({
         {dict.wiki.history_heading.replace('{title}', title)}
       </h1>
 
-      <WikiHistoryList
-        pageId={detail.id}
-        slug={slug}
-        items={history.items}
-        total={history.total}
-        page={history.page}
-        totalPages={history.totalPages}
-        expectedLatestRevisionId={detail.latestRevision.id}
-      />
-    </main>
+        <WikiHistoryList
+          pageId={detail.id}
+          slug={slug}
+          items={history.items}
+          total={history.total}
+          page={history.page}
+          totalPages={history.totalPages}
+          expectedLatestRevisionId={detail.latestRevision.id}
+        />
+      </main>
     </>
   );
 }

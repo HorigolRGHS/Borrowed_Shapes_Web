@@ -31,8 +31,8 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
   // Local file for preview before save
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  // The R2 public URL after upload
-  const [uploadedPublicUrl, setUploadedPublicUrl] = useState<string | null>(null);
+  // The R2 object key after upload
+  const [uploadedKey, setUploadedKey] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,7 +44,7 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
       setEquippedAchievementId(user.equippedAchievementId?.id || user.equippedAchievement?.id || null);
       setSelectedFile(null);
       setPreviewUrl(null);
-      setUploadedPublicUrl(null);
+      setUploadedKey(null);
 
       // Fetch user achievements for frames
       api.get("/auth/me?include=achievements").then((res) => {
@@ -105,14 +105,14 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
         throw new Error("Upload failed");
       }
 
-      // Store the R2 public URL to use on save
-      setUploadedPublicUrl(uploadData.publicUrl);
-      setImgUrl(uploadData.publicUrl);
+      // Store the R2 object key to use on save
+      setUploadedKey(uploadData.key);
+      // Do not set imgUrl to publicUrl to prevent UI from fetching it
     } catch (err) {
       console.error(err);
       toast.error(t("profile.edit.error"));
       setSelectedFile(null);
-      setUploadedPublicUrl(null);
+      setUploadedKey(null);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -122,7 +122,7 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
   const handleRemoveAvatar = () => {
     setImgUrl(null);
     setSelectedFile(null);
-    setUploadedPublicUrl(null);
+    setUploadedKey(null);
   };
 
   const handleSave = async () => {
@@ -133,11 +133,18 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
 
     try {
       setIsSaving(true);
-      await api.patch("/account/profile", {
+      const payload: any = {
         displayName: displayName.trim(),
-        imgUrl,
         equippedAchievementId,
-      });
+      };
+
+      if (uploadedKey !== null) {
+        payload.imgUrl = uploadedKey;
+      } else if (imgUrl === null) {
+        payload.imgUrl = null;
+      }
+
+      await api.patch("/account/profile", payload);
 
       // Sync profile → broadcasts api:profile-updated event
       await syncProfile();

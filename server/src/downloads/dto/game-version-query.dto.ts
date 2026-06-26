@@ -24,7 +24,16 @@ export class GameVersionQueryDto {
   search?: string;
 
   @ApiPropertyOptional({
-    description: 'Sort order for uploadedAt',
+    description: 'Sort by field',
+    enum: ['uploadedAt', 'fileVersion', 'fileSize', 'downloadCount'],
+    default: 'uploadedAt',
+  })
+  @IsOptional()
+  @IsIn(['uploadedAt', 'fileVersion', 'fileSize', 'downloadCount'])
+  sortBy?: 'uploadedAt' | 'fileVersion' | 'fileSize' | 'downloadCount' = 'uploadedAt';
+
+  @ApiPropertyOptional({
+    description: 'Sort order',
     enum: ['asc', 'desc'],
     default: 'desc',
   })

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Readable } from 'stream';
 import { ConfigService } from '@nestjs/config';
 import {
   S3Client,
@@ -18,11 +19,32 @@ export class R2StorageService {
 
   constructor(private readonly configService: ConfigService) {
     const endpoint = this.configService.getOrThrow<string>('R2_ENDPOINT');
-    const accessKeyId = this.configService.getOrThrow<string>('R2_ACCESS_KEY_ID');
-    const secretAccessKey = this.configService.getOrThrow<string>('R2_SECRET_ACCESS_KEY');
+    const accessKeyId =
+      this.configService.getOrThrow<string>('R2_ACCESS_KEY_ID');
+    const secretAccessKey = this.configService.getOrThrow<string>(
+      'R2_SECRET_ACCESS_KEY',
+    );
+
+    if (!accessKeyId) {
+      throw new Error(
+        'R2_ACCESS_KEY_ID is missing or empty in environment variables',
+      );
+    }
+    if (!secretAccessKey) {
+      throw new Error(
+        'R2_SECRET_ACCESS_KEY is missing or empty in environment variables',
+      );
+    }
+
+    console.log('R2 accessKeyId exists:', Boolean(accessKeyId));
+    console.log('R2 accessKeyId prefix:', accessKeyId.slice(0, 6));
+    console.log('R2 secretAccessKey exists:', Boolean(secretAccessKey));
 
     this.bucket = this.configService.getOrThrow<string>('R2_BUCKET_NAME');
-    this.expiresIn = this.configService.get<number>('R2_SIGNED_URL_EXPIRES', 300);
+    this.expiresIn = this.configService.get<number>(
+      'R2_SIGNED_URL_EXPIRES',
+      300,
+    );
 
     this.s3 = new S3Client({
       region: 'auto',
@@ -70,6 +92,12 @@ export class R2StorageService {
       signableHeaders: new Set(['host', 'content-type']),
     });
 
+    console.log('R2 signed upload key:', params.key);
+    console.log('R2 signed upload contentType:', contentType);
+    console.log(
+      'R2 upload url signed headers:',
+      uploadUrl.match(/X-Amz-SignedHeaders=([^&]+)/)?.[1],
+    );
 
     return uploadUrl;
   }
@@ -84,7 +112,10 @@ export class R2StorageService {
       );
       return true;
     } catch (error: any) {
-      if (error?.name === 'NotFound' || error?.$metadata?.httpStatusCode === 404) {
+      if (
+        error?.name === 'NotFound' ||
+        error?.$metadata?.httpStatusCode === 404
+      ) {
         return false;
       }
       throw error;
@@ -122,6 +153,22 @@ export class R2StorageService {
         ContentType: contentType || 'application/octet-stream',
       }),
     );
+  }
+
+  /**
+   * Retrieve the object stream and metadata from the bucket.
+   */
+  async getObjectStream(
+    key: string,
+  ): Promise<{ stream: Readable; contentType: string; contentLength: number }> {
+    const response = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    return {
+      stream: response.Body as Readable,
+      contentType: response.ContentType ?? 'application/octet-stream',
+      contentLength: response.ContentLength ?? 0,
+    };
   }
 
   /**

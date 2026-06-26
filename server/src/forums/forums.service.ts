@@ -20,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'crypto';
 import { ThreadImageUploadRequestDto, ThreadImageUploadResponseDto } from './dto/thread-image-upload.dto';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
 
 @Injectable()
 export class ForumService {

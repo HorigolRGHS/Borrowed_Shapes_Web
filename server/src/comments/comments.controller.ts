@@ -60,8 +60,6 @@ export class CommentsController {
       limitNum,
       user?.userId
     );
-
-    console.log("Test controller");
     return okResponse('comments.list_success', data, 'GET /comments');
   }
 

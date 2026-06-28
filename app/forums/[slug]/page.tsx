@@ -386,7 +386,7 @@ export default function ForumDetailPage() {
             {/* Content and Author Row */}
             <div className="flex gap-4 items-start">
               {/* Left Side: Avatar */}
-              <div 
+              <div
                 onClick={handleAvatarClick}
                 className="relative flex h-12 w-12 items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-85 transition-opacity"
               >
@@ -398,11 +398,11 @@ export default function ForumDetailPage() {
                   )}
                 </div>
                 {thread.author?.badgeImageUrl && (
-                  <img 
-                    src={thread.author.badgeImageUrl} 
-                    alt="" 
-                    aria-hidden="true" 
-                    className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+                  <img
+                    src={thread.author.badgeImageUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm"
                   />
                 )}
               </div>
@@ -414,9 +414,6 @@ export default function ForumDetailPage() {
                   <span className="font-semibold text-slate-800 dark:text-white text-sm">
                     {thread.author?.displayName ?? "Unknown"}
                   </span>
-                  {thread.author?.badgeImageUrl && (
-                    <img src={thread.author.badgeImageUrl} alt="Badge" className="h-4 w-4 object-contain" />
-                  )}
                   <span className="flex items-center gap-1 ml-2">
                     <Calendar className="h-3 w-3" />
                     {new Date(thread.createdAt).toLocaleDateString()}

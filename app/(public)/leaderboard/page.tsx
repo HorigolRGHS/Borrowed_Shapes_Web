@@ -7,6 +7,7 @@ import { api, getUserProfile } from "@/lib/api/api-client";
 import { LeaderboardPodium, LeaderboardEntry } from "@/components/leaderboard/leaderboard-podium";
 import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import { LeaderboardRunModal } from "@/components/leaderboard/leaderboard-run-modal";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 export default function LeaderboardPage() {
   const { t, locale } = useI18n();
@@ -103,14 +104,13 @@ export default function LeaderboardPage() {
         
         <div className="relative max-w-5xl mx-auto px-4 text-center">
           <span
-            className="text-amber-600 dark:text-amber-400 text-xs font-bold tracking-widest uppercase mb-2 block font-orbitron"
+            className="text-amber-600 dark:text-amber-400 text-xs font-bold tracking-widest uppercase mb-2 block"
           >
             {t("leaderboard.hero_subtitle")}
           </span>
           <h1
             className="text-foreground dark:text-white tracking-tight font-extrabold"
             style={{
-              fontFamily: "var(--font-orbitron), sans-serif",
               fontSize: "clamp(28px, 6vw, 48px)",
             }}
           >
@@ -128,7 +128,7 @@ export default function LeaderboardPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleTabChange("all-time")}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold font-rajdhani border transition-all cursor-pointer ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
                 activeTab === "all-time"
                   ? "bg-amber-500/10 dark:bg-gradient-to-r dark:from-amber-500/20 dark:to-amber-400/10 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
                   : "bg-transparent border-border dark:border-[#1e1e3a] text-muted-foreground hover:text-foreground dark:text-gray-500 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-600"
@@ -138,7 +138,7 @@ export default function LeaderboardPage() {
             </button>
             <button
               onClick={() => handleTabChange("seasonal")}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold font-rajdhani border transition-all cursor-pointer ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
                 activeTab === "seasonal"
                   ? "bg-amber-500/10 dark:bg-gradient-to-r dark:from-amber-500/20 dark:to-amber-400/10 border-amber-500/40 text-amber-700 dark:text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
                   : "bg-transparent border-border dark:border-[#1e1e3a] text-muted-foreground hover:text-foreground dark:text-gray-500 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-600"
@@ -159,10 +159,10 @@ export default function LeaderboardPage() {
                 <Users size={20} />
               </div>
               <div>
-                <p className="text-muted-foreground text-[10px] font-orbitron uppercase tracking-widest">
+                <p className="text-muted-foreground text-[10px] uppercase tracking-widest">
                   {t("leaderboard.stats_total_runs")}
                 </p>
-                <p className="text-foreground dark:text-white text-2xl font-black font-orbitron">
+                <p className="text-foreground dark:text-white text-2xl font-black">
                   {isLoading ? "..." : total}
                 </p>
               </div>
@@ -190,15 +190,15 @@ export default function LeaderboardPage() {
           <div className="mt-8 bg-card dark:bg-[#0f0f1a]/95 backdrop-blur-md border border-border dark:border-violet-500/20 rounded-2xl p-5 shadow-lg">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0 border border-border dark:border-violet-500/20">
-                  {user.imgUrl ? (
-                    <img src={user.imgUrl} alt="Avatar" className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    user.displayName?.[0]?.toUpperCase() || "U"
-                  )}
-                </div>
+                <AvatarWithFrame
+                  displayName={user.displayName}
+                  avatarUrl={user.imgUrl}
+                  badgeImageUrl={user.equippedAchievement?.badgeImageUrl || user.equippedAchievementId?.badgeImageUrl}
+                  size="md"
+                  className="border border-border dark:border-violet-500/20 rounded-full"
+                />
                 <div>
-                  <p className="text-foreground dark:text-white text-sm font-bold font-rajdhani">
+                  <p className="text-foreground dark:text-white text-sm font-bold">
                     {user.displayName}
                   </p>
                   <p className="text-muted-foreground text-xs font-sans">
@@ -218,11 +218,11 @@ export default function LeaderboardPage() {
                 </div>
                 
                 {userRankEntry ? (
-                  <span className="text-green-600 dark:text-green-400 text-xs font-bold font-rajdhani flex items-center gap-1 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-lg">
+                  <span className="text-green-600 dark:text-green-400 text-xs font-bold flex items-center gap-1 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-lg">
                     {t("leaderboard.ranked")}
                   </span>
                 ) : (
-                  <span className="text-amber-600 dark:text-amber-400 text-xs font-bold font-rajdhani flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-lg">
+                  <span className="text-amber-600 dark:text-amber-400 text-xs font-bold flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-lg">
                     {t("leaderboard.unranked")}
                   </span>
                 )}

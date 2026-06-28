@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -295,305 +296,299 @@ export default function GameResultsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 overflow-y-auto px-8 py-8">
-          {/* Header */}
-          <div className="mb-8 flex flex-col gap-4">
-            <div>
-              <h2 className="text-4xl font-bold text-foreground sm:text-2xl">{t("gameResults.management_title")}</h2>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("gameResults.management_title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("gameResults.management_subtitle")}</p>
+        </div>
+
+        {/* Tab switcher */}
+        <div className="flex items-center gap-1 rounded-lg border border-border p-1 bg-muted/40 shrink-0 self-start md:self-auto">
+          <button
+            id="tab-runs"
+            onClick={() => { setActiveTab("runs"); setRunsPage(1); }}
+            className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
+              activeTab === "runs"
+                ? "bg-amber-500 text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("gameResults.tab_runs")}
+          </button>
+          <button
+            id="tab-leaderboard"
+            onClick={() => { setActiveTab("leaderboard"); setLeaderboardPage(1); }}
+            className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
+              activeTab === "leaderboard"
+                ? "bg-amber-500 text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("gameResults.tab_leaderboard")}
+          </button>
+        </div>
+      </div>
+
+      {/* RUNS TAB */}
+      {activeTab === "runs" && (
+        <Card>
+          <CardContent className="p-6">
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setRunsPage(1); }}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("gameResults.filter_all_status")}</SelectItem>
+                  <SelectItem value="completed">{t("gameResults.filter_completed")}</SelectItem>
+                  <SelectItem value="in_progress">{t("gameResults.filter_in_progress")}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={visibilityFilter} onValueChange={(val) => { setVisibilityFilter(val); setRunsPage(1); }}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("gameResults.filter_all_visibility")}</SelectItem>
+                  <SelectItem value="public">{t("gameResults.filter_public")}</SelectItem>
+                  <SelectItem value="private">{t("gameResults.filter_private")}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-xs uppercase tracking-wider h-10"
+              >
+                {t("gameResults.filter_clear")}
+              </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="max-w-3xl">
-                <p className="text-sm leading-7 text-muted-foreground">{t("gameResults.management_subtitle")}</p>
-                <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
+            {runsLoading ? (
+              <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">
+                {t("gameResults.loading")}
               </div>
+            ) : (
+              <>
+                <div className="rounded-md border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border hover:bg-transparent">
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_run_id")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_lobby")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_details")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_status_type")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_timeline")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("gameResults.col_actions")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {runs.length > 0 ? (
+                        runs.map((run) => (
+                          <TableRow key={run.id} className="border-border hover:bg-muted/50">
+                            {/* Run ID */}
+                            <TableCell className="text-muted-foreground font-mono text-sm">
+                              {run.id.slice(0, 8)}
+                            </TableCell>
 
-              {/* Tab switcher */}
-              <div className="flex items-center gap-1 rounded-lg border border-border p-1 shrink-0 self-start md:self-auto">
-                <button
-                  id="tab-runs"
-                  onClick={() => { setActiveTab("runs"); setRunsPage(1); }}
-                  className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
-                    activeTab === "runs"
-                      ? "bg-amber-500 text-white"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t("gameResults.tab_runs")}
-                </button>
-                <button
-                  id="tab-leaderboard"
-                  onClick={() => { setActiveTab("leaderboard"); setLeaderboardPage(1); }}
-                  className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
-                    activeTab === "leaderboard"
-                      ? "bg-amber-500 text-white"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t("gameResults.tab_leaderboard")}
-                </button>
-              </div>
-            </div>
+                            {/* Lobby */}
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-foreground">{run.lobbyName || "—"}</span>
+                                {run.lobbyCode && (
+                                  <span className="text-xs text-muted-foreground">Code: {run.lobbyCode}</span>
+                                )}
+                              </div>
+                            </TableCell>
 
-            {/* Filters - only for runs tab */}
-            {activeTab === "runs" && (
-              <div className="flex items-center gap-3 mt-2">
-                <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setRunsPage(1); }}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("gameResults.filter_all_status")}</SelectItem>
-                    <SelectItem value="completed">{t("gameResults.filter_completed")}</SelectItem>
-                    <SelectItem value="in_progress">{t("gameResults.filter_in_progress")}</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={visibilityFilter} onValueChange={(val) => { setVisibilityFilter(val); setRunsPage(1); }}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("gameResults.filter_all_visibility")}</SelectItem>
-                    <SelectItem value="public">{t("gameResults.filter_public")}</SelectItem>
-                    <SelectItem value="private">{t("gameResults.filter_private")}</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearFilters}
-                  className="text-xs uppercase tracking-wider"
-                >
-                  {t("gameResults.filter_clear")}
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* RUNS TAB */}
-          {activeTab === "runs" && (
-            <>
-              {runsLoading ? (
-                <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">
-                  {t("gameResults.loading")}
-                </div>
-              ) : (
-                <>
-                  <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-border hover:bg-transparent">
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_run_id")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_lobby")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_details")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_status_type")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_timeline")}</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("gameResults.col_actions")}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {runs.length > 0 ? (
-                          runs.map((run) => (
-                            <TableRow key={run.id} className="border-border hover:bg-muted/50">
-                              {/* Run ID */}
-                              <TableCell className="text-muted-foreground font-mono text-sm">
-                                {run.id.slice(0, 8)}
-                              </TableCell>
-
-                              {/* Lobby */}
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-foreground">{run.lobbyName || "—"}</span>
-                                  {run.lobbyCode && (
-                                    <span className="text-xs text-muted-foreground">Code: {run.lobbyCode}</span>
-                                  )}
-                                </div>
-                              </TableCell>
-
-                              {/* Details */}
-                              <TableCell>
-                                <div className="flex flex-col gap-1 text-sm">
-                                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                                    <Users className="h-3.5 w-3.5 text-orange-400" />
-                                    {run.players?.length || 0} {t("gameResults.players")}
-                                  </span>
-                                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                                    <Globe className="h-3.5 w-3.5 text-emerald-400" />
-                                    {run.sessions && run.sessions.length > 0 ? (
-                                      <span>
-                                        {(() => {
-                                          const latest = run.sessions[run.sessions.length - 1];
-                                          return latest.levelOrder === 0 ? "Lobby" : `Level ${latest.levelOrder}`;
-                                        })()}
-                                      </span>
-                                    ) : (
-                                      <span>{run.totalLevels} {t("gameResults.levels")}</span>
-                                    )}
-                                  </span>
-                                  <span className="flex items-center gap-1.5">
-                                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                                    <span className={run.totalTimeSec ? "text-amber-400 font-semibold" : "text-muted-foreground"}>
-                                      {formatTime(run.totalTimeSec)}
+                            {/* Details */}
+                            <TableCell>
+                              <div className="flex flex-col gap-1 text-sm">
+                                <span className="flex items-center gap-1.5 text-muted-foreground">
+                                  <Users className="h-3.5 w-3.5 text-orange-400" />
+                                  {run.players?.length || 0} {t("gameResults.players")}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-muted-foreground">
+                                  <Globe className="h-3.5 w-3.5 text-emerald-400" />
+                                  {run.sessions && run.sessions.length > 0 ? (
+                                    <span>
+                                      {(() => {
+                                        const latest = run.sessions[run.sessions.length - 1];
+                                        return latest.levelOrder === 0 ? "Lobby" : `Level ${latest.levelOrder}`;
+                                      })()}
                                     </span>
+                                  ) : (
+                                    <span>{run.totalLevels} {t("gameResults.levels")}</span>
+                                  )}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className={run.totalTimeSec ? "text-amber-400 font-semibold" : "text-muted-foreground"}>
+                                    {formatTime(run.totalTimeSec)}
                                   </span>
-                                </div>
-                              </TableCell>
+                                </span>
+                              </div>
+                            </TableCell>
 
-                              {/* Status / Type */}
-                              <TableCell>
-                                <div className="flex flex-col items-start gap-1.5">
-                                  <Badge
-                                    variant="outline"
-                                    className={`${BADGE_BASE_CLASS} w-32 justify-center ${
-                                      run.isCompleted
-                                        ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-                                        : "border-amber-500/70 bg-amber-500/10 text-amber-300"
-                                    }`}
+                            {/* Status / Type */}
+                            <TableCell>
+                              <div className="flex flex-col items-start gap-1.5">
+                                <Badge
+                                  variant="outline"
+                                  className={`${BADGE_BASE_CLASS} w-32 justify-center ${
+                                    run.isCompleted
+                                      ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
+                                      : "border-amber-500/70 bg-amber-500/10 text-amber-300"
+                                  }`}
+                                >
+                                  {run.isCompleted ? t("gameResults.status_completed") : t("gameResults.status_in_progress")}
+                                </Badge>
+                                <Badge
+                                  variant="outline"
+                                  className={`${BADGE_BASE_CLASS} w-32 justify-center ${
+                                    run.isPrivate
+                                      ? "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
+                                      : "border-sky-500/70 bg-sky-500/10 text-sky-300"
+                                  }`}
+                                >
+                                  {run.isPrivate ? t("gameResults.type_private") : t("gameResults.type_public")}
+                                </Badge>
+                              </div>
+                            </TableCell>
+
+                            {/* Timeline */}
+                            <TableCell>
+                              <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
+                                <span>{t("gameResults.start")}: {formatDate(run.startedAt)}</span>
+                                <span>{t("gameResults.end")}: {formatDate(run.completedAt)}</span>
+                              </div>
+                            </TableCell>
+
+                            {/* Actions */}
+                            <TableCell className="text-center">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                    <ChevronDown className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                  <DropdownMenuItem
+                                    onClick={() => router.push(`/dashboard/game-results/detail?id=${run.id}`)}
+                                    className="cursor-pointer"
                                   >
-                                    {run.isCompleted ? t("gameResults.status_completed") : t("gameResults.status_in_progress")}
-                                  </Badge>
-                                  <Badge
-                                    variant="outline"
-                                    className={`${BADGE_BASE_CLASS} w-32 justify-center ${
-                                      run.isPrivate
-                                        ? "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
-                                        : "border-sky-500/70 bg-sky-500/10 text-sky-300"
-                                    }`}
+                                    {t("gameResults.action_view")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => setDeleteRun(run)}
+                                    className="cursor-pointer text-rose-400 focus:text-rose-400"
                                   >
-                                    {run.isPrivate ? t("gameResults.type_private") : t("gameResults.type_public")}
-                                  </Badge>
-                                </div>
-                              </TableCell>
-
-                              {/* Timeline */}
-                              <TableCell>
-                                <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
-                                  <span>{t("gameResults.start")}: {formatDate(run.startedAt)}</span>
-                                  <span>{t("gameResults.end")}: {formatDate(run.completedAt)}</span>
-                                </div>
-                              </TableCell>
-
-                              {/* Actions */}
-                              <TableCell className="text-center">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                                      <ChevronDown className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-40">
-                                    <DropdownMenuItem
-                                      onClick={() => router.push(`/dashboard/game-results/detail?id=${run.id}`)}
-                                      className="cursor-pointer"
-                                    >
-                                      {t("gameResults.action_view")}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => setDeleteRun(run)}
-                                      className="cursor-pointer text-rose-400 focus:text-rose-400"
-                                    >
-                                      {t("gameResults.action_delete")}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        ) : (
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                              {t("gameResults.no_runs")}
+                                    {t("gameResults.action_delete")}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {runs.length > 0 && (
-                    <Pagination className="mt-8">
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (runsPage > 1) setRunsPage(runsPage - 1);
-                            }}
-                            className={runsPage <= 1 ? "pointer-events-none opacity-40" : ""}
-                          />
-                        </PaginationItem>
-                        {renderPaginationItems(runsPage, runsTotalPages, setRunsPage)}
-                        <PaginationItem>
-                          <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (runsPage < runsTotalPages) setRunsPage(runsPage + 1);
-                            }}
-                            className={runsPage >= runsTotalPages ? "pointer-events-none opacity-40" : ""}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  )}
-                </>
-              )}
-            </>
-          )}
-
-          {/* LEADERBOARD TAB */}
-          {activeTab === "leaderboard" && (
-            <>
-              <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-amber-400" />
-                    <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
-                      {t("gameResults.leaderboard_title")}
-                    </h3>
-                  </div>
-
-                  {/* Leaderboard Scope Selector */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setLeaderboardScope("all-time");
-                        setLeaderboardPage(1);
-                      }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        leaderboardScope === "all-time"
-                          ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
-                          : "bg-transparent border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {t("leaderboard.tab_all_time")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLeaderboardScope("seasonal");
-                        setLeaderboardPage(1);
-                      }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        leaderboardScope === "seasonal"
-                          ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
-                          : "bg-transparent border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {t("leaderboard.tab_seasonal")} ({new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short", year: "numeric" })})
-                    </button>
-                  </div>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                            {t("gameResults.no_runs")}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
 
-                {leaderboardLoading ? (
-                  <div className="p-12 text-center text-muted-foreground">
-                    {t("gameResults.loading")}
-                  </div>
-                ) : (
+                {runs.length > 0 && (
+                  <Pagination className="mt-8">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (runsPage > 1) setRunsPage(runsPage - 1);
+                          }}
+                          className={runsPage <= 1 ? "pointer-events-none opacity-40" : ""}
+                        />
+                      </PaginationItem>
+                      {renderPaginationItems(runsPage, runsTotalPages, setRunsPage)}
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (runsPage < runsTotalPages) setRunsPage(runsPage + 1);
+                          }}
+                          className={runsPage >= runsTotalPages ? "pointer-events-none opacity-40" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* LEADERBOARD TAB */}
+      {activeTab === "leaderboard" && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-amber-400" />
+                <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                  {t("gameResults.leaderboard_title")}
+                </h3>
+              </div>
+
+              {/* Leaderboard Scope Selector */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setLeaderboardScope("all-time");
+                    setLeaderboardPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    leaderboardScope === "all-time"
+                      ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
+                      : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t("leaderboard.tab_all_time")}
+                </button>
+                <button
+                  onClick={() => {
+                    setLeaderboardScope("seasonal");
+                    setLeaderboardPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    leaderboardScope === "seasonal"
+                      ? "bg-amber-500/10 border-amber-500/40 text-amber-500"
+                      : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t("leaderboard.tab_seasonal")} ({new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short", year: "numeric" })})
+                </button>
+              </div>
+            </div>
+
+            {leaderboardLoading ? (
+              <div className="p-12 text-center text-muted-foreground">
+                {t("gameResults.loading")}
+              </div>
+            ) : (
+              <>
+                <div className="rounded-md border border-border overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border hover:bg-transparent">
@@ -647,40 +642,40 @@ export default function GameResultsPage() {
                       )}
                     </TableBody>
                   </Table>
-                )}
-              </div>
+                </div>
 
-              {leaderboard.length > 0 && (
-                <Pagination className="mt-8">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (leaderboardPage > 1) setLeaderboardPage(leaderboardPage - 1);
-                        }}
-                        className={leaderboardPage <= 1 ? "pointer-events-none opacity-40" : ""}
-                      />
-                    </PaginationItem>
-                    {renderPaginationItems(leaderboardPage, leaderboardTotalPages, setLeaderboardPage)}
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (leaderboardPage < leaderboardTotalPages) setLeaderboardPage(leaderboardPage + 1);
-                        }}
-                        className={leaderboardPage >= leaderboardTotalPages ? "pointer-events-none opacity-40" : ""}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              )}
-            </>
-          )}
-        </main>
-      </div>
+                {leaderboard.length > 0 && (
+                  <Pagination className="mt-8">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (leaderboardPage > 1) setLeaderboardPage(leaderboardPage - 1);
+                          }}
+                          className={leaderboardPage <= 1 ? "pointer-events-none opacity-40" : ""}
+                        />
+                      </PaginationItem>
+                      {renderPaginationItems(leaderboardPage, leaderboardTotalPages, setLeaderboardPage)}
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (leaderboardPage < leaderboardTotalPages) setLeaderboardPage(leaderboardPage + 1);
+                          }}
+                          className={leaderboardPage >= leaderboardTotalPages ? "pointer-events-none opacity-40" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={deleteRun !== null} onOpenChange={(open) => { if (!open) setDeleteRun(null); }}>

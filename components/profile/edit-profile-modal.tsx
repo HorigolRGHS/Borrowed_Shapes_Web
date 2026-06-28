@@ -260,28 +260,39 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
                 )}
               </button>
 
-              {achievements.map((ach) => (
-                <button
-                  type="button"
-                  key={ach.id}
-                  className={`relative cursor-pointer rounded-lg border-2 flex items-center justify-center p-2 h-16 transition-colors ${
-                    equippedAchievementId === ach.id
-                      ? "border-amber-500 bg-amber-500/10"
-                      : "border-border dark:border-[#1e1e3a] hover:border-amber-500/50"
-                  }`}
-                  onClick={() => setEquippedAchievementId(ach.id)}
-                  title={ach.name}
-                >
-                  {ach.badgeImageUrl ? (
-                    <img src={ach.badgeImageUrl} alt={ach.name} className="h-full w-auto object-contain" />
-                  ) : (
-                    <span className="text-xs text-center truncate w-full text-muted-foreground dark:text-gray-400">{ach.name}</span>
-                  )}
-                  {equippedAchievementId === ach.id && (
-                    <Check className="absolute top-1 right-1 w-3 h-3 text-amber-500" />
-                  )}
-                </button>
-              ))}
+              {achievements.map((ach) => {
+                const isExpired = ach.isExpired === true;
+                return (
+                  <button
+                    type="button"
+                    key={ach.id}
+                    disabled={isExpired}
+                    className={`relative cursor-pointer rounded-lg border-2 flex items-center justify-center p-2 h-16 transition-colors ${
+                      isExpired
+                        ? "opacity-50 border-dashed border-red-500/20 cursor-not-allowed bg-black/20"
+                        : equippedAchievementId === ach.id
+                        ? "border-amber-500 bg-amber-500/10"
+                        : "border-border dark:border-[#1e1e3a] hover:border-amber-500/50"
+                    }`}
+                    onClick={() => setEquippedAchievementId(ach.id)}
+                    title={isExpired ? `${ach.name} (${t("profile.achievements.expired_label") || "Expired"})` : ach.name}
+                  >
+                    {ach.badgeImageUrl ? (
+                      <img src={ach.badgeImageUrl} alt={ach.name} className={`h-full w-auto object-contain ${isExpired ? "grayscale" : ""}`} />
+                    ) : (
+                      <span className="text-xs text-center truncate w-full text-muted-foreground dark:text-gray-400">{ach.name}</span>
+                    )}
+                    {equippedAchievementId === ach.id && !isExpired && (
+                      <Check className="absolute top-1 right-1 w-3 h-3 text-amber-500" />
+                    )}
+                    {isExpired && (
+                      <span className="absolute -top-1.5 -right-1.5 rounded-full bg-red-500 px-1 py-0.5 text-[8px] font-bold text-white uppercase tracking-wide">
+                        Lock
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             {achievements.length === 0 && (
               <p className="text-xs text-muted-foreground dark:text-gray-500 italic">

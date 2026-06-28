@@ -230,9 +230,8 @@ export class AchievementService {
   async delete(id: string): Promise<void> {
     const achievement = await this.findOne(id);
     if (achievement.badgeImageUrl) {
-      const match = achievement.badgeImageUrl.match(/(achievement\/[a-zA-Z0-9.\-_]+)$/);
-      if (match) {
-        const key = match[1];
+      const key = this.extractR2Key(achievement.badgeImageUrl);
+      if (key) {
         try {
           await this.r2.deleteObject(key);
         } catch (err) {
@@ -246,14 +245,27 @@ export class AchievementService {
   async uploadBadge(
     buffer: Buffer,
     mimeType: string,
-    originalName: string,
+    achievementId: string,
+    oldBadgeImageUrl?: string,
   ): Promise<string> {
     const ext = MIME_EXT_MAP[mimeType];
     if (!ext) {
       throw new BadRequestException('achievements.upload_invalid_type');
     }
 
-    const key = `achievement/${randomUUID()}${ext}`;
+    // Delete old image if replacing
+    if (oldBadgeImageUrl) {
+      const oldKey = this.extractR2Key(oldBadgeImageUrl);
+      if (oldKey) {
+        try {
+          await this.r2.deleteObject(oldKey);
+        } catch (err) {
+          console.error(`Failed to delete old R2 badge for key ${oldKey}:`, err);
+        }
+      }
+    }
+
+    const key = `achievement/${achievementId}/${randomUUID()}${ext}`;
     await this.r2.putObject(key, buffer, mimeType);
 
     const base =
@@ -262,6 +274,15 @@ export class AchievementService {
     const publicBaseUrl = base.replace(/\/+$/, '');
 
     return `${publicBaseUrl}/${key}`;
+  }
+
+  /**
+   * Extract the R2 object key from a full public URL.
+   * Supports both flat (`achievement/{file}`) and nested (`achievement/{id}/{file}`) paths.
+   */
+  private extractR2Key(url: string): string | null {
+    const match = url.match(/(achievement\/[\w.\-]+(?:\/[\w.\-]+)?)$/);
+    return match ? match[1] : null;
   }
 
   async search(query: string): Promise<Array<Achievement & { earnedCount: number }>> {

@@ -14,6 +14,7 @@ import {
   Clock,
   Trash2,
 } from "lucide-react";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const BADGE_BASE_CLASS =
   "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
@@ -53,6 +55,7 @@ interface GameResultPlayer {
   gameProfileId: string;
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
   isHost: boolean;
   joinedAt: string;
 }
@@ -61,6 +64,7 @@ interface GameResultSessionPlayer {
   gameProfileId: string;
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
   isAbsent: boolean;
   leftAt?: string;
 }
@@ -97,6 +101,7 @@ interface PlayerInfo {
   gameProfileId: string;
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
 }
 
 interface PlayerStats {
@@ -293,47 +298,38 @@ export default function GameResultDetailPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <main className="px-8 py-8 max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <button
-              id="btn-back-to-runs"
-              onClick={() => router.push("/dashboard/game-results")}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/60 text-muted-foreground hover:text-foreground hover:border-slate-500 transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h2 className="text-3xl font-bold text-foreground">
-                {t("gameResults.detail_title")}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {t("gameResults.detail_subtitle")}{" "}
-                <span className="text-amber-400 font-mono font-semibold">
-                  {detail.id.length > 12
-                    ? detail.id.slice(0, 12)
-                    : detail.id}
-                </span>
-              </p>
-            </div>
-          </div>
-          <div className="ml-14 mt-1 h-0.5 w-12 rounded-[12px] bg-amber-500" />
-        </div>
-
-        {/* ── Run Information ─────────────────────────── */}
-        <section
-          id="section-run-info"
-          className="rounded-[16px] border border-border bg-card/60 p-6 mb-6"
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header and Back Link */}
+      <div>
+        <Button
+          id="btn-back-to-runs"
+          onClick={() => router.push("/dashboard/game-results")}
+          className="mb-4"
+          variant="ghost"
         >
-          <div className="flex items-center gap-2 mb-5">
-            <Zap className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-              {t("gameResults.section_run_info")}
-            </h3>
-          </div>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t("gameResults.back_to_runs") || "Back to Game Results"}
+        </Button>
+        <h1 className="text-3xl font-bold tracking-tight">{t("gameResults.detail_title")}</h1>
+        <p className="text-muted-foreground mt-2">
+          {t("gameResults.detail_subtitle")}{" "}
+          <span className="text-amber-400 font-mono font-semibold">
+            {detail.id.length > 12
+              ? detail.id.slice(0, 12)
+              : detail.id}
+          </span>
+        </p>
+      </div>
 
+      {/* ── Run Information ─────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center gap-2">
+          <Zap className="h-5 w-5 text-amber-400" />
+          <CardTitle className="text-lg uppercase tracking-[0.18em] text-foreground">
+            {t("gameResults.section_run_info")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <InfoBox
               label={t("gameResults.label_lobby_name")}
@@ -399,21 +395,19 @@ export default function GameResultDetailPage() {
               value={formatDateTime(detail.completedAt)}
             />
           </div>
-        </section>
+        </CardContent>
+      </Card>
 
-        {/* ── Player List ─────────────────────────────── */}
-        <section
-          id="section-player-list"
-          className="rounded-[16px] border border-border bg-card/60 p-6 mb-6"
-        >
-          <div className="flex items-center gap-2 mb-5">
-            <Users className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-              {t("gameResults.section_player_list")}
-            </h3>
-          </div>
-
-          <div className="rounded-[12px] border border-border overflow-hidden">
+      {/* ── Player List ─────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center gap-2">
+          <Users className="h-5 w-5 text-amber-400" />
+          <CardTitle className="text-lg uppercase tracking-[0.18em] text-foreground">
+            {t("gameResults.section_player_list")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
+          <div className="rounded-md border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
@@ -430,10 +424,6 @@ export default function GameResultDetailPage() {
               </TableHeader>
               <TableBody>
                 {detail.players.map((player) => {
-                  const initials = player.displayName
-                    .charAt(0)
-                    .toUpperCase();
-                  const avatarBg = getAvatarColor(player.displayName);
                   return (
                     <TableRow
                       key={player.gameProfileId}
@@ -442,11 +432,13 @@ export default function GameResultDetailPage() {
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-foreground ${avatarBg}`}
-                          >
-                            {initials}
-                          </div>
+                          <AvatarWithFrame
+                            displayName={player.displayName}
+                            avatarUrl={player.avatarUrl}
+                            badgeImageUrl={player.badgeImageUrl}
+                            size="md"
+                            className="h-9 w-9"
+                          />
                           <span className="font-medium text-foreground">
                             {player.displayName}
                           </span>
@@ -475,21 +467,19 @@ export default function GameResultDetailPage() {
               </TableBody>
             </Table>
           </div>
-        </section>
+        </CardContent>
+      </Card>
 
-        {/* ── Session List ────────────────────────────── */}
-        <section
-          id="section-session-list"
-          className="rounded-[16px] border border-border bg-card/60 p-6 mb-6"
-        >
-          <div className="flex items-center gap-2 mb-5">
-            <Globe className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-              {t("gameResults.section_session_list")}
-            </h3>
-          </div>
-
-          <div className="rounded-[12px] border border-border overflow-hidden">
+      {/* ── Session List ────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center gap-2">
+          <Globe className="h-5 w-5 text-amber-400" />
+          <CardTitle className="text-lg uppercase tracking-[0.18em] text-foreground">
+            {t("gameResults.section_session_list")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
+          <div className="rounded-md border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
@@ -562,21 +552,22 @@ export default function GameResultDetailPage() {
               </TableBody>
             </Table>
           </div>
-        </section>
+        </CardContent>
+      </Card>
 
-        {/* ── Delete Button ───────────────────────────── */}
-        <div className="flex justify-end mb-8">
-          <Button
-            id="btn-delete-game-result"
-            variant="destructive"
-            size="lg"
-            className="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-8"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t("gameResults.delete_game_result")}
-          </Button>
-        </div>
+      {/* ── Delete Button ───────────────────────────── */}
+      <div className="flex justify-end">
+        <Button
+          id="btn-delete-game-result"
+          variant="destructive"
+          size="lg"
+          className="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-8 cursor-pointer"
+          onClick={() => setShowDeleteDialog(true)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          {t("gameResults.delete_game_result")}
+        </Button>
+      </div>
 
         {/* ── Delete Confirmation Dialog ──────────────── */}
         <AlertDialog
@@ -628,15 +619,13 @@ export default function GameResultDetailPage() {
                 <div className="p-6">
                   {/* Player header */}
                   <div className="flex items-center gap-4 mb-6">
-                    <div
-                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-foreground ${getAvatarColor(
-                        selectedPlayer.displayName
-                      )}`}
-                    >
-                      {selectedPlayer.displayName
-                        .charAt(0)
-                        .toUpperCase()}
-                    </div>
+                    <AvatarWithFrame
+                      displayName={selectedPlayer.displayName}
+                      avatarUrl={selectedPlayer.avatarUrl}
+                      badgeImageUrl={selectedPlayer.badgeImageUrl}
+                      size="lg"
+                      className="h-16 w-16"
+                    />
                     <div>
                       <h3 className="text-xl font-bold text-foreground">
                         {selectedPlayer.displayName}
@@ -784,7 +773,6 @@ export default function GameResultDetailPage() {
             )}
           </DialogContent>
         </Dialog>
-      </main>
     </div>
   );
 }

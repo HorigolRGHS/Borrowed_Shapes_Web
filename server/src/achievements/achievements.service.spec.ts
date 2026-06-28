@@ -108,23 +108,32 @@ describe('AchievementService', () => {
   });
 
   describe('uploadBadge', () => {
-    it('should upload a badge image to R2 and return the public URL (Normal)', async () => {
+    it('should upload a badge image to R2 and return the public URL with nested path (Normal)', async () => {
       const buffer = Buffer.from('fake-image');
       jest.spyOn(r2StorageService, 'putObject').mockResolvedValue(undefined as any);
 
-      const result = await service.uploadBadge(buffer, 'image/png', 'badge.png');
-      expect(result.startsWith('https://pub-x.r2.dev/achievement/')).toBe(true);
+      const result = await service.uploadBadge(buffer, 'image/png', 'achv-123');
+      expect(result.startsWith('https://pub-x.r2.dev/achievement/achv-123/')).toBe(true);
       expect(result.endsWith('.png')).toBe(true);
       expect(r2StorageService.putObject).toHaveBeenCalledWith(
-        expect.stringContaining('achievement/'),
+        expect.stringMatching(/^achievement\/achv-123\/[a-f0-9-]+\.png$/),
         buffer,
         'image/png',
       );
     });
 
+    it('should delete old badge image when oldBadgeImageUrl is provided (Normal)', async () => {
+      const buffer = Buffer.from('fake-image');
+      jest.spyOn(r2StorageService, 'putObject').mockResolvedValue(undefined as any);
+      jest.spyOn(r2StorageService, 'deleteObject').mockResolvedValue(undefined as any);
+
+      await service.uploadBadge(buffer, 'image/png', 'achv-123', 'https://pub-x.r2.dev/achievement/achv-123/old-uuid.png');
+      expect(r2StorageService.deleteObject).toHaveBeenCalledWith('achievement/achv-123/old-uuid.png');
+    });
+
     it('should throw BadRequestException if MIME type is invalid (Abnormal)', async () => {
       const buffer = Buffer.from('fake-file');
-      await expect(service.uploadBadge(buffer, 'application/pdf', 'file.pdf')).rejects.toThrow();
+      await expect(service.uploadBadge(buffer, 'application/pdf', 'achv-123')).rejects.toThrow();
     });
   });
 

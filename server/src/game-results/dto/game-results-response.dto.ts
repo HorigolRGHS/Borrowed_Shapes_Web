@@ -129,6 +129,9 @@ export class GameResultPlayerDto {
   @ApiPropertyOptional()
   avatarUrl?: string;
 
+  @ApiPropertyOptional()
+  badgeImageUrl?: string;
+
   @ApiProperty()
   isHost!: boolean;
 
@@ -145,6 +148,9 @@ export class GameResultSessionPlayerDto {
 
   @ApiPropertyOptional()
   avatarUrl?: string;
+
+  @ApiPropertyOptional()
+  badgeImageUrl?: string;
 
   @ApiProperty()
   isAbsent!: boolean;
@@ -260,6 +266,9 @@ export class PlayerInfoDto {
 
   @ApiPropertyOptional()
   avatarUrl?: string;
+
+  @ApiPropertyOptional()
+  badgeImageUrl?: string;
 }
 
 export class PlayerStatsDto {
@@ -351,6 +360,11 @@ export class LeaderboardPlayerDto {
   @IsOptional()
   @IsString()
   avatarUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  badgeImageUrl?: string;
 }
 
 export class LeaderboardEntryDto {

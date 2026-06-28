@@ -96,6 +96,7 @@ export default function DashboardForumDetailPage() {
   const [user, setUser] = useState<any>(null);
   const [thread, setThread] = useState<ThreadDetail | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Modals
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -123,6 +124,7 @@ export default function DashboardForumDetailPage() {
   }, [router, threadId]);
 
   const fetchThreadDetail = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`/api/forums/id/${threadId}`);
       if (response.data?.success) {
@@ -140,6 +142,8 @@ export default function DashboardForumDetailPage() {
     } catch (error) {
       console.error("Failed to fetch thread detail:", error);
       toast.error(t("forums.thread_not_found"));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -200,6 +204,15 @@ export default function DashboardForumDetailPage() {
   };
 
   if (!user) return null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">{locale === "vi" ? "Đang tải dữ liệu..." : "Loading..."}</p>
+      </div>
+    );
+  }
 
   if (!thread) {
     return (

@@ -18,6 +18,7 @@ import {
   Send,
   AlertTriangle
 } from "lucide-react";
+import ReportModal from "./report-modal";
 
 // Dynamic import of lightweight CKEditor with ssr false
 const CommentCKEditor = dynamic(
@@ -270,6 +271,30 @@ function CommentNode({
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportTargetType, setReportTargetType] = useState<"user" | "comment">("comment");
+
+  const handleReportClick = () => {
+    if (!user) {
+      toast.warning(t("comments.login_to_vote"));
+      return;
+    }
+    setReportTargetType("comment");
+    setIsReportOpen(true);
+  };
+
+  const handleAvatarClick = () => {
+    if (!comment.author) return;
+    if (!user) {
+      toast.warning(t("comments.login_to_vote"));
+      return;
+    }
+    if (String(comment.author.id) === String(user.id)) {
+      return;
+    }
+    setReportTargetType("user");
+    setIsReportOpen(true);
+  };
 
   const limit = 20;
   const isAuthor = user && comment.author && String(user.id) === String(comment.author.id);
@@ -424,7 +449,10 @@ function CommentNode({
         )}
 
         {/* User Avatar */}
-        <div className="relative flex h-9 w-9 items-center justify-center flex-shrink-0">
+        <div
+          onClick={handleAvatarClick}
+          className="relative flex h-9 w-9 items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-85 transition-opacity"
+        >
           <div className={`absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-violet-500 to-indigo-500 text-white font-bold text-[10px] shadow-sm overflow-hidden z-0 flex items-center justify-center ${comment.author?.badgeImageUrl ? "rounded-md" : "rounded-full"}`}>
             {comment.author?.imgUrl ? (
               <img src={comment.author?.imgUrl} alt={comment.author?.displayName} className="w-full h-full object-cover" />
@@ -553,12 +581,22 @@ function CommentNode({
                   </button>
                 )}
 
-                {/* Spacer to push edit/delete actions to the right */}
+                {/* Spacer to push edit/delete/report actions to the right */}
                 <div className="flex-grow" />
 
-                {/* Edit / Delete actions - positioned on the right */}
-                {!comment.isDeleted && (isAuthor || isAdmin) && (
+                {/* Action buttons (Report, Edit, Delete) - positioned on the right */}
+                {!comment.isDeleted && (
                   <div className="flex items-center gap-2">
+                    {/* Report option: Show only if not logged in OR logged in as someone else */}
+                    {(!user || !isAuthor) && (
+                      <button
+                        onClick={handleReportClick}
+                        className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors border border-transparent hover:border-red-100/20 dark:hover:border-red-900/40 cursor-pointer"
+                        title={t("reports.report_button")}
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                     {isAuthor && (
                       <button
                         onClick={() => {
@@ -571,13 +609,15 @@ function CommentNode({
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
                     )}
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-900/40 cursor-pointer"
-                      title={t("comments.delete")}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    {(isAuthor || isAdmin) && (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-900/40 cursor-pointer"
+                        title={t("comments.delete")}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -735,6 +775,19 @@ function CommentNode({
             </div>
           </div>
         </div>
+      )}
+
+      {isReportOpen && (
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetType={reportTargetType}
+          reportedUserId={comment.author?.id || ""}
+          reportedUserDisplayName={comment.author?.displayName || ""}
+          reportedUserImgUrl={comment.author?.imgUrl}
+          commentId={comment.id}
+          commentContent={comment.content}
+        />
       )}
     </div>
   );

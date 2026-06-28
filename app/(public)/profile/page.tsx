@@ -11,6 +11,7 @@ import { DownloadHistory } from "@/components/profile/download-history";
 import { ProfileAchievements } from "@/components/profile/profile-achievements";
 import { PlayHistory } from "@/components/profile/play-history";
 import { EditProfileModal } from "@/components/profile/edit-profile-modal";
+import { ProfileReports } from "@/components/profile/profile-reports";
 import { Button } from "@/components/ui/button";
 import { Trophy, History, ShieldAlert, Download, User as UserIcon, Edit } from "lucide-react";
 
@@ -113,9 +114,7 @@ export default function ProfilePage() {
           </TabsContent>
 
           <TabsContent value="reports" className="focus-visible:outline-none">
-            <div className="p-12 text-center border border-border dark:border-white/10 border-dashed rounded-2xl bg-card/20 text-muted-foreground">
-              {t("common.coming_soon") || "Coming Soon..."}
-            </div>
+            <ProfileReports />
           </TabsContent>
         </Tabs>
       </main>

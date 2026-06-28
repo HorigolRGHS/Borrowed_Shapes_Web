@@ -1768,5 +1768,85 @@
       "reply_success": "Reply posted successfully",
       "reply_failed": "Failed to post reply"
     }
+  },
+  "reports": {
+    "title": "Reports",
+    "report_button": "Report",
+    "modal_title": "Submit a Report",
+    "label_target": "Reporting",
+    "label_target_type": "Report Type",
+    "label_reason": "Reason (detailed description)",
+    "label_media": "Evidence Media (Images/Videos, max 20MB per file)",
+    "placeholder_reason": "Describe why this content is violating community guidelines...",
+    "btn_submit": "Submit Report",
+    "btn_cancel": "Cancel",
+    "submitting": "Submitting...",
+    "success_submit": "Thank you for your report. We will review and handle it as soon as possible. We will send you an email once it is processed.",
+    "failed_submit": "Failed to submit report",
+    "cannot_report_self": "You cannot report yourself!",
+    "cannot_ban_admin": "You cannot warn or ban this user",
+    "label_visibility": "Visible to reporter",
+    "my_reports": "My Reports",
+    "col_target": "Target",
+    "col_type": "Type",
+    "col_status": "Status",
+    "col_date": "Created Date",
+    "details_title": "Report Details",
+    "label_reporter": "Reporter",
+    "label_reported": "Reported User",
+    "label_status": "Status",
+    "label_created": "Reported Date",
+    "label_resolved": "Resolved Date",
+    "label_resolver": "Resolver",
+    "label_action": "Action Taken",
+    "label_admin_msg": "Response message",
+    "no_reports": "You haven't submitted any reports yet.",
+    "types": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Harassment",
+      "HATE_SPEECH": "Hate Speech",
+      "NSFW": "NSFW/Adult Content",
+      "MISINFORMATION": "Misinformation",
+      "OTHER": "Other Violation"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "RESOLVED": "Resolved",
+      "REJECTED": "Rejected"
+    },
+    "actions": {
+      "WARNING": "Warn User",
+      "BAN_PERMANENT": "Ban Permanently",
+      "BAN_CUSTOM": "Ban Custom Duration",
+      "NO_ACTION": "No Action / Rejected"
+    },
+    "targets": {
+      "user": "User",
+      "thread": "Thread",
+      "comment": "Comment"
+    },
+    "dashboard": {
+      "title": "Reports Management",
+      "stat_total": "Total Reports",
+      "stat_pending": "Pending",
+      "stat_resolved": "Resolved",
+      "stat_rejected": "Rejected",
+      "filter_status": "Filter by status",
+      "sort_by": "Sort by date",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "no_reports": "No reports found matching filters.",
+      "evidence": "Evidence Files",
+      "resolve_title": "Resolve Report",
+      "action_select": "Select action to take on reported user",
+      "ban_duration": "Ban user until",
+      "action_warning": "WARN USER",
+      "action_ban_perm": "BAN PERMANENT",
+      "action_ban_custom": "BAN CUSTOM",
+      "action_no_action": "No Action / RESOLVE",
+      "action_reject": "REJECT REPORT",
+      "error_action": "Failed to apply action",
+      "success_action": "Report handled successfully!"
+    }
   }
 }

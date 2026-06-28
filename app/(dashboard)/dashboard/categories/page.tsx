@@ -260,7 +260,7 @@ export default function DashboardCategoriesPage() {
     setIsUploadingImage(true);
     try {
       // 1. Create the category without the image URL first
-      const createResponse = await axios.post("/api/category", {
+      const createResponse = await axios.post("/api/category/create", {
         name: form.name,
         nameVi: form.nameVi,
         slug: form.slug || undefined,
@@ -299,7 +299,7 @@ export default function DashboardCategoriesPage() {
             finalIconUrl = uploadData.publicUrl;
 
             // 3. Update the category with the icon URL
-            await axios.patch(`/api/category/${categoryId}`, {
+            await axios.patch(`/api/category/update/${categoryId}`, {
               iconUrl: finalIconUrl,
             });
           }
@@ -323,7 +323,7 @@ export default function DashboardCategoriesPage() {
     setLoading(true);
     try {
       // Fetch details of category only once
-      const res = await axios.get(`/api/category/${cat.id}`);
+      const res = await axios.get(`/api/category/id/${cat.id}`);
       const data = res.data?.data;
 
       if (data) {
@@ -384,7 +384,7 @@ export default function DashboardCategoriesPage() {
       }
 
       // 2. Patch details, including the updated iconUrl
-      const response = await axios.patch(`/api/category/${editingCategory.id}`, {
+      const response = await axios.patch(`/api/category/update/${editingCategory.id}`, {
         name: form.name,
         nameVi: form.nameVi,
         slug: form.slug || undefined,
@@ -419,7 +419,7 @@ export default function DashboardCategoriesPage() {
   const handleDelete = async () => {
     if (!deletingCategory) return;
     try {
-      const response = await axios.delete(`/api/category/${deletingCategory.id}`);
+      const response = await axios.delete(`/api/category/delete/${deletingCategory.id}`);
       if (response.data?.success) {
         toast.success(t("forums.dashboard.toast_cat_deleted") || "Category deleted successfully");
         setDeleteOpen(false);

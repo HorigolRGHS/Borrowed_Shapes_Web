@@ -25,6 +25,7 @@ import {
 import { getUserProfile } from "@/lib/api/api-client";
 import CreateThreadModal from "@/components/forums/create-thread-modal";
 import CommentSection from "@/components/forums/comment-section";
+import ReportModal from "@/components/forums/report-modal";
 import { toast } from "react-toastify";
 
 const formatViews = (
@@ -78,6 +79,30 @@ export default function ForumDetailPage() {
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isViewFull, setIsViewFull] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportTargetType, setReportTargetType] = useState<"user" | "thread">("thread");
+
+  const handleReportClick = () => {
+    if (!user) {
+      toast.warning(t("comments.login_to_vote"));
+      return;
+    }
+    setReportTargetType("thread");
+    setIsReportOpen(true);
+  };
+
+  const handleAvatarClick = () => {
+    if (!thread?.author) return;
+    if (!user) {
+      toast.warning(t("comments.login_to_vote"));
+      return;
+    }
+    if (String(thread.author.id) === String(user.id)) {
+      return;
+    }
+    setReportTargetType("user");
+    setIsReportOpen(true);
+  };
   const [form, setForm] = useState<{
     id?: string;
     title: string;
@@ -361,7 +386,10 @@ export default function ForumDetailPage() {
             {/* Content and Author Row */}
             <div className="flex gap-4 items-start">
               {/* Left Side: Avatar */}
-              <div className="relative flex h-12 w-12 items-center justify-center flex-shrink-0">
+              <div 
+                onClick={handleAvatarClick}
+                className="relative flex h-12 w-12 items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-85 transition-opacity"
+              >
                 <div className={`absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-violet-600 to-blue-500 text-white font-bold text-sm shadow-md overflow-hidden z-0 flex items-center justify-center ${thread.author?.badgeImageUrl ? "rounded-md" : "rounded-full"}`}>
                   {thread.author?.imgUrl ? (
                     <img src={thread.author?.imgUrl} alt={thread.author?.displayName} className="w-full h-full object-cover" />
@@ -453,25 +481,37 @@ export default function ForumDetailPage() {
                     </div>
                   </div>
 
-                  {/* Edit / Delete for Author */}
-                  {isAuthor && (
-                    <div className="flex items-center gap-2">
+                  {/* Edit / Delete / Report actions */}
+                  <div className="flex items-center gap-2">
+                    {/* Report Option: Show to everyone except the author (and admins, who already have edit/delete) */}
+                    {(!user || (user.id !== thread.author?.id && user.role !== 'ADMIN')) && (
                       <button
-                        onClick={() => setIsEditing(true)}
-                        className="p-2.5 text-slate-500 hover:text-violet-600 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-xl transition-colors border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 cursor-pointer"
-                        title={t("forums.edit_button") || "Edit"}
+                        onClick={handleReportClick}
+                        className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/25 rounded-xl transition-colors border border-transparent hover:border-red-100/20 dark:hover:border-red-900/40 cursor-pointer"
+                        title={t("reports.report_button")}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <AlertTriangle className="h-4 w-4" />
                       </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className="p-2.5 text-slate-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-900/40 cursor-pointer"
-                        title={t("forums.delete_button") || "Delete"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
+                    )}
+                    {isAuthor && (
+                      <>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="p-2.5 text-slate-500 hover:text-violet-600 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-xl transition-colors border border-transparent hover:border-violet-100 dark:hover:border-violet-900/40 cursor-pointer"
+                          title={t("forums.edit_button") || "Edit"}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="p-2.5 text-slate-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-900/40 cursor-pointer"
+                          title={t("forums.delete_button") || "Delete"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -559,6 +599,19 @@ export default function ForumDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {isReportOpen && (
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetType={reportTargetType}
+          reportedUserId={thread.author?.id || ""}
+          reportedUserDisplayName={thread.author?.displayName || ""}
+          reportedUserImgUrl={thread.author?.imgUrl}
+          threadId={thread.id}
+          threadTitle={thread.title}
+        />
       )}
 
       <PublicFooter />

@@ -21,6 +21,7 @@ import { DownloadsModule } from './downloads/downloads.module';
 import { CommentsModule } from './comments/comments.module';
 import mikroOrmConfig from './mikro-orm.config';
 import { GameResultModule } from './game-results/game-results.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { GameResultModule } from './game-results/game-results.module';
     GameResultModule,
     DownloadsModule,
     CommentsModule,
+    ReportsModule,
   ],
   providers: [
     {

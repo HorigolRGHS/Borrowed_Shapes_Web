@@ -222,6 +222,12 @@ export class ForumService {
       }
     }
 
+    // const commentCountRes = await this.em.execute(
+    //   `select count(1)::int as cnt from web."ForumComment" where "threadId" = ?`,
+    //   [thread.id],
+    // );
+    // const commentCount = Number(commentCountRes?.[0]?.cnt || 0);
+
     const badgeImageUrl =
       gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
     return {
@@ -238,6 +244,7 @@ export class ForumService {
       createdAt: thread.createdAt,
       updatedAt: thread.updatedAt,
       userVote,
+      commentCount: thread.commentCount,
       author: {
         id: thread.authorId.id,
         displayName: thread.authorId.displayName,

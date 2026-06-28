@@ -35,13 +35,23 @@ export function ForumCard({ item }: { item: any }) {
       `}>
         {/* Left Side: Avatar */}
         <div className="flex-shrink-0">
-          <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-blue-500 text-white font-bold text-sm shadow-md overflow-hidden">
-            {item.author?.imgUrl ? (
-              <img src={item.author?.imgUrl} alt={item.author?.displayName} className="w-full h-full object-cover" />
-            ) : (
-              initials
+          <div className="relative flex h-10 w-10 items-center justify-center">
+            <div className={`absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-violet-600 to-blue-500 text-white font-bold text-xs shadow-md overflow-hidden z-0 flex items-center justify-center ${item.author?.badgeImageUrl ? "rounded-md" : "rounded-full"}`}>
+              {item.author?.imgUrl ? (
+                <img src={item.author?.imgUrl} alt={item.author?.displayName} className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
+            </div>
+            {item.author?.badgeImageUrl && (
+              <img 
+                src={item.author.badgeImageUrl} 
+                alt="" 
+                aria-hidden="true" 
+                className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+              />
             )}
-          </span>
+          </div>
         </div>
 
         {/* Main Content Container (Sử dụng flex hoặc grid để chia tỉ lệ) */}

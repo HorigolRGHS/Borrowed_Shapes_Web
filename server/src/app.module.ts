@@ -18,6 +18,7 @@ import { StorageModule } from './storage/storage.module';
 import { AccountModule } from './account/account.module';
 import { AnnouncementModule } from './announcements/announcements.module';
 import { DownloadsModule } from './downloads/downloads.module';
+import { CommentsModule } from './comments/comments.module';
 import mikroOrmConfig from './mikro-orm.config';
 import { GameResultModule } from './game-results/game-results.module';
 
@@ -40,6 +41,7 @@ import { GameResultModule } from './game-results/game-results.module';
     AnnouncementModule,
     GameResultModule,
     DownloadsModule,
+    CommentsModule,
   ],
   providers: [
     {

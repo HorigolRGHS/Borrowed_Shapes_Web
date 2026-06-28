@@ -19,10 +19,12 @@ import {
   Pencil,
   Trash2,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquare
 } from "lucide-react";
 import { getUserProfile } from "@/lib/api/api-client";
 import CreateThreadModal from "@/components/forums/create-thread-modal";
+import CommentSection from "@/components/forums/comment-section";
 import { toast } from "react-toastify";
 
 const formatViews = (
@@ -286,6 +288,7 @@ export default function ForumDetailPage() {
 
   const isAuthor = user && (String(user.id) === String(thread.author?.id) || user.role === 'ADMIN');
 
+  console.log("check thread: ", thread);
   return (
     <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
       <PublicHeader />
@@ -358,13 +361,23 @@ export default function ForumDetailPage() {
             {/* Content and Author Row */}
             <div className="flex gap-4 items-start">
               {/* Left Side: Avatar */}
-              <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-blue-500 text-white font-bold text-base shadow-md overflow-hidden flex-shrink-0 border-2 border-slate-200 dark:border-slate-800">
-                {thread.author?.imgUrl ? (
-                  <img src={thread.author?.imgUrl} alt={thread.author?.displayName} className="w-full h-full object-cover" />
-                ) : (
-                  thread.author?.displayName?.substring(0, 2).toUpperCase() || "US"
+              <div className="relative flex h-12 w-12 items-center justify-center flex-shrink-0">
+                <div className={`absolute left-1/2 top-1/2 w-[72%] h-[72%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-violet-600 to-blue-500 text-white font-bold text-sm shadow-md overflow-hidden z-0 flex items-center justify-center ${thread.author?.badgeImageUrl ? "rounded-md" : "rounded-full"}`}>
+                  {thread.author?.imgUrl ? (
+                    <img src={thread.author?.imgUrl} alt={thread.author?.displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    thread.author?.displayName?.substring(0, 2).toUpperCase() || "US"
+                  )}
+                </div>
+                {thread.author?.badgeImageUrl && (
+                  <img 
+                    src={thread.author.badgeImageUrl} 
+                    alt="" 
+                    aria-hidden="true" 
+                    className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+                  />
                 )}
-              </span>
+              </div>
 
               {/* Right Side: Author info, content, bottom action row */}
               <div className="flex-1 min-w-0">
@@ -397,34 +410,47 @@ export default function ForumDetailPage() {
 
                 {/* Bottom Action Row: Vote indicators, Edit/Delete buttons */}
                 <div className="flex justify-between items-center pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/80">
-                  {/* Vote Actions */}
-                  <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/40 p-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm">
-                    <button
-                      onClick={() => handleVote(1)}
-                      className={`p-2 rounded-full transition-colors cursor-pointer ${thread.userVote === 1
-                        ? "text-green-500 bg-green-100 dark:bg-green-950/30"
-                        : "text-slate-500 hover:text-green-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                      title={t("forums.upvote") || "Upvote"}
-                    >
-                      <ThumbsUp className="h-5 w-5" />
-                    </button>
+                  {/* Vote Actions & Comment Count */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/40 p-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm">
+                      <button
+                        onClick={() => handleVote(1)}
+                        className={`p-2 rounded-full transition-colors cursor-pointer ${thread.userVote === 1
+                          ? "text-green-500 bg-green-100 dark:bg-green-950/30"
+                          : "text-slate-500 hover:text-green-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          }`}
+                        title={t("forums.upvote") || "Upvote"}
+                      >
+                        <ThumbsUp className="h-5 w-5" />
+                      </button>
 
-                    <span className={`px-2 font-bold text-sm min-w-[20px] text-center ${(thread.score ?? 0) > 0 ? "text-green-500" : (thread.score ?? 0) < 0 ? "text-red-500" : "text-slate-600 dark:text-slate-400"
-                      }`}>
-                      {thread.score ?? 0}
-                    </span>
+                      <span className={`px-2 font-bold text-sm min-w-[20px] text-center ${(thread.score ?? 0) > 0 ? "text-green-500" : (thread.score ?? 0) < 0 ? "text-red-500" : "text-slate-600 dark:text-slate-400"
+                        }`}>
+                        {thread.score ?? 0}
+                      </span>
 
-                    <button
-                      onClick={() => handleVote(-1)}
-                      className={`p-2 rounded-full transition-colors cursor-pointer ${thread.userVote === -1
-                        ? "text-red-500 bg-red-100 dark:bg-red-950/20"
-                        : "text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        }`}
-                      title={t("forums.downvote") || "Downvote"}
-                    >
-                      <ThumbsDown className="h-5 w-5" />
-                    </button>
+                      <button
+                        onClick={() => handleVote(-1)}
+                        className={`p-2 rounded-full transition-colors cursor-pointer ${thread.userVote === -1
+                          ? "text-red-500 bg-red-100 dark:bg-red-950/20"
+                          : "text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          }`}
+                        title={t("forums.downvote") || "Downvote"}
+                      >
+                        <ThumbsDown className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    {/* Comment Count Badge */}
+                    <div className="flex items-center gap-1.5 text-slate-550 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 px-3 py-2 rounded-2xl border border-slate-250/80 dark:border-slate-800/60 shadow-sm text-xs font-semibold">
+                      <MessageSquare className="h-4 w-4 text-violet-500" />
+                      <span>
+                        {thread.commentCount ?? 0}{" "}
+                        {locale === "vi"
+                          ? "bình luận"
+                          : (thread.commentCount === 1 ? "comment" : "comments")}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Edit / Delete for Author */}
@@ -451,6 +477,14 @@ export default function ForumDetailPage() {
             </div>
           </section>
         </div>
+
+        {/* Comments Section */}
+        <CommentSection
+          threadId={thread.id}
+          user={user}
+          locale={locale}
+          t={t}
+        />
       </main>
 
       {/* Edit Thread Modal */}

@@ -162,9 +162,18 @@ export async function unpublishWiki(id: string): Promise<WikiDetail> {
   return res.data;
 }
 
-export async function uploadWikiImage(file: File): Promise<WikiUploadResponse> {
+export async function uploadWikiImage(
+  file: File,
+  wikiId: string,
+): Promise<WikiUploadResponse> {
+  const id = wikiId.trim();
+  if (!id) throw new Error("Missing wiki page id");
+
   const form = new FormData();
   form.append("file", file);
-  const res = await bffFetchForm<WikiUploadResponse>("/api/wiki/upload", form);
+  const res = await bffFetchForm<WikiUploadResponse>(
+    `/api/wiki/${encodeURIComponent(id)}/upload`,
+    form,
+  );
   return res.data;
 }

@@ -17,9 +17,10 @@ import viDict from "@/locales/vi.json";
 interface Props {
   locale: "en" | "vi";
   excludeSlug?: string;
+  wikiId: string;
 }
 
-export function EditableInfobox({ locale, excludeSlug }: Props) {
+export function EditableInfobox({ locale, excludeSlug, wikiId }: Props) {
   const form = useFormContext<WikiFormValue>();
   const metadata =
     useWatch({ control: form.control, name: "metadata" }) ?? emptyWikiMetadata;
@@ -57,7 +58,7 @@ export function EditableInfobox({ locale, excludeSlug }: Props) {
       i18n={i18n}
       mode="edit"
       editSlots={{
-        image: <EditableImageField />,
+        image: <EditableImageField wikiId={wikiId} />,
         category: <EditableCategoryField />,
         stats: <EditableStatsField />,
         location: (

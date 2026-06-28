@@ -24,7 +24,7 @@ const sanitizeSchema: Schema = {
     img: [
       ...(defaultSchema.attributes?.img ?? []),
       ['loading', 'lazy'],
-      ['src', /^https?:\/\//i, /^\/uploads\//],
+      ['src', /^https?:\/\//i, /^\/uploads\//, /^\/api\/wiki\/image\/wiki\/[A-Za-z0-9_-]+\/[A-Za-z0-9-]+\.(?:jpg|png|webp|gif)$/],
     ],
   },
   protocols: {

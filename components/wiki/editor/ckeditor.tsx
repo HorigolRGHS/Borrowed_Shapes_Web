@@ -46,9 +46,13 @@ interface Props {
   onUploadError?: (msg: string) => void;
   activeLocale?: "en" | "vi";
   hideLocaleTabs?: boolean;
+  wikiId: string;
 }
 
-function buildConfig(onUploadError?: (msg: string) => void): EditorConfig {
+function buildConfig(
+  onUploadError: ((msg: string) => void) | undefined,
+  wikiId: string,
+): EditorConfig {
   return {
     licenseKey: "GPL",
     plugins: [
@@ -73,7 +77,7 @@ function buildConfig(onUploadError?: (msg: string) => void): EditorConfig {
       Autoformat,
       Markdown,
     ],
-    extraPlugins: [createWikiUploadPlugin(onUploadError)],
+    extraPlugins: [createWikiUploadPlugin(onUploadError, wikiId)],
     toolbar: {
       items: [
         "heading",
@@ -124,6 +128,7 @@ export function WikiEditor({
   onUploadError,
   activeLocale,
   hideLocaleTabs = false,
+  wikiId,
 }: Props) {
   const { t } = useI18n();
   const [internalTab, setInternalTab] = useState<"en" | "vi">("en");
@@ -142,7 +147,9 @@ export function WikiEditor({
   const isSettingData = useRef(false);
 
   // Config tao 1 lan; onUploadError on dinh theo doi tuong props nen khong rebuild.
-  const [config] = useState<EditorConfig>(() => buildConfig(onUploadError));
+  const [config] = useState<EditorConfig>(() =>
+    buildConfig(onUploadError, wikiId),
+  );
 
   // Dong bo value (ngoai) -> editor khi khac noi dung tab hien tai.
   useEffect(() => {

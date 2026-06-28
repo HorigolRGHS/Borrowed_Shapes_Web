@@ -409,9 +409,9 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/api/wiki/upload",
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/upload",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "wiki", "upload"]
+              "path": ["api", "wiki", "{{wikiId}}", "upload"]
             }
           },
           "response": []
@@ -631,9 +631,9 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/api/wiki/upload",
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/upload",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "wiki", "upload"]
+              "path": ["api", "wiki", "{{wikiId}}", "upload"]
             }
           },
           "response": []
@@ -661,9 +661,9 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/api/wiki/upload",
+              "raw": "{{baseUrl}}/api/wiki/{{wikiId}}/upload",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "wiki", "upload"]
+              "path": ["api", "wiki", "{{wikiId}}", "upload"]
             }
           },
           "response": []

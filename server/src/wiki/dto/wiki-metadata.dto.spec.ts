@@ -32,6 +32,17 @@ const fixtures: Fixture[] = [
   { name: 'unknown category', input: { category: 'NotACategory' }, expected: 'fail' },
   { name: 'oversized tags array', input: { tags: Array(21).fill('x') }, expected: 'fail' },
   { name: 'tag too long', input: { tags: ['x'.repeat(41)] }, expected: 'fail' },
+  {
+    name: 'wiki proxy image path',
+    input: {
+      tags: [],
+      tags_vi: [],
+      stats: {},
+      relatedPages: [],
+      infoboxImage: '/api/wiki/image/wiki/page-123/abc.png',
+    },
+    expected: 'pass',
+  },
   { name: 'malformed url', input: { infoboxImage: 'not-a-url' }, expected: 'fail' },
   { name: 'non-finite stat', input: { stats: { hp: Number.POSITIVE_INFINITY } }, expected: 'fail' },
   { name: 'string stat value', input: { stats: { hp: 'high' } }, expected: 'fail' },

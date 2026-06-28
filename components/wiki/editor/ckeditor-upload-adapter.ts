@@ -18,6 +18,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 class WikiUploadAdapter implements UploadAdapter {
   constructor(
     private loader: FileLoader,
+    private wikiId: string,
     private onError?: (msg: string) => void,
   ) {}
 
@@ -39,12 +40,13 @@ class WikiUploadAdapter implements UploadAdapter {
       throw new Error(msg);
     }
     try {
-      const result = await uploadWikiImage(file);
+      const result = await uploadWikiImage(file, this.wikiId);
       return { default: result.url };
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Upload failed";
+          ?.message ??
+        (err instanceof Error ? err.message : "Upload failed");
       this.onError?.(msg);
       throw new Error(msg);
     }
@@ -57,7 +59,10 @@ class WikiUploadAdapter implements UploadAdapter {
 
 // Plugin function: đăng ký factory adapter vào FileRepository của editor.
 // Dùng kiểu structural (có .plugins.get) để tránh phụ thuộc type Editor cụ thể.
-export function createWikiUploadPlugin(onError?: (msg: string) => void) {
+export function createWikiUploadPlugin(
+  onError: ((msg: string) => void) | undefined,
+  wikiId: string,
+) {
   return function WikiUploadPlugin(editor: {
     plugins: {
       get: (name: string) => {
@@ -67,6 +72,6 @@ export function createWikiUploadPlugin(onError?: (msg: string) => void) {
   }) {
     editor.plugins.get("FileRepository").createUploadAdapter = (
       loader: FileLoader,
-    ) => new WikiUploadAdapter(loader, onError);
+    ) => new WikiUploadAdapter(loader, wikiId, onError);
   };
 }

@@ -9,7 +9,7 @@ import { uploadWikiImage } from "@/lib/wiki/api";
 import { useI18n } from "@/lib/i18/i18n-context";
 import type { WikiFormValue } from "@/models/dtos/wiki-form.dto";
 
-export function EditableImageField() {
+export function EditableImageField({ wikiId }: { wikiId: string }) {
   const { t } = useI18n();
   const form = useFormContext<WikiFormValue>();
   const url = useWatch({ control: form.control, name: "metadata.infoboxImage" });
@@ -24,7 +24,7 @@ export function EditableImageField() {
     setError(null);
     setUploading(true);
     try {
-      const r = await uploadWikiImage(file);
+      const r = await uploadWikiImage(file, wikiId);
       form.setValue("metadata.infoboxImage", r.url, { shouldDirty: true });
     } catch (err: unknown) {
       const msg =

@@ -154,6 +154,7 @@ export default function AdminWikiEditPage({
       </nav>
 
       <WikiForm
+        wikiId={detail.id}
         initial={initial}
         onSubmit={(value, mode) => submit(value, mode)}
         onCancel={() => router.push("/dashboard/wiki")}

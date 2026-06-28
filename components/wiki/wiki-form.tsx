@@ -62,6 +62,7 @@ interface Props {
   excludeSlug?: string;
   locale: "en" | "vi";
   headerSubtitle?: ReactNode;
+  wikiId: string;
 }
 
 export function WikiForm({
@@ -75,6 +76,7 @@ export function WikiForm({
   excludeSlug,
   locale,
   headerSubtitle,
+  wikiId,
 }: Props) {
   const { t } = useI18n();
   const form = useForm<WikiFormValue>({
@@ -250,6 +252,8 @@ export function WikiForm({
           <div className="space-y-4">
             <Label className="sr-only">{t("wiki.field_content")}</Label>
             <WikiEditor
+              key={wikiId}
+              wikiId={wikiId}
               activeLocale={activeLocale}
               hideLocaleTabs
               value={{
@@ -269,7 +273,11 @@ export function WikiForm({
           </div>
         }
         infobox={
-          <EditableInfobox locale={activeLocale} excludeSlug={excludeSlug} />
+          <EditableInfobox
+            locale={activeLocale}
+            excludeSlug={excludeSlug}
+            wikiId={wikiId}
+          />
         }
       />
 

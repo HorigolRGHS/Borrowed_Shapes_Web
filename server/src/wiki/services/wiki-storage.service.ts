@@ -1,6 +1,7 @@
 export const WIKI_STORAGE = Symbol('WIKI_STORAGE');
 
 export interface WikiStorageUploadInput {
+  wikiId: string;
   buffer: Buffer;
   mimeType: string;
   originalName: string;

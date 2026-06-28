@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { GameRun } from '../entities/GameRun';
+import { getEffectiveExpiresAt } from '../achievements/achievements.service';
 import {
   ListGameResultsQueryDto,
   LeaderboardQueryDto,
@@ -210,9 +211,14 @@ export class GameResultService {
         gp."totalWins",
         gp."totalLosses",
         gp."totalAbandoned",
-        gp."totalPlayTime"
+        gp."totalPlayTime",
+        a."badgeImageUrl" as "badgeImageUrl",
+        a."type" as "badgeType",
+        a."seasonMonth" as "badgeSeasonMonth",
+        a."expiresAt" as "badgeExpiresAt"
       FROM game."GameProfile" gp
       INNER JOIN auth."User" u ON u.id = gp."userId"
+      LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
       WHERE gp.id = ?
     `;
     const profileRows = await this.em.execute(profileSql, [gameProfileId]);
@@ -223,10 +229,23 @@ export class GameResultService {
 
     const profile = profileRows[0];
 
+    let badgeImageUrl = undefined;
+    if (profile.badgeImageUrl) {
+      const expiresAt = getEffectiveExpiresAt(
+        profile.badgeType,
+        profile.badgeSeasonMonth,
+        profile.badgeExpiresAt,
+      );
+      if (profile.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
+        badgeImageUrl = profile.badgeImageUrl;
+      }
+    }
+
     const playerInfo: PlayerInfoDto = {
       gameProfileId: profile.gameProfileId,
       displayName: (profile.displayName as string) ?? '',
       avatarUrl: profile.avatarUrl ?? undefined,
+      badgeImageUrl,
     };
 
     const playerStats: PlayerStatsDto = {
@@ -375,6 +394,7 @@ export class GameResultService {
         players: runPlayers.map((p) => ({
           displayName: p.displayName,
           avatarUrl: p.avatarUrl,
+          badgeImageUrl: p.badgeImageUrl,
         })),
       });
     }
@@ -403,22 +423,41 @@ export class GameResultService {
         u."displayName",
         u."imgUrl" as "avatarUrl",
         grp."isHost",
-        grp."joinedAt"
+        grp."joinedAt",
+        a."badgeImageUrl" as "badgeImageUrl",
+        a."type" as "badgeType",
+        a."seasonMonth" as "badgeSeasonMonth",
+        a."expiresAt" as "badgeExpiresAt"
       FROM game."GameRunPlayer" grp
       INNER JOIN game."GameProfile" gp ON gp.id = grp."gameProfileId"
       INNER JOIN auth."User" u ON u.id = gp."userId"
+      LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
       WHERE grp."runId" = ?
       ORDER BY grp."joinedAt" ASC
     `;
     const rows = await this.em.execute(sql, [runId]);
 
-    return (rows || []).map((row: any) => ({
-      gameProfileId: row.gameProfileId,
-      displayName: (row.displayName as string) ?? '',
-      avatarUrl: row.avatarUrl ?? undefined,
-      isHost: row.isHost,
-      joinedAt: row.joinedAt,
-    }));
+    return (rows || []).map((row: any) => {
+      let badgeImageUrl = undefined;
+      if (row.badgeImageUrl) {
+        const expiresAt = getEffectiveExpiresAt(
+          row.badgeType,
+          row.badgeSeasonMonth,
+          row.badgeExpiresAt,
+        );
+        if (row.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
+          badgeImageUrl = row.badgeImageUrl;
+        }
+      }
+      return {
+        gameProfileId: row.gameProfileId,
+        displayName: (row.displayName as string) ?? '',
+        avatarUrl: row.avatarUrl ?? undefined,
+        isHost: row.isHost,
+        joinedAt: row.joinedAt,
+        badgeImageUrl,
+      };
+    });
   }
 
   private async getRunSessions(runId: string): Promise<GameResultSessionDto[]> {
@@ -469,21 +508,40 @@ export class GameResultService {
         u."displayName",
         u."imgUrl" as "avatarUrl",
         gsp."isAbsent",
-        gsp."leftAt"
+        gsp."leftAt",
+        a."badgeImageUrl" as "badgeImageUrl",
+        a."type" as "badgeType",
+        a."seasonMonth" as "badgeSeasonMonth",
+        a."expiresAt" as "badgeExpiresAt"
       FROM game."GameSessionPlayer" gsp
       INNER JOIN game."GameProfile" gp ON gp.id = gsp."gameProfileId"
       INNER JOIN auth."User" u ON u.id = gp."userId"
+      LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
       WHERE gsp."sessionId" = ?
       ORDER BY gsp."gameProfileId" ASC
     `;
     const rows = await this.em.execute(sql, [sessionId]);
 
-    return (rows || []).map((row: any) => ({
-      gameProfileId: row.gameProfileId,
-      displayName: (row.displayName as string) ?? '',
-      avatarUrl: row.avatarUrl ?? undefined,
-      isAbsent: row.isAbsent,
-      leftAt: row.leftAt ?? undefined,
-    }));
+    return (rows || []).map((row: any) => {
+      let badgeImageUrl = undefined;
+      if (row.badgeImageUrl) {
+        const expiresAt = getEffectiveExpiresAt(
+          row.badgeType,
+          row.badgeSeasonMonth,
+          row.badgeExpiresAt,
+        );
+        if (row.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
+          badgeImageUrl = row.badgeImageUrl;
+        }
+      }
+      return {
+        gameProfileId: row.gameProfileId,
+        displayName: (row.displayName as string) ?? '',
+        avatarUrl: row.avatarUrl ?? undefined,
+        isAbsent: row.isAbsent,
+        leftAt: row.leftAt ?? undefined,
+        badgeImageUrl,
+      };
+    });
   }
 }

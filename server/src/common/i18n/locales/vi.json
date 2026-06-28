@@ -122,6 +122,7 @@
     "upload_too_large": "File vượt quá giới hạn 5MB",
     "upload_invalid_type": "Loại file không được chấp nhận, chỉ cho phép JPEG, PNG, WebP, GIF",
     "upload_missing": "Không có file được tải lên",
+    "upload_missing_id": "ID thành tựu là bắt buộc khi tải huy hiệu",
     "upload_failed": "Tải lên thất bại",
     "uploaded": "Tải huy hiệu thành tựu lên thành công"
   },

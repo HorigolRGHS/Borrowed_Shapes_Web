@@ -5,7 +5,6 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   ArrayMaxSize,
   Validate,
@@ -42,6 +41,27 @@ export class FiniteNumberStatsConstraint
   }
 }
 
+const wikiImageProxyPath = /^\/api\/wiki\/image\/wiki\/[A-Za-z0-9_-]+\/[A-Za-z0-9-]+\.(?:jpg|png|webp|gif)$/;
+
+@ValidatorConstraint({ name: 'wikiImageUrl', async: false })
+export class WikiImageUrlConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown): boolean {
+    if (value === undefined || value === null || value === '') return true;
+    if (typeof value !== 'string') return false;
+    if (wikiImageProxyPath.test(value)) return true;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  defaultMessage(): string {
+    return 'infoboxImage must be a URL or wiki image proxy path';
+  }
+}
+
 export class WikiMetadataDto {
   @ApiPropertyOptional({ enum: WIKI_CATEGORIES })
   @IsOptional()
@@ -66,7 +86,7 @@ export class WikiMetadataDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsUrl()
+  @Validate(WikiImageUrlConstraint)
   infoboxImage?: string;
 
   @ApiPropertyOptional({ type: Object })

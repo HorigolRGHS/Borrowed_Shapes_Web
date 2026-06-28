@@ -122,6 +122,7 @@
     "upload_too_large": "Upload exceeds the 5MB limit",
     "upload_invalid_type": "Upload type rejected; only JPEG, PNG, WebP, GIF allowed",
     "upload_missing": "No file provided",
+    "upload_missing_id": "Achievement ID is required for badge upload",
     "upload_failed": "Upload failed",
     "uploaded": "Achievement badge uploaded successfully"
   },

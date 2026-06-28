@@ -2,6 +2,7 @@ import React from "react";
 import { X, Trophy, Clock, Calendar, Users } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { LeaderboardEntry } from "./leaderboard-podium";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 interface LeaderboardRunModalProps {
   entry: LeaderboardEntry | null;
@@ -71,7 +72,7 @@ export const LeaderboardRunModal: React.FC<LeaderboardRunModalProps> = ({
             {entry.rank <= 3 ? medals[entry.rank - 1] : "🏆"}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-foreground dark:text-white font-bold text-lg font-rajdhani truncate pr-6">
+            <h3 className="text-foreground dark:text-white font-bold text-lg truncate pr-6">
               {entry.lobbyName || `Lobby #${entry.runId.slice(0, 4)}`}
             </h3>
             <p className="text-muted-foreground text-xs font-mono uppercase tracking-wider">
@@ -83,7 +84,7 @@ export const LeaderboardRunModal: React.FC<LeaderboardRunModalProps> = ({
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 gap-4 mb-6 relative">
           <div className="bg-muted/30 dark:bg-[#1e1e3a]/30 border border-border dark:border-[#1e1e3a] rounded-xl p-3 flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-rajdhani font-bold mb-1">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-bold mb-1">
               <Clock size={12} className="text-amber-500 dark:text-amber-400" />
               {t("leaderboard.modal_completion_time")}
             </div>
@@ -93,7 +94,7 @@ export const LeaderboardRunModal: React.FC<LeaderboardRunModalProps> = ({
           </div>
 
           <div className="bg-muted/30 dark:bg-[#1e1e3a]/30 border border-border dark:border-[#1e1e3a] rounded-xl p-3 flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-rajdhani font-bold mb-1">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-bold mb-1">
               <Trophy size={12} className="text-violet-500 dark:text-violet-400" />
               {t("leaderboard.global_rank")}
             </div>
@@ -105,7 +106,7 @@ export const LeaderboardRunModal: React.FC<LeaderboardRunModalProps> = ({
 
         {/* Teammates List */}
         <div className="relative mb-6">
-          <h4 className="text-muted-foreground text-xs font-bold font-orbitron uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <h4 className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <Users size={12} className="text-blue-500 dark:text-blue-400" />
             {t("leaderboard.modal_players")} ({entry.totalPlayers})
           </h4>
@@ -116,20 +117,14 @@ export const LeaderboardRunModal: React.FC<LeaderboardRunModalProps> = ({
                   key={i}
                   className="flex items-center gap-3 bg-muted/20 hover:bg-muted/40 dark:bg-[#1e1e3a]/20 dark:hover:bg-[#1e1e3a]/40 border border-border dark:border-[#1e1e3a]/50 dark:hover:border-violet-500/20 rounded-xl px-3 py-2.5 transition-all"
                 >
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-border dark:border-[#1e1e3a] shrink-0 flex items-center justify-center">
-                    {player.avatarUrl ? (
-                      <img
-                        src={player.avatarUrl}
-                        alt={player.displayName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                        {player.displayName[0]?.toUpperCase() || "?"}
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-foreground/90 dark:text-gray-200 font-semibold font-rajdhani text-sm truncate">
+                  <AvatarWithFrame
+                    displayName={player.displayName}
+                    avatarUrl={player.avatarUrl}
+                    badgeImageUrl={player.badgeImageUrl}
+                    size="sm"
+                    className="border border-border dark:border-[#1e1e3a] rounded-full"
+                  />
+                  <span className="text-foreground/90 dark:text-gray-200 font-semibold text-sm truncate">
                     {player.displayName}
                   </span>
                 </div>

@@ -1,10 +1,12 @@
 import React from "react";
 import { Trophy } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 export interface LeaderboardPlayer {
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
 }
 
 export interface LeaderboardEntry {
@@ -60,7 +62,7 @@ function PodiumCard({
         <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-slate-300 dark:border-slate-700/50 mb-2 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold">
           ?
         </div>
-        <p className="text-slate-500 text-xs font-bold font-rajdhani">-</p>
+        <p className="text-slate-500 text-xs font-bold">-</p>
         <div
           className={`w-24 ${podiumHeight} rounded-t-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mt-2`}
         />
@@ -82,33 +84,48 @@ function PodiumCard({
         {medals[rank - 1]}
       </div>
       {/* Avatar */}
-      <div
-        className={`w-14 h-14 rounded-full bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center text-white font-bold border-4 mb-2 relative transition-all duration-300 ${
-          rank === 1
-            ? "border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.2)] dark:shadow-[0_0_20px_rgba(251,191,36,0.3)] text-lg group-hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]"
-            : rank === 2
-            ? "border-slate-300 dark:border-gray-400/40 text-base"
-            : "border-amber-600/30 dark:border-amber-700/40 text-base"
-        }`}
-      >
-        {entry.players && entry.players[0]?.avatarUrl ? (
-          <img
-            src={entry.players[0].avatarUrl}
-            alt={entry.lobbyName}
-            className="w-full h-full object-cover rounded-full"
+      {entry.players && entry.players[0] ? (
+        <div className="relative mb-2 shrink-0">
+          <AvatarWithFrame
+            displayName={entry.players[0].displayName}
+            avatarUrl={entry.players[0].avatarUrl}
+            badgeImageUrl={entry.players[0].badgeImageUrl}
+            size="lg"
+            className={`bg-gradient-to-br from-violet-600 to-blue-500 rounded-full border-4 transition-all duration-300 ${
+              rank === 1
+                ? "border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.2)] dark:shadow-[0_0_20px_rgba(251,191,36,0.3)] text-lg group-hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]"
+                : rank === 2
+                ? "border-slate-300 dark:border-gray-400/40 text-base"
+                : "border-amber-600/30 dark:border-amber-700/40 text-base"
+            }`}
           />
-        ) : (
+          {entry.totalPlayers > 1 && (
+            <span className="absolute -bottom-1 -right-1 bg-violet-600 text-[10px] px-1 rounded-full border border-background dark:border-[#0f0f1a] font-medium scale-90 text-white z-20">
+              +{entry.totalPlayers - 1}
+            </span>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`w-14 h-14 rounded-full bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center text-white font-bold border-4 mb-2 relative transition-all duration-300 ${
+            rank === 1
+              ? "border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.2)] dark:shadow-[0_0_20px_rgba(251,191,36,0.3)] text-lg group-hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]"
+              : rank === 2
+              ? "border-slate-300 dark:border-gray-400/40 text-base"
+              : "border-amber-600/30 dark:border-amber-700/40 text-base"
+          }`}
+        >
           <span>{lobbyInitials}</span>
-        )}
-        {entry.totalPlayers > 1 && (
-          <span className="absolute -bottom-1 -right-1 bg-violet-600 text-[10px] px-1 rounded-full border border-background dark:border-[#0f0f1a] font-medium scale-90 text-white">
-            +{entry.totalPlayers - 1}
-          </span>
-        )}
-      </div>
+          {entry.totalPlayers > 1 && (
+            <span className="absolute -bottom-1 -right-1 bg-violet-600 text-[10px] px-1 rounded-full border border-background dark:border-[#0f0f1a] font-medium scale-90 text-white">
+              +{entry.totalPlayers - 1}
+            </span>
+          )}
+        </div>
+      )}
       {/* Name */}
       <p
-        className={`text-center mb-0.5 truncate max-w-[120px] font-bold font-rajdhani ${rankTextColors[rank - 1]}`}
+        className={`text-center mb-0.5 truncate max-w-[120px] font-bold ${rankTextColors[rank - 1]}`}
         style={{ fontSize: rank === 1 ? "15px" : "13px" }}
       >
         {entry.lobbyName || `Lobby #${entry.runId.slice(0, 4)}`}
@@ -130,7 +147,7 @@ function PodiumCard({
         {/* Glow lines inside podium base for premium feel */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
         <span
-          className="text-2xl font-black font-orbitron opacity-20 dark:opacity-40 select-none"
+          className="text-2xl font-black opacity-20 dark:opacity-40 select-none"
           style={{
             color: rank === 1 ? "#d97706" : rank === 2 ? "#6b7280" : "#b45309",
             fontSize: "28px",
@@ -156,7 +173,7 @@ export const LeaderboardPodium: React.FC<LeaderboardPodiumProps> = ({
     <div className="mb-10">
       <div className="flex items-center gap-2 mb-6">
         <Trophy size={16} className="text-amber-500 dark:text-amber-400 animate-pulse" />
-        <span className="text-amber-500 dark:text-amber-400 text-xs font-bold font-orbitron tracking-widest">
+        <span className="text-amber-500 dark:text-amber-400 text-xs font-bold tracking-widest">
           {t("leaderboard.top_3")}
         </span>
         <div className="flex-1 h-px bg-violet-500/10 dark:bg-violet-500/20" />

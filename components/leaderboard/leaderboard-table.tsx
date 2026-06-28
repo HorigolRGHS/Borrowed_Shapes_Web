@@ -2,6 +2,7 @@ import React from "react";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { LeaderboardEntry } from "./leaderboard-podium";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
@@ -55,7 +56,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     return (
       <div className="bg-card/80 dark:bg-[#0f0f1a]/80 backdrop-blur-md border border-border dark:border-violet-500/10 rounded-2xl p-12 text-center shadow-lg">
         <div className="inline-block w-8 h-8 border-4 border-amber-500 dark:border-amber-400 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-muted-foreground font-rajdhani text-lg">
+        <p className="text-muted-foreground text-lg">
           {t("leaderboard.loading")}
         </p>
       </div>
@@ -67,14 +68,14 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
       {/* Title Header */}
       <div className="flex items-center gap-2 px-6 py-4 border-b border-border dark:border-violet-500/10 bg-muted/20 dark:bg-[#0f0f1a]/40">
         <Star size={14} className="text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400 animate-pulse" />
-        <span className="text-foreground dark:text-white text-sm font-bold font-orbitron tracking-wider">
+        <span className="text-foreground dark:text-white text-sm font-bold tracking-wider">
           {t("leaderboard.full_rankings")}
         </span>
       </div>
 
       {entries.length === 0 ? (
         <div className="p-12 text-center">
-          <p className="text-muted-foreground font-rajdhani text-lg">
+          <p className="text-muted-foreground text-lg">
             {t("leaderboard.no_entries")}
           </p>
         </div>
@@ -83,7 +84,6 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
           {/* Table Header for medium/large screens */}
           <div
             className="hidden sm:grid grid-cols-12 px-6 py-3 border-b border-border dark:border-violet-500/10 text-xs text-muted-foreground uppercase tracking-widest font-bold bg-muted/10 dark:bg-[#07070f]/30"
-            style={{ fontFamily: "var(--font-orbitron), sans-serif" }}
           >
             <span className="col-span-1">{t("leaderboard.col_rank")}</span>
             <span className="col-span-4">{t("leaderboard.col_lobby_name")}</span>
@@ -131,7 +131,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   {/* Team/Lobby Name */}
                   <div className="col-span-6 sm:col-span-4 pr-2">
                     <p
-                      className={`text-sm font-bold font-rajdhani truncate group-hover:text-primary transition-colors ${
+                      className={`text-sm font-bold truncate group-hover:text-primary transition-colors ${
                         isTop3 ? rankTextColors[idx] : "text-foreground/90 dark:text-gray-300"
                       }`}
                     >
@@ -147,23 +147,14 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                     {displayPlayers.length > 0 ? (
                       <div className="flex -space-x-2">
                         {visiblePlayers.map((player, pIdx) => (
-                          <div
+                          <AvatarWithFrame
                             key={pIdx}
-                            title={player.displayName}
-                            className="w-6 h-6 rounded-full overflow-hidden border-2 border-background dark:border-[#0f0f1a] relative flex items-center justify-center shrink-0"
-                          >
-                            {player.avatarUrl ? (
-                              <img
-                                src={player.avatarUrl}
-                                alt={player.displayName}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center text-white text-[9px] font-extrabold select-none">
-                                {player.displayName[0]?.toUpperCase() || "?"}
-                              </div>
-                            )}
-                          </div>
+                            displayName={player.displayName}
+                            avatarUrl={player.avatarUrl}
+                            badgeImageUrl={player.badgeImageUrl}
+                            size="xs"
+                            className="border-2 border-background dark:border-[#0f0f1a] rounded-full"
+                          />
                         ))}
                         {extraPlayers > 0 && (
                           <div className="w-6 h-6 rounded-full bg-muted dark:bg-slate-800 border-2 border-background dark:border-[#0f0f1a] flex items-center justify-center text-muted-foreground dark:text-slate-300 text-[8px] font-bold shrink-0">
@@ -207,7 +198,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
           {/* Pagination Controls */}
           {totalPages > 1 && onPageChange && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-border dark:border-violet-500/10 bg-muted/5 dark:bg-[#07070f]/20">
-              <span className="text-xs text-muted-foreground font-rajdhani">
+              <span className="text-xs text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
               <div className="flex items-center gap-2">

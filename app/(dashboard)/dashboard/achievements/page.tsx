@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -128,6 +129,7 @@ export default function AchievementsPage() {
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const createAchievementIdRef = useRef(crypto.randomUUID());
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -148,6 +150,10 @@ export default function AchievementsPage() {
       setIsUploadingImage(true);
       const form = new FormData();
       form.append("file", file);
+      form.append("achievementId", editingAchievement?.id ?? createAchievementIdRef.current);
+      if (formData.badgeImageUrl) {
+        form.append("oldBadgeImageUrl", formData.badgeImageUrl);
+      }
 
       const res = await axios.post("/api/achievements/upload", form, {
         headers: {
@@ -427,6 +433,7 @@ export default function AchievementsPage() {
     }
   };
   const resetForm = () => {
+    createAchievementIdRef.current = crypto.randomUUID();
     setFormData({
       name: "",
       description: "",
@@ -567,82 +574,81 @@ export default function AchievementsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 overflow-y-auto px-8 py-8">
-          <div className="mb-8">
-            <div className="mb-6 max-w-3xl">
-              <h2 className="text-4xl font-bold text-foreground sm:text-2xl">{t("achievements.management_title")}</h2>
-              <p className="mt-4 text-sm leading-7 text-muted-foreground">{t("achievements.management_subtitle")}</p>
-              <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
-            </div>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("achievements.management_title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("achievements.management_subtitle")}</p>
+        </div>
+        <Button
+          onClick={() => {
+            resetForm();
+            setEditingAchievement(null);
+            setShowCreateModal(true);
+          }}
+          className="bg-orange-500 hover:bg-orange-600 text-white self-start md:self-auto animate-in fade-in"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {t("achievements.create_achievement")}
+        </Button>
+      </div>
 
-            {/* Filter bar: Search + Type filter + Create button */}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-1 items-center gap-3">
-                <div className="relative flex-1 max-w-lg">
-                  <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
-                    <Search className="h-4 w-4" />
-                  </span>
-                  <Input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyUp={handleSearch}
-                    placeholder={t("achievements.search_placeholder")}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("achievements.all_types")}</SelectItem>
-                    <SelectItem value="permanent">{t("achievements.permanent")}</SelectItem>
-                    <SelectItem value="seasonal">{t("achievements.seasonal")}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={sortBy} onValueChange={(val) => {
-                  setSortBy(val);
-                  setCurrentPage(1);
-                }}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">{t("achievements.sort_default")}</SelectItem>
-                    <SelectItem value="name">{t("achievements.sort_by_name")}</SelectItem>
-                    <SelectItem value="date">{t("achievements.sort_by_date")}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
-                    setCurrentPage(1);
-                  }}
-                  title={sortOrder === "ASC" ? t("achievements.sort_ascending") : t("achievements.sort_descending")}
-                >
-                  {sortOrder === "ASC" ? (
-                    <ArrowUp className="h-4 w-4" />
-                  ) : (
-                    <ArrowDown className="h-4 w-4" />
-                  )}
-                </Button>
+      <Card>
+        <CardContent className="p-6">
+          {/* Filter bar: Search + Type filter */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyUp={handleSearch}
+                  placeholder={t("achievements.search_placeholder")}
+                  className="pl-9"
+                />
               </div>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("achievements.all_types")}</SelectItem>
+                  <SelectItem value="permanent">{t("achievements.permanent")}</SelectItem>
+                  <SelectItem value="seasonal">{t("achievements.seasonal")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={(val) => {
+                setSortBy(val);
+                setCurrentPage(1);
+              }}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">{t("achievements.sort_default")}</SelectItem>
+                  <SelectItem value="name">{t("achievements.sort_by_name")}</SelectItem>
+                  <SelectItem value="date">{t("achievements.sort_by_date")}</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground"
                 onClick={() => {
-                  resetForm();
-                  setEditingAchievement(null);
-                  setShowCreateModal(true);
+                  setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
+                  setCurrentPage(1);
                 }}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                title={sortOrder === "ASC" ? t("achievements.sort_ascending") : t("achievements.sort_descending")}
               >
-                <Plus className="h-4 w-4" />
-                {t("achievements.create_achievement")}
+                {sortOrder === "ASC" ? (
+                  <ArrowUp className="h-4 w-4" />
+                ) : (
+                  <ArrowDown className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
@@ -652,7 +658,7 @@ export default function AchievementsPage() {
           ) : (
             <>
               {/* Table */}
-              <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden">
+              <div className="rounded-md border border-border overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border hover:bg-transparent">
@@ -794,8 +800,8 @@ export default function AchievementsPage() {
               )}
             </>
           )}
-        </main>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Create/Edit Modal */}
       <Dialog

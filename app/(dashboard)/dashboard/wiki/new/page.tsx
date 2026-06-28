@@ -238,7 +238,7 @@ export default function AdminWikiNewPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("wiki.new.title_field")} ({t("wiki.tabVi")})
+                      {t("wiki.new.title_field")} ({t("wiki.tab_vi")})
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />

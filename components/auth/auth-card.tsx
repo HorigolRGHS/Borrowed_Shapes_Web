@@ -19,7 +19,7 @@ interface Props {
 export function AuthCard({ logo, title, description, children, footer, className, error, shake }: Props) {
   return (
     <div className={cn("relative w-full max-w-md mx-4", shake && "animate-shake", className)}>
-      <div className="bg-[#0a0a15]/90 backdrop-blur-xl border border-[#1e1e3a] rounded-2xl shadow-[0_20px_80px_rgba(0,0,0,0.7)] overflow-hidden">
+      <div className="bg-card/90 backdrop-blur-xl border border-border rounded-2xl shadow-xl overflow-hidden">
         {/* Top gradient line */}
         <div className="h-0.5 w-full bg-gradient-to-r from-violet-600 via-cyan-400 to-blue-500" />
         
@@ -27,27 +27,27 @@ export function AuthCard({ logo, title, description, children, footer, className
           {logo && <div className="flex justify-center mb-6">{logo}</div>}
           
           <div className="mb-6 text-center">
-            <h2 className="text-white font-orbitron text-[22px] font-bold">
+            <h2 className="text-foreground font-orbitron text-[22px] font-bold">
               {title}
             </h2>
             {description && (
-              <p className="text-gray-400 text-sm mt-2 font-sans">
+              <p className="text-muted-foreground text-sm mt-2 font-sans">
                 {description}
               </p>
             )}
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 mb-4">
-              <AlertCircle size={15} className="text-red-400 mt-0.5 shrink-0" />
-              <p className="text-red-400 text-sm font-sans">{error}</p>
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/30 mb-4">
+              <AlertCircle size={15} className="text-destructive mt-0.5 shrink-0" />
+              <p className="text-destructive text-sm font-sans">{error}</p>
             </div>
           )}
 
           {children}
 
           {footer && (
-            <div className="text-center text-gray-500 text-sm mt-5 font-sans">
+            <div className="text-center text-muted-foreground text-sm mt-5 font-sans">
               {footer}
             </div>
           )}
@@ -70,12 +70,12 @@ export function AuthLogo() {
           <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
         </div>
       ) : (
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)] shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shrink-0">
           <span className="text-white font-bold font-orbitron text-[14px]">B</span>
         </div>
       )}
-      <span className="text-white font-orbitron text-[11px] tracking-[0.08em]">
-        BORROWED<span className="text-cyan-400"> SHAPES</span>
+      <span className="text-foreground font-orbitron text-[11px] tracking-[0.08em]">
+        BORROWED<span className="text-cyan-500"> SHAPES</span>
       </span>
     </div>
   );

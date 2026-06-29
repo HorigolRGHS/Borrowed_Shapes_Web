@@ -111,8 +111,8 @@ export default function LoginPage() {
       }
     >
       {statusError && (
-        <div className="mb-4 bg-red-500/10 border border-red-500/20 p-4 rounded-md space-y-3">
-          <div className="font-bold text-red-500 mb-2">
+        <div className="mb-4 bg-destructive/10 border border-destructive/20 p-4 rounded-md space-y-3">
+          <div className="font-bold text-destructive mb-2">
              {statusError.code === "ACCOUNT_BANNED" 
                 ? (t("auth.status.banned_message") || "Your account has been banned.")
                 : (t("auth.status.deleted_message") || "Your account has been deleted.")}
@@ -121,21 +121,21 @@ export default function LoginPage() {
           {statusError.code === "ACCOUNT_BANNED" ? (
             <>
               <div>
-                <span className="text-sm font-semibold text-red-500 mb-1 block">
+                <span className="text-sm font-semibold text-destructive mb-1 block">
                   {t("auth.status.reason") || "Reason"}:
                 </span>
-                <p className="text-sm text-gray-200">
+                <p className="text-sm text-foreground">
                   {statusError.ban?.reason || t("auth.status.no_reason") || "No reason provided."}
                 </p>
               </div>
               
-              <div className="border-t border-red-500/10 pt-3">
-                <span className="text-sm font-semibold text-red-500 mb-1 block">
+              <div className="border-t border-destructive/10 pt-3">
+                <span className="text-sm font-semibold text-destructive mb-1 block">
                   {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
                     ? (t("auth.status.duration") || "Duration") + ":"
                     : (t("auth.status.expires_at") || "Expires At") + ":"}
                 </span>
-                <p className="text-sm font-mono text-gray-200">
+                <p className="text-sm font-mono text-foreground">
                   {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
                     ? t("auth.status.permanent") || "Permanent"
                     : new Date(statusError.ban?.banExpiresAt).toLocaleString()}
@@ -144,15 +144,15 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-200 mb-2">
+              <p className="text-sm text-foreground mb-2">
                 {t("auth.status.deleted_description") || "This account can no longer access the system."}
               </p>
               {statusError.deleted?.deletedAt && (
-                <div className="border-t border-red-500/10 pt-3">
-                  <span className="text-sm font-semibold text-red-500 mb-1 block">
+                <div className="border-t border-destructive/10 pt-3">
+                  <span className="text-sm font-semibold text-destructive mb-1 block">
                     {t("auth.status.deleted_at") || "Deleted At"}:
                   </span>
-                  <p className="text-sm font-mono text-gray-200">
+                  <p className="text-sm font-mono text-foreground">
                     {new Date(statusError.deleted.deletedAt).toLocaleString()}
                   </p>
                 </div>
@@ -167,11 +167,11 @@ export default function LoginPage() {
       </GoogleButton>
 
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1 h-px bg-[#1e1e3a]" />
-        <span className="text-gray-600 text-xs font-sans">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-muted-foreground text-xs font-sans">
           {t("auth.or_continue_with")}
         </span>
-        <div className="flex-1 h-px bg-[#1e1e3a]" />
+        <div className="flex-1 h-px bg-border" />
       </div>
 
       <Form {...form}>
@@ -181,15 +181,15 @@ export default function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.email")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.email")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
                       type="email" 
                       autoComplete="email" 
                       placeholder="name@example.com" 
-                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
                       {...field} 
                     />
                   </div>
@@ -204,10 +204,10 @@ export default function LoginPage() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-gray-300 font-sans">{t("auth.password")}</FormLabel>
+                  <FormLabel className="text-foreground font-sans">{t("auth.password")}</FormLabel>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("auth.forgot_password")}
                   </Link>

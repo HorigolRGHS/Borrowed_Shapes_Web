@@ -10,13 +10,13 @@ const modak = Modak({ subsets: ["latin"], weight: "400" });
 
 function StatCard({ icon: Icon, value, label, colorClass }: { icon: any, value: string, label: string, colorClass: string }) {
   return (
-    <div className="flex items-center gap-3 bg-card/40 dark:bg-black/40 backdrop-blur-md border border-border dark:border-white/10 rounded-xl p-4 transition-transform hover:-translate-y-1 hover:shadow-lg">
-      <div className={cn("p-2 rounded-lg bg-background dark:bg-white/5", colorClass)}>
+    <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 transition-transform hover:-translate-y-1 hover:shadow-lg">
+      <div className={cn("p-2 rounded-lg bg-white/5", colorClass)}>
         <Icon className="w-5 h-5" />
       </div>
       <div>
-        <div className="font-bold text-xl text-foreground dark:text-white leading-tight">{value}</div>
-        <div className="text-xs text-muted-foreground dark:text-gray-400 font-medium tracking-wider uppercase">{label}</div>
+        <div className="font-bold text-xl text-white leading-tight">{value}</div>
+        <div className="text-xs text-gray-400 font-medium tracking-wider uppercase">{label}</div>
       </div>
     </div>
   );
@@ -28,23 +28,23 @@ export function HeroSection() {
   const HERO_BG = process.env.NEXT_PUBLIC_HERO_BG_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev/notexthouseright.jpg";
 
   return (
-    <section className="relative w-full h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-background dark:bg-[#07070f] mt-16">
+    <section className="relative w-full h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-[#07070f] mt-16">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 opacity-90 dark:opacity-60"
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 opacity-60"
         style={{ backgroundImage: `url(${HERO_BG})` }}
       />
       
       {/* Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/55 to-transparent dark:from-[#07070f] dark:via-[#07070f]/60 dark:to-transparent z-10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background dark:from-[#07070f] via-transparent to-transparent z-10" />
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-900/10 via-transparent to-orange-900/5 dark:from-amber-900/30 dark:to-orange-900/20 z-10 mix-blend-overlay" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#07070f] via-[#07070f]/60 to-transparent z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#07070f] via-transparent to-transparent z-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 to-orange-900/20 z-10 mix-blend-overlay" />
 
       {/* Floating Shapes Background (Right side) */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none z-20 hidden lg:block">
-        <div className="absolute top-[20%] right-[15%] w-64 h-64 border-2 border-amber-500/20 dark:border-amber-500/30 rounded-full animate-float blur-[1px]" />
-        <div className="absolute top-[50%] right-[25%] w-48 h-48 border-2 border-orange-500/20 dark:border-orange-500/30 rounded-lg rotate-45 animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-[15%] right-[10%] w-56 h-56 border-2 border-yellow-500/10 dark:border-yellow-500/20 rounded-xl rotate-12 animate-float" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-[20%] right-[15%] w-64 h-64 border-2 border-amber-500/30 rounded-full animate-float blur-[1px]" />
+        <div className="absolute top-[50%] right-[25%] w-48 h-48 border-2 border-orange-500/30 rounded-lg rotate-45 animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute bottom-[15%] right-[10%] w-56 h-56 border-2 border-yellow-500/20 rounded-xl rotate-12 animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* Content Container */}
@@ -65,7 +65,7 @@ export function HeroSection() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-muted-foreground dark:text-amber-100/70 mb-8 max-w-xl leading-relaxed font-medium">
+          <p className="text-lg sm:text-xl text-amber-100/70 mb-8 max-w-xl leading-relaxed font-medium">
             {t("home.hero.subtitle")}
           </p>
 
@@ -81,7 +81,7 @@ export function HeroSection() {
             
             <Link 
               href="/wiki" 
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-card/30 dark:bg-white/5 hover:bg-card/60 dark:hover:bg-white/10 text-foreground dark:text-white border border-border dark:border-white/10 px-8 py-4 rounded-xl font-bold text-lg transition-all backdrop-blur-sm"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-4 rounded-xl font-bold text-lg transition-all backdrop-blur-sm"
             >
               <BookOpen className="w-5 h-5 text-amber-500" />
               {t("home.hero.explore_wiki")}
@@ -114,9 +114,9 @@ export function HeroSection() {
 
       {/* Season Badge */}
       <div className="absolute bottom-6 left-4 right-4 sm:left-auto sm:right-8 z-30 flex justify-center sm:justify-end">
-        <div className="flex items-center gap-2 bg-card/80 dark:bg-[#0a0a15]/80 backdrop-blur-md border border-border dark:border-white/10 px-4 py-2 rounded-full shadow-lg">
+        <div className="flex items-center gap-2 bg-[#0a0a15]/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-lg">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-          <span className="text-xs font-bold tracking-widest text-foreground dark:text-white">
+          <span className="text-xs font-bold tracking-widest text-white">
             {t("home.hero.season_live")}
           </span>
         </div>

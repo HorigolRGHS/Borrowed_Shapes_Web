@@ -89,14 +89,14 @@ function PodiumCard({
           <AvatarWithFrame
             displayName={entry.players[0].displayName}
             avatarUrl={entry.players[0].avatarUrl}
-            badgeImageUrl={entry.players[0].badgeImageUrl}
+            badgeImageUrl={undefined}
             size="lg"
             className={`bg-gradient-to-br from-violet-600 to-blue-500 rounded-full border-4 transition-all duration-300 ${
               rank === 1
-                ? "border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.2)] dark:shadow-[0_0_20px_rgba(251,191,36,0.3)] text-lg group-hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]"
+                ? "border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.25)] text-lg group-hover:shadow-[0_0_25px_rgba(245,158,11,0.45)]"
                 : rank === 2
-                ? "border-slate-300 dark:border-gray-400/40 text-base"
-                : "border-amber-600/30 dark:border-amber-700/40 text-base"
+                ? "border-slate-400 text-base"
+                : "border-amber-700 text-base"
             }`}
           />
           {entry.totalPlayers > 1 && (
@@ -109,10 +109,10 @@ function PodiumCard({
         <div
           className={`w-14 h-14 rounded-full bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center text-white font-bold border-4 mb-2 relative transition-all duration-300 ${
             rank === 1
-              ? "border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.2)] dark:shadow-[0_0_20px_rgba(251,191,36,0.3)] text-lg group-hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]"
+              ? "border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.25)] text-lg group-hover:shadow-[0_0_25px_rgba(245,158,11,0.45)]"
               : rank === 2
-              ? "border-slate-300 dark:border-gray-400/40 text-base"
-              : "border-amber-600/30 dark:border-amber-700/40 text-base"
+              ? "border-slate-400 text-base"
+              : "border-amber-700 text-base"
           }`}
         >
           <span>{lobbyInitials}</span>
@@ -138,10 +138,10 @@ function PodiumCard({
       <div
         className={`w-24 ${podiumHeight} rounded-t-xl flex items-center justify-center mt-2 relative overflow-hidden transition-all duration-300 ${
           rank === 1
-            ? "bg-amber-500/10 border border-amber-500/30 dark:bg-gradient-to-t dark:from-amber-500/30 dark:to-amber-400/10 dark:border-amber-500/30 shadow-sm shadow-amber-500/5 dark:shadow-[inset_0_1px_0_rgba(251,191,36,0.2)]"
+            ? "bg-amber-500/10 border border-amber-500/50 dark:bg-gradient-to-t dark:from-amber-500/30 dark:to-amber-400/10 dark:border-amber-500/50 shadow-sm shadow-amber-500/5 dark:shadow-[inset_0_1px_0_rgba(251,191,36,0.2)]"
             : rank === 2
-            ? "bg-slate-500/5 border border-slate-500/20 dark:bg-gradient-to-t dark:from-gray-500/20 dark:to-gray-400/5 dark:border-gray-500/25"
-            : "bg-amber-700/5 border border-amber-700/20 dark:bg-gradient-to-t dark:from-amber-700/20 dark:to-amber-600/5 dark:border-amber-700/25"
+            ? "bg-slate-500/5 border border-slate-500/40 dark:bg-gradient-to-t dark:from-gray-500/20 dark:to-gray-400/5 dark:border-gray-500/40"
+            : "bg-amber-700/5 border border-amber-700/40 dark:bg-gradient-to-t dark:from-amber-700/20 dark:to-amber-600/5 dark:border-amber-700/40"
         }`}
       >
         {/* Glow lines inside podium base for premium feel */}

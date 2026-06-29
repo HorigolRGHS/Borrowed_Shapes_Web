@@ -239,13 +239,19 @@ export default function DashboardPage() {
               <Skeleton className="h-full w-full" />
             ) : data?.series?.forumActivity?.length ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.series.forumActivity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={data.series.forumActivity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorForum" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={C.forum} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={C.forum} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={fmt} />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                  <Bar dataKey="value" name="Threads" fill={C.forum} radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="value" name="Threads" stroke={C.forum} strokeWidth={2} fillOpacity={1} fill="url(#colorForum)" />
+                </AreaChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-muted-foreground text-sm">

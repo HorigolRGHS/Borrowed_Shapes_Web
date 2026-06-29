@@ -85,7 +85,7 @@ export const WikiPublicList: WikiPublicListComponent = ({
           type="search"
           defaultValue={query ?? ""}
           placeholder={t("wiki.public_search_placeholder")}
-          className="h-10 rounded-xl border-[#272742] bg-[#11111d] pl-10 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:ring-amber-500/70"
+          className="h-10 rounded-xl border-border bg-card pl-10 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-amber-500/70 dark:border-[#272742] dark:bg-[#11111d] dark:text-slate-100 dark:placeholder:text-slate-500"
         />
       </form>
 
@@ -117,7 +117,7 @@ export const WikiPublicList: WikiPublicListComponent = ({
                         "rounded-full border px-4 py-1.5 text-sm font-medium transition",
                         selected
                           ? "border-amber-500 bg-amber-500/10 text-amber-400 shadow-[0_0_22px_rgba(245,158,11,0.24)]"
-                          : "border-[#272742] bg-[#141421] text-sky-200/90 hover:border-amber-500/60 hover:text-amber-300",
+                          : "border-border bg-card text-muted-foreground hover:border-amber-500/60 hover:text-amber-600 dark:border-[#272742] dark:bg-[#141421] dark:text-sky-200/90 dark:hover:text-amber-300",
                       )}
                     >
                       {label}

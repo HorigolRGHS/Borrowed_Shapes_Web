@@ -26,7 +26,7 @@ export default async function WikiListPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#060711] px-4 pb-16 pt-24 text-white">
+    <main className="min-h-screen bg-background px-4 pb-16 pt-24 text-foreground dark:bg-[#060711] dark:text-white">
       <section className="mx-auto max-w-6xl">
         <Suspense fallback={<WikiPublicListSkeleton />}>
           <WikiPublicList

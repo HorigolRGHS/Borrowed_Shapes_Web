@@ -60,12 +60,12 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
     <Link href={linkHref} className="block h-full group">
       <Card
         className={cn(
-          "h-full overflow-hidden rounded-xl border border-[#252541] bg-[#11111d] text-slate-100 shadow-none transition duration-200",
+          "h-full overflow-hidden rounded-xl border border-border bg-card text-foreground shadow-sm transition duration-200 dark:border-[#252541] dark:bg-[#11111d] dark:text-slate-100 dark:shadow-none",
           "hover:border-amber-500/80 hover:shadow-[0_0_30px_rgba(245,158,11,0.16)]",
         )}
       >
-        <CardHeader className="flex min-h-[58px] flex-row items-start justify-between gap-2 border-b border-[#252541] px-5 py-4">
-          <h3 className="font-serif text-lg font-bold leading-snug text-white line-clamp-2 group-hover:text-amber-400">
+        <CardHeader className="flex min-h-[58px] flex-row items-start justify-between gap-2 border-b border-border px-5 py-4 dark:border-[#252541]">
+          <h3 className="font-serif text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400">
             {item.title}
           </h3>
           {showDraftBadge && !item.isPublished && (
@@ -75,11 +75,11 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
           )}
         </CardHeader>
         {publicSummary && (
-          <CardContent className="min-h-[96px] border-b border-[#252541] px-5 py-5">
-            <p className="text-sm leading-6 text-sky-200/80 line-clamp-3">{publicSummary}</p>
+          <CardContent className="min-h-[96px] border-b border-border px-5 py-5 dark:border-[#252541]">
+            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 dark:text-sky-200/80">{publicSummary}</p>
           </CardContent>
         )}
-        <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-slate-500">
+        <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-muted-foreground dark:text-slate-500">
           {item.latestRevision?.author?.displayName && (
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <UserRound className="h-3.5 w-3.5 shrink-0" />

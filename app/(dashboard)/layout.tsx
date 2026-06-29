@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu } from "lucide-react";
+import { 
+  Menu, LayoutDashboard, ClipboardList, BookOpen, Users, 
+  MessageSquare, Flag, Tags, Trophy, Megaphone, Download, 
+  Gamepad2, PanelLeftClose, PanelLeftOpen 
+} from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { getUserProfile } from "@/lib/api/api-client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +17,12 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -36,6 +46,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<UserProfile | null>(null);
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const profile = getUserProfile() as UserProfile | null;
@@ -44,13 +55,23 @@ export default function DashboardLayout({
       return;
     }
     setUser(profile);
+    const storedCollapsed = localStorage.getItem("admin-sidebar-collapsed");
+    if (storedCollapsed === "true") {
+      setIsCollapsed(true);
+    }
     setMounted(true);
   }, [router]);
+
+  const toggleSidebar = () => {
+    const newVal = !isCollapsed;
+    setIsCollapsed(newVal);
+    localStorage.setItem("admin-sidebar-collapsed", String(newVal));
+  };
 
   if (!mounted || !user) {
     return (
       <div className="min-h-screen flex">
-        <div className="hidden md:block w-64 border-r bg-card p-6">
+        <div className="hidden md:block w-64 border-r bg-card p-4">
           <Skeleton className="h-8 w-32 mb-8" />
           <Skeleton className="h-10 w-full mb-2" />
           <Skeleton className="h-10 w-full" />
@@ -63,16 +84,17 @@ export default function DashboardLayout({
   }
 
   const navItems = [
-    { href: "/dashboard", label: t("common.dashboard") },
-    { href: "/dashboard/audit-logs", label: t("admin.auditLogs.nav") || "Audit Log" },
-    { href: "/dashboard/wiki", label: t("header.wiki") },
-    { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts" },
-    { href: "/dashboard/forums", label: t("forums.title") || "Forums" },
-    { href: "/dashboard/categories", label: t("forums.dashboard.categories") || "Categories" },
-    { href: "/dashboard/achievements", label: t("common.achievements") },
-    { href: "/dashboard/announcements", label: t("common.announcements") },
-    { href: "/dashboard/downloads", label: t("admin.download.nav_label") || "Download" },
-    { href: "/dashboard/game-results", label: t("common.game_results") },
+    { href: "/dashboard", label: t("common.dashboard"), icon: LayoutDashboard },
+    { href: "/dashboard/audit-logs", label: t("admin.auditLogs.nav") || "Audit Log", icon: ClipboardList },
+    { href: "/dashboard/wiki", label: t("header.wiki"), icon: BookOpen },
+    { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts", icon: Users },
+    { href: "/dashboard/forums", label: t("forums.title") || "Forums", icon: MessageSquare },
+    { href: "/dashboard/reports", label: t("reports.title") || "Reports", icon: Flag },
+    { href: "/dashboard/categories", label: t("forums.dashboard.categories") || "Categories", icon: Tags },
+    { href: "/dashboard/achievements", label: t("common.achievements"), icon: Trophy },
+    { href: "/dashboard/announcements", label: t("common.announcements"), icon: Megaphone },
+    { href: "/dashboard/downloads", label: t("admin.download.nav_label") || "Download", icon: Download },
+    { href: "/dashboard/game-results", label: t("common.game_results"), icon: Gamepad2 },
   ];
 
   const isActive = (href: string) =>
@@ -80,29 +102,88 @@ export default function DashboardLayout({
       ? pathname === "/dashboard"
       : pathname.startsWith(href);
 
-  const NavList = (
-    <nav className="flex flex-col gap-1">
-      {navItems.map((item) => (
-        <Button
-          key={item.href}
-          asChild
-          variant={isActive(item.href) ? "secondary" : "ghost"}
-          className="w-full justify-start"
-          onClick={() => setMobileOpen(false)}
-        >
-          <Link href={item.href}>{item.label}</Link>
-        </Button>
-      ))}
-    </nav>
+  const renderNavItems = (collapsed: boolean) => (
+    <TooltipProvider delayDuration={0}>
+      <nav className="flex flex-col gap-2 mt-2">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.href);
+          
+          const LinkContent = (
+            <Link href={item.href} className={cn("flex items-center", collapsed ? "justify-center" : "gap-3 w-full")}>
+              <Icon className="h-5 w-5 shrink-0" />
+              {!collapsed && <span>{item.label}</span>}
+            </Link>
+          );
+
+          if (collapsed) {
+            return (
+              <Tooltip key={item.href}>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild
+                    variant={active ? "secondary" : "ghost"}
+                    className={cn(
+                      "w-10 h-10 p-0 flex justify-center items-center mx-auto",
+                      active && "bg-secondary text-secondary-foreground font-medium"
+                    )}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {LinkContent}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="ml-2 font-medium z-[100]">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+
+          return (
+            <Button
+              key={item.href}
+              asChild
+              variant={active ? "secondary" : "ghost"}
+              className={cn(
+                "w-full justify-start px-3",
+                active && "bg-secondary text-secondary-foreground font-medium"
+              )}
+              onClick={() => setMobileOpen(false)}
+            >
+              {LinkContent}
+            </Button>
+          );
+        })}
+      </nav>
+    </TooltipProvider>
   );
 
   return (
     <div className="min-h-screen flex bg-muted/40">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r bg-card p-4 sticky top-0 h-screen overflow-y-auto">
-        <h2 className="text-xl font-bold px-2 mb-6 hover:opacity-80 transition-opacity">
-          <Link href="/">Admin Panel</Link>
-        </h2>
-        {NavList}
+      <aside 
+        className={cn(
+          "hidden md:flex flex-col border-r bg-card p-4 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out shrink-0",
+          isCollapsed ? "w-20" : "w-64"
+        )}
+      >
+        <div className={cn("flex items-center mb-6", isCollapsed ? "justify-center" : "justify-between")}>
+          {!isCollapsed && (
+            <h2 className="text-xl font-bold px-2 hover:opacity-80 transition-opacity whitespace-nowrap overflow-hidden text-ellipsis">
+              <Link href="/">Admin Panel</Link>
+            </h2>
+          )}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleSidebar}
+            className="shrink-0"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        {renderNavItems(isCollapsed)}
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -122,7 +203,7 @@ export default function DashboardLayout({
                 <SheetTitle className="text-xl font-bold mb-6 hover:opacity-80 transition-opacity text-left">
                   <Link href="/">Admin Panel</Link>
                 </SheetTitle>
-                {NavList}
+                {renderNavItems(false)}
               </SheetContent>
             </Sheet>
           </div>

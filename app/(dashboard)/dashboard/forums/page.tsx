@@ -82,7 +82,6 @@ export default function DashboardForumsPage() {
   const [user, setUser] = useState<any>(null);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -132,7 +131,6 @@ export default function DashboardForumsPage() {
     sortBy?: "createdAt" | "updatedAt" | "score";
     order?: "asc" | "desc";
   }) => {
-    setLoading(true);
     try {
       const qVal = overrides && "q" in overrides ? overrides.q : searchQuery;
       const catVal = overrides && "categoryId" in overrides ? overrides.categoryId : categoryFilter;
@@ -163,8 +161,6 @@ export default function DashboardForumsPage() {
       }
     } catch (error) {
       console.error("Failed to fetch threads:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -240,12 +236,12 @@ export default function DashboardForumsPage() {
   if (!user) return null;
 
   return (
-    <div className="w-full bg-background text-foreground flex flex-col">
+    <div className="w-full text-foreground flex flex-col">
       <main className="flex-1 px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="mb-6 max-w-3xl">
-            <h2 className="text-4xl font-bold text-foreground sm:text-2xl font-orbitron">
+            <h2 className="text-3xl font-bold tracking-tight">
               {t("forums.dashboard.title") || "Forum Thread Management"}
             </h2>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
@@ -348,150 +344,144 @@ export default function DashboardForumsPage() {
         </div>
 
         {/* List Data Table */}
-        {loading ? (
-          <div className="rounded-[12px] border border-border bg-card p-12 text-center text-muted-foreground">
-            {t("common.loading") || "Loading..."}
-          </div>
-        ) : (
-          <>
-            <div className="rounded-[12px] border border-border bg-card overflow-hidden shadow-xl">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent bg-muted/20">
-                    <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-                      {t("forums.dashboard.col_title") || "Thread Title"}
-                    </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-                      {t("forums.dashboard.col_category_author") || "Category & Author"}
-                    </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-                      {t("forums.dashboard.col_post_type") || "Post Type"}
-                    </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold text-center">
-                      {t("forums.dashboard.col_status") || "Status"}
-                    </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold text-center">
-                      {t("forums.dashboard.col_stats") || "Stats"}
-                    </TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-                      {t("forums.dashboard.col_created_date") || "Created Date"}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {threads.length > 0 ? (
-                    threads.map((thread) => (
-                      <TableRow
-                        key={thread.id}
-                        onClick={() => router.push(`/dashboard/forums/${thread.id}`)}
-                        className="border-border hover:bg-muted/40 cursor-pointer transition-colors"
-                      >
-                        {/* Thread Title */}
-                        <TableCell className="max-w-[300px]">
-                          <div className="flex items-start gap-2">
-                            {thread.isPinned && (
-                              <Star className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0 mt-0.5" />
-                            )}
-                            <span className="font-semibold text-foreground truncate hover:text-amber-500 transition-colors">
-                              {thread.title}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        {/* Category & Author */}
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="text-foreground/90 text-xs font-semibold">
-                              {thread.author?.displayName || t("forums.unknown_author") || "Unknown"}
-                            </span>
-                            <span className="text-muted-foreground text-[11px]">
-                              {thread.category ? (locale === "vi" && (thread.category as any).name_vi ? (thread.category as any).name_vi : thread.category.name) : "N/A"}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        {/* Post Type */}
-                        <TableCell>
-                          <Badge variant="outline" className={TYPE_BADGE_STYLES[thread.postType] || BADGE_BASE_CLASS}>
-                            {t(`forums.post_type.${thread.postType.toLowerCase()}`) || thread.postType}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Status */}
-                        <TableCell className="text-center">
-                          <Badge variant="outline" className={STATUS_BADGE_STYLES[thread.status] || BADGE_BASE_CLASS}>
-                            {thread.status}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Stats */}
-                        <TableCell>
-                          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1" title="Views">
-                              <Eye className="h-3.5 w-3.5" />
-                              {thread.viewCount >= 1000 ? `${(thread.viewCount / 1000).toFixed(1)}k` : thread.viewCount}
-                            </span>
-                            <span className="flex items-center gap-1" title="Comments">
-                              <MessageSquare className="h-3.5 w-3.5" />
-                              {thread.commentCount ?? 0}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        {/* Created Date */}
-                        <TableCell className="text-muted-foreground text-xs font-medium">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground/75" />
-                            {new Date(thread.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })}
+        <>
+          <div className="rounded-[12px] border border-border bg-card overflow-hidden shadow-xl">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-transparent bg-muted/20">
+                  <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                    {t("forums.dashboard.col_title") || "Thread Title"}
+                  </TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                    {t("forums.dashboard.col_category_author") || "Category & Author"}
+                  </TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                    {t("forums.dashboard.col_post_type") || "Post Type"}
+                  </TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold text-center">
+                    {t("forums.dashboard.col_status") || "Status"}
+                  </TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold text-center">
+                    {t("forums.dashboard.col_stats") || "Stats"}
+                  </TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                    {t("forums.dashboard.col_created_date") || "Created Date"}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {threads.length > 0 ? (
+                  threads.map((thread) => (
+                    <TableRow
+                      key={thread.id}
+                      onClick={() => router.push(`/dashboard/forums/${thread.id}`)}
+                      className="border-border hover:bg-muted/40 cursor-pointer transition-colors"
+                    >
+                      {/* Thread Title */}
+                      <TableCell className="max-w-[300px]">
+                        <div className="flex items-start gap-2">
+                          {thread.isPinned && (
+                            <Star className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0 mt-0.5" />
+                          )}
+                          <span className="font-semibold text-foreground truncate hover:text-amber-500 transition-colors">
+                            {thread.title}
                           </span>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground text-sm">
-                        {t("forums.dashboard.no_threads_found") || "No forum threads match your filters."}
+                        </div>
+                      </TableCell>
+
+                      {/* Category & Author */}
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-foreground/90 text-xs font-semibold">
+                            {thread.author?.displayName || t("forums.unknown_author") || "Unknown"}
+                          </span>
+                          <span className="text-muted-foreground text-[11px]">
+                            {thread.category ? (locale === "vi" && (thread.category as any).name_vi ? (thread.category as any).name_vi : thread.category.name) : "N/A"}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      {/* Post Type */}
+                      <TableCell>
+                        <Badge variant="outline" className={TYPE_BADGE_STYLES[thread.postType] || BADGE_BASE_CLASS}>
+                          {t(`forums.post_type.${thread.postType.toLowerCase()}`) || thread.postType}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className={STATUS_BADGE_STYLES[thread.status] || BADGE_BASE_CLASS}>
+                          {thread.status}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Stats */}
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1" title="Views">
+                            <Eye className="h-3.5 w-3.5" />
+                            {thread.viewCount >= 1000 ? `${(thread.viewCount / 1000).toFixed(1)}k` : thread.viewCount}
+                          </span>
+                          <span className="flex items-center gap-1" title="Comments">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            {thread.commentCount ?? 0}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      {/* Created Date */}
+                      <TableCell className="text-muted-foreground text-xs font-medium">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 text-muted-foreground/75" />
+                          {new Date(thread.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground text-sm">
+                      {t("forums.dashboard.no_threads_found") || "No forum threads match your filters."}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-            {/* Pagination */}
-            {threads.length > 0 && (
-              <Pagination className="mt-8">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage > 1) setCurrentPage(currentPage - 1);
-                      }}
-                      className={currentPage <= 1 ? "pointer-events-none opacity-40 text-muted-foreground" : "text-muted-foreground hover:bg-muted"}
-                    />
-                  </PaginationItem>
-                  {renderPaginationItems()}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                      }}
-                      className={currentPage >= totalPages ? "pointer-events-none opacity-40 text-muted-foreground" : "text-muted-foreground hover:bg-muted"}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            )}
-          </>
-        )}
+          {/* Pagination */}
+          {threads.length > 0 && (
+            <Pagination className="mt-8">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) setCurrentPage(currentPage - 1);
+                    }}
+                    className={currentPage <= 1 ? "pointer-events-none opacity-40 text-muted-foreground" : "text-muted-foreground hover:bg-muted"}
+                  />
+                </PaginationItem>
+                {renderPaginationItems()}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    }}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-40 text-muted-foreground" : "text-muted-foreground hover:bg-muted"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </>
       </main>
     </div>
   );

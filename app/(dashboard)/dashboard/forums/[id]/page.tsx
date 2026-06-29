@@ -207,8 +207,9 @@ export default function DashboardForumDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">{t("common.loading") || "Loading..."}</div>
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">{locale === "vi" ? "Đang tải dữ liệu..." : "Loading..."}</p>
       </div>
     );
   }
@@ -238,7 +239,7 @@ export default function DashboardForumDetailPage() {
 
         {/* Title Area */}
         <div className="mb-6 max-w-3xl">
-          <h2 className="text-3xl font-bold text-foreground leading-tight font-orbitron">
+          <h2 className="text-3xl font-bold text-foreground leading-tight">
             {t("forums.detail_title") || "Discussion Thread"}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -254,7 +255,7 @@ export default function DashboardForumDetailPage() {
             <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
               {/* Header Title and Badges */}
               <div className="flex items-start justify-between gap-4 mb-4">
-                <h3 className="text-foreground font-bold text-2xl tracking-wide font-orbitron">
+                <h3 className="text-foreground font-bold text-2xl tracking-wide">
                   {thread.title}
                 </h3>
                 <div className="flex gap-2 shrink-0">
@@ -389,7 +390,7 @@ export default function DashboardForumDetailPage() {
         <DialogContent className="max-w-xl bg-card border-border text-foreground">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 to-orange-400" />
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground font-bold font-orbitron">
+            <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
               <Edit className="h-5 w-5 text-amber-500" />
               {t("forums.dashboard.edit_forum_thread") || "Edit Forum Thread"}
             </DialogTitle>
@@ -497,7 +498,7 @@ export default function DashboardForumDetailPage() {
               disabled={saving}
               className="bg-amber-500 hover:bg-amber-400 text-white font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)]"
             >
-              {saving ? (t("common.saving") || "Saving...") : (t("forums.dashboard.save_changes") || "Save Changes")}
+              {saving ? (t("forums.dashboard.saving") || "Saving...") : (t("forums.dashboard.save_changes") || "Save Changes")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -507,7 +508,7 @@ export default function DashboardForumDetailPage() {
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-500 font-bold font-orbitron">
+            <AlertDialogTitle className="flex items-center gap-2 text-red-500 font-bold">
               <AlertTriangle className="h-5 w-5" />
               {t("forums.delete_confirm_title") || "Delete Thread?"}
             </AlertDialogTitle>

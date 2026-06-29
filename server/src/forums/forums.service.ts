@@ -237,18 +237,14 @@ export class ForumService {
       }
     }
 
-    let badgeImageUrl = null;
-    if (gp?.equippedAchievementId) {
-      const equipped = gp.equippedAchievementId;
-      const expiresAt = getEffectiveExpiresAt(
-        equipped.type,
-        equipped.seasonMonth,
-        equipped.expiresAt,
-      );
-      if (equipped.type !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
-        badgeImageUrl = equipped.badgeImageUrl;
-      }
-    }
+    // const commentCountRes = await this.em.execute(
+    //   `select count(1)::int as cnt from web."ForumComment" where "threadId" = ?`,
+    //   [thread.id],
+    // );
+    // const commentCount = Number(commentCountRes?.[0]?.cnt || 0);
+
+    const badgeImageUrl =
+      gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
     return {
       id: thread.id,
       title: thread.title,
@@ -263,6 +259,7 @@ export class ForumService {
       createdAt: thread.createdAt,
       updatedAt: thread.updatedAt,
       userVote,
+      commentCount: thread.commentCount,
       author: {
         id: thread.authorId.id,
         displayName: thread.authorId.displayName,

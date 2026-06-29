@@ -68,6 +68,7 @@ export default function DashboardLayout({
     { href: "/dashboard/wiki", label: t("header.wiki") },
     { href: "/dashboard/accounts", label: t("admin.account.nav_label") || "Accounts" },
     { href: "/dashboard/forums", label: t("forums.title") || "Forums" },
+    { href: "/dashboard/reports", label: t("reports.title") || "Reports" },
     { href: "/dashboard/categories", label: t("forums.dashboard.categories") || "Categories" },
     { href: "/dashboard/achievements", label: t("common.achievements") },
     { href: "/dashboard/announcements", label: t("common.announcements") },

@@ -104,12 +104,12 @@ export default function RegisterPage() {
           </div>
           
           <div className="text-center">
-            <p className="text-white font-sans font-medium bg-white/5 px-4 py-2 rounded-lg border border-[#1e1e3a]">
+            <p className="text-foreground font-sans font-medium bg-background px-4 py-2 rounded-lg border border-border">
               {submittedData.email}
             </p>
           </div>
 
-          <p className="text-gray-400 text-sm text-center font-sans max-w-[280px]">
+          <p className="text-muted-foreground text-sm text-center font-sans max-w-[280px]">
             {t("auth.verify_instruction")}
           </p>
 
@@ -118,7 +118,7 @@ export default function RegisterPage() {
               type="button"
               onClick={() => onSubmit(submittedData)}
               disabled={countdown > 0 || loading}
-              className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed border border-[#1e1e3a] hover:border-gray-500 rounded-xl py-3 text-white text-sm font-medium transition-all font-sans"
+              className="w-full flex items-center justify-center gap-2 bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed border border-border hover:border-muted-foreground/50 rounded-xl py-3 text-foreground text-sm font-medium transition-all font-sans"
             >
               {loading ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -164,11 +164,11 @@ export default function RegisterPage() {
       </GoogleButton>
 
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1 h-px bg-[#1e1e3a]" />
-        <span className="text-gray-600 text-xs font-sans">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-muted-foreground text-xs font-sans">
           {t("auth.or_continue_with")}
         </span>
-        <div className="flex-1 h-px bg-[#1e1e3a]" />
+        <div className="flex-1 h-px bg-border" />
       </div>
 
       <Form {...form}>
@@ -178,14 +178,14 @@ export default function RegisterPage() {
             name="displayName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.display_name")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.display_name")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
                       type="text" 
                       placeholder="John Doe" 
-                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
                       {...field} 
                     />
                   </div>
@@ -199,14 +199,14 @@ export default function RegisterPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.email")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.email")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
                       type="email" 
                       placeholder="name@example.com" 
-                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
                       {...field} 
                     />
                   </div>
@@ -220,7 +220,7 @@ export default function RegisterPage() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.password")}</FormLabel>
                 <FormControl>
                   <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>
@@ -233,7 +233,7 @@ export default function RegisterPage() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.confirm_password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.confirm_password")}</FormLabel>
                 <FormControl>
                   <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>

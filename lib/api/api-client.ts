@@ -137,7 +137,13 @@ apiClient.interceptors.request.use(
       }
     }
 
-    if (token) {
+    const hasAuthHeader = config.headers && (
+      (typeof config.headers.has === "function" && config.headers.has("Authorization")) ||
+      ("Authorization" in config.headers) ||
+      ("authorization" in config.headers)
+    );
+
+    if (token && !hasAuthHeader) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 

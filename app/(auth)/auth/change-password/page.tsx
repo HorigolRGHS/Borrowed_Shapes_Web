@@ -87,7 +87,7 @@ export default function ChangePasswordPage() {
             name="oldPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.old_password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.old_password")}</FormLabel>
                 <FormControl>
                   <PasswordInput autoComplete="current-password" placeholder="••••••••" {...field} />
                 </FormControl>
@@ -100,7 +100,7 @@ export default function ChangePasswordPage() {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.new_password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.new_password")}</FormLabel>
                 <FormControl>
                   <PasswordInput autoComplete="new-password" placeholder="••••••••" {...field} />
                 </FormControl>
@@ -113,7 +113,7 @@ export default function ChangePasswordPage() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.confirm_password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.confirm_password")}</FormLabel>
                 <FormControl>
                   <PasswordInput autoComplete="new-password" placeholder="••••••••" {...field} />
                 </FormControl>

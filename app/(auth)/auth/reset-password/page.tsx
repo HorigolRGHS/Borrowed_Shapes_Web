@@ -81,7 +81,7 @@ function ResetPasswordForm() {
       error={errorMsg}
       shake={shake}
       footer={
-        <Link href="/auth/login" className="inline-flex items-center gap-1 text-gray-400 hover:text-white transition-colors">
+        <Link href="/auth/login" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
           {t("auth.back_to_login")}
         </Link>
@@ -94,13 +94,13 @@ function ResetPasswordForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.email")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.email")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
                       type="email" 
-                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
                       {...field} 
                     />
                   </div>
@@ -114,14 +114,14 @@ function ResetPasswordForm() {
             name="otp"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.otp")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.otp")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Hash size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <Hash size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
                       type="text" 
                       placeholder={t("auth.otp_placeholder")}
-                      className="w-full bg-white/5 border border-[#1e1e3a] hover:border-gray-600 focus:border-amber-500 rounded-xl py-2.5 pl-9 pr-4 text-white placeholder-gray-600 text-sm outline-none transition-colors font-sans"
+                      className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
                       {...field} 
                     />
                   </div>
@@ -135,7 +135,7 @@ function ResetPasswordForm() {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.new_password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.new_password")}</FormLabel>
                 <FormControl>
                   <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>
@@ -148,7 +148,7 @@ function ResetPasswordForm() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300 font-sans">{t("auth.confirm_password")}</FormLabel>
+                <FormLabel className="text-foreground font-sans">{t("auth.confirm_password")}</FormLabel>
                 <FormControl>
                   <PasswordInput placeholder="••••••••" {...field} />
                 </FormControl>

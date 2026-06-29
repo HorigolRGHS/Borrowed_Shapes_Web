@@ -123,6 +123,7 @@ export class WikiUploadController {
   @ApiOperation({ summary: 'Public: stream wiki image through backend proxy' })
   async image(
     @Param('key') keyParam: string | string[],
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const key = Array.isArray(keyParam) ? keyParam.join('/') : keyParam;
@@ -132,6 +133,17 @@ export class WikiUploadController {
 
     try {
       const { stream, contentType, contentLength } = await this.r2.getObjectStream(key);
+      
+      req.on('close', () => {
+        if (!res.writableEnded) {
+          stream.destroy();
+        }
+      });
+
+      stream.on('error', (err: any) => {
+        console.warn(`[WikiUploadController] Stream error for key ${key}:`, err?.message || err);
+      });
+
       res.set({
         'Content-Type': contentType,
         'Content-Length': contentLength,

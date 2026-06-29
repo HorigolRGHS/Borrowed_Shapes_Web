@@ -58,6 +58,16 @@ export class AccountController {
   ): Promise<StreamableFile> {
     const { stream, contentType, contentLength } = await this.accountService.getAvatarStream(id);
     
+    req.on('close', () => {
+      if (!res.writableEnded) {
+        stream.destroy();
+      }
+    });
+
+    stream.on('error', (err: any) => {
+      console.warn(`[AccountController] Stream error for avatar ${id}:`, err?.message || err);
+    });
+
     res.set({
       'Content-Type': contentType,
       'Content-Length': contentLength,

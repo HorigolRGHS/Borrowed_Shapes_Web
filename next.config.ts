@@ -17,15 +17,16 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+    // Rewrite tới route handler nội bộ (chạy runtime, đọc env mỗi request).
+    // KHÔNG nhúng backend URL ở đây vì rewrites() chỉ chạy lúc build → URL bị đóng băng.
     return [
       {
         source: "/api/wiki/image/:path*",
-        destination: `${apiBaseUrl}/wiki/image/:path*`,
+        destination: "/api/cdn/wiki/image/:path*",
       },
       {
         source: "/api/account/avatar/:path*",
-        destination: `${apiBaseUrl}/account/avatar/:path*`,
+        destination: "/api/cdn/account/avatar/:path*",
       },
     ];
   },

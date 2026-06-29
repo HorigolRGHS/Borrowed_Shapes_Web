@@ -241,4 +241,116 @@ describe('AuthService', () => {
       expect(mockRedis.del).toHaveBeenCalledWith('forgot_otp:player@example.com');
     });
   });
+
+  describe('me', () => {
+    it('should_return_equipped_achievement_when_seasonal_achievement_is_not_expired (Normal)', async () => {
+      const user = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: 'Test User', imgUrl: null, updatedAt: new Date() };
+      const achievement = {
+        id: 'ach_1',
+        name: 'June Season Badge',
+        badgeImageUrl: 'http://img.url/ach_1',
+        type: 'SEASONAL',
+        seasonMonth: '2026-06-01',
+        expiresAt: new Date('2026-06-30T23:59:59.999Z'),
+      };
+      const gameProfile = {
+        id: 'gp_1',
+        equippedAchievementId: achievement,
+      };
+
+      mockEm.findOne.mockImplementation(async (entity: any, filter: any) => {
+        if (entity.name === 'User') return user;
+        if (entity.name === 'GameProfile') return gameProfile;
+        return null;
+      });
+
+      // Mock date to June 28, 2026
+      const mockDate = new Date('2026-06-28T12:00:00Z');
+      jest.useFakeTimers();
+      jest.setSystemTime(mockDate);
+
+      const result = await service.me('user_1', 'web');
+
+      expect(result.equippedAchievement).toEqual({
+        id: 'ach_1',
+        name: 'June Season Badge',
+        badgeImageUrl: 'http://img.url/ach_1',
+      });
+      expect(mockEm.flush).not.toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+
+    it('should_unequip_and_clear_achievement_when_seasonal_achievement_is_expired (Abnormal)', async () => {
+      const user = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: 'Test User', imgUrl: null, updatedAt: new Date() };
+      const achievement = {
+        id: 'ach_1',
+        name: 'April Season Badge',
+        badgeImageUrl: 'http://img.url/ach_1',
+        type: 'SEASONAL',
+        seasonMonth: '2026-04-01',
+        expiresAt: new Date('2026-04-30T23:59:59.999Z'),
+      };
+      const gameProfile = {
+        id: 'gp_1',
+        equippedAchievementId: achievement,
+      };
+
+      mockEm.findOne.mockImplementation(async (entity: any, filter: any) => {
+        if (entity.name === 'User') return user;
+        if (entity.name === 'GameProfile') return gameProfile;
+        return null;
+      });
+
+      // Mock date to June 28, 2026
+      const mockDate = new Date('2026-06-28T12:00:00Z');
+      jest.useFakeTimers();
+      jest.setSystemTime(mockDate);
+
+      const result = await service.me('user_1', 'web');
+
+      expect(result.equippedAchievement).toBeNull();
+      expect(gameProfile.equippedAchievementId).toBeUndefined();
+      expect(mockEm.flush).toHaveBeenCalledTimes(1);
+
+      jest.useRealTimers();
+    });
+
+    it('should_keep_equipped_achievement_when_achievement_is_permanent_even_if_expiredAt_is_past (Boundary)', async () => {
+      const user = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: 'Test User', imgUrl: null, updatedAt: new Date() };
+      const achievement = {
+        id: 'ach_1',
+        name: 'Permanent Badge',
+        badgeImageUrl: 'http://img.url/ach_1',
+        type: 'PERMANENT',
+        expiresAt: new Date('2026-05-30T23:59:59.999Z'),
+      };
+      const gameProfile = {
+        id: 'gp_1',
+        equippedAchievementId: achievement,
+      };
+
+      mockEm.findOne.mockImplementation(async (entity: any, filter: any) => {
+        if (entity.name === 'User') return user;
+        if (entity.name === 'GameProfile') return gameProfile;
+        return null;
+      });
+
+      // Mock date to June 28, 2026
+      const mockDate = new Date('2026-06-28T12:00:00Z');
+      jest.useFakeTimers();
+      jest.setSystemTime(mockDate);
+
+      const result = await service.me('user_1', 'web');
+
+      expect(result.equippedAchievement).toEqual({
+        id: 'ach_1',
+        name: 'Permanent Badge',
+        badgeImageUrl: 'http://img.url/ach_1',
+      });
+      expect(mockEm.flush).not.toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+  });
 });

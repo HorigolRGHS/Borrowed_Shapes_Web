@@ -289,16 +289,25 @@ export class AchievementController {
       type: 'object',
       properties: {
         file: { type: 'string', format: 'binary' },
+        achievementId: { type: 'string', description: 'Achievement ID for folder structure' },
+        oldBadgeImageUrl: { type: 'string', description: 'Old badge image URL to delete' },
       },
+      required: ['file', 'achievementId'],
     },
   })
   @ApiResponse({ status: 200, type: AchievementUploadResponseDto })
   async upload(
     @UploadedFile() file: Express.Multer.File | undefined,
+    @Body('achievementId') achievementId: string | undefined,
+    @Body('oldBadgeImageUrl') oldBadgeImageUrl: string | undefined,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AchievementUploadResponseDto>> {
     if (!file) {
       throw new BadRequestException('achievements.upload_missing');
+    }
+
+    if (!achievementId) {
+      throw new BadRequestException('achievements.upload_missing_id');
     }
 
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -309,7 +318,8 @@ export class AchievementController {
     const url = await this.achievementService.uploadBadge(
       file.buffer,
       file.mimetype,
-      file.originalname,
+      achievementId,
+      oldBadgeImageUrl,
     );
 
     return okResponse(

@@ -18,8 +18,11 @@ export const wikiStatsSchema = z.record(
 );
 export type WikiStats = z.infer<typeof wikiStatsSchema>;
 
+const wikiImageProxyPath = /^\/api\/wiki\/image\/wiki\/[A-Za-z0-9_-]+\/[A-Za-z0-9-]+\.(?:jpg|png|webp|gif)$/;
+
 const optionalUrl = z
   .url()
+  .or(z.string().regex(wikiImageProxyPath))
   .or(z.literal(""))
   .transform((v) => (v === "" ? undefined : v))
   .optional();

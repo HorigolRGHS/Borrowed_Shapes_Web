@@ -339,10 +339,42 @@ describe('Wiki module (e2e)', () => {
       Buffer.alloc(64),
     ]);
     const NOT_AN_IMAGE = Buffer.from('definitely not a png');
+    let uploadPageId: string | null = null;
+
+    const uploadPath = () => {
+      if (!uploadPageId) throw new Error('uploadPageId not seeded');
+      return `/api/wiki/${uploadPageId}/upload`;
+    };
+
+    beforeAll(async () => {
+      const suffix = Date.now().toString(36);
+      const res = await request(app.getHttpServer())
+        .post('/api/wiki')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          slug: `e2e-upload-${suffix}`,
+          slug_vi: `e2e-upload-${suffix}-vi`,
+          title: 'E2E Upload',
+          title_vi: 'E2E Upload VI',
+          content: '',
+          content_vi: '',
+          isPublished: false,
+        })
+        .expect(201);
+      uploadPageId = res.body.data.id;
+    });
+
+    afterAll(async () => {
+      if (!uploadPageId) return;
+      await request(app.getHttpServer())
+        .delete(`/api/wiki/${uploadPageId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .catch(() => {});
+    });
 
     it('rejects unauthenticated upload', async () => {
       await request(app.getHttpServer())
-        .post('/api/wiki/upload')
+        .post(uploadPath())
         .attach('file', PNG_HEADER, { filename: 'a.png', contentType: 'image/png' })
         .expect(401);
     });
@@ -350,7 +382,7 @@ describe('Wiki module (e2e)', () => {
     it('rejects user-role upload', async () => {
       if (!userToken) return;
       await request(app.getHttpServer())
-        .post('/api/wiki/upload')
+        .post(uploadPath())
         .set('Authorization', `Bearer ${userToken}`)
         .attach('file', PNG_HEADER, { filename: 'a.png', contentType: 'image/png' })
         .expect(403);
@@ -358,17 +390,19 @@ describe('Wiki module (e2e)', () => {
 
     it('admin uploads PNG and gets a URL', async () => {
       const res = await request(app.getHttpServer())
-        .post('/api/wiki/upload')
+        .post(uploadPath())
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', PNG_HEADER, { filename: 'pic.png', contentType: 'image/png' })
         .expect(200);
-      expect(res.body.data.url).toMatch(/^https?:\/\/.+\/wiki\/[a-f0-9-]+\.png$/);
+      expect(res.body.data.url).toMatch(
+        new RegExp(`^/api/wiki/image/wiki/${uploadPageId}/[a-f0-9-]+\\.png$`),
+      );
       expect(res.body.data.mimeType).toBe('image/png');
     });
 
     it('rejects mime/content mismatch (text declared as png)', async () => {
       const res = await request(app.getHttpServer())
-        .post('/api/wiki/upload')
+        .post(uploadPath())
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', NOT_AN_IMAGE, {
           filename: 'fake.png',
@@ -381,7 +415,7 @@ describe('Wiki module (e2e)', () => {
     it('rejects SVG outright', async () => {
       const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
       const res = await request(app.getHttpServer())
-        .post('/api/wiki/upload')
+        .post(uploadPath())
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', svg, {
           filename: 'evil.svg',

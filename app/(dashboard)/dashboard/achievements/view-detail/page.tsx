@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AchievementDescriptionEditor } from "@/components/achievements/achievement-description-editor";
 import {
   Table,
@@ -213,6 +214,10 @@ export default function AchievementViewDetailPage() {
       setIsUploadingImage(true);
       const form = new FormData();
       form.append("file", file);
+      form.append("achievementId", achievement?.id ?? "");
+      if (formData.badgeImageUrl) {
+        form.append("oldBadgeImageUrl", formData.badgeImageUrl);
+      }
 
       const res = await axios.post("/api/achievements/upload", form, {
         headers: {
@@ -424,32 +429,28 @@ export default function AchievementViewDetailPage() {
   if (!achievement) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <main className="px-8 py-8 max-w-6xl mx-auto">
-        {/* Back link */}
-        <button
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header and Back Link */}
+      <div>
+        <Button
+          variant="ghost"
           onClick={() => router.push("/dashboard/achievements")}
-          className="mb-6 flex items-center gap-2 text-sm text-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
+          className="mb-4"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           {t("achievements.back_to_achievements")}
-        </button>
+        </Button>
+        <h1 className="text-3xl font-bold tracking-tight">{t("achievements.detail_page_title")}</h1>
+        <p className="text-muted-foreground mt-2">
+          {t("achievements.detail_page_subtitle")}{achievement.name}
+        </p>
+      </div>
 
-        {/* Page title */}
-        <div className="mb-8">
-          <h2 className="text-4xl font-bold text-foreground sm:text-2xl">
-            {t("achievements.detail_page_title")}
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {t("achievements.detail_page_subtitle")}{achievement.name}
-          </p>
-          <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
-        </div>
-
-        {/* Main content */}
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          {/* Left column - Badge card */}
-          <div className="rounded-[16px] border border-border bg-card/60 p-6 backdrop-blur-sm">
+      {/* Main content */}
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Left column - Badge card */}
+        <Card>
+          <CardContent className="p-6 flex flex-col items-center">
             {/* Badge image */}
             <div className="relative mx-auto h-48 w-48 overflow-hidden rounded-[16px] border-2 border-amber-500/30 bg-background">
               <img
@@ -473,7 +474,7 @@ export default function AchievementViewDetailPage() {
             </div>
 
             {/* Action buttons */}
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="mt-6 flex flex-col gap-3 w-full">
               <Button
                 variant="outline"
                 className="w-full border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:text-amber-200"
@@ -499,10 +500,12 @@ export default function AchievementViewDetailPage() {
                 {t("achievements.delete_achievement_button")}
               </Button>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Right column - Info */}
-          <div className="rounded-[16px] border border-border bg-card/60 p-6 backdrop-blur-sm">
+        {/* Right column - Info */}
+        <Card>
+          <CardContent className="p-6">
             <h3 className="mb-6 text-lg font-semibold text-foreground">
               {t("achievements.info_title")}
             </h3>
@@ -553,8 +556,9 @@ export default function AchievementViewDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+      </div>
 
         {/* Delete Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -937,7 +941,6 @@ export default function AchievementViewDetailPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </main>
     </div>
   );
 }

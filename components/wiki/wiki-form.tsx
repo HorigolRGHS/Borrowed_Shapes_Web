@@ -4,8 +4,12 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { slugifyEn, slugifyVi } from "@/lib/wiki/slug";
+import {
+  getWikiFormSubmitBlocker,
+} from "@/components/wiki/wiki-form-submit-state";
 import {
   emptyWikiFormValue,
   wikiFormSchema,
@@ -93,6 +97,8 @@ export function WikiForm({
 
   const title = useWatch({ control: form.control, name: "title" });
   const titleVi = useWatch({ control: form.control, name: "titleVi" });
+  const content = useWatch({ control: form.control, name: "content" });
+  const contentVi = useWatch({ control: form.control, name: "contentVi" });
   const isDirty = form.formState.isDirty;
 
   useEffect(() => {
@@ -133,20 +139,13 @@ export function WikiForm({
 
   const submitWithMode = async (mode: "draft" | "publish") => {
     const valid = await form.trigger();
-    if (!valid) {
-      // Surface the locale whose inline field is blocking, so the user can see
-      // and fix it (each locale shows one title/summary/slug at a time).
-      const e = form.formState.errors;
-      const enHasError = !!e.title || !!e.slug || !!e.summary;
-      const viHasError = !!e.titleVi || !!e.slugVi || !!e.summaryVi;
-      if (activeLocale === "en" && !enHasError && viHasError) {
-        setActiveLocale("vi");
-      } else if (activeLocale === "vi" && !viHasError && enHasError) {
-        setActiveLocale("en");
-      }
+    const value = form.getValues();
+    const blocker = getWikiFormSubmitBlocker(value, form.formState.errors, mode);
+    if (!valid || blocker) {
+      if (blocker?.locale) setActiveLocale(blocker.locale);
+      toast.error(t(blocker?.messageKey ?? "wiki.edit.save_blocked_generic"));
       return;
     }
-    const value = form.getValues();
     if (
       mode === "publish" &&
       value.content.trim().length > 0 &&
@@ -178,21 +177,11 @@ export function WikiForm({
     }
   };
 
-  const titlesFilled =
-    !!form.watch("title")?.trim() && !!form.watch("titleVi")?.trim();
-  const contentFilled =
-    !!form.watch("content")?.trim() && !!form.watch("contentVi")?.trim();
-  const slugsValid =
-    !form.formState.errors.slug && !form.formState.errors.slugVi;
-  const canSubmitDraft = titlesFilled && slugsValid && !saving;
-  const canPublish = canSubmitDraft && contentFilled;
-
   const errors = form.formState.errors;
   const titleField = activeLocale === "vi" ? "titleVi" : "title";
   const slugField = activeLocale === "vi" ? "slugVi" : "slug";
   const summaryField = activeLocale === "vi" ? "summaryVi" : "summary";
-  const titleValue =
-    activeLocale === "vi" ? form.watch("titleVi") : form.watch("title");
+  const titleValue = activeLocale === "vi" ? titleVi : title;
   const titleErrorKey =
     activeLocale === "vi" ? errors.titleVi?.message : errors.title?.message;
   const summaryPlaceholder =
@@ -257,8 +246,8 @@ export function WikiForm({
               activeLocale={activeLocale}
               hideLocaleTabs
               value={{
-                en: form.watch("content"),
-                vi: form.watch("contentVi"),
+                en: content,
+                vi: contentVi,
               }}
               onChange={(next) => {
                 form.setValue("content", next.en, { shouldDirty: true });
@@ -284,8 +273,6 @@ export function WikiForm({
       <StickySaveBar
         isDirty={isDirty}
         saving={saving}
-        canSubmitDraft={canSubmitDraft}
-        canPublish={canPublish}
         onSaveDraft={() => submitWithMode("draft")}
         onPublish={() => submitWithMode("publish")}
         onCancel={requestCancel}

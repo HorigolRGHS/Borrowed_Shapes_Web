@@ -7,8 +7,6 @@ import { useI18n } from "@/lib/i18/i18n-context";
 interface Props {
   isDirty: boolean;
   saving: boolean;
-  canSubmitDraft: boolean;
-  canPublish: boolean;
   onSaveDraft: () => void;
   onPublish: () => void;
   onCancel: () => void;
@@ -17,8 +15,6 @@ interface Props {
 export function StickySaveBar({
   isDirty,
   saving,
-  canSubmitDraft,
-  canPublish,
   onSaveDraft,
   onPublish,
   onCancel,
@@ -59,7 +55,7 @@ export function StickySaveBar({
             size="sm"
             className="rounded-full"
             onClick={onSaveDraft}
-            disabled={!canSubmitDraft || saving}
+            disabled={saving}
           >
             {t("wiki.save_draft_button")}
           </Button>
@@ -68,7 +64,7 @@ export function StickySaveBar({
             size="sm"
             className="rounded-full"
             onClick={onPublish}
-            disabled={!canPublish || saving}
+            disabled={saving}
           >
             {t("wiki.save_publish_button")}
           </Button>

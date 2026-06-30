@@ -11,7 +11,7 @@ import {
   type WikiFormValue,
 } from "@/components/wiki/wiki-form";
 import type { WikiDetail } from "@/models/dtos/wiki.dto";
-import { emptyWikiMetadata } from "@/models/dtos/wiki-metadata.dto";
+import { normalizeWikiFormMetadata } from "@/models/dtos/wiki-metadata.dto";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -27,6 +27,16 @@ import {
 interface ConflictLatest {
   id?: string;
   createdAt?: string;
+}
+
+interface WikiApiErrorBody {
+  message?: string;
+  data?: { currentLatest?: ConflictLatest | null };
+  currentLatest?: ConflictLatest | null;
+}
+
+interface WikiApiError {
+  response?: { status?: number; data?: WikiApiErrorBody };
 }
 
 export default function AdminWikiEditPage({
@@ -82,7 +92,7 @@ export default function AdminWikiEditPage({
     content: detail.latestRevision.content,
     contentVi: detail.latestRevision.contentVi,
     isPublished: detail.isPublished,
-    metadata: detail.metadataJson ?? emptyWikiMetadata,
+    metadata: normalizeWikiFormMetadata(detail.metadataJson),
   };
 
   const lastEditedBy = detail.latestRevision.author?.displayName ?? "—";
@@ -118,9 +128,10 @@ export default function AdminWikiEditPage({
           : t("wiki.edit.save_draft_success"),
       );
       return { ok: true };
-    } catch (e: any) {
-      const status = e?.response?.status;
-      const body = e?.response?.data;
+    } catch (e: unknown) {
+      const err = e as WikiApiError;
+      const status = err.response?.status;
+      const body = err.response?.data;
       if (status === 409) {
         const latest: ConflictLatest | null =
           body?.data?.currentLatest ?? body?.currentLatest ?? null;

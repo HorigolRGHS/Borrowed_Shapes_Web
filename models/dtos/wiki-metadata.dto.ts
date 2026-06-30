@@ -60,6 +60,18 @@ export const emptyWikiMetadata: WikiMetadata = {
   relatedPages: [],
 };
 
+export function normalizeWikiFormMetadata(
+  metadata: Partial<WikiMetadata> | null | undefined,
+): WikiMetadata {
+  return {
+    ...metadata,
+    tags: metadata?.tags ?? [],
+    tags_vi: metadata?.tags_vi ?? [],
+    stats: metadata?.stats ?? {},
+    relatedPages: metadata?.relatedPages ?? [],
+  };
+}
+
 export function isWikiMetadataEmpty(m: WikiMetadata): boolean {
   return (
     !m.category &&

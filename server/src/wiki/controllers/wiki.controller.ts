@@ -1,4 +1,11 @@
-import { BadRequestException, Controller, Get, Param, Query, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Query,
+  Req,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { Public } from '../../auth/decorators/public.decorator';
@@ -73,7 +80,11 @@ export class WikiController {
       throw new BadRequestException('wiki.too_many_related_slugs');
     }
     const data = await this.wikiService.findBySlugs(deduped);
-    return okResponse('wiki.related_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'wiki.related_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Public()
@@ -99,8 +110,16 @@ export class WikiController {
     @Query('limit') limit = 20,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiHistoryResponseDto>> {
-    const data = await this.wikiService.getHistory(id, Number(page), Number(limit));
-    return okResponse('wiki.history_success', data, `${req.method} ${req.path}`);
+    const data = await this.wikiService.getHistory(
+      id,
+      Number(page),
+      Number(limit),
+    );
+    return okResponse(
+      'wiki.history_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('USER', 'ADMIN')
@@ -113,12 +132,18 @@ export class WikiController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<unknown>> {
     const data = await this.wikiService.getRevision(id, revisionId);
-    return okResponse('wiki.revision_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'wiki.revision_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('USER', 'ADMIN')
   @Get(':id/history/:revisionId/diff')
-  @ApiOperation({ summary: 'Diff this revision against the immediately preceding one' })
+  @ApiOperation({
+    summary: 'Diff this revision against the immediately preceding one',
+  })
   @ApiResponse({ status: 200, type: WikiRevisionDiffResponseDto })
   async getRevisionDiff(
     @Param('id') id: string,

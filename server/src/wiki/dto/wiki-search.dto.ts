@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MaxLength, IsOptional, IsInt, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   WIKI_SEARCH_MAX_LENGTH,
@@ -21,7 +29,11 @@ export class WikiSearchQueryDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: WIKI_LIST_MAX_LIMIT, default: WIKI_LIST_DEFAULT_LIMIT })
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: WIKI_LIST_MAX_LIMIT,
+    default: WIKI_LIST_DEFAULT_LIMIT,
+  })
   @Type(() => Number)
   @IsOptional()
   @IsInt()

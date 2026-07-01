@@ -1,5 +1,15 @@
 import {
-  Controller, Get, Post, Put, Delete, Body, Param, Query, Req, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -39,15 +49,15 @@ export class WikiAdminController {
   @Get('admin/stats')
   @ApiOperation({ summary: 'Admin: wiki statistics' })
   @ApiResponse({ status: 200, type: WikiAdminStatsDto })
-  async stats(
-    @Req() req: Request,
-  ): Promise<ApiResponseDto<WikiAdminStatsDto>> {
+  async stats(@Req() req: Request): Promise<ApiResponseDto<WikiAdminStatsDto>> {
     const data = await this.wikiService.getAdminStats();
     return okResponse('wiki.stats_success', data, `${req.method} ${req.path}`);
   }
 
   @Get('admin/:id')
-  @ApiOperation({ summary: 'Admin: get wiki page by id (any state) for editing' })
+  @ApiOperation({
+    summary: 'Admin: get wiki page by id (any state) for editing',
+  })
   @ApiResponse({ status: 200, type: WikiDetailResponseDto })
   async getById(
     @Param('id') id: string,
@@ -66,13 +76,19 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.create(dto, user.userId, req.ip ?? 'unknown');
+    const data = await this.revisionService.create(
+      dto,
+      user.userId,
+      req.ip ?? 'unknown',
+    );
     return okResponse('wiki.created', data, `${req.method} ${req.path}`);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Admin: update wiki page; new revision when content changes' })
+  @ApiOperation({
+    summary: 'Admin: update wiki page; new revision when content changes',
+  })
   @ApiResponse({ status: 200, type: WikiDetailResponseDto })
   async update(
     @Param('id') id: string,
@@ -80,7 +96,12 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.update(id, dto, user.userId, req.ip ?? 'unknown');
+    const data = await this.revisionService.update(
+      id,
+      dto,
+      user.userId,
+      req.ip ?? 'unknown',
+    );
     return okResponse('wiki.updated', data, `${req.method} ${req.path}`);
   }
 
@@ -98,7 +119,9 @@ export class WikiAdminController {
 
   @Post(':id/rollback')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Admin: rollback to a target revision (creates new revision)' })
+  @ApiOperation({
+    summary: 'Admin: rollback to a target revision (creates new revision)',
+  })
   @ApiResponse({ status: 200, type: WikiDetailResponseDto })
   async rollback(
     @Param('id') id: string,
@@ -106,7 +129,12 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.rollback(id, dto, user.userId, req.ip ?? 'unknown');
+    const data = await this.revisionService.rollback(
+      id,
+      dto,
+      user.userId,
+      req.ip ?? 'unknown',
+    );
     return okResponse('wiki.rolled_back', data, `${req.method} ${req.path}`);
   }
 
@@ -119,7 +147,11 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.publish(id, user.userId, req.ip ?? 'unknown');
+    const data = await this.revisionService.publish(
+      id,
+      user.userId,
+      req.ip ?? 'unknown',
+    );
     return okResponse('wiki.published', data, `${req.method} ${req.path}`);
   }
 
@@ -132,7 +164,11 @@ export class WikiAdminController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<WikiDetailResponseDto>> {
-    const data = await this.revisionService.unpublish(id, user.userId, req.ip ?? 'unknown');
+    const data = await this.revisionService.unpublish(
+      id,
+      user.userId,
+      req.ip ?? 'unknown',
+    );
     return okResponse('wiki.unpublished', data, `${req.method} ${req.path}`);
   }
 }

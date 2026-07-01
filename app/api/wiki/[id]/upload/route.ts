@@ -95,7 +95,7 @@ export async function POST(
     }
 
     return response;
-  } catch (err: unknown) {
+  } catch (err) {
     const errorRes: ApiResponse<null> = {
       statusCode: 502,
       success: false,

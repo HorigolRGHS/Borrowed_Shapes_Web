@@ -3,12 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import axios, { type AxiosResponse } from "axios";
 import apiClient from "@/lib/api/api-client";
 import type { ApiResponse } from "@/models/dtos/api-response.dto";
+import type { JsonValue, QueryParams } from "@/lib/wiki/http";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface ForwardOptions {
-  params?: Record<string, unknown>;
-  body?: unknown;
+  params?: QueryParams;
+  body?: object;
 }
 
 export async function forwardJson(
@@ -22,7 +23,7 @@ export async function forwardJson(
       params: opts.params,
     };
 
-    let res: AxiosResponse<unknown>;
+    let res: AxiosResponse<JsonValue>;
     switch (method) {
       case "GET":
         res = await apiClient.get(backendPath, config);
@@ -46,7 +47,7 @@ export async function forwardJson(
     }
 
     return NextResponse.json(res.data, { status: res.status });
-  } catch (err: unknown) {
+  } catch (err) {
     if (axios.isAxiosError(err) && err.response) {
       return NextResponse.json(err.response.data, {
         status: err.response.status,

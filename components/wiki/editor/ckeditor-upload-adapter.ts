@@ -4,6 +4,7 @@ import type {
   UploadResponse,
 } from "ckeditor5";
 import { uploadWikiImage } from "@/lib/wiki/api";
+import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 
 const ALLOWED_MIMES = new Set([
   "image/jpeg",
@@ -42,11 +43,8 @@ class WikiUploadAdapter implements UploadAdapter {
     try {
       const result = await uploadWikiImage(file, this.wikiId);
       return { default: result.url };
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ??
-        (err instanceof Error ? err.message : "Upload failed");
+    } catch (err) {
+      const msg = getApiErrorMessage(err as ApiError, "Upload failed");
       this.onError?.(msg);
       throw new Error(msg);
     }

@@ -11,6 +11,7 @@ import { WikiContentRenderer } from '@/components/wiki/wiki-content-renderer';
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
+import { getApiErrorStatus, type ApiError } from '@/lib/wiki/http';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,8 +33,8 @@ export default async function AdminWikiRevisionPage({
   let detail;
   try {
     detail = await fetchAdminWikiById(id);
-  } catch (err: any) {
-    if (err?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 
@@ -44,8 +45,8 @@ export default async function AdminWikiRevisionPage({
       fetchWikiRevision(detail.id, revisionId),
       fetchWikiRevisionDiff(detail.id, revisionId),
     ]);
-  } catch (err: any) {
-    if (err?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 

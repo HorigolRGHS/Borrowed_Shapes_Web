@@ -1,8 +1,27 @@
 import {
-  Controller, Post, Get, UseInterceptors, UploadedFile, Req, Inject, BadRequestException, PayloadTooLargeException, UseFilters, Param, NotFoundException, Res, StreamableFile,
+  Controller,
+  Post,
+  Get,
+  UseInterceptors,
+  UploadedFile,
+  Req,
+  Inject,
+  BadRequestException,
+  PayloadTooLargeException,
+  UseFilters,
+  Param,
+  NotFoundException,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -41,7 +60,9 @@ export class WikiUploadController {
     }),
   )
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Admin: upload an image (jpeg/png/webp/gif, max 5MB)' })
+  @ApiOperation({
+    summary: 'Admin: upload an image (jpeg/png/webp/gif, max 5MB)',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -65,7 +86,8 @@ export class WikiUploadController {
     if (!page) throw new NotFoundException('wiki.not_found');
 
     if (!file) throw new BadRequestException('wiki.upload_missing');
-    if (file.size > UPLOAD_MAX_SIZE) throw new PayloadTooLargeException('wiki.upload_too_large');
+    if (file.size > UPLOAD_MAX_SIZE)
+      throw new PayloadTooLargeException('wiki.upload_too_large');
 
     const { mimeType, sanitizedName } = await validateUploadOrThrow(
       file.buffer,
@@ -131,7 +153,8 @@ export class WikiUploadController {
     }
 
     try {
-      const { stream, contentType, contentLength } = await this.r2.getObjectStream(key);
+      const { stream, contentType, contentLength } =
+        await this.r2.getObjectStream(key);
       res.set({
         'Content-Type': contentType,
         'Content-Length': contentLength,
@@ -139,7 +162,10 @@ export class WikiUploadController {
       });
       return new StreamableFile(stream);
     } catch (error: unknown) {
-      const err = error as { name?: string; $metadata?: { httpStatusCode?: number } };
+      const err = error as {
+        name?: string;
+        $metadata?: { httpStatusCode?: number };
+      };
       if (
         err.name === 'NoSuchKey' ||
         err.name === 'NotFound' ||

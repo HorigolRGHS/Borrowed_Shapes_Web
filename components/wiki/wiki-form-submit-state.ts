@@ -20,7 +20,7 @@ type WikiFormField =
   | "contentVi";
 
 type WikiFormErrors = Partial<
-  Record<WikiFormField | "metadata", { message?: unknown } | undefined>
+  Record<WikiFormField | "metadata", { message?: string } | undefined>
 >;
 
 export interface WikiFormSubmitBlocker {

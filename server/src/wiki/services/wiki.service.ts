@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { FilterQuery } from '@mikro-orm/core';
 import { WikiPage } from '../../entities/WikiPage';
@@ -11,7 +15,10 @@ import {
 } from '../dto/wiki-constants';
 import { WikiListItemDto, WikiListResponseDto } from '../dto/wiki-list.dto';
 import { isValidSlug } from '../dto/wiki-slug.validator';
-import { WikiDetailResponseDto, WikiDetailRevisionDto } from '../dto/wiki-detail.dto';
+import {
+  WikiDetailResponseDto,
+  WikiDetailRevisionDto,
+} from '../dto/wiki-detail.dto';
 import {
   WikiHistoryItemDto,
   WikiHistoryResponseDto,
@@ -47,22 +54,44 @@ export class WikiService {
   }
 
   async list(
-    query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
+    query: {
+      page?: number;
+      limit?: number;
+      q?: string;
+      sort?: 'createdAt' | 'title';
+      order?: 'asc' | 'desc';
+    },
     includeAll: true,
     locale?: Locale,
   ): Promise<WikiListResponseDto>;
   async list(
-    query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
+    query: {
+      page?: number;
+      limit?: number;
+      q?: string;
+      sort?: 'createdAt' | 'title';
+      order?: 'asc' | 'desc';
+    },
     includeAll: false,
     locale?: Locale,
   ): Promise<WikiPublicListResponseDto>;
   async list(
-    query: { page?: number; limit?: number; q?: string; sort?: 'createdAt' | 'title'; order?: 'asc' | 'desc' },
+    query: {
+      page?: number;
+      limit?: number;
+      q?: string;
+      sort?: 'createdAt' | 'title';
+      order?: 'asc' | 'desc';
+    },
     includeAll: boolean,
     locale: Locale = 'en',
   ): Promise<WikiListResponseDto | WikiPublicListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
-    const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
+    const limit = clamp(
+      query.limit ?? WIKI_LIST_DEFAULT_LIMIT,
+      1,
+      WIKI_LIST_MAX_LIMIT,
+    );
     const offset = (page - 1) * limit;
 
     const where: FilterQuery<WikiPage> = {};
@@ -79,16 +108,12 @@ export class WikiService {
     const sort = query.sort ?? 'createdAt';
     const order = query.order ?? 'desc';
 
-    const [pages, total] = await this.em.findAndCount(
-      WikiPage,
-      where,
-      {
-        populate: ['latestRevisionId.authorId'],
-        orderBy: { [sort]: order },
-        limit,
-        offset,
-      },
-    );
+    const [pages, total] = await this.em.findAndCount(WikiPage, where, {
+      populate: ['latestRevisionId.authorId'],
+      orderBy: { [sort]: order },
+      limit,
+      offset,
+    });
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -106,7 +131,10 @@ export class WikiService {
         }
       }
       return {
-        items: pages.map((p) => ({ ...this.toListItem(p), revisionCount: revCounts.get(p.id) ?? 0 })),
+        items: pages.map((p) => ({
+          ...this.toListItem(p),
+          revisionCount: revCounts.get(p.id) ?? 0,
+        })),
         total,
         page,
         limit,
@@ -122,9 +150,14 @@ export class WikiService {
     };
   }
 
-  private toAuthor(user: User | undefined | null): { id: string; displayName: string } | null {
+  private toAuthor(
+    user: User | undefined | null,
+  ): { id: string; displayName: string } | null {
     if (!user || !user.id) return null;
-    return { id: user.id, displayName: (user.displayName as string | undefined) ?? '' };
+    return {
+      id: user.id,
+      displayName: (user.displayName as string | undefined) ?? '',
+    };
   }
 
   private toListItem(p: WikiPage): WikiListItemDto {
@@ -170,7 +203,10 @@ export class WikiService {
     };
   }
 
-  async getBySlug(slug: string, locale: Locale = 'en'): Promise<WikiPublicDetailDto> {
+  async getBySlug(
+    slug: string,
+    locale: Locale = 'en',
+  ): Promise<WikiPublicDetailDto> {
     if (!isValidSlug(slug)) {
       throw new BadRequestException('wiki.invalid_slug');
     }
@@ -218,7 +254,10 @@ export class WikiService {
     });
   }
 
-  private toDetail(page: WikiPage, requestedSlug: string): WikiDetailResponseDto {
+  private toDetail(
+    page: WikiPage,
+    requestedSlug: string,
+  ): WikiDetailResponseDto {
     const rev = page.latestRevisionId as WikiRevision;
     const detailRev: WikiDetailRevisionDto = {
       id: rev.id,
@@ -244,13 +283,18 @@ export class WikiService {
     };
   }
 
-  private toPublicDetail(page: WikiPage, requestedSlug: string, locale: Locale): WikiPublicDetailDto {
+  private toPublicDetail(
+    page: WikiPage,
+    requestedSlug: string,
+    locale: Locale,
+  ): WikiPublicDetailDto {
     const rev = page.latestRevisionId as WikiRevision;
     return {
       id: page.id,
       slug: locale === 'vi' ? page.slugVi : page.slug,
       title: locale === 'vi' ? page.titleVi : page.title,
-      metadataJson: (page.metadataJson as Record<string, unknown> | undefined) ?? null,
+      metadataJson:
+        (page.metadataJson as Record<string, unknown> | undefined) ?? null,
       isPublished: page.isPublished,
       createdAt: page.createdAt,
       updatedAt: page.updatedAt,
@@ -274,7 +318,11 @@ export class WikiService {
       throw new BadRequestException('wiki.invalid_input');
     }
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
-    const limit = clamp(query.limit ?? WIKI_LIST_DEFAULT_LIMIT, 1, WIKI_LIST_MAX_LIMIT);
+    const limit = clamp(
+      query.limit ?? WIKI_LIST_DEFAULT_LIMIT,
+      1,
+      WIKI_LIST_MAX_LIMIT,
+    );
     const offset = (page - 1) * limit;
 
     const trimmed = query.q.trim();
@@ -295,16 +343,12 @@ export class WikiService {
     // (it gets quoted as an identifier). Falling back to updatedAt DESC,
     // which keeps results stable and predictable. Title-based ranking is
     // a nice-to-have rather than a BR requirement.
-    const [pages, total] = await this.em.findAndCount(
-      WikiPage,
-      where,
-      {
-        populate: ['latestRevisionId.authorId'],
-        orderBy: { updatedAt: 'desc' },
-        limit,
-        offset,
-      },
-    );
+    const [pages, total] = await this.em.findAndCount(WikiPage, where, {
+      populate: ['latestRevisionId.authorId'],
+      orderBy: { updatedAt: 'desc' },
+      limit,
+      offset,
+    });
 
     return {
       items: pages.map((p) => this.toPublicListItem(p, locale)),
@@ -315,7 +359,11 @@ export class WikiService {
     };
   }
 
-  async getHistory(pageId: string, page: number, limit: number): Promise<WikiHistoryResponseDto> {
+  async getHistory(
+    pageId: string,
+    page: number,
+    limit: number,
+  ): Promise<WikiHistoryResponseDto> {
     const p = await this.em.findOne(
       WikiPage,
       { id: pageId },
@@ -359,20 +407,32 @@ export class WikiService {
     };
   }
 
-  async getRevision(pageId: string, revisionId: string): Promise<WikiDetailRevisionDto> {
+  async getRevision(
+    pageId: string,
+    revisionId: string,
+  ): Promise<WikiDetailRevisionDto> {
     const rev = await this.em.findOne(
       WikiRevision,
-      { id: revisionId, pageId: this.em.getReference(WikiPage, pageId) } as FilterQuery<WikiRevision>,
+      {
+        id: revisionId,
+        pageId: this.em.getReference(WikiPage, pageId),
+      } as FilterQuery<WikiRevision>,
       { populate: ['authorId'] },
     );
     if (!rev) throw new NotFoundException('wiki.revision_not_found');
     return this.toDetailRevision(rev);
   }
 
-  async getRevisionDiff(pageId: string, revisionId: string): Promise<WikiRevisionDiffResponseDto> {
+  async getRevisionDiff(
+    pageId: string,
+    revisionId: string,
+  ): Promise<WikiRevisionDiffResponseDto> {
     const current = await this.em.findOne(
       WikiRevision,
-      { id: revisionId, pageId: this.em.getReference(WikiPage, pageId) } as FilterQuery<WikiRevision>,
+      {
+        id: revisionId,
+        pageId: this.em.getReference(WikiPage, pageId),
+      } as FilterQuery<WikiRevision>,
       { populate: ['authorId'] },
     );
     if (!current) throw new NotFoundException('wiki.revision_not_found');
@@ -398,8 +458,18 @@ export class WikiService {
     const stripImageData = (md: string): string =>
       md.replace(/!\[[^\]]*\]\(data:[^)]+\)/g, '![image](data-url-stripped)');
 
-    const enChunks = this.toDiffChunks(diffLines(stripImageData(previous.content), stripImageData(current.content)));
-    const viChunks = this.toDiffChunks(diffLines(stripImageData(previous.contentVi), stripImageData(current.contentVi)));
+    const enChunks = this.toDiffChunks(
+      diffLines(
+        stripImageData(previous.content),
+        stripImageData(current.content),
+      ),
+    );
+    const viChunks = this.toDiffChunks(
+      diffLines(
+        stripImageData(previous.contentVi),
+        stripImageData(current.contentVi),
+      ),
+    );
 
     return {
       current: this.toDetailRevision(current),
@@ -421,7 +491,14 @@ export class WikiService {
     };
   }
 
-  private toDiffChunks(parts: { added?: boolean; removed?: boolean; value: string; count?: number }[]): WikiDiffChunkDto[] {
+  private toDiffChunks(
+    parts: {
+      added?: boolean;
+      removed?: boolean;
+      value: string;
+      count?: number;
+    }[],
+  ): WikiDiffChunkDto[] {
     return parts.map((part) => ({
       type: part.added ? 'add' : part.removed ? 'remove' : 'equal',
       value: part.value,

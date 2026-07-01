@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { searchWiki } from "@/lib/wiki/api";
+import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 import { WikiList } from "@/components/wiki/wiki-list";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { WikiListResponse } from "@/models/dtos/wiki.dto";
@@ -20,9 +21,8 @@ export default async function WikiSearchPage({
   let errorMessage: string | null = null;
   try {
     data = await searchWiki(q, page, 20);
-  } catch (err: unknown) {
-    const e = err as { response?: { data?: { message?: string } } };
-    errorMessage = e?.response?.data?.message ?? "Search failed";
+  } catch (err) {
+    errorMessage = getApiErrorMessage(err as ApiError, "Search failed");
   }
 
   return (

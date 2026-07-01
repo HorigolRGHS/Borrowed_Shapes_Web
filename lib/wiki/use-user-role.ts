@@ -7,9 +7,12 @@ export function useUserRole(): string | null {
   useEffect(() => {
     const p = getUserProfile();
     setRole(p?.role ?? null);
-    const handler = (e: any) => setRole(e.detail?.role ?? null);
-    window.addEventListener('api:profile-updated', handler as any);
-    return () => window.removeEventListener('api:profile-updated', handler as any);
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ role?: string | null }>).detail;
+      setRole(detail?.role ?? null);
+    };
+    window.addEventListener('api:profile-updated', handler);
+    return () => window.removeEventListener('api:profile-updated', handler);
   }, []);
   return role;
 }

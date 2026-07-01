@@ -21,12 +21,15 @@ import { compactMetadata, WikiMetadataDto } from '../dto/wiki-metadata.dto';
 function isWikiSlugUniqueError(err: any): boolean {
   if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
   const constraint = err?.constraint ?? err?.driverError?.constraint ?? '';
-  return constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slugVi_key';
+  return (
+    constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slugVi_key'
+  );
 }
 
 function validateSlugOrThrow(slug: string): void {
   const reason = slugRejectionReason(slug);
-  if (reason === 'reserved') throw new BadRequestException('wiki.reserved_slug');
+  if (reason === 'reserved')
+    throw new BadRequestException('wiki.reserved_slug');
   if (reason === 'invalid') throw new BadRequestException('wiki.invalid_slug');
 }
 
@@ -104,7 +107,8 @@ export class WikiRevisionService {
         try {
           await em.flush();
         } catch (err) {
-          if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+          if (isWikiSlugUniqueError(err))
+            throw new ConflictException('wiki.slug_taken');
           throw err;
         }
 
@@ -121,7 +125,14 @@ export class WikiRevisionService {
         page.latestRevisionId = revision;
         await em.flush();
 
-        return { pageId: page.id, revisionId: revision.id, slug: input.slug, slugVi: input.slugVi, title: input.title, titleVi: input.titleVi };
+        return {
+          pageId: page.id,
+          revisionId: revision.id,
+          slug: input.slug,
+          slugVi: input.slugVi,
+          title: input.title,
+          titleVi: input.titleVi,
+        };
       });
 
     const maxAttempts = isStub ? 3 : 1;
@@ -131,7 +142,11 @@ export class WikiRevisionService {
         result = await tryCreate(buildInput());
         break;
       } catch (err) {
-        if (isStub && err instanceof ConflictException && attempt < maxAttempts - 1) {
+        if (
+          isStub &&
+          err instanceof ConflictException &&
+          attempt < maxAttempts - 1
+        ) {
           continue;
         }
         throw err;
@@ -172,10 +187,11 @@ export class WikiRevisionService {
       );
       if (!page) throw new NotFoundException('wiki.not_found');
 
-      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      const latest = page.latestRevisionId ?? null;
       const currentLatestId = latest?.id ?? null;
       const conflictDetected = dto.expectedLatestRevisionId !== currentLatestId;
-      const forceOverwriteApplied = conflictDetected && dto.forceOverwrite === true;
+      const forceOverwriteApplied =
+        conflictDetected && dto.forceOverwrite === true;
 
       if (conflictDetected && !dto.forceOverwrite) {
         throw new ConflictException({
@@ -193,13 +209,19 @@ export class WikiRevisionService {
         });
       }
 
-      if (dto.slug !== undefined && dto.slug !== page.slug) validateSlugOrThrow(dto.slug);
-      if (dto.slugVi !== undefined && dto.slugVi !== page.slugVi) validateSlugOrThrow(dto.slugVi);
+      if (dto.slug !== undefined && dto.slug !== page.slug)
+        validateSlugOrThrow(dto.slug);
+      if (dto.slugVi !== undefined && dto.slugVi !== page.slugVi)
+        validateSlugOrThrow(dto.slugVi);
 
-      const willPublish = dto.isPublished === true && page.isPublished === false;
+      const willPublish =
+        dto.isPublished === true && page.isPublished === false;
       const effectiveContent = dto.content;
       const effectiveContentVi = dto.contentVi;
-      if (willPublish && (effectiveContent === '' || effectiveContentVi === '')) {
+      if (
+        willPublish &&
+        (effectiveContent === '' || effectiveContentVi === '')
+      ) {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
 
@@ -214,7 +236,8 @@ export class WikiRevisionService {
       ) {
         metadataDiff.push('metadataJson');
       }
-      const publishStateChanged = dto.isPublished !== undefined && dto.isPublished !== page.isPublished;
+      const publishStateChanged =
+        dto.isPublished !== undefined && dto.isPublished !== page.isPublished;
       if (publishStateChanged) metadataDiff.push('isPublished');
 
       const contentChanged =
@@ -256,7 +279,8 @@ export class WikiRevisionService {
         try {
           await em.flush();
         } catch (err) {
-          if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+          if (isWikiSlugUniqueError(err))
+            throw new ConflictException('wiki.slug_taken');
           throw err;
         }
         page.latestRevisionId = newRevision;
@@ -266,7 +290,8 @@ export class WikiRevisionService {
       try {
         await em.flush();
       } catch (err) {
-        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        if (isWikiSlugUniqueError(err))
+          throw new ConflictException('wiki.slug_taken');
         throw err;
       }
 
@@ -315,12 +340,14 @@ export class WikiRevisionService {
       );
       if (!page) throw new NotFoundException('wiki.not_found');
 
-      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      const latest = page.latestRevisionId ?? null;
       const currentLatestId = latest?.id ?? null;
       if (dto.expectedLatestRevisionId !== currentLatestId) {
         throw new ConflictException({
           message: 'wiki.conflict_revision',
-          currentLatest: latest ? { id: latest.id, createdAt: latest.createdAt } : null,
+          currentLatest: latest
+            ? { id: latest.id, createdAt: latest.createdAt }
+            : null,
         });
       }
 
@@ -334,10 +361,10 @@ export class WikiRevisionService {
         };
       }
 
-      const target = await em.findOne(
-        WikiRevision,
-        { id: dto.targetRevisionId, pageId: { id: pageId } as any },
-      );
+      const target = await em.findOne(WikiRevision, {
+        id: dto.targetRevisionId,
+        pageId: { id: pageId } as any,
+      });
       if (!target) throw new NotFoundException('wiki.revision_not_found');
 
       const newRevision = em.create(WikiRevision, {
@@ -354,7 +381,8 @@ export class WikiRevisionService {
       try {
         await em.flush();
       } catch (err) {
-        if (isWikiSlugUniqueError(err)) throw new ConflictException('wiki.slug_taken');
+        if (isWikiSlugUniqueError(err))
+          throw new ConflictException('wiki.slug_taken');
         throw err;
       }
 
@@ -386,7 +414,11 @@ export class WikiRevisionService {
     return this.wikiService.getByIdForAdmin(pageId);
   }
 
-  async delete(pageId: string, adminUserId: string, ipAddress: string): Promise<void> {
+  async delete(
+    pageId: string,
+    adminUserId: string,
+    ipAddress: string,
+  ): Promise<void> {
     const snapshot = await this.em.transactional(async (em) => {
       const page = await em.findOne(
         WikiPage,
@@ -395,8 +427,8 @@ export class WikiRevisionService {
       );
       if (!page) throw new NotFoundException('wiki.not_found');
 
-      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
-      const author = latest?.authorId as User | undefined;
+      const latest = page.latestRevisionId ?? null;
+      const author = latest?.authorId;
       const oldValue = {
         page: {
           id: page.id,
@@ -436,7 +468,11 @@ export class WikiRevisionService {
     });
   }
 
-  async publish(pageId: string, adminUserId: string, ipAddress: string): Promise<WikiDetailResponseDto> {
+  async publish(
+    pageId: string,
+    adminUserId: string,
+    ipAddress: string,
+  ): Promise<WikiDetailResponseDto> {
     const result = await this.em.transactional(async (em) => {
       const page = await em.findOne(
         WikiPage,
@@ -445,9 +481,10 @@ export class WikiRevisionService {
       );
       if (!page) throw new NotFoundException('wiki.not_found');
       if (page.isPublished) return { noop: true };
-      const latest = (page.latestRevisionId ?? null) as WikiRevision | null;
+      const latest = page.latestRevisionId ?? null;
       // TODO: Phase 5 i18n — `wiki.cannot_publish_no_revision` is added to backend locales now
-      if (!latest) throw new BadRequestException('wiki.cannot_publish_no_revision');
+      if (!latest)
+        throw new BadRequestException('wiki.cannot_publish_no_revision');
       if (latest.content === '' || latest.contentVi === '') {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
@@ -470,7 +507,11 @@ export class WikiRevisionService {
     return this.wikiService.getByIdForAdmin(pageId);
   }
 
-  async unpublish(pageId: string, adminUserId: string, ipAddress: string): Promise<WikiDetailResponseDto> {
+  async unpublish(
+    pageId: string,
+    adminUserId: string,
+    ipAddress: string,
+  ): Promise<WikiDetailResponseDto> {
     const result = await this.em.transactional(async (em) => {
       const page = await em.findOne(WikiPage, { id: pageId });
       if (!page) throw new NotFoundException('wiki.not_found');

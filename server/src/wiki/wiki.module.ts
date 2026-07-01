@@ -17,7 +17,13 @@ import { WikiUploadController } from './controllers/wiki-upload.controller';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([WikiPage, WikiRevision, AuditLog, FileAsset, User]),
+    MikroOrmModule.forFeature([
+      WikiPage,
+      WikiRevision,
+      AuditLog,
+      FileAsset,
+      User,
+    ]),
     StorageModule,
   ],
   controllers: [WikiAdminController, WikiUploadController, WikiController],

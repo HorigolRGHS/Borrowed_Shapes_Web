@@ -1,5 +1,11 @@
 import * as z from "zod";
 
+// Inlined (not imported from ./wiki-limits) so the node-native `.test.mjs`
+// self-check, which strips types and needs explicit extensions, can load this
+// module. Keep in sync with backend `wiki-constants.ts`.
+const WIKI_STATS_MAX_KEYS = 50;
+const WIKI_METADATA_MAX_BYTES = 100_000; // ~100KB serialized JSONB
+
 export const WIKI_CATEGORIES = [
   "Character",
   "Item",
@@ -12,10 +18,11 @@ export const WIKI_CATEGORIES = [
 export const wikiCategorySchema = z.enum(WIKI_CATEGORIES);
 export type WikiCategory = z.infer<typeof wikiCategorySchema>;
 
-export const wikiStatsSchema = z.record(
-  z.string().trim().min(1).max(40),
-  z.number().finite(),
-);
+export const wikiStatsSchema = z
+  .record(z.string().trim().min(1).max(40), z.number().finite())
+  .refine((s) => Object.keys(s).length <= WIKI_STATS_MAX_KEYS, {
+    message: "wiki.stats_too_many_error",
+  });
 export type WikiStats = z.infer<typeof wikiStatsSchema>;
 
 const wikiImageProxyPath = /^\/api\/wiki\/image\/wiki\/[A-Za-z0-9_-]+\/[A-Za-z0-9-]+\.(?:jpg|png|webp|gif)$/;
@@ -48,7 +55,11 @@ export const wikiMetadataSchema = z
     location_vi: optionalShortText,
     relatedPages: z.array(z.string().trim().min(1).max(120)).max(30),
   })
-  .strict();
+  .strict()
+  .refine(
+    (m) => JSON.stringify(m).length <= WIKI_METADATA_MAX_BYTES,
+    { message: "wiki.metadata_too_large_error" },
+  );
 
 export type WikiMetadata = z.infer<typeof wikiMetadataSchema>;
 export type CompactWikiMetadata = Partial<WikiMetadata>;

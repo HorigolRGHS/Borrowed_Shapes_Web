@@ -19,13 +19,14 @@ export interface WikiListQuery {
   q?: string;
   sort?: "createdAt" | "title";
   order?: "asc" | "desc";
+  [key: string]: string | number | undefined;
 }
 
 export async function fetchWikiList(
   query: WikiListQuery,
 ): Promise<WikiListResponse> {
   const res = await bffFetchJson<WikiListResponse>("GET", "/api/wiki", {
-    params: query as Record<string, unknown>,
+    params: query,
   });
   return res.data;
 }
@@ -34,7 +35,7 @@ export async function fetchAdminWikiList(
   query: WikiListQuery,
 ): Promise<WikiListResponse> {
   const res = await bffFetchJson<WikiListResponse>("GET", "/api/wiki/admin", {
-    params: query as Record<string, unknown>,
+    params: query,
   });
   return res.data;
 }

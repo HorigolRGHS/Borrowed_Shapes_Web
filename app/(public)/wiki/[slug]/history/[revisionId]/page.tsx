@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
 import enDict from '@/locales/en.json';
 import viDict from '@/locales/vi.json';
+import { getApiErrorStatus, type ApiError } from '@/lib/wiki/http';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,9 +48,8 @@ export default async function WikiRevisionPage({
   let detail;
   try {
     detail = await fetchWikiBySlug(slug);
-  } catch (err: unknown) {
-    const e = err as { response?: { status?: number } };
-    if (e?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 
@@ -64,9 +64,8 @@ export default async function WikiRevisionPage({
     } else {
       revision = await fetchWikiRevision(detail.id, revisionId);
     }
-  } catch (err: unknown) {
-    const e = err as { response?: { status?: number } };
-    if (e?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 

@@ -17,6 +17,7 @@ import {
   findAvailableSlugs,
   SlugAvailabilityExhausted,
 } from "@/lib/wiki/slug-availability";
+import { getApiErrorMessage, getApiErrorStatus, type ApiError } from "@/lib/wiki/http";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,11 +145,9 @@ export default function AdminWikiNewPage() {
       });
       router.replace(`/dashboard/wiki/${detail.id}/edit`);
       return;
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response
-        ?.status;
-      const message = (err as { response?: { data?: { message?: string } } })
-        ?.response?.data?.message;
+    } catch (err) {
+      const status = getApiErrorStatus(err as ApiError);
+      const message = getApiErrorMessage(err as ApiError, t("wiki.new.create_failed"));
 
       if (status === 409) {
         try {
@@ -174,15 +173,14 @@ export default function AdminWikiNewPage() {
             setSubmitting(false);
             return;
           }
-          const retryMessage = (
-            recheckErr as { response?: { data?: { message?: string } } }
-          )?.response?.data?.message;
-          setSubmitError(retryMessage ?? t("wiki.new.create_failed"));
+          setSubmitError(
+            getApiErrorMessage(recheckErr as ApiError, t("wiki.new.create_failed")),
+          );
           setSubmitting(false);
           return;
         }
       }
-      setSubmitError(message ?? t("wiki.new.create_failed"));
+      setSubmitError(message);
     } finally {
       setSubmitting(false);
     }

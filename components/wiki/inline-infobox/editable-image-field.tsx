@@ -6,6 +6,7 @@ import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { uploadWikiImage } from "@/lib/wiki/api";
+import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 import { useI18n } from "@/lib/i18/i18n-context";
 import type { WikiFormValue } from "@/models/dtos/wiki-form.dto";
 
@@ -26,11 +27,8 @@ export function EditableImageField({ wikiId }: { wikiId: string }) {
     try {
       const r = await uploadWikiImage(file, wikiId);
       form.setValue("metadata.infoboxImage", r.url, { shouldDirty: true });
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? t("wiki.metadata.upload_failed");
-      setError(msg);
+    } catch (err) {
+      setError(getApiErrorMessage(err as ApiError, t("wiki.metadata.upload_failed")));
     } finally {
       setUploading(false);
     }

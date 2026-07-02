@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { WikiAuditService } from './wiki-audit.service';
+import { WikiAuditService } from './wiki.service';
 import { AuditActionType } from '../../entities/AuditActionType';
 
 describe('WikiAuditService', () => {

@@ -1,9 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { WikiRevisionService } from './wiki-revision.service';
-import { WikiAuditService } from './wiki-audit.service';
-import { WikiService } from './wiki.service';
+import { WikiRevisionService, WikiAuditService, WikiService } from './wiki.service';
 
 function makePostgresUniqueError() {
   const err: any = new Error('duplicate key value violates unique constraint');

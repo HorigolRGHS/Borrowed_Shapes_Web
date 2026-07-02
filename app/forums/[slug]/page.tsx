@@ -20,12 +20,14 @@ import {
   Trash2,
   Calendar,
   AlertTriangle,
-  MessageSquare
+  MessageSquare,
+  Flag
 } from "lucide-react";
 import { getUserProfile } from "@/lib/api/api-client";
 import CreateThreadModal from "@/components/forums/create-thread-modal";
 import CommentSection from "@/components/forums/comment-section";
 import ReportModal from "@/components/forums/report-modal";
+import UserProfilePopup from "@/components/forums/user-profile-popup";
 import { toast } from "react-toastify";
 
 const formatViews = (
@@ -81,6 +83,8 @@ export default function ForumDetailPage() {
   const [isViewFull, setIsViewFull] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportTargetType, setReportTargetType] = useState<"user" | "thread">("thread");
+  const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
+  const [selectedProfileUser, setSelectedProfileUser] = useState<any>(null);
 
   const handleReportClick = () => {
     if (!user) {
@@ -93,15 +97,8 @@ export default function ForumDetailPage() {
 
   const handleAvatarClick = () => {
     if (!thread?.author) return;
-    if (!user) {
-      toast.warning(t("comments.login_to_vote"));
-      return;
-    }
-    if (String(thread.author.id) === String(user.id)) {
-      return;
-    }
-    setReportTargetType("user");
-    setIsReportOpen(true);
+    setSelectedProfileUser(thread.author);
+    setIsProfilePopupOpen(true);
   };
   const [form, setForm] = useState<{
     id?: string;
@@ -206,7 +203,6 @@ export default function ForumDetailPage() {
     try {
       let finalImageUrl = formPayload.imageUrl;
 
-      // 1. If there is a new file, upload it
       if (file) {
         const uploadResp = await axios.post("/api/forums/upload", {
           fileName: file.name,
@@ -420,18 +416,21 @@ export default function ForumDetailPage() {
                   </span>
                 </div>
 
-                {/* Thread Image (if any) */}
-                {thread.imageUrl && (
-                  <div
-                    onClick={() => setIsImageOpen(true)}
-                    className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-[500px] w-full shadow-sm bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center mb-4 cursor-zoom-in hover:opacity-95 transition-opacity duration-200"
-                  >
-                    <img src={thread.imageUrl} alt={thread.title} className="max-w-full max-h-[500px] object-contain" />
-                  </div>
-                )}
+                {/* Main Content & Image */}
+                <div className="flex flex-col md:flex-row gap-6 items-start justify-between mb-4">
+                  {/* Content on the left */}
+                  <div className="flex-1 min-w-0 prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed" dangerouslySetInnerHTML={{ __html: thread.content }} />
 
-                {/* Main Content */}
-                <div className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: thread.content }} />
+                  {/* Thread Image on the right (if any) */}
+                  {thread.imageUrl && (
+                    <div
+                      onClick={() => setIsImageOpen(true)}
+                      className="relative inline-block rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800/80 max-w-sm max-h-64 shadow-sm bg-slate-50 dark:bg-slate-900/40 cursor-zoom-in hover:opacity-95 transition-opacity duration-200 shrink-0 md:max-w-[280px]"
+                    >
+                      <img src={thread.imageUrl} alt={thread.title} className="max-w-full max-h-64 object-contain" />
+                    </div>
+                  )}
+                </div>
 
                 {/* Bottom Action Row: Vote indicators, Edit/Delete buttons */}
                 <div className="flex justify-between items-center pt-4 mt-6 border-t border-slate-100 dark:border-slate-800/80">
@@ -470,10 +469,7 @@ export default function ForumDetailPage() {
                     <div className="flex items-center gap-1.5 text-slate-550 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 px-3 py-2 rounded-2xl border border-slate-250/80 dark:border-slate-800/60 shadow-sm text-xs font-semibold">
                       <MessageSquare className="h-4 w-4 text-violet-500" />
                       <span>
-                        {thread.commentCount ?? 0}{" "}
-                        {locale === "vi"
-                          ? "bình luận"
-                          : (thread.commentCount === 1 ? "comment" : "comments")}
+                        {thread.commentCount ?? 0} {t("forums.comments_unit") || "comments"}
                       </span>
                     </div>
                   </div>
@@ -487,7 +483,7 @@ export default function ForumDetailPage() {
                         className="p-2.5 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/25 rounded-xl transition-colors border border-transparent hover:border-red-100/20 dark:hover:border-red-900/40 cursor-pointer"
                         title={t("reports.report_button")}
                       >
-                        <AlertTriangle className="h-4 w-4" />
+                        <Flag className="h-4 w-4" />
                       </button>
                     )}
                     {isAuthor && (
@@ -602,12 +598,26 @@ export default function ForumDetailPage() {
         <ReportModal
           isOpen={isReportOpen}
           onClose={() => setIsReportOpen(false)}
-          targetType={reportTargetType}
+          targetType="thread"
           reportedUserId={thread.author?.id || ""}
           reportedUserDisplayName={thread.author?.displayName || ""}
           reportedUserImgUrl={thread.author?.imgUrl}
           threadId={thread.id}
           threadTitle={thread.title}
+        />
+      )}
+
+      {selectedProfileUser && (
+        <UserProfilePopup
+          isOpen={isProfilePopupOpen}
+          onClose={() => {
+            setIsProfilePopupOpen(false);
+            setSelectedProfileUser(null);
+          }}
+          targetUser={selectedProfileUser}
+          currentUser={user}
+          locale={locale}
+          t={t}
         />
       )}
 

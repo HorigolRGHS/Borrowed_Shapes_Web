@@ -43,7 +43,6 @@ export class ForumController {
     private readonly forumService: ForumService,
   ) { }
 
-  // List threads (public)
   @Public()
   @Get()
   @ApiOperation({
@@ -74,7 +73,6 @@ export class ForumController {
     return okResponse('forums.detail_success', data, `GET /forums/slug/${slug}`);
   }
 
-  // Get thread detail
   @Roles('ADMIN')
   @Get('id/:id')
   @ApiOperation({
@@ -86,7 +84,6 @@ export class ForumController {
   })
   async findOneById(
     @Param('id') id: string,
-    // @CurrentUser() user?: RequestUser,
     @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
@@ -94,7 +91,6 @@ export class ForumController {
     return okResponse('forums.detail_success', data, `GET /forums/id/${id}`);
   }
 
-  // Create thread (requires auth)
   @Post()
   @ApiOperation({
     summary: 'Create a forum thread',
@@ -111,7 +107,6 @@ export class ForumController {
     return okResponse('forums.create_success', newThread, 'POST /forums');
   }
 
-  // Update thread (requires auth, author only)
   @Patch(':id')
   @ApiOperation({
     summary: 'Update a forum thread',
@@ -132,7 +127,6 @@ export class ForumController {
     return okResponse('forums.update_success', null, `PATCH /forums/${id}`);
   }
 
-  // Delete thread (requires auth, author or admin)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete a forum thread',
@@ -150,7 +144,6 @@ export class ForumController {
     return okResponse('forums.delete_success', null, `DELETE /forums/${id}`);
   }
 
-  // Vote on thread (requires auth, value = 1 | -1)
   @Post(':id/vote')
   @ApiOperation({
     summary: 'Vote a forum thread',

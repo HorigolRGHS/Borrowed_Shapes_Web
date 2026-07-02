@@ -13,10 +13,10 @@ import {
   FileImage,
   FileVideo,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Plus
 } from "lucide-react";
 
-// Dynamic import of CKEditor
 const CommentCKEditor = dynamic(
   () => import("./comment-ckeditor").then((mod) => mod.CommentCKEditor),
   {
@@ -69,17 +69,13 @@ export default function ReportModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      
+
       const currentTotalSize = selectedFiles.reduce((acc, item) => acc + item.file.size, 0);
       const newFilesSize = filesArray.reduce((acc, f) => acc + f.size, 0);
       const totalCombinedSize = currentTotalSize + newFilesSize;
 
       if (totalCombinedSize > 20 * 1024 * 1024) {
-        toast.warning(
-          locale === "vi"
-            ? "Tổng dung lượng tất cả các tệp đính kèm không được vượt quá 20MB!"
-            : "Total size of all attached files must not exceed 20MB!"
-        );
+        toast.warning(t("reports.size_limit_exceeded") || "Total size of all attached files must not exceed 20MB!");
         return;
       }
 
@@ -116,7 +112,6 @@ export default function ReportModal({
     try {
       const uploadedMedia: { mediaUrl: string; mediaType: string; fileSize: number }[] = [];
 
-      // 1. Upload files to R2 via presigned URLs
       for (const item of selectedFiles) {
         const file = item.file;
         const mimeType = file.type;
@@ -152,7 +147,6 @@ export default function ReportModal({
         });
       }
 
-      // 2. Submit the report payload
       const response = await axios.post("/api/reports", {
         reportedUserId,
         threadId: targetType === "thread" ? threadId : undefined,
@@ -244,13 +238,12 @@ export default function ReportModal({
                   onClick={() => setCommentExpanded(!commentExpanded)}
                   className="flex items-center gap-1 text-[11px] text-violet-500 hover:underline font-semibold focus:outline-none mb-1 cursor-pointer"
                 >
-                  <span>{locale === "vi" ? "Xem nội dung bình luận" : "Comment Content"}</span>
+                  <span>{t("reports.comment_content_title") || "Comment Content"}</span>
                   {commentExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                 </button>
                 <div
-                  className={`text-slate-600 dark:text-slate-350 italic overflow-hidden transition-all duration-300 ${
-                    commentExpanded ? "max-h-[200px] overflow-y-auto" : "max-h-6 truncate"
-                  }`}
+                  className={`text-slate-600 dark:text-slate-350 italic overflow-hidden transition-all duration-300 ${commentExpanded ? "max-h-[200px] overflow-y-auto" : "max-h-6 truncate"
+                    }`}
                   dangerouslySetInnerHTML={{ __html: commentContent || "" }}
                 />
               </div>
@@ -266,11 +259,10 @@ export default function ReportModal({
               {["SPAM", "HARASSMENT", "HATE_SPEECH", "NSFW", "MISINFORMATION", "OTHER"].map((type) => (
                 <label
                   key={type}
-                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    reportType === type
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${reportType === type
                       ? "border-red-500 bg-red-50/20 dark:bg-red-950/10 text-red-600 dark:text-red-400 font-semibold"
                       : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-[#07070f]"
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -294,7 +286,7 @@ export default function ReportModal({
             <CommentCKEditor
               value={reason}
               onChange={setReason}
-              onSend={() => {}}
+              onSend={() => { }}
               placeholder={t("reports.placeholder_reason")}
               disabled={submitting}
             />
@@ -305,34 +297,33 @@ export default function ReportModal({
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
               <span>{t("reports.label_media")}</span>
               <span className="text-[10px] text-slate-500 font-medium">
-                {locale === "vi" ? "Tổng tối đa 20MB" : "Max 20MB total"}
+                {t("reports.max_total_size") || "Max 20MB total"}
               </span>
             </label>
 
-            {/* Drag drop upload box */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-violet-500 dark:hover:border-violet-500 rounded-2xl p-6 text-center cursor-pointer bg-slate-50/30 dark:bg-[#07070f] transition-colors"
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept="image/*,video/*"
-                multiple
-                className="hidden"
-              />
-              <UploadCloud className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-              <p className="text-xs text-slate-500 font-medium">
-                {locale === "vi"
-                  ? "Nhấp để tải lên tệp tin bằng chứng (ảnh hoặc video)"
-                  : "Click to upload evidence files (images or videos)"}
-              </p>
-            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*,video/*"
+              multiple
+              className="hidden"
+            />
 
-            {/* Selected files preview with thumbnails */}
-            {selectedFiles.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
+            {/* Drag drop upload box - hidden if files selected */}
+            {selectedFiles.length === 0 ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-violet-500 dark:hover:border-violet-500 rounded-2xl p-6 text-center cursor-pointer bg-slate-50/30 dark:bg-[#07070f] transition-colors animate-fade-in"
+              >
+                <UploadCloud className="h-8 w-8 mx-auto text-slate-400 mb-2" />
+                <p className="text-xs text-slate-500 font-medium">
+                  {t("reports.upload_hint") || "Click to upload evidence files"}
+                </p>
+              </div>
+            ) : (
+              /* Selected files preview with thumbnails and a '+' add more button */
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2 animate-fade-in">
                 {selectedFiles.map((item, idx) => (
                   <div
                     key={idx}
@@ -366,6 +357,18 @@ export default function ReportModal({
                     </div>
                   </div>
                 ))}
+
+                {/* Add more files card item in the grid */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative aspect-video rounded-xl border-2 border-dashed border-slate-355 dark:border-slate-800 hover:border-violet-505 dark:hover:border-violet-500 text-slate-400 hover:text-violet-500 transition-colors flex flex-col items-center justify-center cursor-pointer bg-slate-50/20 dark:bg-[#07070f] shadow-sm"
+                >
+                  <Plus className="h-6 w-6" />
+                  <span className="text-[10px] font-bold mt-1">
+                    {t("reports.btn_add_file") || "Add file"}
+                  </span>
+                </button>
               </div>
             )}
           </div>

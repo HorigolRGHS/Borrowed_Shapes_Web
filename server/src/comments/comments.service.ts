@@ -12,7 +12,6 @@ import { GameProfile } from 'src/entities/GameProfile';
 export class CommentsService {
   constructor(private readonly em: EntityManager) { }
 
-  // Create a new comment
   async create(dto: CreateCommentDto, userId: string) {
     const thread = await this.em.findOne(ForumThread, { id: dto.threadId });
     if (!thread) throw new NotFoundException('Thread not found');
@@ -38,7 +37,6 @@ export class CommentsService {
 
     await this.em.persistAndFlush(comment);
 
-    // Retrieve populated equipped achievement badge
     const gp = await this.em.findOne(
       GameProfile,
       { userId },
@@ -66,7 +64,6 @@ export class CommentsService {
     };
   }
 
-  // Find paginated comments for a thread, optionally filtered by parentId
   async findComments(threadId: string, parentId: string | null, page: number, limit: number, userId?: string) {
     const offset = (page - 1) * limit;
     const parentCheck = parentId ? `c."parentId" = ?` : `c."parentId" IS NULL`;
@@ -77,7 +74,7 @@ export class CommentsService {
         c."id", c."content", c."parentId", c."score", c."isDeleted",
         c."createdAt", c."updatedAt",
         u."id" AS "authorId", u."displayName" AS "authorName",
-        u."imgUrl" AS "authorImg",
+        u."imgUrl" AS "authorImg", u."role" AS "authorRole", u."createdAt" AS "authorCreatedAt",
         ach."badgeImageUrl",
         p."content" AS "parentContent",
         (SELECT COUNT(*)::int FROM web."ForumComment" r WHERE r."parentId" = c."id") AS "repliesCount"
@@ -109,6 +106,8 @@ export class CommentsService {
         displayName: row.authorName || "Deleted User",
         imgUrl: row.authorImg,
         badgeImageUrl: row.badgeImageUrl,
+        role: row.authorRole,
+        createdAt: row.authorCreatedAt,
       },
       repliesCount: Number(row.repliesCount || 0),
       hasReplies: Number(row.repliesCount || 0) > 0,
@@ -116,7 +115,6 @@ export class CommentsService {
     }));
   }
 
-  // Update comment content (author only)
   async update(id: string, dto: UpdateCommentDto, userId: string) {
     const comment = await this.em.findOne(ForumComment, { id }, { populate: ['authorId'] });
     if (!comment) throw new NotFoundException('Comment not found');
@@ -136,7 +134,6 @@ export class CommentsService {
     return comment;
   }
 
-  // Soft delete comment
   async remove(id: string, userId: string, isAdmin = false) {
     const comment = await this.em.findOne(ForumComment, { id }, { populate: ['authorId'] });
     if (!comment) throw new NotFoundException('Comment not found');
@@ -146,12 +143,11 @@ export class CommentsService {
     }
 
     comment.isDeleted = true;
-    comment.content = ''; // Clear content
+    comment.content = '';
     await this.em.flush();
     return null;
   }
 
-  // Vote comment
   async vote(commentId: string, userId: string, value: 1 | -1) {
     const comment = await this.em.findOne(ForumComment, { id: commentId });
     if (!comment) throw new NotFoundException('Comment not found');
@@ -161,7 +157,6 @@ export class CommentsService {
 
     const voteValue = value === 1 ? ForumCommentVoteValue.UP : ForumCommentVoteValue.DOWN;
 
-    // Use raw SQL to reliably find existing vote
     const existingRows = await this.em.execute(
       `select "value" from web."ForumCommentVote" where "userId" = ? and "commentId" = ?`,
       [userId, commentId],
@@ -170,7 +165,6 @@ export class CommentsService {
     const existingValue = existingVote ? Number(existingVote.value) : null;
 
     if (existingValue === null) {
-      // Create new vote
       const vote = this.em.create(ForumCommentVote, {
         commentId: comment,
         userId: user,
@@ -182,7 +176,6 @@ export class CommentsService {
     }
 
     if (existingValue === value) {
-      // Same vote: toggle off (remove)
       await this.em.execute(
         `delete from web."ForumCommentVote" where "userId" = ? and "commentId" = ?`,
         [userId, commentId],
@@ -191,7 +184,6 @@ export class CommentsService {
       await this.em.persistAndFlush([comment]);
       return { result: 'unvoted', score: comment.score, userVote: null };
     } else {
-      // Change vote
       await this.em.execute(
         `update web."ForumCommentVote" set "value" = ? where "userId" = ? and "commentId" = ?`,
         [voteValue, userId, commentId],

@@ -75,6 +75,84 @@ export class EmailService {
     `;
   }
 
+  async sendReportResolvedEmail(params: {
+    to: string;
+    displayName: string;
+    status: string;
+    actionTaken: string;
+    adminMessage?: string | null;
+  }): Promise<void> {
+    const subject = '[Borrowed Shapes] Your report has been resolved';
+    const visibleMsg = params.adminMessage
+      ? `<div style="background-color: #161625; padding: 15px; border-left: 4px solid #7c3aed; margin: 20px 0; border-radius: 6px; color: #e2e8f0; font-style: italic;">
+           &ldquo;${params.adminMessage}&rdquo;
+         </div>`
+      : '';
+
+    const bodyHtml = `
+      <p>Hello <strong>${params.displayName}</strong>,</p>
+      <p>Thank you for keeping <strong>Borrowed Shapes</strong> safe. The report you submitted has been reviewed and resolved by our moderation team.</p>
+      
+      <div style="background-color: #1e1e2d; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 14px; border: 1px solid #2d2d44;">
+        <p style="margin: 0 0 8px 0;"><strong>Report Status:</strong> <span style="color: #10b981; font-weight: bold;">${params.status}</span></p>
+        <p style="margin: 0;"><strong>Action Taken:</strong> <span style="color: #fbbf24; font-weight: bold;">${params.actionTaken}</span></p>
+      </div>
+      
+      ${visibleMsg}
+      
+      <p>We appreciate your contribution to maintaining a positive community environment.</p>
+    `;
+
+    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+  }
+
+  async sendReportWarningEmail(params: {
+    to: string;
+    displayName: string;
+    reason: string;
+  }): Promise<void> {
+    const subject = '[Borrowed Shapes] Official Warning Notice';
+    const bodyHtml = `
+      <p>Hello <strong>${params.displayName}</strong>,</p>
+      <p>This is an official warning notification regarding your recent activity on the <strong>Borrowed Shapes</strong> platform.</p>
+      <p>Your content was flagged and found to violate our community guidelines.</p>
+      
+      <div style="background-color: #2a1b1b; padding: 20px; border-left: 4px solid #f59e0b; margin: 20px 0; border-radius: 8px; border: 1px solid #4a2d1d;">
+        <h4 style="margin: 0 0 10px 0; color: #fbbf24; font-size: 16px;">Warning Reason:</h4>
+        <p style="margin: 0; color: #e2e8f0; line-height: 1.5; font-style: italic;">&ldquo;${params.reason}&rdquo;</p>
+      </div>
+      
+      <p style="color: #ef4444; font-weight: 600;">Please review the platform rules and community guidelines. Further violations may result in temporary or permanent restriction of your account.</p>
+    `;
+
+    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+  }
+
+  async sendReportRejectedEmail(params: {
+    to: string;
+    displayName: string;
+    adminMessage?: string | null;
+  }): Promise<void> {
+    const subject = '[Borrowed Shapes] Your report has been reviewed';
+    const visibleMsg = params.adminMessage
+      ? `<div style="background-color: #161625; padding: 15px; border-left: 4px solid #6b7280; margin: 20px 0; border-radius: 6px; color: #e2e8f0; font-style: italic;">
+           &ldquo;${params.adminMessage}&rdquo;
+         </div>`
+      : '';
+
+    const bodyHtml = `
+      <p>Hello <strong>${params.displayName}</strong>,</p>
+      <p>Thank you for contacting us. The report you submitted has been reviewed by our moderation team.</p>
+      <p>Based on our investigation, the reported content does not violate platform rules at this time, or no further action was deemed necessary. As a result, the report has been dismissed.</p>
+      
+      ${visibleMsg}
+      
+      <p>We appreciate your diligence in reporting potential issues to us.</p>
+    `;
+
+    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+  }
+
   async sendAccountBannedEmail(params: {
     to: string;
     displayName: string;
@@ -82,7 +160,7 @@ export class EmailService {
     banExpiresAt?: Date | string | null;
   }): Promise<void> {
     const subject = 'Your Borrowed Shapes account has been restricted';
-    
+
     let durationText = 'Permanent';
     if (params.banExpiresAt) {
       try {
@@ -120,7 +198,7 @@ export class EmailService {
     displayName: string;
   }): Promise<void> {
     const subject = 'Your Borrowed Shapes account has been restored';
-    
+
     const bodyHtml = `
       <p>Hello ${params.displayName},</p>
       <p>Your Borrowed Shapes account restriction has been lifted.</p>
@@ -137,7 +215,7 @@ export class EmailService {
   }): Promise<void> {
     // Note: Project currently uses soft-delete via deletedAt, so we use "deactivated" wording
     const subject = 'Your Borrowed Shapes account has been deactivated';
-    
+
     const bodyHtml = `
       <p>Hello ${params.displayName},</p>
       <p>Your Borrowed Shapes account has been deactivated by an administrator.</p>

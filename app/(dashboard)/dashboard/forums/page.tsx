@@ -83,7 +83,6 @@ export default function DashboardForumsPage() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [postTypeFilter, setPostTypeFilter] = useState("all");
@@ -91,7 +90,6 @@ export default function DashboardForumsPage() {
   const [sortBy, setSortBy] = useState<"createdAt" | "updatedAt" | "score">("createdAt");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -155,7 +153,6 @@ export default function DashboardForumsPage() {
       const response = await axios.get("/api/forums", { params });
       if (response.data?.success) {
         const payload = response.data.data;
-        // In the admin panel, the backend returns objects with `id` key directly
         setThreads(payload.items || []);
         setTotalPages(payload.meta?.pages || 1);
       }

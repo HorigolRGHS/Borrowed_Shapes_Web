@@ -31,7 +31,6 @@ export class ForumService {
     private readonly configService: ConfigService,
   ) { }
 
-  // List: pagination + search + category + sort
   async list({
     page = 1,
     limit = 20,
@@ -50,7 +49,6 @@ export class ForumService {
     const clauses: string[] = [];
     const params: any[] = [];
 
-    // Search with ILIKE (case-insensitive)
     if (q && q.trim()) {
       clauses.push(`(title ilike ? or content ilike ?)`);
       const searchTerm = `%${q}%`;
@@ -72,7 +70,6 @@ export class ForumService {
       params.push(status);
     }
 
-    // Filter by month/year
     if (year && month) {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 1);
@@ -85,10 +82,6 @@ export class ForumService {
       params.push(startDate, endDate);
     }
 
-    // ARCHIVED visibility:
-    // - Admin sees all
-    // - Authenticated non-admin sees ARCHIVED only when they are the author
-    // - Unauthenticated users or others don't see ARCHIVED
     if (!(user && user.role === 'ADMIN')) {
       if (user?.userId) {
         clauses.push(`(t."status" <> 'ARCHIVED' OR t."authorId" = ?)`);
@@ -101,20 +94,19 @@ export class ForumService {
     const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
     const categoryNameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const categorySlugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    // Build order clause: isPinned DESC first, then sortBy with order
     const validSortFields = ['score', 'createdAt', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const sortOrder = order === 'asc' ? 'asc' : 'desc';
 
     const orderClause = `order by t."isPinned" desc, t."${sortField}" ${sortOrder}`;
 
-    // Select specific columns to avoid leaking sensitive data
     const rows = await this.em.execute(
       `
       select t."id", t."slug", t."title", t."content", t."score", 
              t."viewCount", t."isPinned", t."postType", t."status",
              t."createdAt", t."updatedAt", t."imageUrl",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
+             u."role" as "authorRole", u."createdAt" as "authorCreatedAt",
              a."badgeImageUrl" as "authorBadgeImageUrl",
              a."type" as "authorBadgeType",
              a."seasonMonth" as "authorBadgeSeasonMonth",
@@ -139,11 +131,6 @@ export class ForumService {
 
     const total = Number(countRes?.[0]?.cnt || 0);
 
-    // const items = (rows || []).map((row: any) => ({
-    //   ...row,
-    //   content: previewText(row.content ?? '', 100),
-    // }));
-
     const items = (rows || []).map((row: any) => {
       const base = {
         threadId: row.id,
@@ -161,6 +148,8 @@ export class ForumService {
           id: row.authorId,
           displayName: row.authorName,
           imgUrl: row.authorAvatar,
+          role: row.authorRole,
+          createdAt: row.authorCreatedAt,
           badgeImageUrl: (() => {
             if (!row.authorBadgeImageUrl) return null;
             const expiresAt = getEffectiveExpiresAt(
@@ -237,12 +226,6 @@ export class ForumService {
       }
     }
 
-    // const commentCountRes = await this.em.execute(
-    //   `select count(1)::int as cnt from web."ForumComment" where "threadId" = ?`,
-    //   [thread.id],
-    // );
-    // const commentCount = Number(commentCountRes?.[0]?.cnt || 0);
-
     const badgeImageUrl =
       gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
     return {
@@ -265,6 +248,8 @@ export class ForumService {
         displayName: thread.authorId.displayName,
         imgUrl: thread.authorId.imgUrl,
         badgeImageUrl,
+        role: thread.authorId.role,
+        createdAt: thread.authorId.createdAt,
       },
       category: category
         ? {
@@ -276,9 +261,7 @@ export class ForumService {
     };
   }
 
-  // Create — auth required
   async create(dto: CreateForumDto, authorId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
-    // Validate input
     if ((dto.isPinned !== undefined) && !isAdmin) {
       throw new ForbiddenException('forums.forbidden_admin_only');
     }
@@ -292,29 +275,24 @@ export class ForumService {
       throw new BadRequestException('forums.category_required');
     }
 
-    // Check author exists
     const author = await this.em.findOne(User, { id: authorId });
     if (!author) throw new BadRequestException('forums.invalid_author');
 
-    // Check category exists (required)
     const category = await this.em.findOne(ForumCategory, { id: dto.categoryId });
     if (!category) throw new BadRequestException('forums.category_not_found');
     if (category.isOfficial && !isAdmin) {
       throw new ForbiddenException('forums.category_official_admin_only');
     }
 
-    // Prepare thread data
     const now = new Date();
 
     const slug = this.slugify(dto.slug?.trim() || dto.title);
 
-    // Check slug conflict
     const existingSlug = await this.em.findOne(ForumThread, { slug });
     if (existingSlug) {
       throw new BadRequestException('forums.slug_conflict');
     }
 
-    // Create thread
     const thread = this.em.create(ForumThread, {
       title: dto.title.trim(),
       slug,
@@ -333,18 +311,14 @@ export class ForumService {
     return await this.mapThreadDetail(thread, locale);
   }
 
-  // Update — author only
   async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
-    // Check permission
     if (String(thread.authorId.id) !== String(userId)) {
       throw new ForbiddenException('forums.forbidden_update');
     }
 
-    // Update fields
-    // Check lại update ra 3 4 hình
     if (dto.title) {
       const trimmed = dto.title.trim();
       if (!trimmed) throw new BadRequestException('forums.title_required');
@@ -355,7 +329,6 @@ export class ForumService {
       const newSlug = this.slugify(dto.slug.trim() || thread.title);
       if (!newSlug) throw new BadRequestException('forums.slug_required');
 
-      // Check slug conflict (if different from current)
       if (newSlug !== thread.slug) {
         const existingSlug = await this.em.execute(
           `select id from web."ForumThread" where slug = ? and id <> ?`,
@@ -389,7 +362,6 @@ export class ForumService {
       thread.imageUrl = dto.imageUrl ?? null;
     }
 
-    // Category: if provided, must exist (required)
     if (dto.categoryId !== undefined) {
       const category = await this.em.findOne(ForumCategory, { id: dto.categoryId });
       if (!category) throw new BadRequestException('forums.category_not_found');
@@ -420,12 +392,10 @@ export class ForumService {
     return null;
   }
 
-  // Remove — author or ADMIN
   async remove(id: string, userId: string, isAdmin = false) {
     const thread = await this.em.findOne(ForumThread, { id }, { populate: ['authorId'] });
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
-    // Check permission
     if (!isAdmin && String(thread.authorId.id) !== String(userId)) {
       throw new ForbiddenException('forums.forbidden_delete');
     }
@@ -446,7 +416,6 @@ export class ForumService {
     return null;
   }
 
-  // Vote — value = 1 | -1, toggle behaviour
   async vote(threadId: string, userId: string, value: 1 | -1) {
     const thread = await this.em.findOne(ForumThread, { id: threadId });
     if (!thread) throw new NotFoundException('forums.thread_not_found');
@@ -454,7 +423,6 @@ export class ForumService {
     const user = await this.em.findOne(User, { id: userId });
     if (!user) throw new BadRequestException('forums.invalid_user');
 
-    // Use raw SQL to reliably find existing vote
     const existingRows = await this.em.execute(
       `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
       [userId, threadId],
@@ -464,7 +432,6 @@ export class ForumService {
     const existingValue = existingVote ? Number(existingVote.value) : null;
 
     if (existingValue === null) {
-      // Create new vote
       const vote = this.em.create(ForumThreadVote, {
         threadId: thread,
         userId: user,
@@ -476,7 +443,6 @@ export class ForumService {
     }
 
     if (existingValue === value) {
-      // Same vote: toggle off (remove)
       await this.em.execute(
         `delete from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
         [userId, threadId],
@@ -485,7 +451,6 @@ export class ForumService {
       await this.em.persistAndFlush([thread]);
       return { result: 'unvoted', score: thread.score, userVote: null };
     } else {
-      // Change vote
       await this.em.execute(
         `update web."ForumThreadVote" set "value" = ? where "userId" = ? and "threadId" = ?`,
         [String(value), userId, threadId],
@@ -496,28 +461,22 @@ export class ForumService {
     }
   }
 
-  // Helper: generate slug from title
-  // I'm not using AI to comment this
   private slugify(s: string): string {
     if (!s) return '';
-    // Normalize Unicode: NFD separates characters and diacritics into individual parts
     const normalized = s.normalize('NFD');
-    // Remove accents using regex, also convert đ to d, Đ to D
     const withoutAccents = normalized
       .replace(/đ/g, 'd')
       .replace(/Đ/g, 'd')
       .replace(/[\u0300-\u036f]/g, '');
     const lowercase = withoutAccents.toLowerCase();
-    // Replace whitespace with dashes
     const withDashes = lowercase.replace(/\s+/g, '-');
-    // Remove invalid characters (keep only a-z, 0-9, dashes, underscores)
     const cleaned = withDashes.replace(/[^a-z0-9\-_]/g, '');
     const trimmed = cleaned.replace(/^-+|-+$/g, '');
     return trimmed.slice(0, 200);
   }
 
   async uploadThreadImage(dto: ThreadImageUploadRequestDto, userId: string): Promise<ThreadImageUploadResponseDto> {
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (dto.fileSize > maxSize) {
       throw new BadRequestException('forums.image_too_large');
     }
@@ -537,7 +496,7 @@ export class ForumService {
     });
 
     const publicUrlBase = this.configService
-      .get<string>('R2_PUBLIC_DEV_URL', 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev')
+      .getOrThrow<string>('R2_PUBLIC_DEV_URL')
       .replace(/\/+$/, '');
 
     return {

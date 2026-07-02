@@ -16,8 +16,6 @@ export class CategoryService {
     private readonly configService: ConfigService,
   ) { }
 
-  // List all categories, sorted by displayOrder
-  // List all categories, sorted alphabetically by name
   async findAll(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
     const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
@@ -47,7 +45,6 @@ export class CategoryService {
     }));
   }
 
-  // List all unofficial categories, sorted alphabetically by name
   async findAllUnofficial(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
     const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
@@ -78,7 +75,6 @@ export class CategoryService {
     }));
   }
 
-  // Get category by ID
   async findOne(id: string, locale: 'en' | 'vi') {
     const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
@@ -112,14 +108,10 @@ export class CategoryService {
     };
   }
 
-  // Create category
   async create(dto: CreateCategoryDto) {
-    // Validate required fields
     if (!dto.name?.trim()) throw new BadRequestException('category.name_required');
     if (!dto.nameVi?.trim()) throw new BadRequestException('category.name_vi_required');
 
-    // Sau này tạo helper rồi gọi, frontend cũng gọi helper đó để check trùng slug/name
-    // Check slug uniqueness
     const slug = this.slugify(dto.slug?.trim() || dto.name);
     const slugVi = this.slugify(dto.slugVi?.trim() || dto.nameVi);
 
@@ -132,14 +124,12 @@ export class CategoryService {
     const existingSlugVi = await this.em.findOne(ForumCategory, { slugVi });
     if (existingSlugVi) throw new BadRequestException('category.slug_vi_conflict');
 
-    // Check name uniqueness
     const existingName = await this.em.findOne(ForumCategory, { name: dto.name.trim() });
     if (existingName) throw new BadRequestException('category.name_conflict');
 
     const existingNameVi = await this.em.findOne(ForumCategory, { nameVi: dto.nameVi.trim() });
     if (existingNameVi) throw new BadRequestException('category.name_vi_conflict');
 
-    // Create category
     const category = this.em.create(ForumCategory, {
       id: dto.id || undefined,
       name: dto.name.trim(),
@@ -161,12 +151,10 @@ export class CategoryService {
     }
   }
 
-  // Update category
   async update(id: string, dto: UpdateCategoryDto) {
     const category = await this.em.findOne(ForumCategory, { id });
     if (!category) throw new NotFoundException('category.not_found');
 
-    // Update name
     if (dto.name !== undefined) {
       const trimmed = dto.name.trim();
 
@@ -187,7 +175,6 @@ export class CategoryService {
       category.name = trimmed;
     }
 
-    // Update Vietnamese name
     if (dto.nameVi !== undefined) {
       const trimmed = dto.nameVi.trim();
 
@@ -208,7 +195,6 @@ export class CategoryService {
       category.nameVi = trimmed;
     }
 
-    // Update slug
     if (dto.slug !== undefined) {
       const newSlug = this.slugify(dto.slug.trim() || category.name);
 
@@ -228,7 +214,6 @@ export class CategoryService {
       }
     }
 
-    // Update Vietnamese slug
     if (dto.slugVi !== undefined) {
       const newSlugVi = this.slugify(dto.slugVi.trim() || category.nameVi);
 
@@ -248,7 +233,6 @@ export class CategoryService {
       }
     }
 
-    // Update descriptions
     if (dto.description !== undefined) {
       category.description = dto.description?.trim() ?? null;
     }
@@ -257,7 +241,6 @@ export class CategoryService {
       category.descriptionVi = dto.descriptionVi?.trim() ?? null;
     }
 
-    // Update icon
     if (dto.iconUrl !== undefined) {
       const oldIconUrl = category.iconUrl;
       const newIconUrl = dto.iconUrl ?? null;
@@ -277,7 +260,6 @@ export class CategoryService {
       category.iconUrl = newIconUrl;
     }
 
-    // Update flags
     if (dto.isOfficial !== undefined) {
       category.isOfficial = dto.isOfficial;
     }
@@ -286,7 +268,6 @@ export class CategoryService {
     return null;
   }
 
-  // Delete category
   async remove(id: string) {
     const category = await this.em.findOne(ForumCategory, { id });
     if (!category) throw new NotFoundException('category.not_found');
@@ -307,7 +288,6 @@ export class CategoryService {
     return null;
   }
 
-  // Helper: generate slug from name
   private slugify(s: string): string {
     if (!s) return '';
     const normalized = s.normalize('NFD');
@@ -323,7 +303,7 @@ export class CategoryService {
   }
 
   async uploadCategoryIcon(dto: CategoryImageUploadRequestDto): Promise<CategoryImageUploadResponseDto> {
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (dto.fileSize > maxSize) {
       throw new BadRequestException('category.image_too_large');
     }
@@ -343,7 +323,7 @@ export class CategoryService {
     });
 
     const publicUrlBase = this.configService
-      .get<string>('R2_PUBLIC_DEV_URL', 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev')
+      .getOrThrow<string>('R2_PUBLIC_DEV_URL')
       .replace(/\/+$/, '');
 
     return {

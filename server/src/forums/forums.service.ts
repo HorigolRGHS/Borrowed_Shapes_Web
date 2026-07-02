@@ -21,6 +21,7 @@ import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'crypto';
 import { ThreadImageUploadRequestDto, ThreadImageUploadResponseDto } from './dto/thread-image-upload.dto';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getEffectiveExpiresAt } from '../achievements/achievements.service';
 
 @Injectable()
 export class ForumService {
@@ -115,6 +116,9 @@ export class ForumService {
              t."createdAt", t."updatedAt", t."imageUrl",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
              a."badgeImageUrl" as "authorBadgeImageUrl",
+             a."type" as "authorBadgeType",
+             a."seasonMonth" as "authorBadgeSeasonMonth",
+             a."expiresAt" as "authorBadgeExpiresAt",
              c."id" as "categoryId", ${categoryNameField} as "categoryName", ${categorySlugField} as "categorySlug"
       from web."ForumThread" t
       inner join auth."User" u on u."id" = t."authorId"
@@ -157,7 +161,18 @@ export class ForumService {
           id: row.authorId,
           displayName: row.authorName,
           imgUrl: row.authorAvatar,
-          badgeImageUrl: row.authorBadgeImageUrl,
+          badgeImageUrl: (() => {
+            if (!row.authorBadgeImageUrl) return null;
+            const expiresAt = getEffectiveExpiresAt(
+              row.authorBadgeType,
+              row.authorBadgeSeasonMonth,
+              row.authorBadgeExpiresAt,
+            );
+            if (row.authorBadgeType === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+              return null;
+            }
+            return row.authorBadgeImageUrl;
+          })(),
         },
         category: {
           id: row.categoryId,
@@ -222,6 +237,12 @@ export class ForumService {
       }
     }
 
+    // const commentCountRes = await this.em.execute(
+    //   `select count(1)::int as cnt from web."ForumComment" where "threadId" = ?`,
+    //   [thread.id],
+    // );
+    // const commentCount = Number(commentCountRes?.[0]?.cnt || 0);
+
     const badgeImageUrl =
       gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
     return {
@@ -238,6 +259,7 @@ export class ForumService {
       createdAt: thread.createdAt,
       updatedAt: thread.updatedAt,
       userVote,
+      commentCount: thread.commentCount,
       author: {
         id: thread.authorId.id,
         displayName: thread.authorId.displayName,

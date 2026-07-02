@@ -24,14 +24,6 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// interface CreateForumForm {
-//   title: string;
-//   slug: string;
-//   content: string;
-//   categoryId: string;
-//   imageUrl: string;
-// }
-
 interface Category {
   id: string;
   name: string;
@@ -67,7 +59,6 @@ export default function ForumsPage() {
     setPage(1);
   };
   const [threads, setThreads] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"createdAt" | "updatedAt" | "score">("createdAt");
@@ -80,15 +71,6 @@ export default function ForumsPage() {
   const [user, setUser] = useState<any>(null);
 
   const [showCreate, setShowCreate] = useState(false);
-
-  const [filters, setFilters] = useState({
-    searchQuery: "",
-    sortBy: "createdAt" as "createdAt" | "updatedAt" | "score",
-    order: "desc" as "asc" | "desc",
-    month: undefined as number | undefined,
-    year: undefined as number | undefined,
-    postType: undefined as string | undefined,
-  });
 
   const [meta, setMeta] = useState({
     page: 1,
@@ -137,8 +119,6 @@ export default function ForumsPage() {
     } catch (error) {
       console.error("Fetch categories failed", error);
       setMessage(t("forums.fetch_failed"));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -169,11 +149,6 @@ export default function ForumsPage() {
       setMessage(t("forums.fetch_failed"));
     }
   };
-
-  // const handleApplyFilters = () => {
-  //   setPage(1);
-  //   fetchThreads();
-  // }
 
   const handleCreate = async (payload: typeof form, file: File | null) => {
     setMessage(null);
@@ -245,15 +220,6 @@ export default function ForumsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="text-center text-sm text-muted-foreground">
-          {t("common.loading")}
-        </div>
-      </main>
-    );
-  }
 
   // Hiển thị danh sách categories nếu chưa chọn
   if (!selectedCategory) {

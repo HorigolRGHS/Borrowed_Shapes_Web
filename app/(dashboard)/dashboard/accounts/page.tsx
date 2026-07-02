@@ -560,7 +560,7 @@ export default function AccountManagementPage() {
     const mostRecentSession = hasActiveSession ? [...activeSessions].sort((a, b) => new Date(b.loginTime).getTime() - new Date(a.loginTime).getTime())[0] : null;
 
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-4 md:p-8 space-y-6">
         <div>
           <Button variant="ghost" onClick={() => setViewingDetail(false)} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1026,7 +1026,7 @@ export default function AccountManagementPage() {
 
   // List View
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">{t("admin.account.title") || "Account Management"}</h1>
         <p className="text-muted-foreground mt-2">{t("admin.account.subtitle")}</p>

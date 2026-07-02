@@ -260,7 +260,7 @@ export default function DashboardCategoriesPage() {
     setIsUploadingImage(true);
     try {
       // 1. Create the category without the image URL first
-      const createResponse = await axios.post("/api/category", {
+      const createResponse = await axios.post("/api/category/create", {
         name: form.name,
         nameVi: form.nameVi,
         slug: form.slug || undefined,
@@ -299,7 +299,7 @@ export default function DashboardCategoriesPage() {
             finalIconUrl = uploadData.publicUrl;
 
             // 3. Update the category with the icon URL
-            await axios.patch(`/api/category/${categoryId}`, {
+            await axios.patch(`/api/category/update/${categoryId}`, {
               iconUrl: finalIconUrl,
             });
           }
@@ -323,7 +323,7 @@ export default function DashboardCategoriesPage() {
     setLoading(true);
     try {
       // Fetch details of category only once
-      const res = await axios.get(`/api/category/${cat.id}`);
+      const res = await axios.get(`/api/category/id/${cat.id}`);
       const data = res.data?.data;
 
       if (data) {
@@ -384,7 +384,7 @@ export default function DashboardCategoriesPage() {
       }
 
       // 2. Patch details, including the updated iconUrl
-      const response = await axios.patch(`/api/category/${editingCategory.id}`, {
+      const response = await axios.patch(`/api/category/update/${editingCategory.id}`, {
         name: form.name,
         nameVi: form.nameVi,
         slug: form.slug || undefined,
@@ -419,7 +419,7 @@ export default function DashboardCategoriesPage() {
   const handleDelete = async () => {
     if (!deletingCategory) return;
     try {
-      const response = await axios.delete(`/api/category/${deletingCategory.id}`);
+      const response = await axios.delete(`/api/category/delete/${deletingCategory.id}`);
       if (response.data?.success) {
         toast.success(t("forums.dashboard.toast_cat_deleted") || "Category deleted successfully");
         setDeleteOpen(false);
@@ -441,12 +441,12 @@ export default function DashboardCategoriesPage() {
   if (!user) return null;
 
   return (
-    <div className="w-full bg-background text-foreground flex flex-col">
+    <div className="w-full text-foreground flex flex-col">
       <main className="flex-1 px-8 py-8">
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="max-w-3xl">
-            <h2 className="text-4xl font-bold text-foreground sm:text-2xl font-orbitron">
+            <h2 className="text-3xl font-bold tracking-tight">
               {t("forums.dashboard.category_management") || "Category Management"}
             </h2>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
@@ -653,7 +653,7 @@ export default function DashboardCategoriesPage() {
         <DialogContent className="max-w-3xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 to-orange-400" />
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground font-bold font-orbitron">
+            <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
               <Plus className="h-5 w-5 text-amber-500" />
               {t("forums.dashboard.create_category") || "Create Category"}
             </DialogTitle>
@@ -864,7 +864,7 @@ export default function DashboardCategoriesPage() {
         <DialogContent className="max-w-3xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 to-orange-400" />
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground font-bold font-orbitron">
+            <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
               <Edit className="h-5 w-5 text-amber-500" />
               {t("forums.dashboard.edit_category") || "Edit Category"}
             </DialogTitle>
@@ -1077,7 +1077,7 @@ export default function DashboardCategoriesPage() {
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-500 font-bold font-orbitron">
+            <AlertDialogTitle className="flex items-center gap-2 text-red-500 font-bold">
               <AlertTriangle className="h-5 w-5" />
               {t("forums.dashboard.delete_category") || "Delete Category?"}
             </AlertDialogTitle>

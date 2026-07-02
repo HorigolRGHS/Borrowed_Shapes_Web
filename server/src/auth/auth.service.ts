@@ -15,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
+import { getEffectiveExpiresAt } from '../achievements/achievements.service';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import {
   GoogleExchangeRequestDto,
@@ -1030,6 +1031,19 @@ export class AuthService {
       { populate: ['equippedAchievementId'] },
     );
 
+    if (gameProfile?.equippedAchievementId) {
+      const achievement = gameProfile.equippedAchievementId;
+      const expiresAt = getEffectiveExpiresAt(
+        achievement.type,
+        achievement.seasonMonth,
+        achievement.expiresAt,
+      );
+      if (achievement.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+        gameProfile.equippedAchievementId = undefined as any;
+        await this.em.flush();
+      }
+    }
+
     const base = {
       id: user.id,
       gameProfileId: gameProfile ? gameProfile.id : null,
@@ -1069,19 +1083,25 @@ export class AuthService {
     if (includes.includes('achievements') && gameProfile) {
       // load user's achievements (lightweight)
       const rows = await this.em.execute(
-        `select ua."achievementId" as id, a.name, a."badgeImageUrl" as "badgeImageUrl", ua."achievedAt" as "achievedAt"
+        `select ua."achievementId" as id, a.name, a."badgeImageUrl" as "badgeImageUrl", 
+                a.type, a."seasonMonth", a."expiresAt", ua."achievedAt" as "achievedAt"
          from game."UserAchievement" ua
          join game."Achievement" a on a.id = ua."achievementId"
          where ua."gameProfileId" = ?`,
         [gameProfile.id],
       );
 
-      result.achievements = (rows || []).map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        badgeImageUrl: r.badgeImageUrl,
-        achievedAt: r.achievedAt,
-      }));
+      result.achievements = (rows || []).map((r: any) => {
+        const expiresAt = getEffectiveExpiresAt(r.type, r.seasonMonth, r.expiresAt);
+        const isExpired = r.type === 'SEASONAL' && expiresAt && expiresAt < new Date();
+        return {
+          id: r.id,
+          name: r.name,
+          badgeImageUrl: r.badgeImageUrl,
+          achievedAt: r.achievedAt,
+          isExpired,
+        };
+      });
     }
 
     return result;

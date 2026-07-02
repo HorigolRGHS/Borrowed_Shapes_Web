@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -530,93 +531,75 @@ export default function AnnouncementsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 overflow-y-auto px-8 py-8">
-          <div className="mb-8">
-            <div className="mb-6 max-w-3xl">
-              <h2 className="text-4xl font-bold text-foreground sm:text-2xl">{t("announcements.management_title")}</h2>
-              <p className="mt-4 text-sm leading-7 text-muted-foreground">{t("announcements.management_subtitle")}</p>
-              <div className="mt-2 h-0.5 w-12 rounded-[12px] bg-amber-500" />
-            </div>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("announcements.management_title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("announcements.management_subtitle")}</p>
+        </div>
+        <Button
+          onClick={() => {
+            resetForm();
+            setEditingAnnouncement(null);
+            setShowCreateModal(true);
+          }}
+          className="bg-orange-500 hover:bg-orange-600 text-white self-start md:self-auto"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {t("announcements.create_announcement")}
+        </Button>
+      </div>
 
-            {/* Search + Create */}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative flex-1 max-w-lg">
-                {/* <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
-                  <Search className="h-4 w-4" />
-                </span>
-                <Input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyUp={handleSearch}
-                  placeholder={t("announcements.search_placeholder")}
-                  className="pl-10"
-                /> */}
-              </div>
-              <Button
-                onClick={() => {
-                  resetForm();
-                  setEditingAnnouncement(null);
-                  setShowCreateModal(true);
-                }}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                <Plus className="h-4 w-4" />
-                {t("announcements.create_announcement")}
-              </Button>
-            </div>
+      <Card>
+        <CardContent className="p-6">
+          {/* Filters row */}
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("announcements.filter_all_types")}</SelectItem>
+                <SelectItem value="NEWS">{t("announcements.filter_type_news")}</SelectItem>
+                <SelectItem value="PATCH_NOTE">{t("announcements.filter_type_patch_note")}</SelectItem>
+                <SelectItem value="UPDATE">{t("announcements.filter_type_update")}</SelectItem>
+                <SelectItem value="EVENT">{t("announcements.filter_type_event")}</SelectItem>
+                <SelectItem value="MAINTENANCE">{t("announcements.filter_type_maintenance")}</SelectItem>
+              </SelectContent>
+            </Select>
 
-            {/* Filters row */}
-            <div className="flex flex-wrap items-center gap-3 mt-4">
-              <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("announcements.filter_all_types")}</SelectItem>
-                  <SelectItem value="NEWS">{t("announcements.filter_type_news")}</SelectItem>
-                  <SelectItem value="PATCH_NOTE">{t("announcements.filter_type_patch_note")}</SelectItem>
-                  <SelectItem value="UPDATE">{t("announcements.filter_type_update")}</SelectItem>
-                  <SelectItem value="EVENT">{t("announcements.filter_type_event")}</SelectItem>
-                  <SelectItem value="MAINTENANCE">{t("announcements.filter_type_maintenance")}</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); }}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("announcements.filter_all_status")}</SelectItem>
+                <SelectItem value="scheduled">{t("announcements.filter_status_scheduled")}</SelectItem>
+                <SelectItem value="published">{t("announcements.filter_status_published")}</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); }}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("announcements.filter_all_status")}</SelectItem>
-                  <SelectItem value="scheduled">{t("announcements.filter_status_scheduled")}</SelectItem>
-                  <SelectItem value="published">{t("announcements.filter_status_published")}</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={pinnedFilter} onValueChange={(val) => { setPinnedFilter(val); }}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("announcements.filter_all_pinned")}</SelectItem>
+                <SelectItem value="pinned">{t("announcements.filter_pinned")}</SelectItem>
+                <SelectItem value="not_pinned">{t("announcements.filter_not_pinned")}</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <Select value={pinnedFilter} onValueChange={(val) => { setPinnedFilter(val); }}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("announcements.filter_all_pinned")}</SelectItem>
-                  <SelectItem value="pinned">{t("announcements.filter_pinned")}</SelectItem>
-                  <SelectItem value="not_pinned">{t("announcements.filter_not_pinned")}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={(val) => { setSortBy(val); setCurrentPage(1); }}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="publishedAt">{t("announcements.sort_by_published")}</SelectItem>
-                  <SelectItem value="updatedAt">{t("announcements.sort_by_updated")}</SelectItem>
-                  <SelectItem value="createdAt">{t("announcements.sort_by_created")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={sortBy} onValueChange={(val) => { setSortBy(val); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="publishedAt">{t("announcements.sort_by_published")}</SelectItem>
+                <SelectItem value="updatedAt">{t("announcements.sort_by_updated")}</SelectItem>
+                <SelectItem value="createdAt">{t("announcements.sort_by_created")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {loading ? (
@@ -624,7 +607,7 @@ export default function AnnouncementsPage() {
           ) : (
             <>
               {/* Table */}
-              <div className="rounded-[12px] border border-border bg-card/60 overflow-hidden">
+              <div className="rounded-md border border-border overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border hover:bg-transparent">
@@ -772,8 +755,8 @@ export default function AnnouncementsPage() {
               )}
             </>
           )}
-        </main>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Create/Edit Modal */}
       <Dialog

@@ -292,6 +292,19 @@ export class AccountService {
       { populate: ['equippedAchievementId'] },
     );
 
+    if (updatedGameProfile?.equippedAchievementId) {
+      const achievement = updatedGameProfile.equippedAchievementId;
+      const expiresAt = getEffectiveExpiresAt(
+        achievement.type,
+        achievement.seasonMonth,
+        achievement.expiresAt,
+      );
+      if (achievement.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+        updatedGameProfile.equippedAchievementId = undefined as any;
+        await this.em.flush();
+      }
+    }
+
     return {
       id: user.id,
       email: String(user.email),
@@ -460,6 +473,19 @@ export class AccountService {
       { userId: id },
       { populate: ['equippedAchievementId'] },
     );
+
+    if (gameProfile?.equippedAchievementId) {
+      const achievement = gameProfile.equippedAchievementId;
+      const expiresAt = getEffectiveExpiresAt(
+        achievement.type,
+        achievement.seasonMonth,
+        achievement.expiresAt,
+      );
+      if (achievement.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+        gameProfile.equippedAchievementId = undefined as any;
+        await this.em.flush();
+      }
+    }
 
     let equippedAchievement = null;
     if (gameProfile?.equippedAchievementId) {

@@ -14,7 +14,8 @@ import { GlobalExceptionFilter } from '../src/common/filters/http-exception.filt
 import { StandardApiResponseInterceptor } from '../src/common/interceptors/standard-api-response.interceptor';
 import { I18nService } from '../src/common/i18n/i18n.service';
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? 'admin@borrowed-shapes.local';
+const ADMIN_EMAIL =
+  process.env.E2E_ADMIN_EMAIL ?? 'admin@borrowed-shapes.local';
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? 'Admin@1234';
 const USER_EMAIL = process.env.E2E_USER_EMAIL ?? 'user@borrowed-shapes.local';
 const USER_PASSWORD = process.env.E2E_USER_PASSWORD ?? 'User@1234';
@@ -100,7 +101,9 @@ describe('Wiki module (e2e)', () => {
     });
 
     it('GET /wiki returns paginated published pages without auth (BR-77)', async () => {
-      const res = await request(app.getHttpServer()).get('/api/wiki').expect(200);
+      const res = await request(app.getHttpServer())
+        .get('/api/wiki')
+        .expect(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toMatchObject({
         page: 1,
@@ -292,8 +295,7 @@ describe('Wiki module (e2e)', () => {
         .get(`/api/wiki/${createdPageId}/history`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
-      const earliest =
-        hist.body.data.items[hist.body.data.items.length - 1].id;
+      const earliest = hist.body.data.items[hist.body.data.items.length - 1].id;
       expect(earliest).toBeTruthy();
 
       const res = await request(app.getHttpServer())
@@ -375,7 +377,10 @@ describe('Wiki module (e2e)', () => {
     it('rejects unauthenticated upload', async () => {
       await request(app.getHttpServer())
         .post(uploadPath())
-        .attach('file', PNG_HEADER, { filename: 'a.png', contentType: 'image/png' })
+        .attach('file', PNG_HEADER, {
+          filename: 'a.png',
+          contentType: 'image/png',
+        })
         .expect(401);
     });
 
@@ -384,7 +389,10 @@ describe('Wiki module (e2e)', () => {
       await request(app.getHttpServer())
         .post(uploadPath())
         .set('Authorization', `Bearer ${userToken}`)
-        .attach('file', PNG_HEADER, { filename: 'a.png', contentType: 'image/png' })
+        .attach('file', PNG_HEADER, {
+          filename: 'a.png',
+          contentType: 'image/png',
+        })
         .expect(403);
     });
 
@@ -392,7 +400,10 @@ describe('Wiki module (e2e)', () => {
       const res = await request(app.getHttpServer())
         .post(uploadPath())
         .set('Authorization', `Bearer ${adminToken}`)
-        .attach('file', PNG_HEADER, { filename: 'pic.png', contentType: 'image/png' })
+        .attach('file', PNG_HEADER, {
+          filename: 'pic.png',
+          contentType: 'image/png',
+        })
         .expect(200);
       expect(res.body.data.url).toMatch(
         new RegExp(`^/api/wiki/image/wiki/${uploadPageId}/[a-f0-9-]+\\.png$`),

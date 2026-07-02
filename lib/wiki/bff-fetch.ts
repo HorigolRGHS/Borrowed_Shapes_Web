@@ -1,23 +1,27 @@
 // lib/wiki/bff-fetch.ts
 import type { ApiResponse } from "@/models/dtos/api-response.dto";
+import type { JsonValue, QueryParams } from "@/lib/wiki/http";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
+// Error responses carry an arbitrary JSON payload (e.g. 409 conflict details).
+type WikiErrorResponse = ApiResponse<JsonValue | null>;
+
 interface JsonOptions {
-  params?: Record<string, unknown> | undefined;
-  body?: unknown;
+  params?: QueryParams;
+  body?: object;
 }
 
 export class BffFetchError extends Error {
-  readonly response: { status: number; data: ApiResponse<unknown> };
-  constructor(status: number, data: ApiResponse<unknown>) {
+  readonly response: { status: number; data: WikiErrorResponse };
+  constructor(status: number, data: WikiErrorResponse) {
     super(data?.message ?? `Request failed with status ${status}`);
     this.name = "BffFetchError";
     this.response = { status, data };
   }
 }
 
-function buildQuery(params?: Record<string, unknown>): string {
+function buildQuery(params?: QueryParams): string {
   if (!params) return "";
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -74,7 +78,7 @@ async function parseOrThrow<T>(res: Response): Promise<ApiResponse<T>> {
     body = null;
   }
   if (!res.ok) {
-    const fallback: ApiResponse<unknown> = {
+    const fallback: WikiErrorResponse = {
       statusCode: res.status,
       success: false,
       message: body?.message ?? res.statusText ?? "Request failed",
@@ -82,7 +86,7 @@ async function parseOrThrow<T>(res: Response): Promise<ApiResponse<T>> {
       path: "",
       timestamp: new Date().toISOString(),
     };
-    throw new BffFetchError(res.status, body ?? fallback);
+    throw new BffFetchError(res.status, (body as WikiErrorResponse) ?? fallback);
   }
   if (!body) {
     throw new BffFetchError(res.status, {

@@ -232,6 +232,11 @@
     "slug_taken_error": "This slug is already in use",
     "invalid_slug_error": "Slug must contain only lowercase letters, digits, and dashes",
     "title_required_error": "Title is required",
+    "title_too_long_error": "Title must be at most 300 characters",
+    "summary_too_long_error": "Summary must be at most 500 characters",
+    "content_too_long_error": "Content is too large (max 1MB)",
+    "stats_too_many_error": "Too many stats (max 50)",
+    "metadata_too_large_error": "Infobox data is too large",
     "new": {
       "title_step1": "Create wiki",
       "title_field": "Title",

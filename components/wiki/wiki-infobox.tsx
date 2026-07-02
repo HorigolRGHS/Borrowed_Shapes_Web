@@ -32,7 +32,7 @@ interface InfoboxEditSlots {
 }
 
 interface Props {
-  metadata: unknown;
+  metadata: Partial<WikiMetadata> | null | undefined;
   title: string;
   locale: "en" | "vi";
   relatedTitles?: Map<string, RelatedPageEntry>;
@@ -65,7 +65,7 @@ export function WikiInfobox({
   // sparse but valid row (e.g., {category: "Boss"}) doesn't fail validation.
   const merged = {
     ...emptyWikiMetadata,
-    ...(typeof metadata === "object" && metadata !== null ? metadata : {}),
+    ...(metadata ?? {}),
   };
   const parsed = wikiMetadataSchema.safeParse(merged);
   if (!parsed.success) return null;

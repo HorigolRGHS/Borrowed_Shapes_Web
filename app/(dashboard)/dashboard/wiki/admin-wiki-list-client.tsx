@@ -18,6 +18,7 @@ import { fetchAdminWikiList, fetchAdminWikiStats, deleteWiki } from "@/lib/wiki/
 import type { WikiListResponse, WikiListItem, WikiAdminStats } from "@/models/dtos/wiki.dto";
 import type { WikiCategory } from "@/models/dtos/wiki-metadata.dto";
 import { categoryLabelKey } from "@/lib/wiki/category-label";
+import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 import { WikiPagination } from "@/components/wiki/wiki-pagination";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -86,9 +87,8 @@ export function AdminWikiListClient() {
       ]);
       setData(result);
       setStats(statsResult);
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { message?: string } } };
-      setError(err?.response?.data?.message ?? "Load failed");
+    } catch (e) {
+      setError(getApiErrorMessage(e as ApiError, "Load failed"));
     } finally {
       setLoading(false);
     }
@@ -164,9 +164,8 @@ export function AdminWikiListClient() {
       setPendingDelete(null);
       setConfirmInput("");
       setDeleteError(null);
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { message?: string } } };
-      setDeleteError(err?.response?.data?.message ?? "Delete failed");
+    } catch (e) {
+      setDeleteError(getApiErrorMessage(e as ApiError, "Delete failed"));
     } finally {
       setDeleting(false);
     }

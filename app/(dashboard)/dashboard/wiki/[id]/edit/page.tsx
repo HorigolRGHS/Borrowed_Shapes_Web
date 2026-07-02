@@ -12,6 +12,7 @@ import {
 } from "@/components/wiki/wiki-form";
 import type { WikiDetail } from "@/models/dtos/wiki.dto";
 import { normalizeWikiFormMetadata } from "@/models/dtos/wiki-metadata.dto";
+import { getApiErrorMessage, type ApiError, type ConflictLatest } from "@/lib/wiki/http";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -23,21 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface ConflictLatest {
-  id?: string;
-  createdAt?: string;
-}
-
-interface WikiApiErrorBody {
-  message?: string;
-  data?: { currentLatest?: ConflictLatest | null };
-  currentLatest?: ConflictLatest | null;
-}
-
-interface WikiApiError {
-  response?: { status?: number; data?: WikiApiErrorBody };
-}
 
 export default function AdminWikiEditPage({
   params,
@@ -60,7 +46,7 @@ export default function AdminWikiEditPage({
   useEffect(() => {
     fetchAdminWikiById(id)
       .then(setDetail)
-      .catch((e) => setLoadError(e?.response?.data?.message ?? "Load failed"));
+      .catch((e) => setLoadError(getApiErrorMessage(e as ApiError, "Load failed")));
   }, [id]);
 
   if (loadError) {
@@ -128,8 +114,8 @@ export default function AdminWikiEditPage({
           : t("wiki.edit.save_draft_success"),
       );
       return { ok: true };
-    } catch (e: unknown) {
-      const err = e as WikiApiError;
+    } catch (e) {
+      const err = e as ApiError;
       const status = err.response?.status;
       const body = err.response?.data;
       if (status === 409) {

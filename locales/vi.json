@@ -231,6 +231,11 @@
     "slug_taken_error": "Slug này đã được sử dụng",
     "invalid_slug_error": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang",
     "title_required_error": "Vui lòng nhập tiêu đề",
+    "title_too_long_error": "Tiêu đề không được vượt quá 300 ký tự",
+    "summary_too_long_error": "Tóm tắt không được vượt quá 500 ký tự",
+    "content_too_long_error": "Nội dung quá lớn (tối đa 1MB)",
+    "stats_too_many_error": "Quá nhiều chỉ số (tối đa 50)",
+    "metadata_too_large_error": "Dữ liệu infobox quá lớn",
     "new": {
       "title_step1": "Tạo từ điển mới",
       "title_field": "Tiêu đề",

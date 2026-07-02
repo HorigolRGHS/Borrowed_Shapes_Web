@@ -28,6 +28,7 @@ import {
   Markdown,
   type EditorConfig,
   type Editor,
+  type EventInfo,
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
 import "./ckeditor-theme.css";
@@ -184,7 +185,7 @@ export function WikiEditor({
     }
   }, [value, activeTab]);
 
-  const handleChange = (_evt: unknown, editor: Editor) => {
+  const handleChange = (_evt: EventInfo, editor: Editor) => {
     if (isSettingData.current) return;
     const md = editor.getData();
     const tab = activeTabRef.current;

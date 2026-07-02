@@ -11,6 +11,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { WIKI_STATS_MAX_KEYS, WIKI_METADATA_MAX_BYTES } from './wiki-constants';
 
 export const WIKI_CATEGORIES = [
   'Character',
@@ -23,13 +24,13 @@ export const WIKI_CATEGORIES = [
 export type WikiCategory = (typeof WIKI_CATEGORIES)[number];
 
 @ValidatorConstraint({ name: 'finiteNumberStats', async: false })
-export class FiniteNumberStatsConstraint
-  implements ValidatorConstraintInterface
-{
+export class FiniteNumberStatsConstraint implements ValidatorConstraintInterface {
   validate(value: unknown): boolean {
     if (value === undefined || value === null) return true;
     if (typeof value !== 'object' || Array.isArray(value)) return false;
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (entries.length > WIKI_STATS_MAX_KEYS) return false;
+    for (const [k, v] of entries) {
       const trimmed = k.trim();
       if (trimmed.length === 0 || trimmed.length > 40) return false;
       if (typeof v !== 'number' || !Number.isFinite(v)) return false;
@@ -37,11 +38,12 @@ export class FiniteNumberStatsConstraint
     return true;
   }
   defaultMessage(): string {
-    return 'stats must be a record of non-empty string keys to finite numbers';
+    return `stats must be a record of at most ${WIKI_STATS_MAX_KEYS} non-empty string keys to finite numbers`;
   }
 }
 
-const wikiImageProxyPath = /^\/api\/wiki\/image\/wiki\/[A-Za-z0-9_-]+\/[A-Za-z0-9-]+\.(?:jpg|png|webp|gif)$/;
+const wikiImageProxyPath =
+  /^\/api\/wiki\/image\/wiki\/[A-Za-z0-9_-]+\/[A-Za-z0-9-]+\.(?:jpg|png|webp|gif)$/;
 
 @ValidatorConstraint({ name: 'wikiImageUrl', async: false })
 export class WikiImageUrlConstraint implements ValidatorConstraintInterface {
@@ -59,6 +61,17 @@ export class WikiImageUrlConstraint implements ValidatorConstraintInterface {
 
   defaultMessage(): string {
     return 'infoboxImage must be a URL or wiki image proxy path';
+  }
+}
+
+@ValidatorConstraint({ name: 'wikiMetadataBytes', async: false })
+export class WikiMetadataByteLimitConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown): boolean {
+    if (value === undefined || value === null) return true;
+    return JSON.stringify(value).length <= WIKI_METADATA_MAX_BYTES;
+  }
+  defaultMessage(): string {
+    return `metadata must serialize to at most ${WIKI_METADATA_MAX_BYTES} bytes`;
   }
 }
 

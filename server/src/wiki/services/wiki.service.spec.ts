@@ -11,10 +11,7 @@ describe('WikiService.list', () => {
       findAndCount: jest.fn().mockResolvedValue([[], 0]),
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
@@ -105,7 +102,9 @@ describe('WikiService.list', () => {
 
     it('propagates errors from em.findAndCount', async () => {
       em.findAndCount.mockRejectedValueOnce(new Error('db down'));
-      await expect(service.list({ page: 1, limit: 20 }, false)).rejects.toThrow('db down');
+      await expect(service.list({ page: 1, limit: 20 }, false)).rejects.toThrow(
+        'db down',
+      );
     });
   });
 });
@@ -117,10 +116,7 @@ describe('WikiService.getBySlug', () => {
   beforeEach(async () => {
     em = { findOne: jest.fn() };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
@@ -131,7 +127,9 @@ describe('WikiService.getBySlug', () => {
   });
 
   it('rejects invalid slug format', async () => {
-    await expect(service.getBySlug('Invalid Slug')).rejects.toThrow('wiki.invalid_slug');
+    await expect(service.getBySlug('Invalid Slug')).rejects.toThrow(
+      'wiki.invalid_slug',
+    );
   });
 
   it('marks matched locale as en when slug matches `slug` column', async () => {
@@ -186,9 +184,15 @@ describe('WikiService.getBySlug', () => {
 
   it('throws when latestRevisionId is null', async () => {
     em.findOne.mockResolvedValueOnce({
-      id: 'p1', slug: 'a', slugVi: 'b', title: 'A', titleVi: 'B',
-      metadataJson: null, isPublished: true,
-      createdAt: new Date(), updatedAt: new Date(),
+      id: 'p1',
+      slug: 'a',
+      slugVi: 'b',
+      title: 'A',
+      titleVi: 'B',
+      metadataJson: null,
+      isPublished: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       latestRevisionId: null,
     });
     await expect(service.getBySlug('a')).rejects.toThrow('wiki.not_found');
@@ -199,14 +203,22 @@ describe('WikiService.getBySlug', () => {
       const slug = 'a'.repeat(200);
       em.findOne.mockResolvedValueOnce({
         id: 'p1',
-        slug, slugVi: 'vi-slug',
-        title: 'T', titleVi: 'TV',
-        metadataJson: null, isPublished: true,
-        createdAt: new Date(), updatedAt: new Date(),
+        slug,
+        slugVi: 'vi-slug',
+        title: 'T',
+        titleVi: 'TV',
+        metadataJson: null,
+        isPublished: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
         latestRevisionId: {
-          id: 'r1', content: 'a', contentVi: 'b',
-          summary: null, summaryVi: null,
-          authorId: null, createdAt: new Date(),
+          id: 'r1',
+          content: 'a',
+          contentVi: 'b',
+          summary: null,
+          summaryVi: null,
+          authorId: null,
+          createdAt: new Date(),
         },
       });
       const out = await service.getBySlug(slug);
@@ -217,7 +229,9 @@ describe('WikiService.getBySlug', () => {
 
   describe('Abnormal', () => {
     it('rejects whitespace-only slug as invalid format', async () => {
-      await expect(service.getBySlug('   ')).rejects.toThrow('wiki.invalid_slug');
+      await expect(service.getBySlug('   ')).rejects.toThrow(
+        'wiki.invalid_slug',
+      );
     });
   });
 });
@@ -231,10 +245,7 @@ describe('WikiService.search', () => {
       findAndCount: jest.fn().mockResolvedValue([[], 0]),
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
@@ -276,7 +287,10 @@ describe('WikiService.search', () => {
   it('escapes ILIKE wildcards in search q', async () => {
     await service.search({ q: '50%_off', page: 1, limit: 20 }, false);
     const where = em.findAndCount.mock.calls[0][1];
-    const orClause = where.$or as { title?: { $ilike: string }; titleVi?: { $ilike: string } }[];
+    const orClause = where.$or as {
+      title?: { $ilike: string };
+      titleVi?: { $ilike: string };
+    }[];
     expect(orClause).toBeDefined();
     expect(orClause[0].title?.$ilike).toContain('50\\%\\_off');
   });
@@ -324,17 +338,16 @@ describe('WikiService.getHistory', () => {
       findAndCount: jest.fn().mockResolvedValue([[], 0]),
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
 
   it('throws 404 when page does not exist', async () => {
     em.findOne.mockResolvedValueOnce(null);
-    await expect(service.getHistory('p1', 1, 20)).rejects.toThrow('wiki.not_found');
+    await expect(service.getHistory('p1', 1, 20)).rejects.toThrow(
+      'wiki.not_found',
+    );
   });
 
   it('marks isLatest correctly', async () => {
@@ -344,8 +357,20 @@ describe('WikiService.getHistory', () => {
     });
     em.findAndCount.mockResolvedValueOnce([
       [
-        { id: 'r2', summary: null, summaryVi: null, authorId: null, createdAt: new Date() },
-        { id: 'r1', summary: null, summaryVi: null, authorId: null, createdAt: new Date() },
+        {
+          id: 'r2',
+          summary: null,
+          summaryVi: null,
+          authorId: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'r1',
+          summary: null,
+          summaryVi: null,
+          authorId: null,
+          createdAt: new Date(),
+        },
       ],
       2,
     ]);
@@ -385,23 +410,24 @@ describe('WikiService.getRevision', () => {
       getReference: jest.fn().mockImplementation((_e, id) => ({ id })),
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
 
   it('returns 404 when revision id does not match pageId', async () => {
     em.findOne.mockResolvedValueOnce(null);
-    await expect(service.getRevision('p1', 'r-other')).rejects.toThrow('wiki.revision_not_found');
+    await expect(service.getRevision('p1', 'r-other')).rejects.toThrow(
+      'wiki.revision_not_found',
+    );
   });
 
   describe('Abnormal', () => {
     it('throws revision_not_found when revisionId belongs to another page (findOne returns null)', async () => {
       em.findOne.mockResolvedValueOnce(null);
-      await expect(service.getRevision('p1', 'r-belongs-to-p2')).rejects.toThrow('wiki.revision_not_found');
+      await expect(
+        service.getRevision('p1', 'r-belongs-to-p2'),
+      ).rejects.toThrow('wiki.revision_not_found');
     });
   });
 });
@@ -413,13 +439,12 @@ describe('WikiService.getRevisionDiff', () => {
   beforeEach(async () => {
     em = {
       findOne: jest.fn(),
-      getReference: jest.fn().mockImplementation((_e: unknown, id: string) => ({ id })),
+      getReference: jest
+        .fn()
+        .mockImplementation((_e: unknown, id: string) => ({ id })),
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
@@ -427,10 +452,14 @@ describe('WikiService.getRevisionDiff', () => {
   it('returns isFirst=true when no previous revision exists', async () => {
     em.findOne
       .mockResolvedValueOnce({
-        id: 'r1', pageId: { id: 'p1' },
-        content: 'a', contentVi: 'b',
-        summary: null, summaryVi: null,
-        authorId: null, createdAt: new Date('2026-05-01'),
+        id: 'r1',
+        pageId: { id: 'p1' },
+        content: 'a',
+        contentVi: 'b',
+        summary: null,
+        summaryVi: null,
+        authorId: null,
+        createdAt: new Date('2026-05-01'),
       })
       .mockResolvedValueOnce(null);
     const out = await service.getRevisionDiff('p1', 'r1');
@@ -442,49 +471,71 @@ describe('WikiService.getRevisionDiff', () => {
   it('produces diff between current and previous', async () => {
     em.findOne
       .mockResolvedValueOnce({
-        id: 'r2', pageId: { id: 'p1' },
-        content: 'line1\nline2\nline3', contentVi: 'a',
-        summary: null, summaryVi: null,
-        authorId: null, createdAt: new Date('2026-05-02'),
+        id: 'r2',
+        pageId: { id: 'p1' },
+        content: 'line1\nline2\nline3',
+        contentVi: 'a',
+        summary: null,
+        summaryVi: null,
+        authorId: null,
+        createdAt: new Date('2026-05-02'),
       })
       .mockResolvedValueOnce({
-        id: 'r1', pageId: { id: 'p1' },
-        content: 'line1\nline3', contentVi: 'a',
-        summary: null, summaryVi: null,
-        authorId: null, createdAt: new Date('2026-05-01'),
+        id: 'r1',
+        pageId: { id: 'p1' },
+        content: 'line1\nline3',
+        contentVi: 'a',
+        summary: null,
+        summaryVi: null,
+        authorId: null,
+        createdAt: new Date('2026-05-01'),
       });
     const out = await service.getRevisionDiff('p1', 'r2');
     expect(out.isFirst).toBe(false);
     expect(out.diff).not.toBeNull();
-    expect(out.diff!.en.some((c: { type: string }) => c.type === 'add')).toBe(true);
+    expect(out.diff!.en.some((c: { type: string }) => c.type === 'add')).toBe(
+      true,
+    );
   });
 
   describe('Boundary', () => {
     it('computes diff when current content is empty (entire previous becomes "remove" chunks)', async () => {
       em.findOne
         .mockResolvedValueOnce({
-          id: 'r2', pageId: { id: 'p1' },
-          content: '', contentVi: '',
-          summary: null, summaryVi: null,
-          authorId: null, createdAt: new Date('2026-05-02'),
+          id: 'r2',
+          pageId: { id: 'p1' },
+          content: '',
+          contentVi: '',
+          summary: null,
+          summaryVi: null,
+          authorId: null,
+          createdAt: new Date('2026-05-02'),
         })
         .mockResolvedValueOnce({
-          id: 'r1', pageId: { id: 'p1' },
-          content: 'line1\nline2', contentVi: 'a',
-          summary: null, summaryVi: null,
-          authorId: null, createdAt: new Date('2026-05-01'),
+          id: 'r1',
+          pageId: { id: 'p1' },
+          content: 'line1\nline2',
+          contentVi: 'a',
+          summary: null,
+          summaryVi: null,
+          authorId: null,
+          createdAt: new Date('2026-05-01'),
         });
       const out = await service.getRevisionDiff('p1', 'r2');
       expect(out.isFirst).toBe(false);
       expect(out.diff).not.toBeNull();
-      expect(out.diff!.en.some((c: { type: string }) => c.type === 'remove')).toBe(true);
+      expect(
+        out.diff!.en.some((c: { type: string }) => c.type === 'remove'),
+      ).toBe(true);
     });
   });
 
   describe('Abnormal', () => {
     it('throws revision_not_found when target revision does not exist', async () => {
       em.findOne.mockResolvedValueOnce(null);
-      await expect(service.getRevisionDiff('p1', 'r-missing')).rejects.toThrow('wiki.revision_not_found');
+      await expect(service.getRevisionDiff('p1', 'r-missing')).rejects.toThrow(
+        'wiki.revision_not_found',
+      );
     });
   });
 });
@@ -496,18 +547,27 @@ describe('WikiService.findBySlugs', () => {
   beforeEach(async () => {
     em = { find: jest.fn() };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });
 
   it('returns one entry per input slug, exists flag set per match', async () => {
     em.find.mockResolvedValue([
-      { id: '1', slug: 'link', slugVi: 'lien-ket', title: 'Link', titleVi: 'Liên Kết' },
-      { id: '2', slug: 'zelda', slugVi: 'zelda-vi', title: 'Zelda', titleVi: 'Zelda VI' },
+      {
+        id: '1',
+        slug: 'link',
+        slugVi: 'lien-ket',
+        title: 'Link',
+        titleVi: 'Liên Kết',
+      },
+      {
+        id: '2',
+        slug: 'zelda',
+        slugVi: 'zelda-vi',
+        title: 'Zelda',
+        titleVi: 'Zelda VI',
+      },
     ]);
 
     const result = await service.findBySlugs(['link', 'zelda', 'ganondorf']);
@@ -521,7 +581,13 @@ describe('WikiService.findBySlugs', () => {
 
   it('matches input against either slug or slugVi', async () => {
     em.find.mockResolvedValue([
-      { id: '1', slug: 'link', slugVi: 'lien-ket', title: 'Link', titleVi: 'Liên Kết' },
+      {
+        id: '1',
+        slug: 'link',
+        slugVi: 'lien-ket',
+        title: 'Link',
+        titleVi: 'Liên Kết',
+      },
     ]);
 
     const result = await service.findBySlugs(['lien-ket']);
@@ -549,7 +615,13 @@ describe('WikiService public mappers (locale)', () => {
     slugVi: 'hiep-si-rong',
     title: 'Dragon Knight',
     titleVi: 'Hiệp sĩ rồng',
-    metadataJson: { category: 'Mechanic', tags: ['borrow'], tags_vi: ['mượn'], stats: {}, relatedPages: [] },
+    metadataJson: {
+      category: 'Mechanic',
+      tags: ['borrow'],
+      tags_vi: ['mượn'],
+      stats: {},
+      relatedPages: [],
+    },
     isPublished: true,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-02'),
@@ -581,7 +653,13 @@ describe('WikiService public mappers (locale)', () => {
     const item = out.items[0] as any;
     expect(item.title).toBe('Dragon Knight');
     expect(item.slug).toBe('dragon-knight');
-    expect(item.metadataJson).toEqual({ category: 'Mechanic', tags: ['borrow'], tags_vi: ['mượn'], stats: {}, relatedPages: [] });
+    expect(item.metadataJson).toEqual({
+      category: 'Mechanic',
+      tags: ['borrow'],
+      tags_vi: ['mượn'],
+      stats: {},
+      relatedPages: [],
+    });
     expect(item).not.toHaveProperty('titleVi');
     expect(item).not.toHaveProperty('slugVi');
     expect(item).not.toHaveProperty('content');
@@ -630,7 +708,11 @@ describe('WikiService public mappers (locale)', () => {
   });
 
   it('search (vi) returns vi values under flat keys', async () => {
-    const out = await service.search({ q: 'rong', page: 1, limit: 20 }, false, 'vi');
+    const out = await service.search(
+      { q: 'rong', page: 1, limit: 20 },
+      false,
+      'vi',
+    );
     const item = out.items[0] as any;
     expect(item.title).toBe('Hiệp sĩ rồng');
     expect(item.slug).toBe('hiep-si-rong');
@@ -657,16 +739,14 @@ describe('WikiService.getAdminStats', () => {
 
   beforeEach(async () => {
     em = {
-      count: jest.fn()
-        .mockResolvedValueOnce(10)   // totalPages
-        .mockResolvedValueOnce(7)    // published
-        .mockResolvedValueOnce(25),  // totalRevisions
+      count: jest
+        .fn()
+        .mockResolvedValueOnce(10) // totalPages
+        .mockResolvedValueOnce(7) // published
+        .mockResolvedValueOnce(25), // totalRevisions
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiService);
   });

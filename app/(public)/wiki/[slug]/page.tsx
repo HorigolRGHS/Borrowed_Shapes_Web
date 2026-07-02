@@ -10,6 +10,7 @@ import { WikiInfobox } from "@/components/wiki/wiki-infobox";
 import { WikiPageShell } from "@/components/wiki/wiki-page-shell";
 import { WikiPageHeader } from "@/components/wiki/wiki-page-header";
 import { fetchRelatedTitles } from "@/lib/wiki/related-api";
+import { getApiErrorStatus, type ApiError } from "@/lib/wiki/http";
 import {
   wikiMetadataSchema,
   emptyWikiMetadata,
@@ -56,9 +57,8 @@ export default async function WikiDetailPage({
   let detail;
   try {
     detail = await fetchWikiBySlug(slug);
-  } catch (err: unknown) {
-    const e = err as { response?: { status?: number } };
-    if (e?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { fetchAdminWikiById, fetchWikiHistory } from '@/lib/wiki/api';
 import { WikiHistoryList } from '@/components/wiki/wiki-history-list';
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
+import { getApiErrorStatus, type ApiError } from '@/lib/wiki/http';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,8 +31,8 @@ export default async function AdminWikiHistoryPage({
   let detail;
   try {
     detail = await fetchAdminWikiById(id);
-  } catch (err: any) {
-    if (err?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 

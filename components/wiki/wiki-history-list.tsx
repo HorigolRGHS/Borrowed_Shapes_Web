@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18/i18n-context";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/lib/wiki/use-user-role";
 import { rollbackWiki } from "@/lib/wiki/api";
+import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 import type { WikiHistoryItem } from "@/models/dtos/wiki.dto";
 import { WikiPagination } from "./wiki-pagination";
 import {
@@ -73,8 +74,8 @@ export function WikiHistoryList({
         expectedLatestRevisionId,
       });
       window.location.href = `/wiki/${encodeURIComponent(slug)}`;
-    } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Rollback failed");
+    } catch (err) {
+      alert(getApiErrorMessage(err as ApiError, "Rollback failed"));
     } finally {
       setBusy(null);
     }

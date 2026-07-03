@@ -107,7 +107,6 @@ export default function ForumsPage() {
     if (selectedCategory) {
       fetchThreads();
     }
-    // }, [selectedCategory, searchQuery, sortBy, order, month, year, page]);
   }, [selectedCategory, page]);
 
   const fetchCategories = async () => {
@@ -154,7 +153,6 @@ export default function ForumsPage() {
     setMessage(null);
 
     try {
-      // 1. Create the thread without image URL first
       const createPayload = {
         ...payload,
         imageUrl: null,
@@ -166,9 +164,7 @@ export default function ForumsPage() {
         const threadId = createdThread.id;
         let finalImageUrl = null;
 
-        // 2. If there is a file, upload it
         if (file) {
-          // get upload url
           const uploadResp = await axios.post("/api/forums/upload", {
             fileName: file.name,
             fileSize: file.size,
@@ -178,7 +174,6 @@ export default function ForumsPage() {
 
           const uploadData = uploadResp.data?.data;
           if (uploadData) {
-            // PUT file to R2
             const putRes = await fetch(uploadData.uploadUrl, {
               method: uploadData.method,
               headers: uploadData.headers,
@@ -190,7 +185,6 @@ export default function ForumsPage() {
             }
             finalImageUrl = uploadData.publicUrl;
 
-            // 3. Update the thread with the image URL
             await axios.patch(`/api/forums/update/${threadId}`, {
               imageUrl: finalImageUrl,
             });
@@ -221,7 +215,6 @@ export default function ForumsPage() {
   };
 
 
-  // Hiển thị danh sách categories nếu chưa chọn
   if (!selectedCategory) {
     return (
       <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
@@ -273,7 +266,6 @@ export default function ForumsPage() {
     );
   }
 
-  // Hiển thị threads của category đã chọn
   return (
     <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
       <PublicHeader />

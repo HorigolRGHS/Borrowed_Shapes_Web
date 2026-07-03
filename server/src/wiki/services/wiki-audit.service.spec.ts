@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { WikiAuditService } from './wiki-audit.service';
+import { WikiAuditService } from './wiki.service';
 import { AuditActionType } from '../../entities/AuditActionType';
 
 describe('WikiAuditService', () => {
@@ -21,10 +21,7 @@ describe('WikiAuditService', () => {
     };
     em.fork.mockReturnValue(em);
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        WikiAuditService,
-        { provide: EntityManager, useValue: em },
-      ],
+      providers: [WikiAuditService, { provide: EntityManager, useValue: em }],
     }).compile();
     service = moduleRef.get(WikiAuditService);
   });
@@ -98,7 +95,15 @@ describe('WikiAuditService', () => {
     });
 
     it('flushes a large nested newValue payload (>10KB JSON) without throwing', async () => {
-      const big = { content: 'x'.repeat(15_000), nested: { items: Array.from({ length: 200 }, (_, i) => ({ idx: i, label: 'lbl' + i })) } };
+      const big = {
+        content: 'x'.repeat(15_000),
+        nested: {
+          items: Array.from({ length: 200 }, (_, i) => ({
+            idx: i,
+            label: 'lbl' + i,
+          })),
+        },
+      };
       await expect(
         service.log({
           userId: 'user-1',
@@ -117,7 +122,9 @@ describe('WikiAuditService', () => {
       em.getReference.mockImplementationOnce(() => {
         throw new Error('boom');
       });
-      const warnSpy = jest.spyOn((service as any).logger, 'warn').mockImplementation(() => undefined);
+      const warnSpy = jest
+        .spyOn((service as any).logger, 'warn')
+        .mockImplementation(() => undefined);
       await expect(
         service.log({
           userId: 'user-1',
@@ -134,7 +141,9 @@ describe('WikiAuditService', () => {
       em.create.mockImplementationOnce(() => {
         throw new Error('create failed');
       });
-      const warnSpy = jest.spyOn((service as any).logger, 'warn').mockImplementation(() => undefined);
+      const warnSpy = jest
+        .spyOn((service as any).logger, 'warn')
+        .mockImplementation(() => undefined);
       await expect(
         service.log({
           userId: 'user-1',

@@ -81,7 +81,7 @@ export function getProxyAvatarUrl(
   if (imgUrl.startsWith('/api/')) return imgUrl;
 
   const r2Base = process.env.R2_PUBLIC_DEV_URL || 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev';
-  
+
   if (imgUrl.startsWith(r2Base) || imgUrl.startsWith('avatars/')) {
     const version = updatedAt.getTime();
     return `/api/account/avatar/${userId}?v=${version}`;

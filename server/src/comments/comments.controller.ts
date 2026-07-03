@@ -26,7 +26,6 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) { }
 
-  // Create a comment (authenticated)
   @Post()
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -39,7 +38,6 @@ export class CommentsController {
     return okResponse('comments.create_success', data, 'POST /comments');
   }
 
-  // Get comments list (public)
   @Get()
   @Public()
   @ApiOperation({ summary: 'List thread comments or replies' })
@@ -63,7 +61,6 @@ export class CommentsController {
     return okResponse('comments.list_success', data, 'GET /comments');
   }
 
-  // Edit comment content (authenticated, author only)
   @Patch(':id')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Update a comment content' })
@@ -76,7 +73,6 @@ export class CommentsController {
     return okResponse('comments.update_success', data, `PATCH /comments/${id}`);
   }
 
-  // Soft delete a comment (authenticated, author or admin)
   @Delete(':id')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Soft delete a comment' })
@@ -89,7 +85,6 @@ export class CommentsController {
     return okResponse('comments.delete_success', data, `DELETE /comments/${id}`);
   }
 
-  // Vote on comment (authenticated)
   @Post(':id/vote')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)

@@ -29,8 +29,16 @@ const fixtures: Fixture[] = [
     },
     expected: 'pass',
   },
-  { name: 'unknown category', input: { category: 'NotACategory' }, expected: 'fail' },
-  { name: 'oversized tags array', input: { tags: Array(21).fill('x') }, expected: 'fail' },
+  {
+    name: 'unknown category',
+    input: { category: 'NotACategory' },
+    expected: 'fail',
+  },
+  {
+    name: 'oversized tags array',
+    input: { tags: Array(21).fill('x') },
+    expected: 'fail',
+  },
   { name: 'tag too long', input: { tags: ['x'.repeat(41)] }, expected: 'fail' },
   {
     name: 'wiki proxy image path',
@@ -43,12 +51,41 @@ const fixtures: Fixture[] = [
     },
     expected: 'pass',
   },
-  { name: 'malformed url', input: { infoboxImage: 'not-a-url' }, expected: 'fail' },
-  { name: 'non-finite stat', input: { stats: { hp: Number.POSITIVE_INFINITY } }, expected: 'fail' },
-  { name: 'string stat value', input: { stats: { hp: 'high' } }, expected: 'fail' },
+  {
+    name: 'malformed url',
+    input: { infoboxImage: 'not-a-url' },
+    expected: 'fail',
+  },
+  {
+    name: 'non-finite stat',
+    input: { stats: { hp: Number.POSITIVE_INFINITY } },
+    expected: 'fail',
+  },
+  {
+    name: 'string stat value',
+    input: { stats: { hp: 'high' } },
+    expected: 'fail',
+  },
   { name: 'empty stat key', input: { stats: { '': 1 } }, expected: 'fail' },
-  { name: 'oversized relatedPages', input: { relatedPages: Array(31).fill('s') }, expected: 'fail' },
-  { name: 'location too long', input: { location: 'x'.repeat(121) }, expected: 'fail' },
+  {
+    name: 'oversized relatedPages',
+    input: { relatedPages: Array(31).fill('s') },
+    expected: 'fail',
+  },
+  {
+    name: 'location too long',
+    input: { location: 'x'.repeat(121) },
+    expected: 'fail',
+  },
+  {
+    name: 'too many stats keys',
+    input: {
+      stats: Object.fromEntries(
+        Array.from({ length: 51 }, (_, i) => [`s${i}`, i]),
+      ),
+    },
+    expected: 'fail',
+  },
 ];
 
 describe('WikiMetadata schema parity', () => {

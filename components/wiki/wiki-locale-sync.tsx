@@ -10,9 +10,9 @@ interface WikiSlugData {
 
 export function WikiLocaleSync({ slug, slugVi, pathSuffix }: WikiSlugData) {
   useEffect(() => {
-    (window as any).__wikiSlugData = { slug, slugVi, pathSuffix };
+    window.__wikiSlugData = { slug, slugVi, pathSuffix };
     return () => {
-      delete (window as any).__wikiSlugData;
+      delete window.__wikiSlugData;
     };
   }, [slug, slugVi, pathSuffix]);
   return null;

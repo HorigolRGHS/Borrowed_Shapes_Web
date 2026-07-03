@@ -5,6 +5,7 @@ import { fetchWikiBySlug, fetchWikiHistory } from '@/lib/wiki/api';
 import { WikiHistoryList } from '@/components/wiki/wiki-history-list';
 import { WikiLocaleSync } from '@/components/wiki/wiki-locale-sync';
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
+import { getApiErrorStatus, type ApiError } from '@/lib/wiki/http';
 import enDict from '@/locales/en.json';
 import viDict from '@/locales/vi.json';
 
@@ -34,8 +35,8 @@ export default async function WikiHistoryPage({
   let detail;
   try {
     detail = await fetchWikiBySlug(slug);
-  } catch (err: any) {
-    if (err?.response?.status === 404) notFound();
+  } catch (err) {
+    if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
   }
 

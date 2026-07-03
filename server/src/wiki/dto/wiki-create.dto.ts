@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -18,7 +18,10 @@ import {
   WIKI_CONTENT_MAX_LENGTH,
 } from './wiki-constants';
 import { isValidSlug, slugRejectionReason } from './wiki-slug.validator';
-import { WikiMetadataDto } from './wiki-metadata.dto';
+import {
+  WikiMetadataDto,
+  WikiMetadataByteLimitConstraint,
+} from './wiki-metadata.dto';
 
 @ValidatorConstraint({ name: 'wikiSlug', async: false })
 export class WikiSlugConstraint implements ValidatorConstraintInterface {
@@ -26,13 +29,18 @@ export class WikiSlugConstraint implements ValidatorConstraintInterface {
     return typeof value === 'string' && isValidSlug(value);
   }
   defaultMessage(args: ValidationArguments) {
-    const reason = typeof args.value === 'string' ? slugRejectionReason(args.value) : 'invalid';
+    const reason =
+      typeof args.value === 'string'
+        ? slugRejectionReason(args.value)
+        : 'invalid';
     return reason === 'reserved' ? 'wiki.reserved_slug' : 'wiki.invalid_slug';
   }
 }
 
 export class WikiCreateRequestDto {
-  @ApiPropertyOptional({ description: 'When true, server generates placeholders for all fields' })
+  @ApiPropertyOptional({
+    description: 'When true, server generates placeholders for all fields',
+  })
   @IsOptional()
   @IsBoolean()
   stub?: boolean;
@@ -51,12 +59,18 @@ export class WikiCreateRequestDto {
 
   @ApiPropertyOptional({ maxLength: WIKI_TITLE_MAX_LENGTH })
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MaxLength(WIKI_TITLE_MAX_LENGTH)
   title?: string;
 
   @ApiPropertyOptional({ maxLength: WIKI_TITLE_MAX_LENGTH })
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MaxLength(WIKI_TITLE_MAX_LENGTH)
   titleVi?: string;
@@ -89,6 +103,7 @@ export class WikiCreateRequestDto {
   @IsOptional()
   @IsObject()
   @ValidateNested()
+  @Validate(WikiMetadataByteLimitConstraint)
   @Type(() => WikiMetadataDto)
   metadataJson?: WikiMetadataDto | null;
 

@@ -16,11 +16,12 @@ import {
   X,
   Loader2,
   Send,
-  AlertTriangle
+  AlertTriangle,
+  Flag
 } from "lucide-react";
 import ReportModal from "./report-modal";
+import UserProfilePopup from "./user-profile-popup";
 
-// Dynamic import of lightweight CKEditor with ssr false
 const CommentCKEditor = dynamic(
   () => import("./comment-ckeditor").then((mod) => mod.CommentCKEditor),
   {
@@ -236,7 +237,6 @@ export default function CommentSection({ threadId, user, locale, t }: CommentSec
   );
 }
 
-// Inner Recursive Node Component
 interface CommentNodeProps {
   comment: Comment;
   threadId: string;
@@ -273,6 +273,8 @@ function CommentNode({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportTargetType, setReportTargetType] = useState<"user" | "comment">("comment");
+  const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
+  const [selectedProfileUser, setSelectedProfileUser] = useState<any>(null);
 
   const handleReportClick = () => {
     if (!user) {
@@ -285,22 +287,14 @@ function CommentNode({
 
   const handleAvatarClick = () => {
     if (!comment.author) return;
-    if (!user) {
-      toast.warning(t("comments.login_to_vote"));
-      return;
-    }
-    if (String(comment.author.id) === String(user.id)) {
-      return;
-    }
-    setReportTargetType("user");
-    setIsReportOpen(true);
+    setSelectedProfileUser(comment.author);
+    setIsProfilePopupOpen(true);
   };
 
   const limit = 20;
   const isAuthor = user && comment.author && String(user.id) === String(comment.author.id);
   const isAdmin = user && user.role === "ADMIN";
 
-  // Fetch replies
   const fetchReplies = async (pageNum: number, reset = false) => {
     try {
       setRepliesLoading(true);
@@ -431,8 +425,7 @@ function CommentNode({
     );
   };
 
-  // Indentation limit: if depth >= 4, no left margin/border padding
-  const useIndent = depth < 4;
+  const useIndent = depth < 2;
 
   return (
     <div className="relative group">
@@ -461,11 +454,11 @@ function CommentNode({
             )}
           </div>
           {comment.author?.badgeImageUrl && (
-            <img 
-              src={comment.author.badgeImageUrl} 
-              alt="" 
-              aria-hidden="true" 
-              className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+            <img
+              src={comment.author.badgeImageUrl}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm"
             />
           )}
         </div>
@@ -477,9 +470,6 @@ function CommentNode({
             <span className="font-bold text-slate-800 dark:text-slate-200">
               {comment.author ? comment.author.displayName : t("comments.user_deleted_placeholder")}
             </span>
-            {comment.author?.badgeImageUrl && (
-              <img src={comment.author.badgeImageUrl} alt="Badge" className="h-3.5 w-3.5 object-contain" />
-            )}
             <span className="text-[10px] text-slate-400 dark:text-slate-600">•</span>
             <span>{timeAgo(comment.createdAt, locale, t)}</span>
             {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
@@ -536,38 +526,40 @@ function CommentNode({
             <div className="flex flex-col gap-2 pt-1 text-xs">
               <div className="flex items-center gap-4">
                 {/* Votes - styled like thread vote indicators */}
-                <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/40 p-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm">
-                  <button
-                    onClick={() => handleVote(1)}
-                    className={`p-1.5 rounded-full transition-colors cursor-pointer ${comment.userVote === 1
+                {!comment.isDeleted && (
+                  <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/40 p-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-sm">
+                    <button
+                      onClick={() => handleVote(1)}
+                      className={`p-1.5 rounded-full transition-colors cursor-pointer ${comment.userVote === 1
                         ? "text-green-500 bg-green-100 dark:bg-green-950/30"
                         : "text-slate-500 hover:text-green-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                      }`}
-                    title={locale === "vi" ? "Thích" : "Upvote"}
-                  >
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                  </button>
-                  <span
-                    className={`px-1.5 font-bold text-xs min-w-[16px] text-center ${comment.score > 0
+                        }`}
+                      title={t("forums.upvote") || "Upvote"}
+                    >
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                    </button>
+                    <span
+                      className={`px-1.5 font-bold text-xs min-w-[16px] text-center ${comment.score > 0
                         ? "text-green-500"
                         : comment.score < 0
                           ? "text-red-500"
                           : "text-slate-600 dark:text-slate-400"
-                      }`}
-                  >
-                    {comment.score}
-                  </span>
-                  <button
-                    onClick={() => handleVote(-1)}
-                    className={`p-1.5 rounded-full transition-colors cursor-pointer ${comment.userVote === -1
+                        }`}
+                    >
+                      {comment.score}
+                    </span>
+                    <button
+                      onClick={() => handleVote(-1)}
+                      className={`p-1.5 rounded-full transition-colors cursor-pointer ${comment.userVote === -1
                         ? "text-red-500 bg-red-100 dark:bg-red-950/25"
                         : "text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                      }`}
-                    title={locale === "vi" ? "Không thích" : "Downvote"}
-                  >
-                    <ThumbsDown className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                        }`}
+                      title={t("forums.downvote") || "Downvote"}
+                    >
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Reply trigger */}
                 {user && !comment.isDeleted && (
@@ -594,7 +586,7 @@ function CommentNode({
                         className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors border border-transparent hover:border-red-100/20 dark:hover:border-red-900/40 cursor-pointer"
                         title={t("reports.report_button")}
                       >
-                        <AlertTriangle className="h-3.5 w-3.5" />
+                        <Flag className="h-3.5 w-3.5" />
                       </button>
                     )}
                     {isAuthor && (
@@ -652,11 +644,11 @@ function CommentNode({
               )}
             </div>
             {user.equippedAchievement?.badgeImageUrl && (
-              <img 
-                src={user.equippedAchievement.badgeImageUrl} 
-                alt="" 
-                aria-hidden="true" 
-                className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+              <img
+                src={user.equippedAchievement.badgeImageUrl}
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm"
               />
             )}
           </div>
@@ -781,12 +773,26 @@ function CommentNode({
         <ReportModal
           isOpen={isReportOpen}
           onClose={() => setIsReportOpen(false)}
-          targetType={reportTargetType}
+          targetType="comment"
           reportedUserId={comment.author?.id || ""}
           reportedUserDisplayName={comment.author?.displayName || ""}
           reportedUserImgUrl={comment.author?.imgUrl}
           commentId={comment.id}
           commentContent={comment.content}
+        />
+      )}
+
+      {selectedProfileUser && (
+        <UserProfilePopup
+          isOpen={isProfilePopupOpen}
+          onClose={() => {
+            setIsProfilePopupOpen(false);
+            setSelectedProfileUser(null);
+          }}
+          targetUser={selectedProfileUser}
+          currentUser={user}
+          locale={locale}
+          t={t}
         />
       )}
     </div>

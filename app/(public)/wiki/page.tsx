@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { fetchWikiList } from "@/lib/wiki/api";
 import { WikiPublicList, WikiPublicListSkeleton } from "@/components/wiki/wiki-public-list";
 import type { WikiListResponse } from "@/models/dtos/wiki.dto";
+import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 
 export const metadata: Metadata = { title: "Wiki" };
 export const dynamic = "force-dynamic";
@@ -20,9 +21,8 @@ export default async function WikiListPage({
   let errorMessage: string | null = null;
   try {
     data = await fetchWikiList({ page, limit: 20, q });
-  } catch (err: unknown) {
-    const e = err as { response?: { data?: { message?: string } } };
-    errorMessage = e?.response?.data?.message ?? "load_failed";
+  } catch (err) {
+    errorMessage = getApiErrorMessage(err as ApiError, "load_failed");
   }
 
   return (

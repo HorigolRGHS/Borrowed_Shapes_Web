@@ -29,7 +29,6 @@ import { resolveLocale } from '../common/utils/resolve-locale';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) { }
 
-  // List all categories
   @Public()
   @Get()
   @ApiOperation({ summary: 'List all forum categories' })
@@ -42,7 +41,6 @@ export class CategoryController {
     return okResponse('category.list_success', data, 'GET /category');
   }
 
-  // List all unofficial categories
   @Public()
   @Get('unofficial')
   @ApiOperation({ summary: 'List all unofficial forum categories' })
@@ -55,7 +53,6 @@ export class CategoryController {
     return okResponse('category.list_success', data, 'GET /category/unofficial');
   }
 
-  // Get category detail
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get category detail' })
@@ -84,7 +81,6 @@ export class CategoryController {
     );
   }
 
-  // Create category
   @Roles('ADMIN')
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -96,7 +92,6 @@ export class CategoryController {
     return okResponse('category.create_success', data, 'POST /category');
   }
 
-  // Update category (admin only)
   @Roles('ADMIN')
   @Patch(':id')
   async update(
@@ -108,7 +103,6 @@ export class CategoryController {
     return okResponse('category.update_success', data, `PATCH /category/${id}`);
   }
 
-  // Delete category (admin only)
   @Roles('ADMIN')
   @Delete(':id')
   async remove(

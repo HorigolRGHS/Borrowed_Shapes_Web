@@ -27,9 +27,8 @@ import { ReportStatus } from '../entities/ReportStatus';
 @Controller('reports')
 @UseGuards(AuthGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(private readonly reportsService: ReportsService) { }
 
-  // Request R2 presigned URL for attachments upload (authenticated)
   @Post('upload')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request a presigned URL to upload evidence media' })
@@ -41,7 +40,6 @@ export class ReportsController {
     return okResponse('reports.upload_url_created', data, 'POST /reports/upload');
   }
 
-  // Create a new report (authenticated)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Submit a report against a user, thread, or comment' })
@@ -53,7 +51,6 @@ export class ReportsController {
     return okResponse('reports.create_success', data, 'POST /reports');
   }
 
-  // Get user's own reports (authenticated)
   @Get('my-reports')
   @ApiOperation({ summary: 'Get list of reports submitted by the logged-in user' })
   async findMyReports(@CurrentUser() user: RequestUser): Promise<ApiResponseDto<any>> {
@@ -61,7 +58,6 @@ export class ReportsController {
     return okResponse('reports.my_list_success', data, 'GET /reports/my-reports');
   }
 
-  // Get administrative stats (Admin only)
   @Get('admin/stats')
   @ApiOperation({ summary: 'Admin: Get simple counts of reports grouped by status' })
   async getAdminStats(@CurrentUser() user: RequestUser): Promise<ApiResponseDto<any>> {
@@ -72,7 +68,6 @@ export class ReportsController {
     return okResponse('reports.stats_success', data, 'GET /reports/admin/stats');
   }
 
-  // Get administrative reports list (Admin only)
   @Get('admin/list')
   @ApiOperation({ summary: 'Admin: Filter and list reports' })
   async findAdminReports(
@@ -102,7 +97,6 @@ export class ReportsController {
     return okResponse('reports.admin_list_success', data, 'GET /reports/admin/list');
   }
 
-  // Get report details by ID (authenticated: reporter or admin)
   @Get(':id')
   @ApiOperation({ summary: 'Get details of a report by ID' })
   async findOne(
@@ -114,7 +108,6 @@ export class ReportsController {
     return okResponse('reports.details_success', data, `GET /reports/${id}`);
   }
 
-  // Resolve a report (Admin only)
   @Post(':id/resolve')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: Resolve report taking actions' })
@@ -130,7 +123,6 @@ export class ReportsController {
     return okResponse('reports.resolve_success', data, `POST /reports/${id}/resolve`);
   }
 
-  // Reject a report (Admin only)
   @Post(':id/reject')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: Reject report' })

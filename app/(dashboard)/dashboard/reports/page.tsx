@@ -139,7 +139,7 @@ export default function AdminReportsPage() {
           {t("reports.dashboard.title")}
         </h1>
         <p className="text-slate-500 dark:text-slate-450 text-sm mt-1">
-          {locale === "vi" ? "Xem và xử lý các báo cáo vi phạm tiêu chuẩn cộng đồng." : "Review and handle community violation reports."}
+          {t("reports.dashboard.desc") || "Review and handle community violation reports."}
         </p>
       </div>
 
@@ -203,7 +203,7 @@ export default function AdminReportsPage() {
                   : "border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 bg-white dark:bg-[#07070f]"
                 }`}
             >
-              {status === "ALL" ? (locale === "vi" ? "Tất cả" : "All") : t(`reports.status.${status}`)}
+              {status === "ALL" ? (t("reports.dashboard.all") || "All") : t(`reports.status.${status}`)}
             </button>
           ))}
         </div>
@@ -223,7 +223,7 @@ export default function AdminReportsPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24">
             <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-sm text-slate-500">{locale === "vi" ? "Đang tải dữ liệu..." : "Loading reports..."}</p>
+            <p className="text-sm text-slate-500">{t("reports.dashboard.loading") || "Loading reports..."}</p>
           </div>
         ) : reports.length === 0 ? (
           <div className="text-center py-20">
@@ -238,7 +238,7 @@ export default function AdminReportsPage() {
                   <th className="px-6 py-4">{t("reports.col_target")}</th>
                   <th className="px-6 py-4">{t("reports.col_type")}</th>
                   <th className="px-6 py-4">{t("reports.col_status")}</th>
-                  <th className="px-6 py-4">{locale === "vi" ? "Người tố cáo" : "Reporter"}</th>
+                  <th className="px-6 py-4">{t("reports.label_reporter") || "Reporter"}</th>
                   <th className="px-6 py-4">{t("reports.col_date")}</th>
                   <th className="px-6 py-4 text-right"></th>
                 </tr>
@@ -270,7 +270,7 @@ export default function AdminReportsPage() {
                           className="h-8 text-violet-500 hover:text-violet-600 hover:bg-violet-55/20 cursor-pointer text-xs"
                         >
                           <Eye className="h-3.5 w-3.5 mr-1" />
-                          <span>{locale === "vi" ? "Xem" : "View"}</span>
+                          <span>{t("reports.dashboard.view_btn") || "View"}</span>
                         </Button>
                       </Link>
                     </td>
@@ -286,8 +286,10 @@ export default function AdminReportsPage() {
       {!loading && totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-6 mt-6">
           <p className="text-xs text-slate-500">
-            {locale === "vi"
-              ? `Hiển thị ${(page - 1) * 20 + 1}–${Math.min(page * 20, totalCount)} trong số ${totalCount} báo cáo`
+            {t("reports.dashboard.showing_reports")
+              ? t("reports.dashboard.showing_reports")
+                  .replace("{range}", `${(page - 1) * 20 + 1}–${Math.min(page * 20, totalCount)}`)
+                  .replace("{total}", String(totalCount))
               : `Showing ${(page - 1) * 20 + 1}–${Math.min(page * 20, totalCount)} of ${totalCount} reports`}
           </p>
           <div className="flex items-center gap-2">
@@ -299,7 +301,7 @@ export default function AdminReportsPage() {
               className="cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              <span>{locale === "vi" ? "Trước" : "Previous"}</span>
+              <span>{t("reports.dashboard.prev_btn") || "Previous"}</span>
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
@@ -321,7 +323,7 @@ export default function AdminReportsPage() {
               disabled={page === totalPages}
               className="cursor-pointer"
             >
-              <span>{locale === "vi" ? "Sau" : "Next"}</span>
+              <span>{t("reports.dashboard.next_btn") || "Next"}</span>
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>

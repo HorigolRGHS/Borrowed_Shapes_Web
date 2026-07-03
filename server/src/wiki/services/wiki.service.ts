@@ -11,8 +11,13 @@ import { diffLines } from 'diff';
 import { WikiPage } from '../../entities/WikiPage';
 import { WikiRevision } from '../../entities/WikiRevision';
 import { User } from '../../entities/User';
-import { AuditLog } from '../../entities/AuditLog';
 import { AuditActionType } from '../../entities/AuditActionType';
+import { WikiPageRepository } from '../repositories/wiki-page.repository';
+import { WikiRevisionRepository } from '../repositories/wiki-revision.repository';
+import {
+  WikiAuditRepository,
+  WikiAuditLogParams,
+} from '../repositories/wiki-audit.repository';
 import {
   WIKI_LIST_DEFAULT_LIMIT,
   WIKI_LIST_MAX_LIMIT,
@@ -71,37 +76,16 @@ function randomSlugSuffix(): string {
   return Math.random().toString(36).slice(2, 8);
 }
 
-export interface WikiAuditLogParams {
-  userId: string;
-  actionType: AuditActionType;
-  entityName: string;
-  entityId: string;
-  oldValue?: any;
-  newValue?: any;
-  ipAddress?: string;
-}
-
 @Injectable()
 export class WikiAuditService {
   private readonly logger = new Logger(WikiAuditService.name);
 
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly auditRepo: WikiAuditRepository) {}
 
   async log(params: WikiAuditLogParams): Promise<void> {
-    // Use a forked EM so we don't accidentally flush the caller's pending changes.
-    // Auditing is intentionally non-blocking — failures here log a warning, never throw.
-    const em = this.em.fork();
+    // Auditing is intentionally non-blocking — failures log a warning, never throw.
     try {
-      em.create(AuditLog, {
-        userId: em.getReference(User, params.userId),
-        actionType: params.actionType,
-        entityName: params.entityName,
-        entityId: params.entityId,
-        oldValue: params.oldValue,
-        newValue: params.newValue,
-        ipAddress: params.ipAddress,
-      });
-      await em.flush();
+      await this.auditRepo.insertForked(params);
     } catch (err) {
       this.logger.warn(
         `Audit log failed for userId=${params.userId} ${params.entityName}:${params.entityId} action=${params.actionType}: ${err}`,
@@ -112,13 +96,16 @@ export class WikiAuditService {
 
 @Injectable()
 export class WikiService {
-  constructor(private em: EntityManager) {}
+  constructor(
+    private readonly pageRepo: WikiPageRepository,
+    private readonly revisionRepo: WikiRevisionRepository,
+  ) {}
 
   async getAdminStats(): Promise<WikiAdminStatsDto> {
-    const totalPages = await this.em.count(WikiPage, {});
-    const published = await this.em.count(WikiPage, { isPublished: true });
+    const totalPages = await this.pageRepo.countAll();
+    const published = await this.pageRepo.countPublished();
     const drafts = totalPages - published;
-    const totalRevisions = await this.em.count(WikiRevision, {});
+    const totalRevisions = await this.revisionRepo.countAll();
     return { totalPages, published, drafts, totalRevisions };
   }
 
@@ -177,8 +164,7 @@ export class WikiService {
     const sort = query.sort ?? 'createdAt';
     const order = query.order ?? 'desc';
 
-    const [pages, total] = await this.em.findAndCount(WikiPage, where, {
-      populate: ['latestRevisionId.authorId'],
+    const [pages, total] = await this.pageRepo.listPaged(where, {
       orderBy: { [sort]: order },
       limit,
       offset,
@@ -188,17 +174,7 @@ export class WikiService {
 
     if (includeAll) {
       const pageIds = pages.map((p) => p.id);
-      const revCounts = new Map<string, number>();
-      if (pageIds.length > 0) {
-        const placeholders = pageIds.map(() => '?').join(', ');
-        const rows: { pageId: string; c: number }[] = await this.em.execute(
-          `SELECT "pageId", COUNT(*)::int AS c FROM web."WikiRevision" WHERE "pageId" IN (${placeholders}) GROUP BY "pageId"`,
-          pageIds,
-        );
-        for (const r of rows) {
-          revCounts.set(r.pageId, r.c);
-        }
-      }
+      const revCounts = await this.revisionRepo.countByPageIds(pageIds);
       return {
         items: pages.map((p) => ({
           ...this.toListItem(p),
@@ -279,11 +255,7 @@ export class WikiService {
     if (!isValidSlug(slug)) {
       throw new BadRequestException('wiki.invalid_slug');
     }
-    const page = await this.em.findOne(
-      WikiPage,
-      { $or: [{ slug }, { slugVi: slug }], isPublished: true },
-      { populate: ['latestRevisionId.authorId'] },
-    );
+    const page = await this.pageRepo.findPublishedBySlug(slug);
     if (!page || !page.latestRevisionId) {
       throw new NotFoundException('wiki.not_found');
     }
@@ -291,11 +263,7 @@ export class WikiService {
   }
 
   async getByIdForAdmin(id: string): Promise<WikiDetailResponseDto> {
-    const page = await this.em.findOne(
-      WikiPage,
-      { id },
-      { populate: ['latestRevisionId.authorId'] },
-    );
+    const page = await this.pageRepo.findByIdWithLatest(id);
     if (!page || !page.latestRevisionId) {
       throw new NotFoundException('wiki.not_found');
     }
@@ -305,11 +273,7 @@ export class WikiService {
   async findBySlugs(slugs: string[]): Promise<RelatedPageDto[]> {
     if (slugs.length === 0) return [];
 
-    const rows = await this.em.find(
-      WikiPage,
-      { $or: [{ slug: { $in: slugs } }, { slugVi: { $in: slugs } }] },
-      { fields: ['id', 'slug', 'slugVi', 'title', 'titleVi'] },
-    );
+    const rows = await this.pageRepo.findBySlugsMinimal(slugs);
 
     return slugs.map((s) => {
       const row = rows.find((r) => r.slug === s || r.slugVi === s);
@@ -412,8 +376,7 @@ export class WikiService {
     // (it gets quoted as an identifier). Falling back to updatedAt DESC,
     // which keeps results stable and predictable. Title-based ranking is
     // a nice-to-have rather than a BR requirement.
-    const [pages, total] = await this.em.findAndCount(WikiPage, where, {
-      populate: ['latestRevisionId.authorId'],
+    const [pages, total] = await this.pageRepo.listPaged(where, {
       orderBy: { updatedAt: 'desc' },
       limit,
       offset,
@@ -433,23 +396,16 @@ export class WikiService {
     page: number,
     limit: number,
   ): Promise<WikiHistoryResponseDto> {
-    const p = await this.em.findOne(
-      WikiPage,
-      { id: pageId },
-      { populate: ['latestRevisionId'] },
-    );
+    const p = await this.pageRepo.findByIdWithLatest(pageId);
     if (!p) throw new NotFoundException('wiki.not_found');
 
     const safePage = clamp(page, 1, Number.MAX_SAFE_INTEGER);
     const safeLimit = clamp(limit, 1, WIKI_LIST_MAX_LIMIT);
     const offset = (safePage - 1) * safeLimit;
 
-    const [revisions, total] = await this.em.findAndCount(
-      WikiRevision,
-      { pageId: p } as FilterQuery<WikiRevision>,
+    const [revisions, total] = await this.revisionRepo.findPageRevisionsPaged(
+      pageId,
       {
-        populate: ['authorId'],
-        orderBy: { createdAt: 'desc' },
         limit: safeLimit,
         offset,
       },
@@ -480,14 +436,7 @@ export class WikiService {
     pageId: string,
     revisionId: string,
   ): Promise<WikiDetailRevisionDto> {
-    const rev = await this.em.findOne(
-      WikiRevision,
-      {
-        id: revisionId,
-        pageId: this.em.getReference(WikiPage, pageId),
-      } as FilterQuery<WikiRevision>,
-      { populate: ['authorId'] },
-    );
+    const rev = await this.revisionRepo.findByIdAndPage(revisionId, pageId);
     if (!rev) throw new NotFoundException('wiki.revision_not_found');
     return this.toDetailRevision(rev);
   }
@@ -496,23 +445,12 @@ export class WikiService {
     pageId: string,
     revisionId: string,
   ): Promise<WikiRevisionDiffResponseDto> {
-    const current = await this.em.findOne(
-      WikiRevision,
-      {
-        id: revisionId,
-        pageId: this.em.getReference(WikiPage, pageId),
-      } as FilterQuery<WikiRevision>,
-      { populate: ['authorId'] },
-    );
+    const current = await this.revisionRepo.findByIdAndPage(revisionId, pageId);
     if (!current) throw new NotFoundException('wiki.revision_not_found');
 
-    const previous = await this.em.findOne(
-      WikiRevision,
-      {
-        pageId: this.em.getReference(WikiPage, pageId),
-        createdAt: { $lt: current.createdAt },
-      } as FilterQuery<WikiRevision>,
-      { populate: ['authorId'], orderBy: { createdAt: 'desc' } },
+    const previous = await this.revisionRepo.findPreviousBefore(
+      pageId,
+      current.createdAt,
     );
 
     if (!previous) {

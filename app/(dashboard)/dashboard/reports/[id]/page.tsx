@@ -54,7 +54,6 @@ export default function AdminReportDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Administrative Resolution State
   const [adminMessage, setAdminMessage] = useState("");
   const [actionType, setActionType] = useState("WARNING");
   const [banDuration, setBanDuration] = useState("");
@@ -98,7 +97,7 @@ export default function AdminReportDetailPage() {
     }
 
     if (actionType === "BAN_CUSTOM" && !banDuration) {
-      toast.warning(locale === "vi" ? "Vui lòng chọn ngày khoá tài khoản!" : "Please choose custom ban date!");
+      toast.warning(t("reports.dashboard.choose_custom_ban_date") || "Please choose custom ban date!");
       return;
     }
 
@@ -174,7 +173,7 @@ export default function AdminReportDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-40">
         <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-slate-500">{locale === "vi" ? "Đang tải chi tiết báo cáo..." : "Loading report details..."}</p>
+        <p className="text-sm text-slate-500">{t("reports.dashboard.loading_details") || "Loading report details..."}</p>
       </div>
     );
   }
@@ -183,9 +182,9 @@ export default function AdminReportDetailPage() {
     return (
       <div className="text-center py-20">
         <AlertTriangle className="h-10 w-10 text-red-500 mx-auto mb-3" />
-        <h3 className="text-lg font-bold">{locale === "vi" ? "Không tìm thấy báo cáo" : "Report not found"}</h3>
+        <h3 className="text-lg font-bold">{t("reports.dashboard.report_not_found") || "Report not found"}</h3>
         <Link href="/dashboard/reports" className="text-violet-500 hover:underline mt-2 inline-block">
-          {locale === "vi" ? "Trở lại danh sách" : "Back to list"}
+          {t("reports.dashboard.back_to_list") || "Back to list"}
         </Link>
       </div>
     );
@@ -200,10 +199,10 @@ export default function AdminReportDetailPage() {
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-violet-500 transition-colors font-semibold"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>{locale === "vi" ? "QUẢN LÝ BÁO CÁO" : "BACK TO REPORTS"}</span>
+          <span>{t("reports.dashboard.back_to_reports") || "BACK TO REPORTS"}</span>
         </Link>
         <h1 className="text-2xl font-extrabold mt-2 flex items-center gap-2">
-          <span>{locale === "vi" ? "Chi Tiết Báo Cáo" : "Report Details"}</span>
+          <span>{t("reports.dashboard.report_details") || "Report Details"}</span>
           <span className="text-sm text-slate-400 font-normal">#{detail.id.substring(0, 8)}</span>
         </h1>
       </div>
@@ -213,7 +212,7 @@ export default function AdminReportDetailPage() {
         <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f0f1a] shadow-sm space-y-3">
           <div className="text-xs uppercase font-bold text-slate-400 flex items-center gap-1.5">
             <Flag className="h-3.5 w-3.5 text-red-500" />
-            <span>{locale === "vi" ? "Đối tượng bị tố cáo" : "Reported Target Content"}</span>
+            <span>{t("reports.dashboard.reported_target") || "Reported Target Content"}</span>
           </div>
 
           {detail.thread && (
@@ -228,7 +227,7 @@ export default function AdminReportDetailPage() {
               </div>
               <Link href={`/forums/${detail.thread.slug}`} target="_blank">
                 <Button size="sm" className="bg-violet-600 hover:bg-violet-750 text-white cursor-pointer text-xs rounded-xl shadow-sm shrink-0">
-                  {locale === "vi" ? "Đi tới bài viết" : "View Thread"}
+                  {t("reports.dashboard.view_thread") || "View Thread"}
                 </Button>
               </Link>
             </div>
@@ -248,7 +247,7 @@ export default function AdminReportDetailPage() {
               {detail.comment.threadSlug && (
                 <Link href={`/forums/${detail.comment.threadSlug}#comment-${detail.comment.id}`} target="_blank">
                   <Button size="sm" className="bg-violet-600 hover:bg-violet-750 text-white cursor-pointer text-xs rounded-xl shadow-sm shrink-0">
-                    {locale === "vi" ? "Xem bình luận" : "View Comment"}
+                    {t("reports.dashboard.view_comment") || "View Comment"}
                   </Button>
                 </Link>
               )}
@@ -298,7 +297,7 @@ export default function AdminReportDetailPage() {
               </div>
             ) : (
               <p className="text-slate-500 text-xs italic">
-                {locale === "vi" ? "Không có tệp bằng chứng đính kèm." : "No evidence files uploaded."}
+                {t("reports.dashboard.no_evidence") || "No evidence files uploaded."}
               </p>
             )}
           </div>
@@ -309,7 +308,7 @@ export default function AdminReportDetailPage() {
           {/* Metadata Card */}
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f0f1a] shadow-sm space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-              {locale === "vi" ? "Thông tin chung" : "Information"}
+              {t("reports.dashboard.info_general") || "Information"}
             </h2>
 
             {/* Status */}
@@ -400,7 +399,7 @@ export default function AdminReportDetailPage() {
               {/* Action Selector */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                  {locale === "vi" ? "Biện pháp xử lý" : "Resolution Action"}
+                  {t("reports.dashboard.resolution_action") || "Resolution Action"}
                 </label>
                 <select
                   value={actionType}
@@ -411,8 +410,8 @@ export default function AdminReportDetailPage() {
                   <option value="WARNING">{t("reports.actions.WARNING")}</option>
                   <option value="BAN_PERMANENT">{t("reports.actions.BAN_PERMANENT")}</option>
                   <option value="BAN_CUSTOM">{t("reports.actions.BAN_CUSTOM")}</option>
-                  <option value="NO_ACTION">{locale === "vi" ? "Không xử lý (Bỏ qua)" : "No Action"}</option>
-                  <option value="REJECT">{locale === "vi" ? "Bác bỏ tố cáo" : "Reject Report"}</option>
+                  <option value="NO_ACTION">{t("reports.dashboard.no_action_opt") || "No Action"}</option>
+                  <option value="REJECT">{t("reports.dashboard.reject_opt") || "Reject Report"}</option>
                 </select>
               </div>
 
@@ -443,7 +442,7 @@ export default function AdminReportDetailPage() {
                   ref={textareaRef}
                   value={adminMessage}
                   onChange={(e) => setAdminMessage(e.target.value)}
-                  placeholder={locale === "vi" ? "Nhập tin nhắn phản hồi / lý do xử lý..." : "Enter admin action explanation/message..."}
+                  placeholder={t("reports.dashboard.admin_msg_placeholder") || "Enter admin action explanation/message..."}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-xs bg-white dark:bg-[#07070f] text-slate-850 dark:text-slate-100 focus:outline-none focus:border-red-500 transition-colors resize-none overflow-y-hidden min-h-[80px]"
                   disabled={submitting}
                 />
@@ -476,7 +475,7 @@ export default function AdminReportDetailPage() {
                   ) : (
                     <>
                       <Shield className="h-3.5 w-3.5" />
-                      <span>{locale === "vi" ? "Hoàn tất xử lý" : "Submit Resolution"}</span>
+                      <span>{t("reports.dashboard.submit_resolution") || "Submit Resolution"}</span>
                     </>
                   )}
                 </Button>
@@ -487,7 +486,7 @@ export default function AdminReportDetailPage() {
             <div className="p-6 rounded-2xl border border-violet-500/20 bg-violet-500/[0.01] dark:bg-violet-950/10 shadow-sm space-y-3">
               <h2 className="text-sm font-bold uppercase tracking-wider text-violet-500 flex items-center gap-1.5">
                 <Shield className="h-4 w-4" />
-                <span>{locale === "vi" ? "Kết Quả Xử Lý" : "Resolution Result"}</span>
+                <span>{t("reports.dashboard.resolution_result") || "Resolution Result"}</span>
               </h2>
 
               <div>
@@ -509,8 +508,8 @@ export default function AdminReportDetailPage() {
               </div>
 
               <div className="border-t border-slate-100 dark:border-slate-800/80 pt-2 text-[10px] text-slate-500 space-y-1">
-                <div>{locale === "vi" ? "Người xử lý" : "Resolved by"}: {detail.response.admin.displayName}</div>
-                <div>{locale === "vi" ? "Ngày xử lý" : "Resolved Date"}: {new Date(detail.response.createdAt).toLocaleDateString()}</div>
+                <div>{t("reports.dashboard.resolved_by") || "Resolved by"}: {detail.response.admin.displayName}</div>
+                <div>{t("reports.dashboard.resolved_date") || "Resolved Date"}: {new Date(detail.response.createdAt).toLocaleDateString()}</div>
               </div>
             </div>
           ) : null}

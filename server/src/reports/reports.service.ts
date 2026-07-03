@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
@@ -22,6 +22,8 @@ import { UploadReportMediaDto } from './dto/upload-report-media.dto';
 
 @Injectable()
 export class ReportsService {
+  private readonly logger = new Logger(ReportsService.name);
+
   constructor(
     private readonly em: EntityManager,
     private readonly storageService: R2StorageService,
@@ -29,7 +31,6 @@ export class ReportsService {
     private readonly emailService: EmailService,
   ) { }
 
-  // Create a new report
   async create(dto: CreateReportDto, reporterId: string) {
     const reporter = this.em.getReference(User, reporterId);
 
@@ -88,9 +89,8 @@ export class ReportsService {
     };
   }
 
-  // Request R2 Presigned upload URL for report attachments
   async uploadReportMedia(dto: UploadReportMediaDto, userId: string) {
-    const maxLimit = 20 * 1024 * 1024; // 20MB
+    const maxLimit = 20 * 1024 * 1024;
     if (dto.fileSize > maxLimit) {
       throw new BadRequestException('reports.file_too_large');
     }
@@ -123,7 +123,7 @@ export class ReportsService {
     });
 
     const publicUrlBase = this.configService
-      .get<string>('R2_PUBLIC_DEV_URL', 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev')
+      .getOrThrow<string>('R2_PUBLIC_DEV_URL')
       .replace(/\/+$/, '');
 
     return {
@@ -137,7 +137,6 @@ export class ReportsService {
     };
   }
 
-  // Find reports submitted by the logged-in user
   async findMyReports(reporterId: string) {
     const list = await this.em.find(
       Report,
@@ -176,7 +175,6 @@ export class ReportsService {
     }));
   }
 
-  // Get administrative stats for dashboard
   async getAdminStats() {
     const total = await this.em.count(Report);
     const pending = await this.em.count(Report, { status: ReportStatus.PENDING as any });
@@ -186,7 +184,6 @@ export class ReportsService {
     return { total, pending, resolved, rejected };
   }
 
-  // Get admin paginated reports list
   async findAdminReports(
     status?: ReportStatus,
     sort: 'asc' | 'desc' = 'desc',
@@ -247,7 +244,6 @@ export class ReportsService {
     };
   }
 
-  // Get a single report details (accessible by reporter or admin)
   async findOne(id: string, userId: string, isAdmin: boolean) {
     const report = await this.em.findOne(
       Report,
@@ -323,7 +319,6 @@ export class ReportsService {
     };
   }
 
-  // Administrative resolution of report
   async resolve(id: string, adminId: string, dto: ResolveReportDto) {
     const report = await this.em.findOne(Report, { id }, { populate: ['reportedUserId', 'reporterId'] });
     if (!report) throw new NotFoundException('Report not found');
@@ -331,7 +326,6 @@ export class ReportsService {
       throw new BadRequestException('Report is already processed');
     }
 
-    // Check if reported user is an admin
     if (
       dto.actionTaken === ReportAction.WARNING ||
       dto.actionTaken === ReportAction.BAN_PERMANENT ||
@@ -347,12 +341,10 @@ export class ReportsService {
 
     const admin = this.em.getReference(User, adminId);
 
-    // Update status
     report.status = ReportStatus.RESOLVED as any;
     report.handledBy = admin;
     report.handledAt = new Date();
 
-    // Create ReportResponse
     const response = this.em.create(ReportResponse, {
       reportId: report,
       adminId: admin,
@@ -361,7 +353,6 @@ export class ReportsService {
       isVisibleToReporter: dto.isVisibleToReporter !== false,
     });
 
-    // Execute ban actions if applicable
     if (
       dto.actionTaken === ReportAction.BAN_PERMANENT ||
       dto.actionTaken === ReportAction.BAN_CUSTOM
@@ -386,27 +377,21 @@ export class ReportsService {
 
     await this.em.persistAndFlush([report, response]);
 
-    // Send email to reporter
     if (report.reporterId?.email) {
       const reporter = report.reporterId;
-      const title = '[Borrowed Shapes] Your report has been resolved';
-      const visibleMsg = (dto.isVisibleToReporter !== false)
-        ? `<p><strong>Moderator Message:</strong><br/>${dto.message}</p>`
-        : '';
-      const bodyHtml = `
-        <p>Hello ${reporter.displayName},</p>
-        <p>Thank you for helping us keep Borrowed Shapes safe. The report you submitted has been reviewed and resolved by our moderation team.</p>
-        <p style="margin: 15px 0;">
-          <strong>Status:</strong> RESOLVED<br/>
-          <strong>Action Taken:</strong> ${dto.actionTaken}
-        </p>
-        ${visibleMsg}
-        <p>Thank you for your support!</p>
-      `;
-      await this.emailService.sendMail(String(reporter.email), title, bodyHtml);
+      try {
+        await this.emailService.sendReportResolvedEmail({
+          to: String(reporter.email),
+          displayName: reporter.displayName,
+          status: 'RESOLVED',
+          actionTaken: dto.actionTaken,
+          adminMessage: dto.isVisibleToReporter !== false ? dto.message : null,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to send resolution email to reporter ${reporter.id}`);
+      }
     }
 
-    // Send email to reported user (warning / ban details)
     if (report.reportedUserId) {
       const reportedUser = await this.em.findOne(User, { id: report.reportedUserId.id });
       if (reportedUser && reportedUser.email) {
@@ -421,16 +406,15 @@ export class ReportsService {
             banExpiresAt: banExpiresAtStr,
           });
         } else if (dto.actionTaken === ReportAction.WARNING) {
-          const warningTitle = '[Borrowed Shapes] Official Account Warning Notice';
-          const warningHtml = `
-            <p>Hello ${reportedUser.displayName},</p>
-            <p>You have received an official warning from the moderation team for violating community guidelines.</p>
-            <div style="background-color: #262626; padding: 15px; border-left: 4px solid #fbbf24; margin: 20px 0; border-radius: 4px; color: #e2e8f0; font-family: Arial, sans-serif;">
-              <p style="margin: 0;"><strong>Reason for Warning:</strong><br/>${dto.message}</p>
-            </div>
-            <p>Please adhere to the community guidelines in the future to avoid account restriction.</p>
-          `;
-          await this.emailService.sendMail(String(reportedUser.email), warningTitle, warningHtml);
+          try {
+            await this.emailService.sendReportWarningEmail({
+              to: String(reportedUser.email),
+              displayName: reportedUser.displayName,
+              reason: dto.message,
+            });
+          } catch (error) {
+            this.logger.warn(`Failed to send warning email to user ${reportedUser.id}`);
+          }
         }
       }
     }
@@ -438,7 +422,6 @@ export class ReportsService {
     return { success: true };
   }
 
-  // Administrative rejection of report
   async reject(id: string, adminId: string, dto: RejectReportDto) {
     const report = await this.em.findOne(Report, { id }, { populate: ['reporterId'] });
     if (!report) throw new NotFoundException('Report not found');
@@ -448,12 +431,10 @@ export class ReportsService {
 
     const admin = this.em.getReference(User, adminId);
 
-    // Update status
     report.status = ReportStatus.REJECTED as any;
     report.handledBy = admin;
     report.handledAt = new Date();
 
-    // Create ReportResponse
     const response = this.em.create(ReportResponse, {
       reportId: report,
       adminId: admin,
@@ -464,23 +445,17 @@ export class ReportsService {
 
     await this.em.persistAndFlush([report, response]);
 
-    // Send email to reporter
     if (report.reporterId?.email) {
       const reporter = report.reporterId;
-      const title = '[Borrowed Shapes] Your report has been reviewed';
-      const visibleMsg = (dto.isVisibleToReporter !== false)
-        ? `<p><strong>Moderator Message:</strong><br/>${dto.message}</p>`
-        : '';
-      const bodyHtml = `
-        <p>Hello ${reporter.displayName},</p>
-        <p>Thank you for helping us keep Borrowed Shapes safe. The report you submitted has been reviewed by our moderation team.</p>
-        <p style="margin: 15px 0;">
-          <strong>Status:</strong> REJECTED / DISMISSED
-        </p>
-        ${visibleMsg}
-        <p>Thank you for your support!</p>
-      `;
-      await this.emailService.sendMail(String(reporter.email), title, bodyHtml);
+      try {
+        await this.emailService.sendReportRejectedEmail({
+          to: String(reporter.email),
+          displayName: reporter.displayName,
+          adminMessage: dto.isVisibleToReporter !== false ? dto.message : null,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to send rejection email to reporter ${reporter.id}`);
+      }
     }
 
     return { success: true };

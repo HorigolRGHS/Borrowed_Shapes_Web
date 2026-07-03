@@ -61,7 +61,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Dynamically import CategoryDescriptionEditor to avoid NextJS SSR errors
 const CategoryDescriptionEditor = dynamic(
   () =>
     import("@/components/categories/category-description-editor").then(
@@ -87,12 +86,12 @@ const slugify = (text: string) => {
     .normalize("NFD")
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'd')
-    .replace(/[\u0300-\u036f]/g, "") // remove accents
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-") // replace spaces with -
-    .replace(/[^\w\-]+/g, "") // remove all non-word chars
-    .replace(/\-\-+/g, "-"); // replace multiple - with single -
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-");
 };
 
 export default function DashboardCategoriesPage() {
@@ -103,10 +102,8 @@ export default function DashboardCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
-  // Expanded descriptions state (id -> boolean)
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
-  // Modals state
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -143,7 +140,6 @@ export default function DashboardCategoriesPage() {
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile]);
 
-  // Track if user has manually changed the slugs
   const [slugsManuallyEdited, setSlugsManuallyEdited] = useState({
     slug: false,
     slugVi: false,
@@ -259,7 +255,6 @@ export default function DashboardCategoriesPage() {
   const handleCreate = async () => {
     setIsUploadingImage(true);
     try {
-      // 1. Create the category without the image URL first
       const createResponse = await axios.post("/api/category/create", {
         name: form.name,
         nameVi: form.nameVi,
@@ -276,7 +271,6 @@ export default function DashboardCategoriesPage() {
         const categoryId = createdCat.id;
         let finalIconUrl = null;
 
-        // 2. If there is an icon file selected, upload it
         if (selectedFile) {
           const uploadResp = await axios.post("/api/category/upload", {
             fileName: selectedFile.name,
@@ -298,7 +292,6 @@ export default function DashboardCategoriesPage() {
             }
             finalIconUrl = uploadData.publicUrl;
 
-            // 3. Update the category with the icon URL
             await axios.patch(`/api/category/update/${categoryId}`, {
               iconUrl: finalIconUrl,
             });
@@ -322,7 +315,6 @@ export default function DashboardCategoriesPage() {
   const handleOpenEdit = async (cat: Category) => {
     setLoading(true);
     try {
-      // Fetch details of category only once
       const res = await axios.get(`/api/category/id/${cat.id}`);
       const data = res.data?.data;
 
@@ -359,7 +351,6 @@ export default function DashboardCategoriesPage() {
     try {
       let finalIconUrl = form.iconUrl;
 
-      // 1. If there is a new icon file, upload it first
       if (selectedFile) {
         const uploadResp = await axios.post("/api/category/upload", {
           fileName: selectedFile.name,
@@ -383,7 +374,6 @@ export default function DashboardCategoriesPage() {
         }
       }
 
-      // 2. Patch details, including the updated iconUrl
       const response = await axios.patch(`/api/category/update/${editingCategory.id}`, {
         name: form.name,
         nameVi: form.nameVi,

@@ -98,13 +98,11 @@ export default function DashboardForumDetailPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modals
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Form inputs (only Category, Post Type, Status, Pinned are editable)
   const [editForm, setEditForm] = useState({
     categoryId: "",
     postType: "GENERAL",

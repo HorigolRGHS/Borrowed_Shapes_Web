@@ -14,7 +14,6 @@ import { useI18n } from "@/lib/i18/i18n-context";
 
 function stripHtml(html: string) {
   if (!html) return "";
-  // Simple regex to strip HTML tags
   return html.replace(/<[^>]*>/g, "");
 }
 
@@ -44,11 +43,11 @@ export function ForumCard({ item }: { item: any }) {
               )}
             </div>
             {item.author?.badgeImageUrl && (
-              <img 
-                src={item.author.badgeImageUrl} 
-                alt="" 
-                aria-hidden="true" 
-                className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm" 
+              <img
+                src={item.author.badgeImageUrl}
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain drop-shadow-sm"
               />
             )}
           </div>

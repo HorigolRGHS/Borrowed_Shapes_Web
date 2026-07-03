@@ -61,7 +61,6 @@ export function CommentCKEditor({
   const editorRef = useRef<any>(null);
   const isSettingData = useRef(false);
 
-  // Sync value from outside (e.g. when cleared)
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;

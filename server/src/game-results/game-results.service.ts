@@ -25,7 +25,7 @@ function clamp(n: number, min: number, max: number): number {
 
 @Injectable()
 export class GameResultService {
-  constructor(private readonly gameResultRepository: GameResultRepository) {}
+  constructor(private readonly gameResultRepository: GameResultRepository) { }
 
   async findAllPaginated(
     query: ListGameResultsQueryDto,
@@ -50,72 +50,8 @@ export class GameResultService {
 
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const offset = (page - 1) * limit;
 
-    const conditions: string[] = [];
-    const params: any[] = [];
-
-    if (query.isCompleted !== undefined) {
-      conditions.push('gr."isCompleted" = ?');
-      params.push(query.isCompleted);
-    }
-
-    if (query.gameProfileId) {
-      conditions.push(
-        'gr.id IN (SELECT grp."runId" FROM game."GameRunPlayer" grp WHERE grp."gameProfileId" = ?)',
-      );
-      params.push(query.gameProfileId);
-    }
-
-    if (query.search) {
-      conditions.push('(gr."lobbyName" ILIKE ? OR gr."lobbyCode" ILIKE ?)');
-      const pattern = `%${query.search}%`;
-      params.push(pattern, pattern);
-    }
-
-    if (query.isPrivate !== undefined) {
-      conditions.push('gr."isPrivate" = ?');
-      params.push(query.isPrivate);
-    }
-
-    if (query.startFrom) {
-      conditions.push('gr."startedAt" >= ?');
-      params.push(query.startFrom);
-    }
-
-    if (query.startTo) {
-      conditions.push('gr."startedAt" <= ?');
-      params.push(query.startTo);
-    }
-
-    const whereClause =
-      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-    // Count
-    const countSql = `SELECT COUNT(*) as count FROM game."GameRun" gr ${whereClause}`;
-    const countResult = await this.gameResultRepository.execute(countSql, params);
-    const total = Number(countResult[0]?.count || 0);
-
-    // Sort
-    const sortBy = query.sortBy ?? 'startedAt';
-    const order = query.order ?? 'desc';
-    const sortColumn =
-      {
-        startedAt: '"startedAt"',
-        completedAt: '"completedAt"',
-        totalTimeSec: '"totalTimeSec"',
-      }[sortBy] ?? '"startedAt"';
-
-    // Data
-    const dataSql = `
-      SELECT gr.*
-      FROM game."GameRun" gr
-      ${whereClause}
-      ORDER BY gr.${sortColumn} ${order}, gr.id DESC
-      LIMIT ? OFFSET ?
-    `;
-    const dataParams = [...params, limit, offset];
-    const rows = await this.gameResultRepository.execute(dataSql, dataParams);
+    const { rows, total } = await this.gameResultRepository.findPaginatedRuns(query);
 
     const items: GameResultResponseDto[] = [];
     for (const row of rows || []) {
@@ -147,14 +83,12 @@ export class GameResultService {
   }
 
   async findOne(id: string): Promise<GameResultDetailResponseDto> {
-    const runSql = `SELECT * FROM game."GameRun" gr WHERE gr.id = ?`;
-    const runRows = await this.gameResultRepository.execute(runSql, [id]);
+    const row = await this.gameResultRepository.findRunById(id);
 
-    if (!runRows || runRows.length === 0) {
+    if (!row) {
       throw new NotFoundException('game_results.not_found');
     }
 
-    const row = runRows[0];
     const players = await this.getRunPlayers(id);
     const sessions = await this.getRunSessions(id);
 
@@ -198,35 +132,12 @@ export class GameResultService {
 
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const offset = (page - 1) * limit;
 
-    // Player info + stats from GameProfile
-    const profileSql = `
-      SELECT
-        gp.id as "gameProfileId",
-        u."displayName",
-        u."imgUrl" as "avatarUrl",
-        gp."totalSessions",
-        gp."totalWins",
-        gp."totalLosses",
-        gp."totalAbandoned",
-        gp."totalPlayTime",
-        a."badgeImageUrl" as "badgeImageUrl",
-        a."type" as "badgeType",
-        a."seasonMonth" as "badgeSeasonMonth",
-        a."expiresAt" as "badgeExpiresAt"
-      FROM game."GameProfile" gp
-      INNER JOIN auth."User" u ON u.id = gp."userId"
-      LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
-      WHERE gp.id = ?
-    `;
-    const profileRows = await this.gameResultRepository.execute(profileSql, [gameProfileId]);
+    const profile = await this.gameResultRepository.findPlayerProfile(gameProfileId);
 
-    if (!profileRows || profileRows.length === 0) {
+    if (!profile) {
       throw new NotFoundException('game_results.player_not_found');
     }
-
-    const profile = profileRows[0];
 
     let badgeImageUrl = undefined;
     if (profile.badgeImageUrl) {
@@ -255,37 +166,8 @@ export class GameResultService {
       totalPlayTimeSec: profile.totalPlayTime ?? 0,
     };
 
-    // Count runs for this player
-    const countSql = `
-      SELECT COUNT(*) as count
-      FROM game."GameRunPlayer" grp
-      WHERE grp."gameProfileId" = ?
-    `;
-    const countResult = await this.gameResultRepository.execute(countSql, [gameProfileId]);
-    const total = Number(countResult[0]?.count || 0);
-
-    // Sort
-    const sortBy = query.sortBy ?? 'startedAt';
-    const order = query.order ?? 'desc';
-    const sortColumn =
-      {
-        startedAt: 'gr."startedAt"',
-        completedAt: 'gr."completedAt"',
-        totalTimeSec: 'gr."totalTimeSec"',
-      }[sortBy] ?? 'gr."startedAt"';
-
-    // Runs with player role
-    const dataSql = `
-      SELECT
-        gr.*,
-        grp."isHost"
-      FROM game."GameRun" gr
-      INNER JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
-      WHERE grp."gameProfileId" = ?
-      ORDER BY ${sortColumn} ${order}, gr.id DESC
-      LIMIT ? OFFSET ?
-    `;
-    const rows = await this.gameResultRepository.execute(dataSql, [gameProfileId, limit, offset]);
+    const total = await this.gameResultRepository.countPlayerRuns(gameProfileId);
+    const rows = await this.gameResultRepository.findRunHistoryForPlayer(gameProfileId, query);
 
     const items: PlayerHistoryRunDto[] = [];
     for (const row of rows || []) {
@@ -324,60 +206,7 @@ export class GameResultService {
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
 
-    const conditions: string[] = [
-      'gr."isCompleted" = true',
-      'gr."totalTimeSec" IS NOT NULL',
-    ];
-    const params: any[] = [];
-
-    if (query.scope === 'seasonal') {
-      let month = query.seasonMonth;
-      if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-        month = new Date().toISOString().slice(0, 7);
-      }
-      const year = parseInt(month.split('-')[0], 10);
-      const monthNum = parseInt(month.split('-')[1], 10);
-      const startOfTarget = new Date(Date.UTC(year, monthNum - 1, 1));
-      const startOfNext = new Date(Date.UTC(year, monthNum, 1));
-
-      conditions.push('gr."completedAt" >= ?');
-      conditions.push('gr."completedAt" < ?');
-      params.push(startOfTarget, startOfNext);
-
-      // Filter by registered seasonal teams for the season month (YYYY-MM-01)
-      const seasonMonthDateStr = `${year}-${String(monthNum).padStart(2, '0')}-01`;
-      conditions.push(
-        'gr."lobbyCode" IN (SELECT st.code FROM game."SeasonTeam" st WHERE st."seasonMonth" = ?)',
-      );
-      params.push(seasonMonthDateStr);
-    }
-
-    const whereClause = `WHERE ${conditions.join(' AND ')}`;
-
-    // Count total completed runs
-    const countSql = `
-      SELECT COUNT(*) as count
-      FROM game."GameRun" gr
-      ${whereClause}
-    `;
-    const countResult = await this.gameResultRepository.execute(countSql, params);
-    const total = Number(countResult[0]?.count || 0);
-
-    // Leaderboard: fastest completed runs with lobby name and player count
-    const dataSql = `
-      SELECT
-        gr.id as "runId",
-        gr."lobbyName",
-        gr."totalTimeSec",
-        gr."completedAt",
-        (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = gr.id) as "totalPlayers"
-      FROM game."GameRun" gr
-      ${whereClause}
-      ORDER BY gr."totalTimeSec" ASC, gr."completedAt" ASC
-      LIMIT ? OFFSET ?
-    `;
-    const dataParams = [...params, limit, offset];
-    const rows = await this.gameResultRepository.execute(dataSql, dataParams);
+    const { rows, total } = await this.gameResultRepository.getLeaderboardData(query);
 
     const items: LeaderboardEntryDto[] = [];
     for (let index = 0; index < (rows || []).length; index++) {
@@ -416,25 +245,7 @@ export class GameResultService {
   }
 
   private async getRunPlayers(runId: string): Promise<GameResultPlayerDto[]> {
-    const sql = `
-      SELECT
-        grp."gameProfileId",
-        u."displayName",
-        u."imgUrl" as "avatarUrl",
-        grp."isHost",
-        grp."joinedAt",
-        a."badgeImageUrl" as "badgeImageUrl",
-        a."type" as "badgeType",
-        a."seasonMonth" as "badgeSeasonMonth",
-        a."expiresAt" as "badgeExpiresAt"
-      FROM game."GameRunPlayer" grp
-      INNER JOIN game."GameProfile" gp ON gp.id = grp."gameProfileId"
-      INNER JOIN auth."User" u ON u.id = gp."userId"
-      LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
-      WHERE grp."runId" = ?
-      ORDER BY grp."joinedAt" ASC
-    `;
-    const rows = await this.gameResultRepository.execute(sql, [runId]);
+    const rows = await this.gameResultRepository.getRunPlayers(runId);
 
     return (rows || []).map((row: any) => {
       let badgeImageUrl = undefined;
@@ -460,23 +271,7 @@ export class GameResultService {
   }
 
   private async getRunSessions(runId: string): Promise<GameResultSessionDto[]> {
-    const sessionSql = `
-      SELECT
-        gs.id,
-        l.id as "levelId",
-        l."displayName" as "levelName",
-        l."order" as "levelOrder",
-        gs.status,
-        gs.result,
-        gs."completionTimeSec",
-        gs."startedAt",
-        gs."endedAt"
-      FROM game."GameSession" gs
-      INNER JOIN game."Level" l ON l.id = gs."levelId"
-      WHERE gs."runId" = ?
-      ORDER BY l."order" ASC
-    `;
-    const sessionRows = await this.gameResultRepository.execute(sessionSql, [runId]);
+    const sessionRows = await this.gameResultRepository.getRunSessions(runId);
 
     const sessions: GameResultSessionDto[] = [];
     for (const sRow of sessionRows || []) {
@@ -501,25 +296,7 @@ export class GameResultService {
   private async getSessionPlayers(
     sessionId: string,
   ): Promise<GameResultSessionPlayerDto[]> {
-    const sql = `
-      SELECT
-        gsp."gameProfileId",
-        u."displayName",
-        u."imgUrl" as "avatarUrl",
-        gsp."isAbsent",
-        gsp."leftAt",
-        a."badgeImageUrl" as "badgeImageUrl",
-        a."type" as "badgeType",
-        a."seasonMonth" as "badgeSeasonMonth",
-        a."expiresAt" as "badgeExpiresAt"
-      FROM game."GameSessionPlayer" gsp
-      INNER JOIN game."GameProfile" gp ON gp.id = gsp."gameProfileId"
-      INNER JOIN auth."User" u ON u.id = gp."userId"
-      LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
-      WHERE gsp."sessionId" = ?
-      ORDER BY gsp."gameProfileId" ASC
-    `;
-    const rows = await this.gameResultRepository.execute(sql, [sessionId]);
+    const rows = await this.gameResultRepository.getSessionPlayers(sessionId);
 
     return (rows || []).map((row: any) => {
       let badgeImageUrl = undefined;

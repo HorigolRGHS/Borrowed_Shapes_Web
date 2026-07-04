@@ -17,7 +17,7 @@ import { StorageModule } from '../storage/storage.module';
     StorageModule,
   ],
   controllers: [AchievementController],
-  providers: [AchievementService, AchievementsCleanupJob],
+  providers: [AchievementService, AchievementsCleanupJob, AchievementRepository],
   exports: [AchievementService, AchievementRepository],
 })
 export class AchievementModule { }

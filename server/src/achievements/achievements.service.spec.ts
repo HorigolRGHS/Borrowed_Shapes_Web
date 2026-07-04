@@ -272,6 +272,8 @@ describe('AchievementService', () => {
       achievement.badgeImageUrl = 'https://pub-x.r2.dev/achievement/some-uuid.png';
 
       jest.spyOn(service, 'findOne').mockResolvedValue(achievement as any);
+      jest.spyOn(repository, 'findGameProfilesWithEquippedAchievements').mockResolvedValue([]);
+      jest.spyOn(repository, 'flush').mockResolvedValue();
       jest.spyOn(repository, 'removeAndFlush').mockResolvedValue(undefined as any);
       jest.spyOn(r2StorageService, 'deleteObject').mockResolvedValue(undefined as any);
 
@@ -287,6 +289,8 @@ describe('AchievementService', () => {
       achievement.badgeImageUrl = 'https://external-site.com/avatar.png';
 
       jest.spyOn(service, 'findOne').mockResolvedValue(achievement as any);
+      jest.spyOn(repository, 'findGameProfilesWithEquippedAchievements').mockResolvedValue([]);
+      jest.spyOn(repository, 'flush').mockResolvedValue();
       jest.spyOn(repository, 'removeAndFlush').mockResolvedValue(undefined as any);
       const deleteSpy = jest.spyOn(r2StorageService, 'deleteObject').mockClear();
 

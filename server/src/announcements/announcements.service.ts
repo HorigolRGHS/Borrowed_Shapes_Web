@@ -38,43 +38,7 @@ export class AnnouncementService {
   ): Promise<AnnouncementPublicListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const offset = (page - 1) * limit;
-
-    const where: FilterQuery<Announcement> = {
-      isPublished: true,
-      publishedAt: { $lte: new Date() },
-    };
-
-    if (query.type) {
-      where.type = query.type;
-    }
-
-    if (query.q && query.q.trim().length > 0) {
-      const pattern = `%${escapeLike(query.q.trim())}%`;
-      where.$or = [
-        { title: { $ilike: pattern } },
-        { titleVi: { $ilike: pattern } },
-        { summary: { $ilike: pattern } },
-        { summaryVi: { $ilike: pattern } },
-      ];
-    }
-
-    const sortBy = query.sortBy ?? 'publishedAt';
-    const order = query.order ?? 'desc';
-
-    const [announcements, total] = await this.announcementRepository.findAndCount(
-      where,
-      {
-        populate: ['authorId'],
-        orderBy: [
-          { isPinned: 'desc' },
-          { [sortBy]: order },
-          { id: 'desc' },
-        ],
-        limit,
-        offset,
-      },
-    );
+    const [announcements, total] = await this.announcementRepository.findPublicAnnouncements(query);
 
     const items: AnnouncementPublicListItemDto[] = announcements.map(
       (a) => this.toPublicListDto(a, lang),
@@ -84,14 +48,12 @@ export class AnnouncementService {
   }
 
   async findOnePublic(slug: string, lang: Lang): Promise<AnnouncementPublicDetailDto> {
-    const where: FilterQuery<Announcement> = {
+    const announcement = await this.announcementRepository.findOne({
       $or: [
         { slug },
         { slugVi: slug },
       ],
-    };
-
-    const announcement = await this.announcementRepository.findOne(where, {
+    }, {
       populate: ['authorId'],
     });
 
@@ -114,40 +76,7 @@ export class AnnouncementService {
   ): Promise<AnnouncementAdminListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const offset = (page - 1) * limit;
-
-    const where: FilterQuery<Announcement> = {};
-
-    if (query.type) {
-      where.type = query.type;
-    }
-
-    if (query.q && query.q.trim().length > 0) {
-      const pattern = `%${escapeLike(query.q.trim())}%`;
-      where.$or = [
-        { title: { $ilike: pattern } },
-        { titleVi: { $ilike: pattern } },
-        { summary: { $ilike: pattern } },
-        { summaryVi: { $ilike: pattern } },
-      ];
-    }
-
-    const sortBy = query.sortBy ?? 'publishedAt';
-    const order = query.order ?? 'desc';
-
-    const [announcements, total] = await this.announcementRepository.findAndCount(
-      where,
-      {
-        populate: ['authorId'],
-        orderBy: [
-          { isPinned: 'desc' },
-          { [sortBy]: order },
-          { id: 'desc' },
-        ],
-        limit,
-        offset,
-      },
-    );
+    const [announcements, total] = await this.announcementRepository.findAdminAnnouncements(query);
 
     const items: AnnouncementAdminListItemDto[] = announcements.map(
       (a) => this.toAdminListDto(a),
@@ -171,12 +100,9 @@ export class AnnouncementService {
   // --- Mutations ---
 
   async create(dto: CreateAnnouncementDto, authorId: string): Promise<null> {
-    // Check if slug or slug_vi are already taken
-    const existing = await this.announcementRepository.findOne({
-      $or: [
-        { slug: dto.slug },
-        { slugVi: dto.slugVi },
-      ],
+    const existing = await this.announcementRepository.checkSlugUniqueness({
+      slug: dto.slug,
+      slugVi: dto.slugVi,
     });
 
     if (existing) {
@@ -211,25 +137,17 @@ export class AnnouncementService {
       throw new NotFoundException('announcements.not_found');
     }
 
-    // Check slug uniqueness if updated
     if (dto.slug || dto.slugVi) {
-      const conditions: FilterQuery<Announcement>[] = [];
-      if (dto.slug) conditions.push({ slug: dto.slug });
-      if (dto.slugVi) conditions.push({ slugVi: dto.slugVi });
-
-      const existing = await this.announcementRepository.findOne({
-        $and: [
-          { id: { $ne: id } },
-          { $or: conditions },
-        ],
-      });
+      const existing = await this.announcementRepository.checkSlugUniqueness({
+        slug: dto.slug,
+        slugVi: dto.slugVi,
+      }, id);
 
       if (existing) {
         throw new BadRequestException('announcements.slug_taken');
       }
     }
 
-    // Update publishedAt logic if state toggles to published and has no publishedAt
     let publishedAt = announcement.publishedAt;
     if (dto.publishedAt !== undefined) {
       publishedAt = dto.publishedAt ? new Date(dto.publishedAt) : undefined;

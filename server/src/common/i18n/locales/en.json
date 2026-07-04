@@ -124,7 +124,19 @@
     "upload_missing": "No file provided",
     "upload_missing_id": "Achievement ID is required for badge upload",
     "upload_failed": "Upload failed",
-    "uploaded": "Achievement badge uploaded successfully"
+    "uploaded": "Achievement badge uploaded successfully",
+    "upload_url_created": "Upload URL created successfully",
+    "invalid_file_path": "Invalid file path",
+    "file_not_found_on_storage": "File not found on storage",
+    "id_required": "Achievement ID is required",
+    "id_must_be_string": "Achievement ID must be a string",
+    "file_name_required": "File name is required",
+    "file_name_must_be_string": "File name must be a string",
+    "file_size_must_be_number": "File size must be a number",
+    "file_size_invalid": "File size is invalid",
+    "mime_type_required": "MIME type is required",
+    "mime_type_invalid": "MIME type is invalid",
+    "old_url_must_be_string": "Old badge URL must be a string"
   },
   "wiki": {
     "list_success": "Wiki list retrieved",

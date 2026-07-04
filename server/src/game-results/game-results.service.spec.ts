@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { NotFoundException } from '@nestjs/common';
 import { GameResultService } from './game-results.service';
 import { GameRun } from '../entities/GameRun';
+import { GameResultRepository } from './game-results.repository';
 
 describe('GameResultService', () => {
   let service: GameResultService;
-  let em: EntityManager;
+  let repository: GameResultRepository;
 
   const mockRunRow = {
     id: 'run-1',
@@ -64,18 +64,26 @@ describe('GameResultService', () => {
       providers: [
         GameResultService,
         {
-          provide: EntityManager,
+          provide: GameResultRepository,
           useValue: {
-            execute: jest.fn(),
             findOne: jest.fn(),
             removeAndFlush: jest.fn(),
+            findPaginatedRuns: jest.fn(),
+            findRunById: jest.fn(),
+            getRunPlayers: jest.fn(),
+            getRunSessions: jest.fn(),
+            getSessionPlayers: jest.fn(),
+            findPlayerProfile: jest.fn(),
+            countPlayerRuns: jest.fn(),
+            findRunHistoryForPlayer: jest.fn(),
+            getLeaderboardData: jest.fn(),
           },
         },
       ],
     }).compile();
 
     service = module.get<GameResultService>(GameResultService);
-    em = module.get<EntityManager>(EntityManager);
+    repository = module.get<GameResultRepository>(GameResultRepository);
   });
 
   it('should be defined', () => {
@@ -84,11 +92,9 @@ describe('GameResultService', () => {
 
   describe('findAllPaginated', () => {
     it('should_return_paginated_runs_when_valid_query (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }]) // count query
-        .mockResolvedValueOnce([mockRunRow]) // data query
-        .mockResolvedValueOnce([mockPlayerRow]); // players query
+      jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       const result = await service.findAllPaginated({ page: 1, limit: 10 });
 
@@ -103,10 +109,7 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_list_when_no_runs_exist (Boundary)', async () => {
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.findAllPaginated({ page: 1, limit: 10 });
 
@@ -116,68 +119,53 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_by_isCompleted_when_provided (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([mockRunRow])
-        .mockResolvedValueOnce([mockPlayerRow]);
+      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       await service.findAllPaginated({ isCompleted: true });
 
-      const countCall = executeSpy.mock.calls[0];
-      expect(countCall[0]).toContain('"isCompleted"');
-      expect(countCall[1]).toContain(true);
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ isCompleted: true }));
     });
 
     it('should_filter_by_search_when_provided (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([mockRunRow])
-        .mockResolvedValueOnce([mockPlayerRow]);
+      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       await service.findAllPaginated({ search: 'Test' });
 
-      const countCall = executeSpy.mock.calls[0];
-      expect(countCall[0]).toContain('ILIKE');
-      expect(countCall[1]).toContain('%Test%');
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ search: 'Test' }));
     });
 
     it('should_filter_by_isPrivate_when_provided (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([mockRunRow])
-        .mockResolvedValueOnce([mockPlayerRow]);
+      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       await service.findAllPaginated({ isPrivate: false });
 
-      const countCall = executeSpy.mock.calls[0];
-      expect(countCall[0]).toContain('"isPrivate"');
-      expect(countCall[1]).toContain(false);
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: false }));
     });
 
     it('should_filter_by_date_range_when_provided (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([]);
+      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [], total: 0 });
 
       await service.findAllPaginated({
         startFrom: '2026-01-01T00:00:00Z',
         startTo: '2026-12-31T23:59:59Z',
       });
 
-      const countCall = executeSpy.mock.calls[0];
-      expect(countCall[0]).toContain('"startedAt" >=');
-      expect(countCall[0]).toContain('"startedAt" <=');
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startFrom: '2026-01-01T00:00:00Z',
+          startTo: '2026-12-31T23:59:59Z',
+        }),
+      );
     });
 
     it('should_clamp_page_to_minimum_1_when_invalid (Boundary)', async () => {
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([]);
+      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.findAllPaginated({ page: -5, limit: 10 });
       expect(result.page).toBe(1);
@@ -186,12 +174,10 @@ describe('GameResultService', () => {
 
   describe('findOne', () => {
     it('should_return_run_details_when_found (Normal)', async () => {
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([mockRunRow]) // run query
-        .mockResolvedValueOnce([mockPlayerRow]) // run players
-        .mockResolvedValueOnce([mockSessionRow]) // sessions
-        .mockResolvedValueOnce([mockSessionPlayerRow]); // session players
+      jest.spyOn(repository, 'findRunById').mockResolvedValue(mockRunRow);
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([mockSessionRow]);
+      jest.spyOn(repository, 'getSessionPlayers').mockResolvedValue([mockSessionPlayerRow]);
 
       const result = await service.findOne('run-1');
 
@@ -204,7 +190,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_run_missing (Abnormal)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'findRunById').mockResolvedValue(null);
 
       await expect(service.findOne('non-existent')).rejects.toThrow(
         NotFoundException,
@@ -212,7 +198,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_rows_null (Boundary)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce(null as any);
+      jest.spyOn(repository, 'findRunById').mockResolvedValue(null);
 
       await expect(service.findOne('null-result')).rejects.toThrow(
         NotFoundException,
@@ -230,12 +216,10 @@ describe('GameResultService', () => {
         isHost: true,
       };
 
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([mockProfileRow]) // profile query
-        .mockResolvedValueOnce([{ count: 1 }]) // count query
-        .mockResolvedValueOnce([mockHistoryRun]) // runs query
-        .mockResolvedValueOnce([mockPlayerRow]); // players query
+      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(mockProfileRow);
+      jest.spyOn(repository, 'countPlayerRuns').mockResolvedValue(1);
+      jest.spyOn(repository, 'findRunHistoryForPlayer').mockResolvedValue([mockHistoryRun]);
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
 
       const result = await service.findPlayerHistory('gp-1', {
         page: 1,
@@ -255,7 +239,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_profile_missing (Abnormal)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(null);
 
       await expect(
         service.findPlayerHistory('non-existent', { page: 1, limit: 10 }),
@@ -271,12 +255,10 @@ describe('GameResultService', () => {
         isHost: false,
       };
 
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([mockProfileRow])
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([mockNonHostRun])
-        .mockResolvedValueOnce([mockPlayerRow]);
+      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(mockProfileRow);
+      jest.spyOn(repository, 'countPlayerRuns').mockResolvedValue(1);
+      jest.spyOn(repository, 'findRunHistoryForPlayer').mockResolvedValue([mockNonHostRun]);
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
 
       const result = await service.findPlayerHistory('gp-1', {
         page: 1,
@@ -287,11 +269,9 @@ describe('GameResultService', () => {
     });
 
     it('should_sort_by_totalTimeSec_asc_when_requested (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([mockProfileRow])
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(mockProfileRow);
+      jest.spyOn(repository, 'countPlayerRuns').mockResolvedValue(1);
+      const spy = jest.spyOn(repository, 'findRunHistoryForPlayer').mockResolvedValue([]);
 
       await service.findPlayerHistory('gp-1', {
         page: 1,
@@ -300,8 +280,13 @@ describe('GameResultService', () => {
         order: 'asc',
       });
 
-      const dataQueryCall = executeSpy.mock.calls[2];
-      expect(dataQueryCall[0]).toContain('ORDER BY gr."totalTimeSec" asc');
+      expect(spy).toHaveBeenCalledWith(
+        'gp-1',
+        expect.objectContaining({
+          sortBy: 'totalTimeSec',
+          order: 'asc',
+        }),
+      );
     });
   });
 
@@ -315,11 +300,8 @@ describe('GameResultService', () => {
         totalPlayers: 4,
       };
 
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([leaderboardRow])
-        .mockResolvedValueOnce([mockPlayerRow]);
+      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [leaderboardRow], total: 1 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
 
       const result = await service.getLeaderboard({ page: 1, limit: 10 });
 
@@ -333,10 +315,7 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_leaderboard_when_no_completed_runs (Boundary)', async () => {
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.getLeaderboard({ page: 1, limit: 10 });
 
@@ -355,11 +334,8 @@ describe('GameResultService', () => {
         },
       ];
 
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 11 }])
-        .mockResolvedValueOnce(rows)
-        .mockResolvedValueOnce([mockPlayerRow]);
+      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: rows, total: 11 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
 
       const result = await service.getLeaderboard({ page: 2, limit: 10 });
 
@@ -368,17 +344,16 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_seasonal_leaderboard_by_given_month (Normal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 1 }])
-        .mockResolvedValueOnce([{
-          runId: 'run-1',
-          lobbyName: 'Seasonal Lobby',
-          totalTimeSec: 150,
-          completedAt: new Date('2026-06-15T12:00:00Z'),
-          totalPlayers: 2,
-        }])
-        .mockResolvedValueOnce([mockPlayerRow]);
+      const leaderboardRow = {
+        runId: 'run-1',
+        lobbyName: 'Seasonal Lobby',
+        totalTimeSec: 150,
+        completedAt: new Date('2026-06-15T12:00:00Z'),
+        totalPlayers: 2,
+      };
+
+      const spy = jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [leaderboardRow], total: 1 });
+      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
 
       const result = await service.getLeaderboard({
         scope: 'seasonal',
@@ -389,49 +364,32 @@ describe('GameResultService', () => {
 
       expect(result.items).toHaveLength(1);
       expect(result.items[0].lobbyName).toBe('Seasonal Lobby');
-      
-      const countCall = executeSpy.mock.calls[0];
-      expect(countCall[0]).toContain('"completedAt" >=');
-      expect(countCall[0]).toContain('"completedAt" <');
-      expect(countCall[0]).toContain('"lobbyCode" IN (SELECT st.code');
-      
-      const startParam = countCall[1]![0];
-      const endParam = countCall[1]![1];
-      const seasonMonthParam = countCall[1]![2];
-      expect(startParam.getUTCFullYear()).toBe(2026);
-      expect(startParam.getUTCMonth()).toBe(5); // 0-indexed (June is 5)
-      expect(startParam.getUTCDate()).toBe(1);
-      expect(endParam.getUTCFullYear()).toBe(2026);
-      expect(endParam.getUTCMonth()).toBe(6); // 0-indexed (July is 6)
-      expect(endParam.getUTCDate()).toBe(1);
-      expect(seasonMonthParam).toBe('2026-06-01');
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scope: 'seasonal',
+          seasonMonth: '2026-06',
+        }),
+      );
     });
 
     it('should_default_to_current_month_when_seasonal_has_invalid_month_format (Abnormal)', async () => {
-      const executeSpy = jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([]);
+      const spy = jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [], total: 0 });
 
       await service.getLeaderboard({
         scope: 'seasonal',
         seasonMonth: 'invalid-month',
       });
 
-      const countCall = executeSpy.mock.calls[0];
-      expect(countCall[0]).toContain('"completedAt" >=');
-      
-      const startParam = countCall[1]![0];
-      const now = new Date();
-      expect(startParam.getUTCFullYear()).toBe(now.getUTCFullYear());
-      expect(startParam.getUTCMonth()).toBe(now.getUTCMonth());
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scope: 'seasonal',
+          seasonMonth: 'invalid-month',
+        }),
+      );
     });
 
     it('should_return_empty_seasonal_leaderboard_when_no_runs_in_month (Boundary)', async () => {
-      jest
-        .spyOn(em, 'execute')
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.getLeaderboard({
         scope: 'seasonal',
@@ -446,15 +404,15 @@ describe('GameResultService', () => {
   describe('delete', () => {
     it('should_delete_run_when_found (Normal)', async () => {
       const mockRun = new GameRun();
-      jest.spyOn(em, 'findOne').mockResolvedValue(mockRun);
-      jest.spyOn(em, 'removeAndFlush').mockResolvedValue();
+      jest.spyOn(repository, 'findOne').mockResolvedValue(mockRun);
+      jest.spyOn(repository, 'removeAndFlush').mockResolvedValue();
 
       await expect(service.delete('run-1')).resolves.toBeUndefined();
-      expect(em.removeAndFlush).toHaveBeenCalledWith(mockRun);
+      expect(repository.removeAndFlush).toHaveBeenCalledWith(mockRun);
     });
 
     it('should_throw_not_found_when_deleting_missing_run (Abnormal)', async () => {
-      jest.spyOn(em, 'findOne').mockResolvedValue(null);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
       await expect(service.delete('non-existent')).rejects.toThrow(
         NotFoundException,

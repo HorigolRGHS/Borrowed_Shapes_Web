@@ -124,7 +124,19 @@
     "upload_missing": "Không có file được tải lên",
     "upload_missing_id": "ID thành tựu là bắt buộc khi tải huy hiệu",
     "upload_failed": "Tải lên thất bại",
-    "uploaded": "Tải huy hiệu thành tựu lên thành công"
+    "uploaded": "Tải huy hiệu thành tựu lên thành công",
+    "upload_url_created": "Tạo liên kết upload thành công",
+    "invalid_file_path": "Đường dẫn file không hợp lệ",
+    "file_not_found_on_storage": "Không tìm thấy file trên bộ nhớ",
+    "id_required": "ID thành tựu là bắt buộc",
+    "id_must_be_string": "ID thành tựu phải là chuỗi ký tự",
+    "file_name_required": "Tên file là bắt buộc",
+    "file_name_must_be_string": "Tên file phải là chuỗi ký tự",
+    "file_size_must_be_number": "Dung lượng file phải là dạng số",
+    "file_size_invalid": "Dung lượng file không hợp lệ",
+    "mime_type_required": "MIME type là bắt buộc",
+    "mime_type_invalid": "MIME type không hợp lệ",
+    "old_url_must_be_string": "URL huy hiệu cũ phải là chuỗi ký tự"
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",

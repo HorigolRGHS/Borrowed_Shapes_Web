@@ -11,12 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
-  UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common';
 
 import type { Request } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 import {
   ApiTags,
@@ -24,7 +21,6 @@ import {
   ApiResponse,
   ApiBody,
   ApiQuery,
-  ApiConsumes,
 } from '@nestjs/swagger';
 
 import { AchievementService } from './achievements.service';
@@ -33,6 +29,8 @@ import { UpdateAchievementDto } from './dto/update-achievements.dto';
 import { AchievementResponseDto, AchievementUploadResponseDto } from './dto/achievements-response.dto';
 import { UserAchievementResponseDto } from './dto/user-achievements-response.dto';
 import { UnlockAchievementDto, UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
+import { AchievementUploadUrlDto } from './dto/achievement-upload-url.dto';
+import { AchievementConfirmUploadDto } from './dto/achievement-confirm-upload.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
@@ -275,56 +273,35 @@ export class AchievementController {
     return okResponse('achievements.unlocked_success', data, `${req.method} ${req.path}`);
   }
 
-  @Post('upload')
+  @Post('admin/upload-url')
   @Roles('ADMIN')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: { fileSize: 5 * 1024 * 1024, files: 1 },
-    }),
-  )
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Admin: upload an achievement badge image' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', format: 'binary' },
-        achievementId: { type: 'string', description: 'Achievement ID for folder structure' },
-        oldBadgeImageUrl: { type: 'string', description: 'Old badge image URL to delete' },
-      },
-      required: ['file', 'achievementId'],
-    },
-  })
+  @ApiOperation({ summary: 'Admin: create a presigned upload URL for achievement badge' })
+  @ApiBody({ type: AchievementUploadUrlDto })
+  async createUploadUrl(
+    @Body() dto: AchievementUploadUrlDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    const data = await this.achievementService.createUploadUrl(dto);
+    return okResponse(
+      'achievements.upload_url_created',
+      data,
+      `${req.method} ${req.path}`,
+    );
+  }
+
+  @Post('admin/confirm-upload')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Admin: confirm badge image upload and update achievement' })
+  @ApiBody({ type: AchievementConfirmUploadDto })
   @ApiResponse({ status: 200, type: AchievementUploadResponseDto })
-  async upload(
-    @UploadedFile() file: Express.Multer.File | undefined,
-    @Body('achievementId') achievementId: string | undefined,
-    @Body('oldBadgeImageUrl') oldBadgeImageUrl: string | undefined,
+  async confirmUpload(
+    @Body() dto: AchievementConfirmUploadDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AchievementUploadResponseDto>> {
-    if (!file) {
-      throw new BadRequestException('achievements.upload_missing');
-    }
-
-    if (!achievementId) {
-      throw new BadRequestException('achievements.upload_missing_id');
-    }
-
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedMimes.includes(file.mimetype)) {
-      throw new BadRequestException('achievements.upload_invalid_type');
-    }
-
-    const url = await this.achievementService.uploadBadge(
-      file.buffer,
-      file.mimetype,
-      achievementId,
-      oldBadgeImageUrl,
-    );
-
+    const data = await this.achievementService.confirmUpload(dto);
     return okResponse(
       'achievements.uploaded',
-      { url },
+      data,
       `${req.method} ${req.path}`,
     );
   }

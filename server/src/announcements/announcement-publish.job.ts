@@ -1,28 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
-import { Announcement } from '../entities/Announcement';
+import { AnnouncementRepository } from './announcements.repository';
 
 @Injectable()
 export class AnnouncementPublishJob {
   private readonly logger = new Logger(AnnouncementPublishJob.name);
 
-  constructor(private readonly orm: MikroORM) {}
+  constructor(
+    private readonly orm: MikroORM,
+    private readonly announcementRepository: AnnouncementRepository,
+  ) {}
 
   @Cron('* * * * *')
   async publishScheduledAnnouncements(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {
-        const count = await this.orm.em.nativeUpdate(
-          Announcement,
-          {
-            isPublished: false,
-            publishedAt: { $ne: null, $lte: new Date() },
-          },
-          {
-            isPublished: true,
-          },
-        );
+        const count = await this.announcementRepository.publishScheduled();
         if (count > 0) {
           this.logger.log(`Automatically published ${count} scheduled announcements.`);
         }

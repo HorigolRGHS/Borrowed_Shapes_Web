@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { FilterQuery } from '@mikro-orm/core';
 import { Announcement } from '../entities/Announcement';
-import { User } from '../entities/User';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import {
@@ -15,6 +13,7 @@ import {
   AnnouncementAdminDetailDto,
 } from './dto/announcements-response.dto';
 import { escapeLike } from '../common/utils/sql-like';
+import { AnnouncementRepository } from './announcements.repository';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -29,7 +28,7 @@ function parseLang(raw?: string): Lang {
 
 @Injectable()
 export class AnnouncementService {
-  constructor(private readonly em: EntityManager) { }
+  constructor(private readonly announcementRepository: AnnouncementRepository) { }
 
   // --- Public (user-facing) ---
 
@@ -63,8 +62,7 @@ export class AnnouncementService {
     const sortBy = query.sortBy ?? 'publishedAt';
     const order = query.order ?? 'desc';
 
-    const [announcements, total] = await this.em.findAndCount(
-      Announcement,
+    const [announcements, total] = await this.announcementRepository.findAndCount(
       where,
       {
         populate: ['authorId'],
@@ -93,7 +91,7 @@ export class AnnouncementService {
       ],
     };
 
-    const announcement = await this.em.findOne(Announcement, where, {
+    const announcement = await this.announcementRepository.findOne(where, {
       populate: ['authorId'],
     });
 
@@ -137,8 +135,7 @@ export class AnnouncementService {
     const sortBy = query.sortBy ?? 'publishedAt';
     const order = query.order ?? 'desc';
 
-    const [announcements, total] = await this.em.findAndCount(
-      Announcement,
+    const [announcements, total] = await this.announcementRepository.findAndCount(
       where,
       {
         populate: ['authorId'],
@@ -160,7 +157,7 @@ export class AnnouncementService {
   }
 
   async findOneAdmin(id: string): Promise<AnnouncementAdminDetailDto> {
-    const announcement = await this.em.findOne(Announcement, { id }, {
+    const announcement = await this.announcementRepository.findOne({ id }, {
       populate: ['authorId'],
     });
 
@@ -171,11 +168,11 @@ export class AnnouncementService {
     return this.toAdminDetailDto(announcement);
   }
 
-  // --- Mutations (unchanged) ---
+  // --- Mutations ---
 
   async create(dto: CreateAnnouncementDto, authorId: string): Promise<null> {
     // Check if slug or slug_vi are already taken
-    const existing = await this.em.findOne(Announcement, {
+    const existing = await this.announcementRepository.findOne({
       $or: [
         { slug: dto.slug },
         { slugVi: dto.slugVi },
@@ -186,7 +183,7 @@ export class AnnouncementService {
       throw new BadRequestException('announcements.slug_taken');
     }
 
-    const author = this.em.getReference(User, authorId);
+    const author = this.announcementRepository.getUserReference(authorId);
     let publishedAt: Date | undefined;
     if (dto.publishedAt) {
       publishedAt = new Date(dto.publishedAt);
@@ -194,19 +191,19 @@ export class AnnouncementService {
       publishedAt = new Date();
     }
 
-    const announcement = this.em.create(Announcement, {
+    const announcement = this.announcementRepository.create({
       ...dto,
       authorId: author,
       publishedAt,
     });
 
-    await this.em.persistAndFlush(announcement);
+    await this.announcementRepository.persistAndFlush(announcement);
 
     return null;
   }
 
   async update(id: string, dto: UpdateAnnouncementDto): Promise<null> {
-    const announcement = await this.em.findOne(Announcement, { id }, {
+    const announcement = await this.announcementRepository.findOne({ id }, {
       populate: ['authorId'],
     });
 
@@ -220,7 +217,7 @@ export class AnnouncementService {
       if (dto.slug) conditions.push({ slug: dto.slug });
       if (dto.slugVi) conditions.push({ slugVi: dto.slugVi });
 
-      const existing = await this.em.findOne(Announcement, {
+      const existing = await this.announcementRepository.findOne({
         $and: [
           { id: { $ne: id } },
           { $or: conditions },
@@ -240,22 +237,22 @@ export class AnnouncementService {
       publishedAt = new Date();
     }
 
-    this.em.assign(announcement, {
+    this.announcementRepository.assign(announcement, {
       ...dto,
       publishedAt,
     });
 
-    await this.em.flush();
+    await this.announcementRepository.flush();
 
     return null;
   }
 
   async delete(id: string): Promise<void> {
-    const announcement = await this.em.findOne(Announcement, { id });
+    const announcement = await this.announcementRepository.findOne({ id });
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
-    await this.em.removeAndFlush(announcement);
+    await this.announcementRepository.removeAndFlush(announcement);
   }
 
   // --- Mappers ---

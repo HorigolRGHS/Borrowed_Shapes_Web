@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
-import { GameRun } from '../entities/GameRun';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
+import { GameResultRepository } from './game-results.repository';
 import {
   ListGameResultsQueryDto,
   LeaderboardQueryDto,
@@ -26,7 +25,7 @@ function clamp(n: number, min: number, max: number): number {
 
 @Injectable()
 export class GameResultService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly gameResultRepository: GameResultRepository) {}
 
   async findAllPaginated(
     query: ListGameResultsQueryDto,
@@ -94,7 +93,7 @@ export class GameResultService {
 
     // Count
     const countSql = `SELECT COUNT(*) as count FROM game."GameRun" gr ${whereClause}`;
-    const countResult = await this.em.execute(countSql, params);
+    const countResult = await this.gameResultRepository.execute(countSql, params);
     const total = Number(countResult[0]?.count || 0);
 
     // Sort
@@ -116,7 +115,7 @@ export class GameResultService {
       LIMIT ? OFFSET ?
     `;
     const dataParams = [...params, limit, offset];
-    const rows = await this.em.execute(dataSql, dataParams);
+    const rows = await this.gameResultRepository.execute(dataSql, dataParams);
 
     const items: GameResultResponseDto[] = [];
     for (const row of rows || []) {
@@ -149,7 +148,7 @@ export class GameResultService {
 
   async findOne(id: string): Promise<GameResultDetailResponseDto> {
     const runSql = `SELECT * FROM game."GameRun" gr WHERE gr.id = ?`;
-    const runRows = await this.em.execute(runSql, [id]);
+    const runRows = await this.gameResultRepository.execute(runSql, [id]);
 
     if (!runRows || runRows.length === 0) {
       throw new NotFoundException('game_results.not_found');
@@ -221,7 +220,7 @@ export class GameResultService {
       LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
       WHERE gp.id = ?
     `;
-    const profileRows = await this.em.execute(profileSql, [gameProfileId]);
+    const profileRows = await this.gameResultRepository.execute(profileSql, [gameProfileId]);
 
     if (!profileRows || profileRows.length === 0) {
       throw new NotFoundException('game_results.player_not_found');
@@ -262,7 +261,7 @@ export class GameResultService {
       FROM game."GameRunPlayer" grp
       WHERE grp."gameProfileId" = ?
     `;
-    const countResult = await this.em.execute(countSql, [gameProfileId]);
+    const countResult = await this.gameResultRepository.execute(countSql, [gameProfileId]);
     const total = Number(countResult[0]?.count || 0);
 
     // Sort
@@ -286,7 +285,7 @@ export class GameResultService {
       ORDER BY ${sortColumn} ${order}, gr.id DESC
       LIMIT ? OFFSET ?
     `;
-    const rows = await this.em.execute(dataSql, [gameProfileId, limit, offset]);
+    const rows = await this.gameResultRepository.execute(dataSql, [gameProfileId, limit, offset]);
 
     const items: PlayerHistoryRunDto[] = [];
     for (const row of rows || []) {
@@ -361,7 +360,7 @@ export class GameResultService {
       FROM game."GameRun" gr
       ${whereClause}
     `;
-    const countResult = await this.em.execute(countSql, params);
+    const countResult = await this.gameResultRepository.execute(countSql, params);
     const total = Number(countResult[0]?.count || 0);
 
     // Leaderboard: fastest completed runs with lobby name and player count
@@ -378,7 +377,7 @@ export class GameResultService {
       LIMIT ? OFFSET ?
     `;
     const dataParams = [...params, limit, offset];
-    const rows = await this.em.execute(dataSql, dataParams);
+    const rows = await this.gameResultRepository.execute(dataSql, dataParams);
 
     const items: LeaderboardEntryDto[] = [];
     for (let index = 0; index < (rows || []).length; index++) {
@@ -409,11 +408,11 @@ export class GameResultService {
   }
 
   async delete(id: string): Promise<void> {
-    const run = await this.em.findOne(GameRun, { id });
+    const run = await this.gameResultRepository.findOne(id);
     if (!run) {
       throw new NotFoundException('game_results.not_found');
     }
-    await this.em.removeAndFlush(run);
+    await this.gameResultRepository.removeAndFlush(run);
   }
 
   private async getRunPlayers(runId: string): Promise<GameResultPlayerDto[]> {
@@ -435,7 +434,7 @@ export class GameResultService {
       WHERE grp."runId" = ?
       ORDER BY grp."joinedAt" ASC
     `;
-    const rows = await this.em.execute(sql, [runId]);
+    const rows = await this.gameResultRepository.execute(sql, [runId]);
 
     return (rows || []).map((row: any) => {
       let badgeImageUrl = undefined;
@@ -477,7 +476,7 @@ export class GameResultService {
       WHERE gs."runId" = ?
       ORDER BY l."order" ASC
     `;
-    const sessionRows = await this.em.execute(sessionSql, [runId]);
+    const sessionRows = await this.gameResultRepository.execute(sessionSql, [runId]);
 
     const sessions: GameResultSessionDto[] = [];
     for (const sRow of sessionRows || []) {
@@ -520,7 +519,7 @@ export class GameResultService {
       WHERE gsp."sessionId" = ?
       ORDER BY gsp."gameProfileId" ASC
     `;
-    const rows = await this.em.execute(sql, [sessionId]);
+    const rows = await this.gameResultRepository.execute(sql, [sessionId]);
 
     return (rows || []).map((row: any) => {
       let badgeImageUrl = undefined;

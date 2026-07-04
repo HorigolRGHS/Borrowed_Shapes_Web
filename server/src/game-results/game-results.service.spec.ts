@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { NotFoundException } from '@nestjs/common';
 import { GameResultService } from './game-results.service';
 import { GameRun } from '../entities/GameRun';
+import { GameResultRepository } from './game-results.repository';
 
 describe('GameResultService', () => {
   let service: GameResultService;
-  let em: EntityManager;
+  let repository: GameResultRepository;
 
   const mockRunRow = {
     id: 'run-1',
@@ -64,7 +64,7 @@ describe('GameResultService', () => {
       providers: [
         GameResultService,
         {
-          provide: EntityManager,
+          provide: GameResultRepository,
           useValue: {
             execute: jest.fn(),
             findOne: jest.fn(),
@@ -75,7 +75,7 @@ describe('GameResultService', () => {
     }).compile();
 
     service = module.get<GameResultService>(GameResultService);
-    em = module.get<EntityManager>(EntityManager);
+    repository = module.get<GameResultRepository>(GameResultRepository);
   });
 
   it('should be defined', () => {
@@ -85,7 +85,7 @@ describe('GameResultService', () => {
   describe('findAllPaginated', () => {
     it('should_return_paginated_runs_when_valid_query (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 1 }]) // count query
         .mockResolvedValueOnce([mockRunRow]) // data query
         .mockResolvedValueOnce([mockPlayerRow]); // players query
@@ -104,7 +104,7 @@ describe('GameResultService', () => {
 
     it('should_return_empty_list_when_no_runs_exist (Boundary)', async () => {
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -117,7 +117,7 @@ describe('GameResultService', () => {
 
     it('should_filter_by_isCompleted_when_provided (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockRunRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -131,7 +131,7 @@ describe('GameResultService', () => {
 
     it('should_filter_by_search_when_provided (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockRunRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -145,7 +145,7 @@ describe('GameResultService', () => {
 
     it('should_filter_by_isPrivate_when_provided (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockRunRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -159,7 +159,7 @@ describe('GameResultService', () => {
 
     it('should_filter_by_date_range_when_provided (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -175,7 +175,7 @@ describe('GameResultService', () => {
 
     it('should_clamp_page_to_minimum_1_when_invalid (Boundary)', async () => {
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -187,7 +187,7 @@ describe('GameResultService', () => {
   describe('findOne', () => {
     it('should_return_run_details_when_found (Normal)', async () => {
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([mockRunRow]) // run query
         .mockResolvedValueOnce([mockPlayerRow]) // run players
         .mockResolvedValueOnce([mockSessionRow]) // sessions
@@ -204,7 +204,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_run_missing (Abnormal)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'execute').mockResolvedValueOnce([]);
 
       await expect(service.findOne('non-existent')).rejects.toThrow(
         NotFoundException,
@@ -212,7 +212,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_rows_null (Boundary)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce(null as any);
+      jest.spyOn(repository, 'execute').mockResolvedValueOnce(null as any);
 
       await expect(service.findOne('null-result')).rejects.toThrow(
         NotFoundException,
@@ -231,7 +231,7 @@ describe('GameResultService', () => {
       };
 
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([mockProfileRow]) // profile query
         .mockResolvedValueOnce([{ count: 1 }]) // count query
         .mockResolvedValueOnce([mockHistoryRun]) // runs query
@@ -255,7 +255,7 @@ describe('GameResultService', () => {
     });
 
     it('should_throw_not_found_when_profile_missing (Abnormal)', async () => {
-      jest.spyOn(em, 'execute').mockResolvedValueOnce([]);
+      jest.spyOn(repository, 'execute').mockResolvedValueOnce([]);
 
       await expect(
         service.findPlayerHistory('non-existent', { page: 1, limit: 10 }),
@@ -272,7 +272,7 @@ describe('GameResultService', () => {
       };
 
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([mockProfileRow])
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([mockNonHostRun])
@@ -288,7 +288,7 @@ describe('GameResultService', () => {
 
     it('should_sort_by_totalTimeSec_asc_when_requested (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([mockProfileRow])
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([]);
@@ -316,7 +316,7 @@ describe('GameResultService', () => {
       };
 
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([leaderboardRow])
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -334,7 +334,7 @@ describe('GameResultService', () => {
 
     it('should_return_empty_leaderboard_when_no_completed_runs (Boundary)', async () => {
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -356,7 +356,7 @@ describe('GameResultService', () => {
       ];
 
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 11 }])
         .mockResolvedValueOnce(rows)
         .mockResolvedValueOnce([mockPlayerRow]);
@@ -369,7 +369,7 @@ describe('GameResultService', () => {
 
     it('should_filter_seasonal_leaderboard_by_given_month (Normal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 1 }])
         .mockResolvedValueOnce([{
           runId: 'run-1',
@@ -409,7 +409,7 @@ describe('GameResultService', () => {
 
     it('should_default_to_current_month_when_seasonal_has_invalid_month_format (Abnormal)', async () => {
       const executeSpy = jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -429,7 +429,7 @@ describe('GameResultService', () => {
 
     it('should_return_empty_seasonal_leaderboard_when_no_runs_in_month (Boundary)', async () => {
       jest
-        .spyOn(em, 'execute')
+        .spyOn(repository, 'execute')
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([]);
 
@@ -446,15 +446,15 @@ describe('GameResultService', () => {
   describe('delete', () => {
     it('should_delete_run_when_found (Normal)', async () => {
       const mockRun = new GameRun();
-      jest.spyOn(em, 'findOne').mockResolvedValue(mockRun);
-      jest.spyOn(em, 'removeAndFlush').mockResolvedValue();
+      jest.spyOn(repository, 'findOne').mockResolvedValue(mockRun);
+      jest.spyOn(repository, 'removeAndFlush').mockResolvedValue();
 
       await expect(service.delete('run-1')).resolves.toBeUndefined();
-      expect(em.removeAndFlush).toHaveBeenCalledWith(mockRun);
+      expect(repository.removeAndFlush).toHaveBeenCalledWith(mockRun);
     });
 
     it('should_throw_not_found_when_deleting_missing_run (Abnormal)', async () => {
-      jest.spyOn(em, 'findOne').mockResolvedValue(null);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
       await expect(service.delete('non-existent')).rejects.toThrow(
         NotFoundException,

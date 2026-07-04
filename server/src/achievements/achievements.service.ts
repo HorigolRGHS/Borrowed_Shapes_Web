@@ -1,13 +1,15 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
+import { AchievementUploadUrlDto } from './dto/achievement-upload-url.dto';
+import { AchievementConfirmUploadDto } from './dto/achievement-confirm-upload.dto';
 import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'node:crypto';
+import { AchievementRepository } from './achievements.repository';
 
 const MIME_EXT_MAP: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -62,17 +64,17 @@ export function getEffectiveExpiresAt(
 @Injectable()
 export class AchievementService {
   constructor(
-    private em: EntityManager,
+    private readonly achievementRepository: AchievementRepository,
     private readonly r2: R2StorageService,
     private readonly config: ConfigService,
   ) { }
 
   async findAll(): Promise<Achievement[]> {
-    return this.em.find(Achievement, {});
+    return this.achievementRepository.findAll();
   }
 
   async findAllWithEarnedCount(): Promise<Array<Achievement & { earnedCount: number }>> {
-    const rows = await this.em.execute(
+    const rows = await this.achievementRepository.execute(
       `select a.*, count(ua."achievementId") as "earnedCount"
        from game."Achievement" a
        left join game."UserAchievement" ua on ua."achievementId" = a.id
@@ -143,7 +145,7 @@ export class AchievementService {
       from game."Achievement" a
       ${whereClause}
     `;
-    const countResult = await this.em.execute(countSql, params);
+    const countResult = await this.achievementRepository.execute(countSql, params);
     const total = Number(countResult[0]?.count || 0);
 
     // 2. Get paginated items with earnedCount
@@ -157,7 +159,7 @@ export class AchievementService {
       LIMIT ? OFFSET ?
     `;
     const dataParams = [...params, limit, offset];
-    const rows = await this.em.execute(dataSql, dataParams);
+    const rows = await this.achievementRepository.execute(dataSql, dataParams);
 
     const items = (rows || []).map((row: any) => ({
       id: row.id,
@@ -181,49 +183,51 @@ export class AchievementService {
   }
 
   async findOne(id: string): Promise<Achievement & { earnedCount: number }> {
-    const achievement = await this.em.findOne(Achievement, { id });
+    const achievement = await this.achievementRepository.findOne(id);
     if (!achievement) {
       throw new NotFoundException('achievements.not_found');
     }
-    const earnedCount = await this.em.count(UserAchievement, { achievementId: id });
+    const earnedCount = await this.achievementRepository.countUserAchievements(id);
     return Object.assign(achievement, { earnedCount });
   }
 
   async findByUser(gameProfileId: string): Promise<UserAchievement[]> {
-    return this.em.find(UserAchievement, { gameProfileId }, { populate: ['achievementId'] });
+    return this.achievementRepository.findUserAchievements(gameProfileId);
   }
 
   async create(dto: CreateAchievementDto): Promise<null> {
-    const existing = await this.em.findOne(Achievement, { criteriaCode: dto.criteriaCode });
+    const existing = await this.achievementRepository.findOneByCriteria(dto.criteriaCode);
     if (existing) {
       throw new BadRequestException('achievements.already_exists');
     }
 
-    const achievement = this.em.create(Achievement, {
+    const achievement = this.achievementRepository.createAchievement({
       ...dto,
+      id: dto.id || undefined,
       seasonMonth: dto.seasonMonth
         ? `${dto.seasonMonth}-01`
         : null,
     });
-    await this.em.persistAndFlush(achievement);
+    await this.achievementRepository.persistAndFlush(achievement);
     return null;
   }
 
   async update(id: string, dto: UpdateAchievementDto): Promise<null> {
     const achievement = await this.findOne(id);
     if (dto.criteriaCode) {
-      const existing = await this.em.findOne(Achievement, { criteriaCode: dto.criteriaCode, id: { $ne: id } });
+      const existing = await this.achievementRepository.findOneByCriteriaExcludeId(dto.criteriaCode, id);
       if (existing) {
         throw new BadRequestException('achievements.already_exists');
       }
     }
-    this.em.assign(achievement, {
-      ...dto,
+    const { id: _, ...updateData } = dto as any;
+    this.achievementRepository.assign(achievement, {
+      ...updateData,
       seasonMonth: dto.seasonMonth
         ? `${dto.seasonMonth}-01`
         : null,
     });
-    await this.em.flush();
+    await this.achievementRepository.flush();
     return null;
   }
 
@@ -239,24 +243,65 @@ export class AchievementService {
         }
       }
     }
-    await this.em.removeAndFlush(achievement);
+    await this.achievementRepository.removeAndFlush(achievement);
   }
 
-  async uploadBadge(
-    buffer: Buffer,
-    mimeType: string,
-    achievementId: string,
-    oldBadgeImageUrl?: string,
-  ): Promise<string> {
-    const ext = MIME_EXT_MAP[mimeType];
+  async createUploadUrl(dto: AchievementUploadUrlDto) {
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    if (dto.fileSize > maxFileSize) {
+      throw new BadRequestException('achievements.upload_too_large');
+    }
+
+    const ext = MIME_EXT_MAP[dto.mimeType];
     if (!ext) {
       throw new BadRequestException('achievements.upload_invalid_type');
     }
 
-    // Delete old image if replacing
-    if (oldBadgeImageUrl) {
-      const oldKey = this.extractR2Key(oldBadgeImageUrl);
-      if (oldKey) {
+    const key = `achievement/${dto.achievementId}/${randomUUID()}${ext}`;
+
+    const uploadUrl = await this.r2.createUploadUrl({
+      key,
+      contentType: dto.mimeType,
+    });
+
+    const base =
+      this.config.get<string>('R2_PUBLIC_BASE_URL') ??
+      this.config.getOrThrow<string>('R2_PUBLIC_DEV_URL');
+    const publicBaseUrl = base.replace(/\/+$/, '');
+
+    return {
+      uploadUrl,
+      key,
+      publicUrl: `${publicBaseUrl}/${key}`,
+      method: 'PUT' as const,
+      headers: {
+        'Content-Type': dto.mimeType,
+      },
+    };
+  }
+
+  async confirmUpload(dto: AchievementConfirmUploadDto) {
+    const expectedPrefix = `achievement/${dto.achievementId}/`;
+    if (!dto.filePath.startsWith(expectedPrefix)) {
+      throw new BadRequestException('achievements.invalid_file_path');
+    }
+
+    // Verify the object actually exists on R2
+    const exists = await this.r2.objectExists(dto.filePath);
+    if (!exists) {
+      throw new NotFoundException('achievements.file_not_found_on_storage');
+    }
+
+    const base =
+      this.config.get<string>('R2_PUBLIC_BASE_URL') ??
+      this.config.getOrThrow<string>('R2_PUBLIC_DEV_URL');
+    const publicBaseUrl = base.replace(/\/+$/, '');
+    const publicUrl = `${publicBaseUrl}/${dto.filePath}`;
+
+    // Clean up old badge image from R2 if replacing
+    if (dto.oldBadgeImageUrl) {
+      const oldKey = this.extractR2Key(dto.oldBadgeImageUrl);
+      if (oldKey && oldKey !== dto.filePath) {
         try {
           await this.r2.deleteObject(oldKey);
         } catch (err) {
@@ -265,15 +310,14 @@ export class AchievementService {
       }
     }
 
-    const key = `achievement/${achievementId}/${randomUUID()}${ext}`;
-    await this.r2.putObject(key, buffer, mimeType);
+    // Load achievement (optional - only update if it exists in DB)
+    const achievement = await this.achievementRepository.findOne(dto.achievementId);
+    if (achievement) {
+      achievement.badgeImageUrl = publicUrl;
+      await this.achievementRepository.flush();
+    }
 
-    const base =
-      this.config.get<string>('R2_PUBLIC_BASE_URL') ??
-      this.config.getOrThrow<string>('R2_PUBLIC_DEV_URL');
-    const publicBaseUrl = base.replace(/\/+$/, '');
-
-    return `${publicBaseUrl}/${key}`;
+    return { url: publicUrl };
   }
 
   /**
@@ -291,7 +335,7 @@ export class AchievementService {
       return [];
     }
     const searchTerm = `%${query}%`;
-    const rows = await this.em.execute(
+    const rows = await this.achievementRepository.execute(
       `select a.*, count(ua."achievementId") as "earnedCount"
      from game."Achievement" a
      left join game."UserAchievement" ua on ua."achievementId" = a.id
@@ -314,7 +358,7 @@ export class AchievementService {
   }
 
   async findUsersByAchievement(achievementId: string) {
-    const rows = await this.em.execute(
+    const rows = await this.achievementRepository.execute(
       `
     select
       gp."id" as "id",
@@ -345,7 +389,7 @@ export class AchievementService {
   async findShowcaseForUser(gameProfileId: string) {
     const now = new Date();
 
-    const rows = await this.em.execute(
+    const rows = await this.achievementRepository.execute(
       `SELECT
          a.id,
          a.name,
@@ -435,22 +479,22 @@ export class AchievementService {
   }
 
   async unlock(gameProfileId: string, criteriaCode: string): Promise<UnlockAchievementResponseDto> {
-    const achievement = await this.em.findOne(Achievement, { criteriaCode });
+    const achievement = await this.achievementRepository.findOneByCriteria(criteriaCode);
     if (!achievement) throw new NotFoundException('achievements.not_found');
 
-    const existingUnlock = await this.em.findOne(UserAchievement, {
+    const existingUnlock = await this.achievementRepository.findOneUserAchievement(
       gameProfileId,
-      achievementId: achievement.id,
-    });
+      achievement.id,
+    );
 
     if (existingUnlock) throw new BadRequestException('achievements.already_unlocked');
 
-    const userAchievement = this.em.create(UserAchievement, {
+    const userAchievement = this.achievementRepository.createUserAchievement({
       gameProfileId,
       achievementId: achievement.id,
     });
 
-    await this.em.persistAndFlush(userAchievement);
+    await this.achievementRepository.persistAndFlush(userAchievement);
 
     return {
       unlocked: true,

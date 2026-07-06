@@ -1,11 +1,13 @@
 import {
   Injectable,
+  Inject,
   Logger,
   ConflictException,
   NotFoundException,
   BadRequestException,
+  PayloadTooLargeException,
 } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
+import { validateUploadOrThrow } from './wiki-upload-validator';
 import { FilterQuery } from '@mikro-orm/core';
 import { diffLines } from 'diff';
 import { WikiPage } from '../../entities/WikiPage';
@@ -14,17 +16,27 @@ import { User } from '../../entities/User';
 import { AuditActionType } from '../../entities/AuditActionType';
 import { WikiPageRepository } from '../repositories/wiki-page.repository';
 import { WikiRevisionRepository } from '../repositories/wiki-revision.repository';
+import { WikiAssetRepository } from '../repositories/wiki-asset.repository';
 import {
   WikiAuditRepository,
   WikiAuditLogParams,
 } from '../repositories/wiki-audit.repository';
+import { WIKI_STORAGE } from './wiki-storage.service';
+import type { WikiStorageService } from './wiki-storage.service';
+import { WikiUploadResponseDto } from '../dto/wiki-upload.dto';
+import {
+  isWikiSlugUniqueError,
+  validateSlugOrThrow,
+  randomSlugSuffix,
+} from '../repositories/wiki-write.helpers';
 import {
   WIKI_LIST_DEFAULT_LIMIT,
   WIKI_LIST_MAX_LIMIT,
   WIKI_SEARCH_MAX_LENGTH,
+  UPLOAD_MAX_SIZE,
 } from '../dto/wiki-constants';
 import { WikiListItemDto, WikiListResponseDto } from '../dto/wiki-list.dto';
-import { isValidSlug, slugRejectionReason } from '../dto/wiki-slug.validator';
+import { isValidSlug } from '../dto/wiki-slug.validator';
 import {
   WikiDetailResponseDto,
   WikiDetailRevisionDto,
@@ -55,25 +67,6 @@ import { WikiAdminStatsDto } from '../dto/wiki-admin-stats.dto';
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
   return Math.max(min, Math.min(max, n));
-}
-
-function isWikiSlugUniqueError(err: any): boolean {
-  if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
-  const constraint = err?.constraint ?? err?.driverError?.constraint ?? '';
-  return (
-    constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slugVi_key'
-  );
-}
-
-function validateSlugOrThrow(slug: string): void {
-  const reason = slugRejectionReason(slug);
-  if (reason === 'reserved')
-    throw new BadRequestException('wiki.reserved_slug');
-  if (reason === 'invalid') throw new BadRequestException('wiki.invalid_slug');
-}
-
-function randomSlugSuffix(): string {
-  return Math.random().toString(36).slice(2, 8);
 }
 
 @Injectable()
@@ -517,10 +510,77 @@ export class WikiService {
 @Injectable()
 export class WikiRevisionService {
   constructor(
-    private em: EntityManager,
+    private readonly pageRepo: WikiPageRepository,
+    private readonly revisionRepo: WikiRevisionRepository,
+    private readonly assetRepo: WikiAssetRepository,
+    @Inject(WIKI_STORAGE) private readonly storage: WikiStorageService,
     private audit: WikiAuditService,
     private wikiService: WikiService,
   ) {}
+
+  async uploadImage(
+    wikiId: string,
+    file: Express.Multer.File | undefined,
+    adminUserId: string,
+    ipAddress: string,
+  ): Promise<WikiUploadResponseDto> {
+    if (!/^[A-Za-z0-9_-]+$/.test(wikiId)) {
+      throw new BadRequestException('wiki.invalid_input');
+    }
+
+    const page = await this.pageRepo.existsById(wikiId);
+    if (!page) throw new NotFoundException('wiki.not_found');
+
+    if (!file) throw new BadRequestException('wiki.upload_missing');
+    if (file.size > UPLOAD_MAX_SIZE)
+      throw new PayloadTooLargeException('wiki.upload_too_large');
+
+    const { mimeType, sanitizedName } = await validateUploadOrThrow(
+      file.buffer,
+      file.mimetype,
+      file.originalname,
+    );
+
+    const stored = await this.storage.upload({
+      wikiId,
+      buffer: file.buffer,
+      mimeType,
+      originalName: sanitizedName,
+    });
+
+    let assetId: string;
+    try {
+      const asset = await this.assetRepo.insertAsset({
+        fileName: sanitizedName,
+        fileVersion: stored.key,
+        filePath: stored.url,
+        fileSize: BigInt(stored.size),
+        mimeType,
+      });
+      assetId = asset.id;
+    } catch (err) {
+      // Compensating delete: R2 already stored the object but DB persist failed.
+      // Best-effort cleanup; R2 DeleteObject is idempotent (no error if key is gone).
+      await this.storage.delete(stored.key).catch(() => {});
+      throw err;
+    }
+
+    await this.audit.log({
+      userId: adminUserId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'FileAsset',
+      entityId: assetId,
+      newValue: { url: stored.url, mimeType, size: stored.size },
+      ipAddress,
+    });
+
+    return {
+      url: stored.url,
+      assetId,
+      mimeType,
+      size: stored.size,
+    };
+  }
 
   async create(
     dto: WikiCreateRequestDto,
@@ -572,35 +632,35 @@ export class WikiRevisionService {
           };
 
     const tryCreate = (input: ReturnType<typeof buildInput>) =>
-      this.em.transactional(async (em) => {
-        const page = em.create(WikiPage, {
+      this.pageRepo.runInTransaction(async () => {
+        const page = this.pageRepo.createPage({
           slug: input.slug,
           slugVi: input.slugVi,
           title: input.title,
           titleVi: input.titleVi,
           metadataJson: compactMetadata(input.metadataJson),
           isPublished: input.isPublished,
-        } as any);
+        });
         try {
-          await em.flush();
+          await this.pageRepo.flush();
         } catch (err) {
           if (isWikiSlugUniqueError(err))
             throw new ConflictException('wiki.slug_taken');
           throw err;
         }
 
-        const revision = em.create(WikiRevision, {
-          pageId: page,
-          authorId: em.getReference(User, adminUserId),
+        const revision = this.revisionRepo.createRevision({
+          page,
+          authorId: adminUserId,
           content: input.content,
           contentVi: input.contentVi,
           summary: input.summary,
           summaryVi: input.summaryVi,
-        } as any);
-        await em.flush();
+        });
+        await this.pageRepo.flush();
 
         page.latestRevisionId = revision;
-        await em.flush();
+        await this.pageRepo.flush();
 
         return {
           pageId: page.id,
@@ -656,12 +716,8 @@ export class WikiRevisionService {
     adminUserId: string,
     ipAddress: string,
   ): Promise<WikiDetailResponseDto> {
-    const result = await this.em.transactional(async (em) => {
-      const page = await em.findOne(
-        WikiPage,
-        { id: pageId },
-        { populate: ['latestRevisionId'] as any },
-      );
+    const result = await this.pageRepo.runInTransaction(async () => {
+      const page = await this.pageRepo.findByIdWithLatestInTx(pageId);
       if (!page) throw new NotFoundException('wiki.not_found');
 
       const latest = page.latestRevisionId ?? null;
@@ -745,16 +801,16 @@ export class WikiRevisionService {
 
       let newRevisionId: string;
       {
-        const newRevision = em.create(WikiRevision, {
-          pageId: page,
-          authorId: em.getReference(User, adminUserId),
-          content: dto.content,
-          contentVi: dto.contentVi,
+        const newRevision = this.revisionRepo.createRevision({
+          page,
+          authorId: adminUserId,
+          content: dto.content ?? '',
+          contentVi: dto.contentVi ?? '',
           summary: dto.summary ?? null,
           summaryVi: dto.summaryVi ?? null,
-        } as any);
+        });
         try {
-          await em.flush();
+          await this.pageRepo.flush();
         } catch (err) {
           if (isWikiSlugUniqueError(err))
             throw new ConflictException('wiki.slug_taken');
@@ -765,7 +821,7 @@ export class WikiRevisionService {
       }
 
       try {
-        await em.flush();
+        await this.pageRepo.flush();
       } catch (err) {
         if (isWikiSlugUniqueError(err))
           throw new ConflictException('wiki.slug_taken');
@@ -809,12 +865,8 @@ export class WikiRevisionService {
     adminUserId: string,
     ipAddress: string,
   ): Promise<WikiDetailResponseDto> {
-    const result = await this.em.transactional(async (em) => {
-      const page = await em.findOne(
-        WikiPage,
-        { id: pageId },
-        { populate: ['latestRevisionId'] as any },
-      );
+    const result = await this.pageRepo.runInTransaction(async () => {
+      const page = await this.pageRepo.findByIdWithLatestInTx(pageId);
       if (!page) throw new NotFoundException('wiki.not_found');
 
       const latest = page.latestRevisionId ?? null;
@@ -838,25 +890,25 @@ export class WikiRevisionService {
         };
       }
 
-      const target = await em.findOne(WikiRevision, {
-        id: dto.targetRevisionId,
-        pageId: { id: pageId } as any,
-      });
+      const target = await this.revisionRepo.findByIdAndPageInTx(
+        dto.targetRevisionId,
+        pageId,
+      );
       if (!target) throw new NotFoundException('wiki.revision_not_found');
 
-      const newRevision = em.create(WikiRevision, {
-        pageId: page,
-        authorId: em.getReference(User, adminUserId),
+      const newRevision = this.revisionRepo.createRevision({
+        page,
+        authorId: adminUserId,
         content: target.content,
         contentVi: target.contentVi,
         summary: `Rollback to revision ${target.id} (created ${target.createdAt.toISOString()})`,
         summaryVi: `Khôi phục về phiên bản ${target.id} (tạo ${target.createdAt.toISOString()})`,
-      } as any);
-      await em.flush();
+      });
+      await this.pageRepo.flush();
 
       page.latestRevisionId = newRevision;
       try {
-        await em.flush();
+        await this.pageRepo.flush();
       } catch (err) {
         if (isWikiSlugUniqueError(err))
           throw new ConflictException('wiki.slug_taken');
@@ -896,12 +948,8 @@ export class WikiRevisionService {
     adminUserId: string,
     ipAddress: string,
   ): Promise<void> {
-    const snapshot = await this.em.transactional(async (em) => {
-      const page = await em.findOne(
-        WikiPage,
-        { id: pageId },
-        { populate: ['latestRevisionId.authorId'] as any },
-      );
+    const snapshot = await this.pageRepo.runInTransaction(async () => {
+      const page = await this.pageRepo.findByIdWithLatestAuthor(pageId);
       if (!page) throw new NotFoundException('wiki.not_found');
 
       const latest = page.latestRevisionId ?? null;
@@ -931,7 +979,7 @@ export class WikiRevisionService {
           : null,
       };
 
-      await em.removeAndFlush(page);
+      await this.pageRepo.removeAndFlush(page);
       return { pageId: page.id, oldValue };
     });
 
@@ -950,12 +998,8 @@ export class WikiRevisionService {
     adminUserId: string,
     ipAddress: string,
   ): Promise<WikiDetailResponseDto> {
-    const result = await this.em.transactional(async (em) => {
-      const page = await em.findOne(
-        WikiPage,
-        { id: pageId },
-        { populate: ['latestRevisionId'] as any },
-      );
+    const result = await this.pageRepo.runInTransaction(async () => {
+      const page = await this.pageRepo.findByIdWithLatestInTx(pageId);
       if (!page) throw new NotFoundException('wiki.not_found');
       if (page.isPublished) return { noop: true };
       const latest = page.latestRevisionId ?? null;
@@ -966,7 +1010,7 @@ export class WikiRevisionService {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
       page.isPublished = true;
-      await em.flush();
+      await this.pageRepo.flush();
       return { noop: false };
     });
 
@@ -989,12 +1033,12 @@ export class WikiRevisionService {
     adminUserId: string,
     ipAddress: string,
   ): Promise<WikiDetailResponseDto> {
-    const result = await this.em.transactional(async (em) => {
-      const page = await em.findOne(WikiPage, { id: pageId });
+    const result = await this.pageRepo.runInTransaction(async () => {
+      const page = await this.pageRepo.existsById(pageId);
       if (!page) throw new NotFoundException('wiki.not_found');
       if (!page.isPublished) return { noop: true };
       page.isPublished = false;
-      await em.flush();
+      await this.pageRepo.flush();
       return { noop: false };
     });
 

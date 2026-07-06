@@ -9,6 +9,8 @@ export class WikiPageRepository extends EntityRepository<WikiPage> {
     super(em, WikiPage);
   }
 
+  // ---- Reads ----
+
   countAll(): Promise<number> {
     return this.count({});
   }
@@ -47,5 +49,45 @@ export class WikiPageRepository extends EntityRepository<WikiPage> {
       limit: opts.limit,
       offset: opts.offset,
     });
+  }
+
+  // ---- Write primitives (persistence only; business rules stay in the service) ----
+
+  // Opens a DB transaction and runs `work` inside it. The service passes a
+  // closure holding the business logic; every repo mutation called within runs
+  // on the same UoW, so page + revision writes commit or roll back together.
+  runInTransaction<T>(work: () => Promise<T>): Promise<T> {
+    return this.getEntityManager().transactional(work);
+  }
+
+  createPage(data: {
+    slug: string;
+    slugVi: string;
+    title: string;
+    titleVi: string;
+    metadataJson: any;
+    isPublished: boolean;
+  }): WikiPage {
+    return this.create(data as any);
+  }
+
+  findByIdWithLatestInTx(id: string): Promise<WikiPage | null> {
+    return this.findOne({ id }, { populate: ['latestRevisionId'] as any });
+  }
+
+  existsById(id: string): Promise<WikiPage | null> {
+    return this.findOne({ id });
+  }
+
+  findByIdWithLatestAuthor(id: string): Promise<WikiPage | null> {
+    return this.findOne({ id }, { populate: ['latestRevisionId.authorId'] as any });
+  }
+
+  flush(): Promise<void> {
+    return this.getEntityManager().flush();
+  }
+
+  removeAndFlush(page: WikiPage): Promise<void> {
+    return this.getEntityManager().removeAndFlush(page);
   }
 }

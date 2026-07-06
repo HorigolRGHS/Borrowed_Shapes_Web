@@ -17,6 +17,7 @@ import { WikiController } from './controllers/wiki.controller';
 import { WikiPageRepository } from './repositories/wiki-page.repository';
 import { WikiRevisionRepository } from './repositories/wiki-revision.repository';
 import { WikiAuditRepository } from './repositories/wiki-audit.repository';
+import { WikiAssetRepository } from './repositories/wiki-asset.repository';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { WikiAuditRepository } from './repositories/wiki-audit.repository';
     WikiPageRepository,
     WikiRevisionRepository,
     WikiAuditRepository,
+    WikiAssetRepository,
     WikiAuditService,
     WikiService,
     WikiRevisionService,

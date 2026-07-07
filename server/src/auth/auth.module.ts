@@ -7,10 +7,18 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { AuthRateLimitGuard } from '../common/guards/auth-rate-limit.guard';
 import { EmailModule } from '../email/email.module';
+import { GameModule } from '../game/game.module';
+import { PresenceModule } from '../presence/presence.module';
+import { SessionsModule } from '../sessions/sessions.module';
+import { UserRepository } from './repositories/user.repository';
+import { AuditLogRepository } from './repositories/audit-log.repository';
 
 @Module({
   imports: [
     EmailModule,
+    GameModule,
+    PresenceModule,
+    SessionsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -26,7 +34,9 @@ import { EmailModule } from '../email/email.module';
     AuthGuard,
     AuthRateLimitGuard,
     { provide: APP_GUARD, useExisting: AuthGuard },
+    UserRepository,
+    AuditLogRepository,
   ],
-  exports: [AuthGuard, JwtModule, AuthService],
+  exports: [AuthGuard, JwtModule, AuthService, UserRepository, AuditLogRepository],
 })
 export class AuthModule {}

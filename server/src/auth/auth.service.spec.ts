@@ -9,9 +9,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'crypto';
+import { UserRepository } from './repositories/user.repository';
+import { AuditLogRepository } from './repositories/audit-log.repository';
+import { GameProfileRepository } from '../game/repositories/game-profile.repository';
+import { UserSessionRepository } from '../sessions/repositories/user-session.repository';
+import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
 
 const mockEm = {
   findOne: jest.fn(),
+  findByEmail: jest.fn((email) => mockEm.findOne('User', { email })),
   find: jest.fn(),
   create: jest.fn(),
   flush: jest.fn(),
@@ -63,6 +69,11 @@ describe('AuthService', () => {
         { provide: EmailService, useValue: mockEmail },
         { provide: ConfigService, useValue: mockConfig },
         { provide: JwtService, useValue: mockJwt },
+        { provide: UserRepository, useValue: mockEm },
+        { provide: AuditLogRepository, useValue: mockEm },
+        { provide: GameProfileRepository, useValue: mockEm },
+        { provide: UserSessionRepository, useValue: mockEm },
+        { provide: UserOnlineStatusRepository, useValue: mockEm },
       ],
     }).compile();
     service = module.get(AuthService);

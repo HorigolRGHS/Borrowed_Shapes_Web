@@ -182,6 +182,27 @@ export class GameService {
         });
       }
 
+      // If leaving lobby for the first time, lock in the roster by saving active players to GameRunPlayer
+      if (level.id !== 'lobby') {
+        const isFirstMap = !(await this.gameSessionRepo.isRunLocked(em, run.id));
+        if (isFirstMap) {
+          const lobbySession = await em.findOne(GameSession, { runId: run.id, levelId: 'lobby' });
+          if (lobbySession) {
+            const lobbyPlayers = await em.find(GameSessionPlayer, { sessionId: lobbySession.id, isAbsent: false });
+            for (const lp of lobbyPlayers) {
+              const exists = await em.findOne(GameRunPlayer, { runId: run.id, gameProfileId: lp.gameProfileId });
+              if (!exists) {
+                em.create(GameRunPlayer, {
+                  runId: run,
+                  gameProfileId: lp.gameProfileId,
+                  isHost: false, // The host was already added in initRun and will be caught by `exists`
+                });
+              }
+            }
+          }
+        }
+      }
+
       const runPlayers = await em.find(GameRunPlayer, { runId: run.id });
       for (const runPlayer of runPlayers) {
         const sessionPlayer = await em.findOne(GameSessionPlayer, {

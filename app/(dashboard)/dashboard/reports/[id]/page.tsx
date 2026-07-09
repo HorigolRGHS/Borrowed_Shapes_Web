@@ -80,7 +80,9 @@ export default function AdminReportDetailPage() {
       }
     } catch (err: any) {
       console.error(err);
-      toast.error(err.response?.data?.message || err.message);
+      const msg = err.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : err.message;
+      toast.error(displayMsg);
     } finally {
       setLoading(false);
     }
@@ -114,7 +116,8 @@ export default function AdminReportDetailPage() {
           setAdminMessage("");
           fetchDetail();
         } else {
-          toast.error(res.data?.message || t("reports.dashboard.error_action"));
+          const errMsg = res.data?.message;
+          toast.error(errMsg ? t(errMsg) : t("reports.dashboard.error_action"));
         }
       } else {
         const res = await axios.post(`/api/reports/${id}/resolve`, {
@@ -130,17 +133,15 @@ export default function AdminReportDetailPage() {
           setBanDuration("");
           fetchDetail();
         } else {
-          toast.error(res.data?.message || t("reports.dashboard.error_action"));
+          const errMsg = res.data?.message;
+          toast.error(errMsg ? t(errMsg) : t("reports.dashboard.error_action"));
         }
       }
     } catch (err: any) {
       console.error(err);
-      const errMsg = err.response?.data?.message;
-      if (errMsg === "reports.cannot_ban_admin") {
-        toast.error(t("reports.cannot_ban_admin"));
-      } else {
-        toast.error(t(errMsg) || errMsg || err.message || t("reports.dashboard.error_action"));
-      }
+      const msg = err.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : (err.message || t("reports.dashboard.error_action"));
+      toast.error(displayMsg);
     } finally {
       setSubmitting(false);
     }

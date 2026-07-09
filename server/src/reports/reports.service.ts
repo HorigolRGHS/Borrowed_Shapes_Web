@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { Report } from '../entities/Report';
@@ -19,43 +18,44 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { ResolveReportDto } from './dto/resolve-report.dto';
 import { RejectReportDto } from './dto/reject-report.dto';
 import { UploadReportMediaDto } from './dto/upload-report-media.dto';
+import { ReportRepository } from './reports.repository';
 
 @Injectable()
 export class ReportsService {
   private readonly logger = new Logger(ReportsService.name);
 
   constructor(
-    private readonly em: EntityManager,
+    private readonly reportRepository: ReportRepository,
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
   ) { }
 
   async create(dto: CreateReportDto, reporterId: string) {
-    const reporter = this.em.getReference(User, reporterId);
+    const reporter = this.reportRepository.getEntityManager().getReference(User, reporterId);
 
     let reportedUser: User | null = null;
     if (dto.reportedUserId) {
       if (String(dto.reportedUserId) === String(reporterId)) {
         throw new BadRequestException('reports.cannot_report_self');
       }
-      reportedUser = await this.em.findOne(User, { id: dto.reportedUserId });
+      reportedUser = await this.reportRepository.getEntityManager().findOne(User, { id: dto.reportedUserId });
       if (!reportedUser) throw new NotFoundException('reports.user_not_found');
     }
 
     let thread: ForumThread | null = null;
     if (dto.threadId) {
-      thread = await this.em.findOne(ForumThread, { id: dto.threadId });
+      thread = await this.reportRepository.getEntityManager().findOne(ForumThread, { id: dto.threadId });
       if (!thread) throw new NotFoundException('reports.thread_not_found');
     }
 
     let comment: ForumComment | null = null;
     if (dto.commentId) {
-      comment = await this.em.findOne(ForumComment, { id: dto.commentId });
+      comment = await this.reportRepository.getEntityManager().findOne(ForumComment, { id: dto.commentId });
       if (!comment) throw new NotFoundException('reports.comment_not_found');
     }
 
-    const report = this.em.create(Report, {
+    const report = this.reportRepository.create({
       reporterId: reporter,
       reportedUserId: reportedUser || undefined,
       threadId: thread || undefined,
@@ -68,7 +68,7 @@ export class ReportsService {
     const mediaEntities: ReportMedia[] = [];
     if (dto.media && dto.media.length > 0) {
       for (const item of dto.media) {
-        const reportMedia = this.em.create(ReportMedia, {
+        const reportMedia = this.reportRepository.getEntityManager().create(ReportMedia, {
           reportId: report,
           mediaUrl: item.mediaUrl,
           mediaType: item.mediaType as any,
@@ -78,7 +78,7 @@ export class ReportsService {
       }
     }
 
-    await this.em.persistAndFlush([report, ...mediaEntities]);
+    await this.reportRepository.getEntityManager().persistAndFlush([report, ...mediaEntities]);
 
     return {
       id: report.id,
@@ -138,14 +138,7 @@ export class ReportsService {
   }
 
   async findMyReports(reporterId: string) {
-    const list = await this.em.find(
-      Report,
-      { reporterId },
-      {
-        populate: ['reportedUserId', 'threadId', 'commentId', 'handledBy'],
-        orderBy: { createdAt: 'DESC' },
-      },
-    );
+    const list = await this.reportRepository.findMyReports(reporterId);
 
     return list.map((report) => ({
       id: report.id,
@@ -176,12 +169,7 @@ export class ReportsService {
   }
 
   async getAdminStats() {
-    const total = await this.em.count(Report);
-    const pending = await this.em.count(Report, { status: ReportStatus.PENDING as any });
-    const resolved = await this.em.count(Report, { status: ReportStatus.RESOLVED as any });
-    const rejected = await this.em.count(Report, { status: ReportStatus.REJECTED as any });
-
-    return { total, pending, resolved, rejected };
+    return this.reportRepository.getAdminStats();
   }
 
   async findAdminReports(
@@ -190,21 +178,7 @@ export class ReportsService {
     page = 1,
     limit = 20,
   ) {
-    const filterQuery: any = {};
-    if (status) {
-      filterQuery.status = status;
-    }
-
-    const [list, count] = await this.em.findAndCount(
-      Report,
-      filterQuery,
-      {
-        populate: ['reporterId', 'reportedUserId', 'threadId', 'commentId', 'handledBy'],
-        orderBy: { createdAt: sort.toUpperCase() as any },
-        limit,
-        offset: (page - 1) * limit,
-      },
-    );
+    const [list, count] = await this.reportRepository.findAdminReports(status, sort, page, limit);
 
     return {
       items: list.map((report) => ({
@@ -245,19 +219,15 @@ export class ReportsService {
   }
 
   async findOne(id: string, userId: string, isAdmin: boolean) {
-    const report = await this.em.findOne(
-      Report,
-      { id },
-      { populate: ['reporterId', 'reportedUserId', 'threadId', 'commentId', 'commentId.threadId', 'handledBy'] },
-    );
-    if (!report) throw new NotFoundException('Report not found');
+    const report = await this.reportRepository.findOneReportWithRelations(id);
+    if (!report) throw new NotFoundException('reports.report_not_found');
 
     if (!isAdmin && String(report.reporterId.id) !== String(userId)) {
-      throw new ForbiddenException('You do not have permission to view this report');
+      throw new ForbiddenException('reports.forbidden_view');
     }
 
-    const mediaList = await this.em.find(ReportMedia, { reportId: report });
-    const response = await this.em.findOne(
+    const mediaList = await this.reportRepository.getEntityManager().find(ReportMedia, { reportId: report });
+    const response = await this.reportRepository.getEntityManager().findOne(
       ReportResponse,
       { reportId: report },
       { populate: ['adminId'] },
@@ -320,10 +290,10 @@ export class ReportsService {
   }
 
   async resolve(id: string, adminId: string, dto: ResolveReportDto) {
-    const report = await this.em.findOne(Report, { id }, { populate: ['reportedUserId', 'reporterId'] });
-    if (!report) throw new NotFoundException('Report not found');
+    const report = await this.reportRepository.findOne({ id }, { populate: ['reportedUserId', 'reporterId'] });
+    if (!report) throw new NotFoundException('reports.report_not_found');
     if (report.status !== ReportStatus.PENDING) {
-      throw new BadRequestException('Report is already processed');
+      throw new BadRequestException('reports.already_processed');
     }
 
     if (
@@ -332,20 +302,20 @@ export class ReportsService {
       dto.actionTaken === ReportAction.BAN_CUSTOM
     ) {
       if (report.reportedUserId) {
-        const reportedUser = await this.em.findOne(User, { id: report.reportedUserId.id });
+        const reportedUser = await this.reportRepository.getEntityManager().findOne(User, { id: report.reportedUserId.id });
         if (reportedUser && reportedUser.role === 'ADMIN') {
           throw new BadRequestException('reports.cannot_ban_admin');
         }
       }
     }
 
-    const admin = this.em.getReference(User, adminId);
+    const admin = this.reportRepository.getEntityManager().getReference(User, adminId);
 
     report.status = ReportStatus.RESOLVED as any;
     report.handledBy = admin;
     report.handledAt = new Date();
 
-    const response = this.em.create(ReportResponse, {
+    const response = this.reportRepository.getEntityManager().create(ReportResponse, {
       reportId: report,
       adminId: admin,
       message: dto.message,
@@ -358,10 +328,10 @@ export class ReportsService {
       dto.actionTaken === ReportAction.BAN_CUSTOM
     ) {
       if (!report.reportedUserId) {
-        throw new BadRequestException('No reported user associated with this report');
+        throw new BadRequestException('reports.no_reported_user');
       }
 
-      const user = await this.em.findOne(User, { id: report.reportedUserId.id });
+      const user = await this.reportRepository.getEntityManager().findOne(User, { id: report.reportedUserId.id });
       if (user) {
         user.isBanned = true;
         user.bannedAt = new Date();
@@ -371,11 +341,11 @@ export class ReportsService {
             ? new Date(dto.banExpiresAt)
             : undefined;
 
-        this.em.persist(user);
+        this.reportRepository.getEntityManager().persist(user);
       }
     }
 
-    await this.em.persistAndFlush([report, response]);
+    await this.reportRepository.getEntityManager().persistAndFlush([report, response]);
 
     if (report.reporterId?.email) {
       const reporter = report.reporterId;
@@ -393,7 +363,7 @@ export class ReportsService {
     }
 
     if (report.reportedUserId) {
-      const reportedUser = await this.em.findOne(User, { id: report.reportedUserId.id });
+      const reportedUser = await this.reportRepository.getEntityManager().findOne(User, { id: report.reportedUserId.id });
       if (reportedUser && reportedUser.email) {
         if (dto.actionTaken === ReportAction.BAN_PERMANENT || dto.actionTaken === ReportAction.BAN_CUSTOM) {
           const banExpiresAtStr = dto.actionTaken === ReportAction.BAN_CUSTOM && dto.banExpiresAt
@@ -423,19 +393,19 @@ export class ReportsService {
   }
 
   async reject(id: string, adminId: string, dto: RejectReportDto) {
-    const report = await this.em.findOne(Report, { id }, { populate: ['reporterId'] });
-    if (!report) throw new NotFoundException('Report not found');
+    const report = await this.reportRepository.findOne({ id }, { populate: ['reporterId'] });
+    if (!report) throw new NotFoundException('reports.report_not_found');
     if (report.status !== ReportStatus.PENDING) {
-      throw new BadRequestException('Report is already processed');
+      throw new BadRequestException('reports.already_processed');
     }
 
-    const admin = this.em.getReference(User, adminId);
+    const admin = this.reportRepository.getEntityManager().getReference(User, adminId);
 
     report.status = ReportStatus.REJECTED as any;
     report.handledBy = admin;
     report.handledAt = new Date();
 
-    const response = this.em.create(ReportResponse, {
+    const response = this.reportRepository.getEntityManager().create(ReportResponse, {
       reportId: report,
       adminId: admin,
       message: dto.message,
@@ -443,7 +413,7 @@ export class ReportsService {
       isVisibleToReporter: dto.isVisibleToReporter !== false,
     });
 
-    await this.em.persistAndFlush([report, response]);
+    await this.reportRepository.getEntityManager().persistAndFlush([report, response]);
 
     if (report.reporterId?.email) {
       const reporter = report.reporterId;

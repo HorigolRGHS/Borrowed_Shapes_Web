@@ -6,12 +6,15 @@ import { ForumComment } from '../entities/ForumComment';
 import { ForumCommentVote } from '../entities/ForumCommentVote';
 import { AuthModule } from '../auth/auth.module';
 
+import { ForumCommentRepository } from './comments.repository';
+
 @Module({
   imports: [
     MikroOrmModule.forFeature([ForumComment, ForumCommentVote]),
     AuthModule,
   ],
   controllers: [CommentsController],
-  providers: [CommentsService],
+  providers: [CommentsService, ForumCommentRepository],
+  exports: [CommentsService, ForumCommentRepository],
 })
 export class CommentsModule {}

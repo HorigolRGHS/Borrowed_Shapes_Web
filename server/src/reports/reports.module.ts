@@ -14,6 +14,8 @@ import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 import { EmailModule } from '../email/email.module';
 
+import { ReportRepository } from './reports.repository';
+
 @Module({
   imports: [
     MikroOrmModule.forFeature([
@@ -31,7 +33,7 @@ import { EmailModule } from '../email/email.module';
     EmailModule,
   ],
   controllers: [ReportsController],
-  providers: [ReportsService],
-  exports: [ReportsService],
+  providers: [ReportsService, ReportRepository],
+  exports: [ReportsService, ReportRepository],
 })
 export class ReportsModule {}

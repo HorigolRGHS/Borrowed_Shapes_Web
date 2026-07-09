@@ -194,6 +194,30 @@
     "invalid_sort_field": "Sort field must be one of: score, createdAt, updatedAt",
     "invalid_sort_order": "Sort order must be either asc or desc"
   },
+  "comments": {
+    "thread_not_found": "Thread not found",
+    "parent_not_found": "Parent comment not found",
+    "parent_thread_mismatch": "Parent comment belongs to a different thread",
+    "user_not_found": "User not found",
+    "comment_not_found": "Comment not found",
+    "forbidden_edit": "You do not have permission to edit this comment",
+    "cannot_edit_deleted": "Cannot edit a deleted comment",
+    "forbidden_delete": "You do not have permission to delete this comment",
+    "invalid_user": "Invalid user"
+  },
+  "reports": {
+    "cannot_report_self": "You cannot report yourself",
+    "cannot_ban_admin": "You cannot process this user",
+    "report_not_found": "Report not found",
+    "forbidden_view": "You do not have permission to view this report",
+    "already_processed": "Report is already processed",
+    "no_reported_user": "No reported user associated with this report",
+    "forbidden_admin_only": "Only administrators can perform this action",
+    "file_too_large": "Evidence file size exceeds limit",
+    "user_not_found": "Reported user not found",
+    "thread_not_found": "Reported thread not found",
+    "comment_not_found": "Reported comment not found"
+  },
   "category": {
     "list_success": "Categories retrieved successfully",
     "detail_success": "Category details retrieved successfully",

@@ -18,11 +18,14 @@ const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 const presenceDetailsKey = (sessionId: string) => `user_session_details:${sessionId}`;
 const onlineZsetKey = 'online_users_by_last_active';
 
+import { UserSessionRepository } from './repositories/user-session.repository';
+
 @Injectable()
 export class SessionsService {
   constructor(
     private em: EntityManager,
     private redis: RedisService,
+    private userSessionRepository: UserSessionRepository,
   ) {}
 
   async getMe(userId: string, platform: string): Promise<SessionMeResponseDto> {
@@ -43,11 +46,7 @@ export class SessionsService {
       if (liveResults[i]?.sessionId) activeSessionIds.add(liveResults[i]!.sessionId);
     });
 
-    const dbSessions = await this.em.find(
-      UserSession,
-      { userId },
-      { orderBy: { loginTime: 'desc' } },
-    );
+    const dbSessions = await this.userSessionRepository.findSessionsByUserId(userId);
 
     return dbSessions.map((s) => {
       const isActive = activeSessionIds.has(s.sessionId);
@@ -75,7 +74,7 @@ export class SessionsService {
     requestUserRole: string,
     ipAddress: string,
   ): Promise<void> {
-    const session = await this.em.findOne(UserSession, { id: dbSessionId });
+    const session = await this.userSessionRepository.findOne({ id: dbSessionId });
     if (!session) throw new NotFoundException('auth.session_not_found');
 
     if (session.userId.id !== requestUserId && requestUserRole !== 'ADMIN') {
@@ -94,11 +93,7 @@ export class SessionsService {
     await this.redis.zrem(onlineZsetKey, session.sessionId);
     await this.redis.del(presenceDetailsKey(session.sessionId));
 
-    await this.em.nativeUpdate(
-      UserSession,
-      { id: dbSessionId },
-      { status: SessionStatus.REVOKED, logoutTime: new Date() },
-    );
+    await this.userSessionRepository.revokeSessionById(dbSessionId);
 
     const auditLog = this.em.create(AuditLog, {
       userId: this.em.getReference(User, requestUserId),

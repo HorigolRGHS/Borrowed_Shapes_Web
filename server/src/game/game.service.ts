@@ -17,24 +17,29 @@ import {
   EndSessionStatus,
 } from './dto/end-session.dto';
 
+import { GameProfileRepository } from './repositories/game-profile.repository';
+import { GameRunRepository } from './repositories/game-run.repository';
+import { GameSessionRepository } from './repositories/game-session.repository';
+
 @Injectable()
 export class GameService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly gameProfileRepo: GameProfileRepository,
+    private readonly gameRunRepo: GameRunRepository,
+    private readonly gameSessionRepo: GameSessionRepository,
+  ) {}
 
   async initRun(userId: string, dto: InitGameRunRequestDto, path: string) {
     const runId = await this.em.transactional(async (em) => {
-      const gameProfile = await this.findGameProfileOrFail(em, userId);
+      const gameProfile = await this.gameProfileRepo.findGameProfileOrFail(em, userId);
       const lobbyLevel = await em.findOne(Level, { id: 'lobby' });
 
       if (!lobbyLevel) {
         throw new BadRequestException('game.lobby_level_not_configured');
       }
 
-      const existingRun = await em.findOne(
-        GameRun,
-        { lobbyId: dto.lobbyId, isCompleted: false },
-        { orderBy: { startedAt: 'desc' } },
-      );
+      const existingRun = await this.gameRunRepo.findActiveLobbyRun(em, dto.lobbyId);
       if (existingRun) {
         throw new BadRequestException('game.run_already_active');
       }
@@ -84,12 +89,8 @@ export class GameService {
 
   async joinLobby(userId: string, dto: JoinLobbyRequestDto, path: string) {
     const runId = await this.em.transactional(async (em) => {
-      const gameProfile = await this.findGameProfileOrFail(em, userId);
-      const run = await em.findOne(
-        GameRun,
-        { lobbyId: dto.lobbyId, isCompleted: false },
-        { orderBy: { startedAt: 'desc' } },
-      );
+      const gameProfile = await this.gameProfileRepo.findGameProfileOrFail(em, userId);
+      const run = await this.gameRunRepo.findActiveLobbyRun(em, dto.lobbyId);
       if (!run) {
         throw new NotFoundException('game.run_not_found_for_lobby');
       }
@@ -99,21 +100,14 @@ export class GameService {
         gameProfileId: gameProfile.id,
       });
 
-      const isLocked = await this.isRunLocked(em, run.id);
+      const isLocked = await this.gameSessionRepo.isRunLocked(em, run.id);
       if (isLocked && !existing) {
         throw new BadRequestException('game.run_locked');
       }
 
-      if (!existing) {
-        // Add joining player into run roster (table: game.GameRunPlayer)
-        em.create(GameRunPlayer, {
-          runId: run,
-          gameProfileId: gameProfile,
-          isHost: false,
-        });
-      }
+      // Do NOT create GameRunPlayer here. It will be created in startSession when leaving the lobby.
 
-      const activeSession = await this.findActiveSession(em, run.id);
+      const activeSession = await this.gameSessionRepo.findActiveSession(em, run.id);
       const lobbySession = activeSession
         ? undefined
         : await em.findOne(GameSession, { runId: run.id, levelId: 'lobby' });
@@ -186,6 +180,27 @@ export class GameService {
           minPlayers,
           maxPlayers,
         });
+      }
+
+      // If leaving lobby for the first time, lock in the roster by saving active players to GameRunPlayer
+      if (level.id !== 'lobby') {
+        const isFirstMap = !(await this.gameSessionRepo.isRunLocked(em, run.id));
+        if (isFirstMap) {
+          const lobbySession = await em.findOne(GameSession, { runId: run.id, levelId: 'lobby' });
+          if (lobbySession) {
+            const lobbyPlayers = await em.find(GameSessionPlayer, { sessionId: lobbySession.id, isAbsent: false });
+            for (const lp of lobbyPlayers) {
+              const exists = await em.findOne(GameRunPlayer, { runId: run.id, gameProfileId: lp.gameProfileId });
+              if (!exists) {
+                em.create(GameRunPlayer, {
+                  runId: run,
+                  gameProfileId: lp.gameProfileId,
+                  isHost: false, // The host was already added in initRun and will be caught by `exists`
+                });
+              }
+            }
+          }
+        }
       }
 
       const runPlayers = await em.find(GameRunPlayer, { runId: run.id });
@@ -306,13 +321,9 @@ export class GameService {
 
   async leaveLobby(userId: string, lobbyId: string, path: string) {
     await this.em.transactional(async (em) => {
-      const gameProfile = await this.findGameProfileOrFail(em, userId);
+      const gameProfile = await this.gameProfileRepo.findGameProfileOrFail(em, userId);
 
-      const run = await em.findOne(
-        GameRun,
-        { lobbyId, isCompleted: false },
-        { orderBy: { startedAt: 'desc' } },
-      );
+      const run = await this.gameRunRepo.findActiveLobbyRun(em, lobbyId);
       if (!run) {
         return;
       }
@@ -361,28 +372,5 @@ export class GameService {
       default:
         return { status: GameSessionStatus.ABANDONED, result: SessionResult.ABANDONED };
     }
-  }
-
-  private async findGameProfileOrFail(em: EntityManager, userId: string): Promise<GameProfile> {
-    const gameProfile = await em.findOne(GameProfile, { userId });
-    if (!gameProfile) {
-      throw new NotFoundException('game.profile_not_found');
-    }
-    return gameProfile;
-  }
-
-  private async isRunLocked(em: EntityManager, runId: string): Promise<boolean> {
-    const nonLobbySession = await em.findOne(GameSession, {
-      runId,
-      levelId: { $ne: 'lobby' },
-    });
-    return Boolean(nonLobbySession);
-  }
-
-  private async findActiveSession(em: EntityManager, runId: string): Promise<GameSession | null> {
-    return em.findOne(GameSession, {
-      runId,
-      status: GameSessionStatus.IN_PROGRESS,
-    });
   }
 }

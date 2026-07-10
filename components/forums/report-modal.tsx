@@ -163,11 +163,19 @@ export default function ReportModal({
         setSelectedFiles([]);
         onClose();
       } else {
-        toast.error(response.data?.message || t("reports.failed_submit"));
+        const errMsg = response.data?.message;
+        toast.error(errMsg ? t(errMsg) : t("reports.failed_submit"));
       }
     } catch (error: any) {
       console.error("Report error:", error);
-      toast.error(error.response?.data?.message || error.message || t("reports.failed_submit"));
+      const msg = error.response?.data?.message;
+      let displayMsg = t("reports.failed_submit");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      toast.error(displayMsg);
     } finally {
       setUploading(false);
       setSubmitting(false);

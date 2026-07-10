@@ -153,44 +153,40 @@ export default function ForumsPage() {
     setMessage(null);
 
     try {
+      const threadId = crypto.randomUUID();
+      let finalImageUrl = null;
+
+      if (file) {
+        const uploadResp = await axios.post("/api/forums/upload", {
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          threadId: threadId,
+        });
+
+        const uploadData = uploadResp.data?.data;
+        if (uploadData) {
+          const putRes = await fetch(uploadData.uploadUrl, {
+            method: uploadData.method,
+            headers: uploadData.headers,
+            body: file,
+          });
+
+          if (!putRes.ok) {
+            throw new Error("Thread image upload failed");
+          }
+          finalImageUrl = uploadData.publicUrl;
+        }
+      }
+
       const createPayload = {
         ...payload,
-        imageUrl: null,
+        id: threadId,
+        imageUrl: finalImageUrl,
       };
       const response = await axios.post("/api/forums/create", createPayload);
 
       if (response.data?.success) {
-        const createdThread = response.data.data;
-        const threadId = createdThread.id;
-        let finalImageUrl = null;
-
-        if (file) {
-          const uploadResp = await axios.post("/api/forums/upload", {
-            fileName: file.name,
-            fileSize: file.size,
-            mimeType: file.type,
-            threadId: threadId,
-          });
-
-          const uploadData = uploadResp.data?.data;
-          if (uploadData) {
-            const putRes = await fetch(uploadData.uploadUrl, {
-              method: uploadData.method,
-              headers: uploadData.headers,
-              body: file,
-            });
-
-            if (!putRes.ok) {
-              throw new Error("Thread image upload failed");
-            }
-            finalImageUrl = uploadData.publicUrl;
-
-            await axios.patch(`/api/forums/update/${threadId}`, {
-              imageUrl: finalImageUrl,
-            });
-          }
-        }
-
         toast.success(t("forums.thread_created"));
         setMessage(t("forums.thread_created"));
         setShowCreate(false);
@@ -203,14 +199,21 @@ export default function ForumsPage() {
           fetchThreads();
         }
       } else {
-        const errMsg = response.data?.message || t("forums.create_failed");
-        setMessage(errMsg);
-        toast.error(errMsg);
+        const errMsg = response.data?.message;
+        const displayMsg = errMsg ? t(errMsg) : t("forums.create_failed");
+        setMessage(displayMsg);
+        toast.error(displayMsg);
       }
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || t("forums.create_failed");
-      setMessage(errMsg);
-      toast.error(errMsg);
+      const msg = error.response?.data?.message;
+      let displayMsg = t("forums.create_failed");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      setMessage(displayMsg);
+      toast.error(displayMsg);
     }
   };
 

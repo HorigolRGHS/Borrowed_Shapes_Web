@@ -6,6 +6,8 @@ import { ForumCategory } from '../entities/ForumCategory';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 
+import { ForumCategoryRepository } from './categories.repository';
+
 @Module({
   imports: [
     MikroOrmModule.forFeature([ForumCategory]),
@@ -13,6 +15,7 @@ import { StorageModule } from '../storage/storage.module';
     StorageModule,
   ],
   controllers: [CategoryController],
-  providers: [CategoryService],
+  providers: [CategoryService, ForumCategoryRepository],
+  exports: [CategoryService, ForumCategoryRepository],
 })
 export class CategoryModule {}

@@ -164,10 +164,18 @@ export default function ForumDetailPage() {
           imageUrl: response.data.data.imageUrl ?? null,
         });
       } else {
-        setMessage(response.data?.message || t("forums.thread_not_found"));
+        const errMsg = response.data?.message;
+        setMessage(errMsg ? t(errMsg) : t("forums.thread_not_found"));
       }
     } catch (error: any) {
-      setMessage(error.response?.data?.message || error.message || t("forums.thread_not_found"));
+      const msg = error.response?.data?.message;
+      let displayMsg = t("forums.thread_not_found");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      setMessage(displayMsg);
     } finally {
       setLoading(false);
     }
@@ -186,14 +194,21 @@ export default function ForumDetailPage() {
         }));
         toast.success(t("forums.vote_success"));
       } else {
-        const errMsg = response.data?.message || t("forums.vote_failed");
-        setMessage(errMsg);
-        toast.error(errMsg);
+        const errMsg = response.data?.message;
+        const displayMsg = errMsg ? t(errMsg) : t("forums.vote_failed");
+        setMessage(displayMsg);
+        toast.error(displayMsg);
       }
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || t("forums.vote_failed");
-      setMessage(errMsg);
-      toast.error(errMsg);
+      const msg = error.response?.data?.message;
+      let displayMsg = t("forums.vote_failed");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      setMessage(displayMsg);
+      toast.error(displayMsg);
     }
   };
 
@@ -242,14 +257,21 @@ export default function ForumDetailPage() {
         setIsEditing(false);
         fetchThread();
       } else {
-        const errMsg = response.data?.message || t("forums.update_failed");
-        setMessage(errMsg);
-        toast.error(errMsg);
+        const errMsg = response.data?.message;
+        const displayMsg = errMsg ? t(errMsg) : t("forums.update_failed");
+        setMessage(displayMsg);
+        toast.error(displayMsg);
       }
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || t("forums.update_failed");
-      setMessage(errMsg);
-      toast.error(errMsg);
+      const msg = error.response?.data?.message;
+      let displayMsg = t("forums.update_failed");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      setMessage(displayMsg);
+      toast.error(displayMsg);
     }
   };
 
@@ -268,14 +290,21 @@ export default function ForumDetailPage() {
           router.push("/forums");
         }
       } else {
-        const errMsg = response.data?.message || t("forums.delete_failed");
-        setMessage(errMsg);
-        toast.error(errMsg);
+        const errMsg = response.data?.message;
+        const displayMsg = errMsg ? t(errMsg) : t("forums.delete_failed");
+        setMessage(displayMsg);
+        toast.error(displayMsg);
       }
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || t("forums.delete_failed");
-      setMessage(errMsg);
-      toast.error(errMsg);
+      const msg = error.response?.data?.message;
+      let displayMsg = t("forums.delete_failed");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      setMessage(displayMsg);
+      toast.error(displayMsg);
     }
   };
 
@@ -309,7 +338,6 @@ export default function ForumDetailPage() {
 
   const isAuthor = user && (String(user.id) === String(thread.author?.id) || user.role === 'ADMIN');
 
-  console.log("check thread: ", thread);
   return (
     <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
       <PublicHeader />

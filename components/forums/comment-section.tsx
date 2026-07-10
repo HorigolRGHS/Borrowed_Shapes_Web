@@ -132,10 +132,18 @@ export default function CommentSection({ threadId, user, locale, t }: CommentSec
         setComments((prev) => [response.data.data, ...prev]);
         toast.success(t("comments.toast.comment_success"));
       } else {
-        toast.error(response.data?.message || t("comments.toast.comment_failed"));
+        const errMsg = response.data?.message;
+        toast.error(errMsg ? t(errMsg) : t("comments.toast.comment_failed"));
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || t("comments.toast.comment_failed"));
+      const msg = error.response?.data?.message;
+      let displayMsg = t("comments.toast.comment_failed");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      toast.error(displayMsg);
     } finally {
       setSubmitting(false);
     }
@@ -343,7 +351,9 @@ function CommentNode({
         });
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t("comments.toast.vote_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : t("comments.toast.vote_failed");
+      toast.error(displayMsg);
     }
   };
 
@@ -366,7 +376,9 @@ function CommentNode({
         toast.success(t("comments.toast.edit_success"));
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t("comments.toast.edit_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : t("comments.toast.edit_failed");
+      toast.error(displayMsg);
     } finally {
       setEditSubmitting(false);
     }
@@ -385,7 +397,9 @@ function CommentNode({
         toast.success(t("comments.toast.delete_success"));
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t("comments.toast.delete_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : t("comments.toast.delete_failed");
+      toast.error(displayMsg);
     }
   };
 
@@ -413,7 +427,9 @@ function CommentNode({
         toast.success(t("comments.toast.reply_success"));
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t("comments.toast.reply_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : t("comments.toast.reply_failed");
+      toast.error(displayMsg);
     } finally {
       setReplySubmitting(false);
     }

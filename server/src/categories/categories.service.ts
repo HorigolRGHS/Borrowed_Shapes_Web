@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { ForumCategory } from '../entities/ForumCategory';
 import { CreateCategoryDto } from './dto/create-categories.dto';
 import { UpdateCategoryDto } from './dto/update-categories.dto';
@@ -7,105 +6,30 @@ import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'crypto';
 import { CategoryImageUploadRequestDto, CategoryImageUploadResponseDto } from './dto/category-image-upload.dto';
+import { ForumCategoryRepository } from './categories.repository';
 
 @Injectable()
 export class CategoryService {
   constructor(
-    private readonly em: EntityManager,
+    private readonly categoryRepository: ForumCategoryRepository,
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
   ) { }
 
   async findAll(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
-    const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
-    const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
-    const sortOrder = order === 'desc' ? 'desc' : 'asc';
-
-    const rows = await this.em.execute(
-      `
-      select c."id", ${nameField} as "name", ${slugField} as "slug",
-             ${descField} as "description", c."iconUrl",
-             c."isOfficial",
-             c."name" as "nameEn", c."name_vi" as "nameVi",
-             c."slug" as "slugEn", c."slug_vi" as "slugVi",
-             c."description" as "descriptionEn", c."description_vi" as "descriptionVi",
-             COUNT(t."id") as "threadCount"
-      from web."ForumCategory" c
-      left join web."ForumThread" t on t."categoryId" = c."id"
-      group by c."id"
-      order by ${nameField} ${sortOrder}
-      `,
-      [],
-    );
-
-    return rows.map((row: any) => ({
-      ...row,
-      threadCount: Number(row.threadCount || 0),
-    }));
+    return this.categoryRepository.findAllCategories(locale, order);
   }
 
   async findAllUnofficial(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
-    const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
-    const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
-    const sortOrder = order === 'desc' ? 'desc' : 'asc';
-
-    const rows = await this.em.execute(
-      `
-      select c."id", ${nameField} as "name", ${slugField} as "slug",
-             ${descField} as "description", c."iconUrl",
-             c."isOfficial",
-             c."name" as "nameEn", c."name_vi" as "nameVi",
-             c."slug" as "slugEn", c."slug_vi" as "slugVi",
-             c."description" as "descriptionEn", c."description_vi" as "descriptionVi",
-             COUNT(t."id") as "threadCount"
-      from web."ForumCategory" c
-      left join web."ForumThread" t on t."categoryId" = c."id"
-      where c."isOfficial" = false
-      group by c."id"
-      order by ${nameField} ${sortOrder}
-      `,
-      [],
-    );
-
-    return rows.map((row: any) => ({
-      ...row,
-      threadCount: Number(row.threadCount || 0),
-    }));
+    return this.categoryRepository.findAllUnofficialCategories(locale, order);
   }
 
   async findOne(id: string, locale: 'en' | 'vi') {
-    const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
-    const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
-
-    const rows = await this.em.execute(
-      `
-      select c."id", ${nameField} as "name", ${slugField} as "slug",
-             ${descField} as "description", c."iconUrl",
-             c."isOfficial",
-             c."name" as "nameEn", c."name_vi" as "nameVi",
-             c."slug" as "slugEn", c."slug_vi" as "slugVi",
-             c."description" as "descriptionEn", c."description_vi" as "descriptionVi",
-             COUNT(t."id") as "threadCount"
-      from web."ForumCategory" c
-      left join web."ForumThread" t on t."categoryId" = c."id"
-      where c."id" = ?
-      group by c."id"
-      `,
-      [id],
-    );
-
-    if (!rows || rows.length === 0) {
+    const category = await this.categoryRepository.findOneCategory(id, locale);
+    if (!category) {
       throw new NotFoundException('category.not_found');
     }
-
-    const row = rows[0];
-    return {
-      ...row,
-      threadCount: Number(row.threadCount || 0),
-    };
+    return category;
   }
 
   async create(dto: CreateCategoryDto) {
@@ -118,19 +42,19 @@ export class CategoryService {
     if (!slug) { throw new BadRequestException('category.slug_required'); }
     if (!slugVi) { throw new BadRequestException('category.slug_vi_required'); }
 
-    const existingSlug = await this.em.findOne(ForumCategory, { slug });
+    const existingSlug = await this.categoryRepository.findOne({ slug });
     if (existingSlug) throw new BadRequestException('category.slug_conflict');
 
-    const existingSlugVi = await this.em.findOne(ForumCategory, { slugVi });
+    const existingSlugVi = await this.categoryRepository.findOne({ slugVi });
     if (existingSlugVi) throw new BadRequestException('category.slug_vi_conflict');
 
-    const existingName = await this.em.findOne(ForumCategory, { name: dto.name.trim() });
+    const existingName = await this.categoryRepository.findOne({ name: dto.name.trim() });
     if (existingName) throw new BadRequestException('category.name_conflict');
 
-    const existingNameVi = await this.em.findOne(ForumCategory, { nameVi: dto.nameVi.trim() });
+    const existingNameVi = await this.categoryRepository.findOne({ nameVi: dto.nameVi.trim() });
     if (existingNameVi) throw new BadRequestException('category.name_vi_conflict');
 
-    const category = this.em.create(ForumCategory, {
+    const category = this.categoryRepository.create({
       id: dto.id || undefined,
       name: dto.name.trim(),
       nameVi: dto.nameVi.trim(),
@@ -143,7 +67,7 @@ export class CategoryService {
     });
 
     try {
-      await this.em.persist(category).flush();
+      await this.categoryRepository.getEntityManager().persist(category).flush();
       return category;
     } catch (error) {
       console.error('Error creating category:', error);
@@ -152,7 +76,7 @@ export class CategoryService {
   }
 
   async update(id: string, dto: UpdateCategoryDto) {
-    const category = await this.em.findOne(ForumCategory, { id });
+    const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
     if (dto.name !== undefined) {
@@ -163,7 +87,7 @@ export class CategoryService {
       }
 
       if (trimmed !== category.name) {
-        const existing = await this.em.findOne(ForumCategory, {
+        const existing = await this.categoryRepository.findOne({
           name: trimmed,
         });
 
@@ -183,7 +107,7 @@ export class CategoryService {
       }
 
       if (trimmed !== category.nameVi) {
-        const existing = await this.em.findOne(ForumCategory, {
+        const existing = await this.categoryRepository.findOne({
           nameVi: trimmed,
         });
 
@@ -202,7 +126,7 @@ export class CategoryService {
         throw new BadRequestException('category.slug_required');
       }
       if (newSlug !== category.slug) {
-        const existing = await this.em.findOne(ForumCategory, {
+        const existing = await this.categoryRepository.findOne({
           slug: newSlug,
         });
 
@@ -221,7 +145,7 @@ export class CategoryService {
         throw new BadRequestException('category.slug_vi_required');
       }
       if (newSlugVi !== category.slugVi) {
-        const existing = await this.em.findOne(ForumCategory, {
+        const existing = await this.categoryRepository.findOne({
           slugVi: newSlugVi,
         });
 
@@ -241,20 +165,13 @@ export class CategoryService {
       category.descriptionVi = dto.descriptionVi?.trim() ?? null;
     }
 
+    let iconToDelete: string | null = null;
     if (dto.iconUrl !== undefined) {
       const oldIconUrl = category.iconUrl;
       const newIconUrl = dto.iconUrl ?? null;
 
       if (oldIconUrl && oldIconUrl !== newIconUrl) {
-        try {
-          const idx = oldIconUrl.indexOf('categories/');
-          if (idx !== -1) {
-            const key = oldIconUrl.slice(idx);
-            await this.storageService.deleteObject(key);
-          }
-        } catch (e: any) {
-          console.error(`Failed to delete old R2 category icon ${oldIconUrl}:`, e);
-        }
+        iconToDelete = oldIconUrl;
       }
 
       category.iconUrl = newIconUrl;
@@ -264,27 +181,42 @@ export class CategoryService {
       category.isOfficial = dto.isOfficial;
     }
 
-    await this.em.flush();
+    await this.categoryRepository.getEntityManager().flush();
+
+    if (iconToDelete) {
+      try {
+        const idx = iconToDelete.indexOf('categories/');
+        if (idx !== -1) {
+          const key = iconToDelete.slice(idx);
+          await this.storageService.deleteObject(key);
+        }
+      } catch (e: any) {
+        console.error(`Failed to delete old R2 category icon ${iconToDelete}:`, e);
+      }
+    }
+
     return null;
   }
 
   async remove(id: string) {
-    const category = await this.em.findOne(ForumCategory, { id });
+    const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
-    if (category.iconUrl) {
+    const iconUrlToDelete = category.iconUrl;
+
+    await this.categoryRepository.getEntityManager().removeAndFlush(category);
+
+    if (iconUrlToDelete) {
       try {
-        const idx = category.iconUrl.indexOf('categories/');
+        const idx = iconUrlToDelete.indexOf('categories/');
         if (idx !== -1) {
-          const key = category.iconUrl.slice(idx);
+          const key = iconUrlToDelete.slice(idx);
           await this.storageService.deleteObject(key);
         }
       } catch (e: any) {
-        console.error(`Failed to delete R2 category icon ${category.iconUrl}:`, e);
+        console.error(`Failed to delete R2 category icon ${iconUrlToDelete}:`, e);
       }
     }
-
-    await this.em.remove(category).flush();
     return null;
   }
 
@@ -315,7 +247,7 @@ export class CategoryService {
     };
     const categoryId = dto.categoryId ?? randomUUID();
     const ext = extByMime[dto.mimeType] ?? 'png';
-    const key = `categories/${categoryId}.${ext}`;
+    const key = `categories/${categoryId}-${Date.now()}.${ext}`;
 
     const uploadUrl = await this.storageService.createUploadUrl({
       key,

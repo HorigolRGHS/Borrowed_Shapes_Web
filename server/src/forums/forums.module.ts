@@ -9,6 +9,8 @@ import { ForumComment } from '../entities/ForumComment';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 
+import { ForumThreadRepository } from './forums.repository';
+
 @Module({
   imports: [
     MikroOrmModule.forFeature([ForumThread, ForumCategory, ForumThreadVote, ForumComment]),
@@ -16,6 +18,7 @@ import { StorageModule } from '../storage/storage.module';
     StorageModule,
   ],
   controllers: [ForumController],
-  providers: [ForumService],
+  providers: [ForumService, ForumThreadRepository],
+  exports: [ForumService, ForumThreadRepository],
 })
 export class ForumModule {}

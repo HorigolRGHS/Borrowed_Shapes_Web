@@ -302,11 +302,13 @@ export default function DashboardCategoriesPage() {
         setCreateOpen(false);
         fetchCategories();
       } else {
-        toast.error(createResponse.data?.message || t("forums.dashboard.toast_cat_failed"));
+        const errMsg = createResponse.data?.message;
+        toast.error(errMsg ? t(errMsg) : t("forums.dashboard.toast_cat_failed"));
       }
     } catch (error: any) {
-      const msg = error.response?.data?.message || error.message;
-      toast.error(msg || t("forums.dashboard.toast_cat_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : (error.message || t("forums.dashboard.toast_cat_failed"));
+      toast.error(displayMsg);
     } finally {
       setIsUploadingImage(false);
     }
@@ -391,11 +393,13 @@ export default function DashboardCategoriesPage() {
         setEditingCategory(null);
         fetchCategories();
       } else {
-        toast.error(response.data?.message || t("forums.dashboard.toast_cat_failed"));
+        const errMsg = response.data?.message;
+        toast.error(errMsg ? t(errMsg) : t("forums.dashboard.toast_cat_failed"));
       }
     } catch (error: any) {
-      const msg = error.response?.data?.message || error.message;
-      toast.error(msg || t("forums.dashboard.toast_cat_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : (error.message || t("forums.dashboard.toast_cat_failed"));
+      toast.error(displayMsg);
     } finally {
       setIsUploadingImage(false);
     }
@@ -416,11 +420,13 @@ export default function DashboardCategoriesPage() {
         setDeletingCategory(null);
         fetchCategories();
       } else {
-        toast.error(response.data?.message || t("forums.dashboard.toast_cat_failed"));
+        const errMsg = response.data?.message;
+        toast.error(errMsg ? t(errMsg) : t("forums.dashboard.toast_cat_failed"));
       }
     } catch (error: any) {
-      const msg = error.response?.data?.message || error.message;
-      toast.error(msg || t("forums.dashboard.toast_cat_failed"));
+      const msg = error.response?.data?.message;
+      const displayMsg = msg ? (Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg)) : (error.message || t("forums.dashboard.toast_cat_failed"));
+      toast.error(displayMsg);
     }
   };
 

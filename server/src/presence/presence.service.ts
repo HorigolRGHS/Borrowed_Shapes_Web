@@ -5,6 +5,8 @@ import { RedisService } from '../redis/redis.service';
 import { UserOnlineStatus } from '../entities/UserOnlineStatus';
 import { User } from '../entities/User';
 
+import { UserOnlineStatusRepository } from './repositories/user-online-status.repository';
+
 const presenceDetailsKey = (sessionId: string) => `user_session_details:${sessionId}`;
 const onlineZsetKey = 'online_users_by_last_active';
 
@@ -16,6 +18,7 @@ export class PresenceService {
     private redis: RedisService,
     private em: EntityManager,
     private config: ConfigService,
+    private userOnlineStatusRepository: UserOnlineStatusRepository,
   ) {}
 
   async touchOnline(userId: string, platform: string, sessionId?: string): Promise<void> {
@@ -29,14 +32,14 @@ export class PresenceService {
       ]);
     }
 
-    const existing = await this.em.findOne(UserOnlineStatus, {
+    const existing = await this.userOnlineStatusRepository.findOne({
       userId: this.em.getReference(User, userId),
     });
 
     const platforms = new Set(existing?.onlinePlatforms || []);
     if (platform) platforms.add(platform);
 
-    await this.em.upsert(UserOnlineStatus, {
+    await this.userOnlineStatusRepository.upsert({
       userId: this.em.getReference(User, userId),
       isOnline: true,
       lastOnline: new Date(nowMs),
@@ -79,7 +82,7 @@ export class PresenceService {
     }
 
     for (const [userId, { platforms, lastActive }] of userMap) {
-      await this.em.upsert(UserOnlineStatus, {
+      await this.userOnlineStatusRepository.upsert({
         userId: this.em.getReference(User, userId),
         isOnline: true,
         lastOnline: new Date(lastActive),
@@ -88,10 +91,6 @@ export class PresenceService {
     }
 
     const onlineIds = Array.from(userMap.keys());
-    await this.em.nativeUpdate(
-      UserOnlineStatus,
-      { userId: { $nin: onlineIds }, isOnline: true },
-      { isOnline: false, onlinePlatforms: [] },
-    );
+    await this.userOnlineStatusRepository.setOfflineForUsersNotIn(onlineIds);
   }
 }

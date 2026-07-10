@@ -40,6 +40,11 @@ import { Role } from '../entities/Role';
 import { SessionStatus } from '../entities/SessionStatus';
 import { AuditActionType } from '../entities/AuditActionType';
 import { UserOnlineStatus } from '../entities/UserOnlineStatus';
+import { UserRepository } from './repositories/user.repository';
+import { AuditLogRepository } from './repositories/audit-log.repository';
+import { GameProfileRepository } from '../game/repositories/game-profile.repository';
+import { UserSessionRepository } from '../sessions/repositories/user-session.repository';
+import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
 
 const createId = () => randomUUID();
 
@@ -106,6 +111,11 @@ export class AuthService {
     private config: ConfigService,
     private jwt: JwtService,
     private email: EmailService,
+    private userRepository: UserRepository,
+    private auditLogRepository: AuditLogRepository,
+    private gameProfileRepository: GameProfileRepository,
+    private userSessionRepository: UserSessionRepository,
+    private userOnlineStatusRepository: UserOnlineStatusRepository,
   ) {}
 
   private async fetchGoogleUserInfo(
@@ -171,10 +181,10 @@ export class AuthService {
   // Removed ensureNotBanned in favor of ensureAccountActive from auth-utils.ts
 
   private async getOrCreateGameProfile(user: User): Promise<GameProfile> {
-    const existing = await this.em.findOne(GameProfile, { userId: user.id });
+    const existing = await this.gameProfileRepository.findOne({ userId: user.id });
     if (existing) return existing;
 
-    const created = this.em.create(GameProfile, { userId: user });
+    const created = this.gameProfileRepository.create({ userId: user });
     await this.em.flush();
     return created;
   }
@@ -215,8 +225,7 @@ export class AuthService {
     // Revoke any existing session for this platform (1 session per platform)
     const existing = await this.redis.hgetall(rtKey(user.id, platform));
     if (existing?.sessionId) {
-      await this.em.nativeUpdate(
-        UserSession,
+      await this.userSessionRepository.nativeUpdate(
         { sessionId: existing.sessionId, status: SessionStatus.ACTIVE },
         { status: SessionStatus.REVOKED, logoutTime: new Date() },
       );
@@ -268,7 +277,7 @@ export class AuthService {
       { cmd: 'zadd', args: [onlineZsetKey, Date.now(), sessionId] },
     ]);
 
-    const session = this.em.create(UserSession, {
+    const session = this.userSessionRepository.create({
       userId: user,
       sessionId,
       platform,
@@ -276,7 +285,7 @@ export class AuthService {
       deviceInfo,
       status: SessionStatus.ACTIVE,
     });
-    const auditLog = this.em.create(AuditLog, {
+    const auditLog = this.auditLogRepository.create({
       userId: user,
       actionType: AuditActionType.LOGIN,
       entityName: 'UserSession',
@@ -465,7 +474,7 @@ export class AuthService {
     const password = dto.password;
     const platform = dto.platform;
 
-    const user = await this.em.findOne(User, { email });
+    const user = await this.userRepository.findByEmail(email);
     if (!user) throw new UnauthorizedException('auth.invalid_credentials');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
@@ -624,7 +633,7 @@ export class AuthService {
     // One-time usage
     await this.redis.del(googleLoginCodeKey(dto.loginCode));
 
-    const user = await this.em.findOne(User, { id: record.userId });
+    const user = await this.userRepository.findOne({ id: record.userId });
     if (!user) throw new UnauthorizedException('auth.user_not_found');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
@@ -675,8 +684,7 @@ export class AuthService {
       }
     }
 
-    const user = await this.em.findOne(
-      User,
+    const user = await this.userRepository.findOne(
       { id: userId },
       { fields: ['role', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
     );
@@ -747,8 +755,7 @@ export class AuthService {
     await this.redis.pipeline(commands);
 
     // Update DB session record
-    await this.em.nativeUpdate(
-      UserSession,
+    await this.userSessionRepository.nativeUpdate(
       { sessionId: stored.sessionId, status: SessionStatus.ACTIVE },
       { sessionId: newSessionId },
     );
@@ -776,7 +783,7 @@ export class AuthService {
     }
 
     try {
-      const existingStatus = await this.em.findOne(UserOnlineStatus, {
+      const existingStatus = await this.userOnlineStatusRepository.findOne({
         userId: this.em.getReference(User, userId),
       });
       if (existingStatus) {

@@ -3,6 +3,7 @@ import { SessionsService } from './sessions.service';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { RedisService } from '../redis/redis.service';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { UserSessionRepository } from './repositories/user-session.repository';
 
 const mockRedis = {
   hgetall: jest.fn(),
@@ -21,6 +22,13 @@ const mockEm = {
   getReference: jest.fn((_, id) => ({ id })),
 };
 
+const mockUserSessionRepo = {
+  findSessionsByUserId: jest.fn((userId) => mockEm.find('UserSession', { userId })),
+  findOne: jest.fn((filter) => mockEm.findOne('UserSession', filter)),
+  revokeSessionById: jest.fn((id) => mockEm.nativeUpdate('UserSession', { id }, { status: 'REVOKED' })),
+  nativeUpdate: jest.fn((...args) => mockEm.nativeUpdate(...args)),
+};
+
 describe('SessionsService', () => {
   let service: SessionsService;
 
@@ -30,6 +38,7 @@ describe('SessionsService', () => {
         SessionsService,
         { provide: EntityManager, useValue: mockEm },
         { provide: RedisService, useValue: mockRedis },
+        { provide: UserSessionRepository, useValue: mockUserSessionRepo },
       ],
     }).compile();
     service = module.get(SessionsService);

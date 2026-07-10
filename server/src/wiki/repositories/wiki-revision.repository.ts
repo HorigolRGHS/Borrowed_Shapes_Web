@@ -2,11 +2,44 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { FilterQuery } from '@mikro-orm/core';
 import { WikiRevision } from '../../entities/WikiRevision';
+import { User } from '../../entities/User';
+import { WikiPage } from '../../entities/WikiPage';
 
 @Injectable()
 export class WikiRevisionRepository extends EntityRepository<WikiRevision> {
   constructor(em: EntityManager) {
     super(em, WikiRevision);
+  }
+
+  // ---- Write primitives (run inside the service's transaction; no business rules) ----
+
+  createRevision(data: {
+    page: WikiPage;
+    authorId: string;
+    content: string;
+    contentVi: string;
+    summary: string | null;
+    summaryVi: string | null;
+  }): WikiRevision {
+    const em = this.getEntityManager();
+    return this.create({
+      pageId: data.page,
+      authorId: em.getReference(User, data.authorId),
+      content: data.content,
+      contentVi: data.contentVi,
+      summary: data.summary,
+      summaryVi: data.summaryVi,
+    } as any);
+  }
+
+  findByIdAndPageInTx(
+    revisionId: string,
+    pageId: string,
+  ): Promise<WikiRevision | null> {
+    return this.findOne({
+      id: revisionId,
+      pageId: { id: pageId },
+    } as FilterQuery<WikiRevision>);
   }
 
   countAll(): Promise<number> {

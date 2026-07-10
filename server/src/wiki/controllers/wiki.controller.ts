@@ -12,7 +12,6 @@ import {
   Res,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   StreamableFile,
   UseFilters,
   UseInterceptors,
@@ -32,8 +31,8 @@ import { Public } from '../../auth/decorators/public.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../../auth/decorators/current-user.decorator';
-import { WikiService, WikiRevisionService } from '../services/wiki.service';
-import { R2StorageService } from '../../storage/r2-storage.service';
+import { WikiService } from '../services/wiki.service';
+import { WikiRevisionService } from '../services/wiki-revision.service';
 import { WikiListQueryDto, WikiListResponseDto } from '../dto/wiki-list.dto';
 import {
   WikiDetailResponseDto,
@@ -71,7 +70,6 @@ export class WikiController {
   constructor(
     private wikiService: WikiService,
     private revisionService: WikiRevisionService,
-    private r2: R2StorageService,
   ) {}
 
   // ---- Public / user reads (literal-prefixed GETs first) ----
@@ -164,33 +162,14 @@ export class WikiController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const key = Array.isArray(keyParam) ? keyParam.join('/') : keyParam;
-    if (!key.startsWith('wiki/') || key.includes('..')) {
-      throw new BadRequestException('wiki.invalid_input');
-    }
-
-    try {
-      const { stream, contentType, contentLength } =
-        await this.r2.getObjectStream(key);
-      res.set({
-        'Content-Type': contentType,
-        'Content-Length': contentLength,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      });
-      return new StreamableFile(stream);
-    } catch (error: unknown) {
-      const err = error as {
-        name?: string;
-        $metadata?: { httpStatusCode?: number };
-      };
-      if (
-        err.name === 'NoSuchKey' ||
-        err.name === 'NotFound' ||
-        err.$metadata?.httpStatusCode === 404
-      ) {
-        throw new NotFoundException('wiki.not_found');
-      }
-      throw error;
-    }
+    const { stream, contentType, contentLength } =
+      await this.revisionService.streamImage(key);
+    res.set({
+      'Content-Type': contentType,
+      'Content-Length': contentLength,
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    });
+    return new StreamableFile(stream);
   }
 
   @Roles('ADMIN')

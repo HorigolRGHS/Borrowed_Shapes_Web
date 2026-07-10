@@ -2,8 +2,8 @@ import { Test } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import type { Request } from 'express';
 import { WikiController } from './wiki.controller';
-import { WikiService, WikiRevisionService } from '../services/wiki.service';
-import { R2StorageService } from '../../storage/r2-storage.service';
+import { WikiService } from '../services/wiki.service';
+import { WikiRevisionService } from '../services/wiki-revision.service';
 
 const mockReq = { method: 'GET', path: '/wiki/related' } as unknown as Request;
 
@@ -18,7 +18,6 @@ describe('WikiController.getRelatedTitles', () => {
       providers: [
         { provide: WikiService, useValue: service },
         { provide: WikiRevisionService, useValue: {} },
-        { provide: R2StorageService, useValue: {} },
       ],
     }).compile();
     controller = moduleRef.get(WikiController);

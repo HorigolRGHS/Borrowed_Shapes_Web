@@ -1,6 +1,8 @@
 import { Test } from '@nestjs/testing';
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { WikiRevisionService, WikiAuditService, WikiService } from './wiki.service';
+import { WikiRevisionService } from './wiki-revision.service';
+import { WikiAuditService } from './wiki-audit.service';
+import { WikiService } from './wiki.service';
 import { WikiPageRepository } from '../repositories/wiki-page.repository';
 import { WikiRevisionRepository } from '../repositories/wiki-revision.repository';
 import { WikiAssetRepository } from '../repositories/wiki-asset.repository';

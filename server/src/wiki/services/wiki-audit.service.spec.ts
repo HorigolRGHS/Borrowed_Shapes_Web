@@ -1,4 +1,4 @@
-import { WikiAuditService } from './wiki.service';
+import { WikiAuditService } from './wiki-audit.service';
 import { WikiAuditRepository } from '../repositories/wiki-audit.repository';
 import { AuditActionType } from '../../entities/AuditActionType';
 

@@ -5,11 +5,9 @@ import { WikiRevision } from '../entities/WikiRevision';
 import { AuditLog } from '../entities/AuditLog';
 import { FileAsset } from '../entities/FileAsset';
 import { User } from '../entities/User';
-import {
-  WikiService,
-  WikiRevisionService,
-  WikiAuditService,
-} from './services/wiki.service';
+import { WikiService } from './services/wiki.service';
+import { WikiRevisionService } from './services/wiki-revision.service';
+import { WikiAuditService } from './services/wiki-audit.service';
 import { WIKI_STORAGE } from './services/wiki-storage.service';
 import { StorageModule } from '../storage/storage.module';
 import { R2WikiStorageService } from './services/r2-wiki-storage.service';

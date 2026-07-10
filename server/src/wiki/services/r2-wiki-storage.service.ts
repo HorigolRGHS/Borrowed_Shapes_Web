@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { R2StorageService } from '../../storage/r2-storage.service';
 import {
   WikiStorageService,
   WikiStorageUploadInput,
   WikiStorageUploadResult,
+  WikiStorageStreamResult,
 } from './wiki-storage.service';
 import { MIME_EXT_MAP } from '../dto/wiki-constants';
 
@@ -30,5 +35,27 @@ export class R2WikiStorageService implements WikiStorageService {
 
   async delete(key: string): Promise<void> {
     await this.r2.deleteObject(key);
+  }
+
+  async getStream(key: string): Promise<WikiStorageStreamResult> {
+    if (!key.startsWith('wiki/') || key.includes('..')) {
+      throw new BadRequestException('wiki.invalid_input');
+    }
+    try {
+      return await this.r2.getObjectStream(key);
+    } catch (error: unknown) {
+      const err = error as {
+        name?: string;
+        $metadata?: { httpStatusCode?: number };
+      };
+      if (
+        err.name === 'NoSuchKey' ||
+        err.name === 'NotFound' ||
+        err.$metadata?.httpStatusCode === 404
+      ) {
+        throw new NotFoundException('wiki.not_found');
+      }
+      throw error;
+    }
   }
 }

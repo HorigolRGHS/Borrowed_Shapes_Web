@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { SeasonTeamService } from './season-team.service';
 
+import { SeasonTeamRepository } from './repositories/season-team.repository';
+import { SeasonTeamMemberRepository } from './repositories/season-team-member.repository';
+
 describe('SeasonTeamService', () => {
   let service: SeasonTeamService;
 
@@ -10,6 +13,8 @@ describe('SeasonTeamService', () => {
       providers: [
         SeasonTeamService,
         { provide: EntityManager, useValue: {} },
+        { provide: SeasonTeamRepository, useValue: {} },
+        { provide: SeasonTeamMemberRepository, useValue: {} },
       ],
     }).compile();
 

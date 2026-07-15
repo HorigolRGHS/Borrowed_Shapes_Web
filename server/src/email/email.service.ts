@@ -48,7 +48,9 @@ export class EmailService {
       });
       this.logger.log(`Email sent to ${to}`);
     } catch (err) {
-      this.logger.error(`Failed to send email to ${to}: ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `Failed to send email to ${to}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -103,7 +105,11 @@ export class EmailService {
       <p>We appreciate your contribution to maintaining a positive community environment.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendReportWarningEmail(params: {
@@ -125,7 +131,11 @@ export class EmailService {
       <p style="color: #ef4444; font-weight: 600;">Please review the platform rules and community guidelines. Further violations may result in temporary or permanent restriction of your account.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendReportRejectedEmail(params: {
@@ -150,7 +160,11 @@ export class EmailService {
       <p>We appreciate your diligence in reporting potential issues to us.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendAccountBannedEmail(params: {
@@ -190,7 +204,11 @@ export class EmailService {
       <p>If you believe this action was made by mistake, please contact the Borrowed Shapes team through the official contact channels.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendAccountUnbannedEmail(params: {
@@ -206,7 +224,11 @@ export class EmailService {
       <p>Thank you for your understanding.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendAccountDeletedEmail(params: {
@@ -223,6 +245,10 @@ export class EmailService {
       <p>If you believe this action was made by mistake, please contact the Borrowed Shapes team through the official contact channels.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 }

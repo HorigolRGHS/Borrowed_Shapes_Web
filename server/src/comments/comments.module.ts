@@ -6,7 +6,7 @@ import { ForumComment } from '../entities/ForumComment';
 import { ForumCommentVote } from '../entities/ForumCommentVote';
 import { AuthModule } from '../auth/auth.module';
 
-import { ForumCommentRepository } from './comments.repository';
+import { ForumCommentRepository } from './repositories/comments.repository';
 
 @Module({
   imports: [

@@ -83,7 +83,10 @@ export class ListGameResultsQueryDto {
   @IsString()
   q?: string;
 
-  @ApiPropertyOptional({ enum: ['newest', 'oldest', 'fastest'], description: 'Sort mode' })
+  @ApiPropertyOptional({
+    enum: ['newest', 'oldest', 'fastest'],
+    description: 'Sort mode',
+  })
   @IsOptional()
   @IsString()
   @IsIn(['newest', 'oldest', 'fastest'])
@@ -111,7 +114,10 @@ export class LeaderboardQueryDto {
   @IsIn(['all-time', 'seasonal'])
   scope?: 'all-time' | 'seasonal' = 'all-time';
 
-  @ApiPropertyOptional({ description: 'Season month filter (YYYY-MM). Defaults to current month when scope=seasonal.' })
+  @ApiPropertyOptional({
+    description:
+      'Season month filter (YYYY-MM). Defaults to current month when scope=seasonal.',
+  })
   @IsOptional()
   @IsString()
   seasonMonth?: string;

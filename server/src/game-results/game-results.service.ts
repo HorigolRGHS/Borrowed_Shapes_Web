@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
-import { GameResultRepository } from './game-results.repository';
+import { GameResultRepository } from './repositories/game-results.repository';
 import {
   ListGameResultsQueryDto,
   LeaderboardQueryDto,
@@ -25,7 +25,7 @@ function clamp(n: number, min: number, max: number): number {
 
 @Injectable()
 export class GameResultService {
-  constructor(private readonly gameResultRepository: GameResultRepository) { }
+  constructor(private readonly gameResultRepository: GameResultRepository) {}
 
   async findAllPaginated(
     query: ListGameResultsQueryDto,
@@ -51,7 +51,8 @@ export class GameResultService {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
 
-    const { rows, total } = await this.gameResultRepository.findPaginatedRuns(query);
+    const { rows, total } =
+      await this.gameResultRepository.findPaginatedRuns(query);
 
     const items: GameResultResponseDto[] = [];
     for (const row of rows || []) {
@@ -133,7 +134,8 @@ export class GameResultService {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
 
-    const profile = await this.gameResultRepository.findPlayerProfile(gameProfileId);
+    const profile =
+      await this.gameResultRepository.findPlayerProfile(gameProfileId);
 
     if (!profile) {
       throw new NotFoundException('game_results.player_not_found');
@@ -146,7 +148,10 @@ export class GameResultService {
         profile.badgeSeasonMonth,
         profile.badgeExpiresAt,
       );
-      if (profile.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
+      if (
+        profile.badgeType !== 'SEASONAL' ||
+        (expiresAt && expiresAt >= new Date())
+      ) {
         badgeImageUrl = profile.badgeImageUrl;
       }
     }
@@ -166,8 +171,12 @@ export class GameResultService {
       totalPlayTimeSec: profile.totalPlayTime ?? 0,
     };
 
-    const total = await this.gameResultRepository.countPlayerRuns(gameProfileId);
-    const rows = await this.gameResultRepository.findRunHistoryForPlayer(gameProfileId, query);
+    const total =
+      await this.gameResultRepository.countPlayerRuns(gameProfileId);
+    const rows = await this.gameResultRepository.findRunHistoryForPlayer(
+      gameProfileId,
+      query,
+    );
 
     const items: PlayerHistoryRunDto[] = [];
     for (const row of rows || []) {
@@ -206,7 +215,8 @@ export class GameResultService {
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
 
-    const { rows, total } = await this.gameResultRepository.getLeaderboardData(query);
+    const { rows, total } =
+      await this.gameResultRepository.getLeaderboardData(query);
 
     const items: LeaderboardEntryDto[] = [];
     for (let index = 0; index < (rows || []).length; index++) {
@@ -255,7 +265,10 @@ export class GameResultService {
           row.badgeSeasonMonth,
           row.badgeExpiresAt,
         );
-        if (row.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
+        if (
+          row.badgeType !== 'SEASONAL' ||
+          (expiresAt && expiresAt >= new Date())
+        ) {
           badgeImageUrl = row.badgeImageUrl;
         }
       }
@@ -306,7 +319,10 @@ export class GameResultService {
           row.badgeSeasonMonth,
           row.badgeExpiresAt,
         );
-        if (row.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
+        if (
+          row.badgeType !== 'SEASONAL' ||
+          (expiresAt && expiresAt >= new Date())
+        ) {
           badgeImageUrl = row.badgeImageUrl;
         }
       }

@@ -3,7 +3,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AchievementController } from './achievements.controller';
 import { AchievementService } from './achievements.service';
 import { AchievementsCleanupJob } from './achievements-cleanup.job';
-import { AchievementRepository } from './achievements.repository';
+import { AchievementRepository } from './repositories/achievements.repository';
 import { Achievement } from '../entities/Achievement';
 import { UserAchievement } from '../entities/UserAchievement';
 import { GameProfile } from '../entities/GameProfile';
@@ -17,7 +17,11 @@ import { StorageModule } from '../storage/storage.module';
     StorageModule,
   ],
   controllers: [AchievementController],
-  providers: [AchievementService, AchievementsCleanupJob, AchievementRepository],
+  providers: [
+    AchievementService,
+    AchievementsCleanupJob,
+    AchievementRepository,
+  ],
   exports: [AchievementService, AchievementRepository],
 })
-export class AchievementModule { }
+export class AchievementModule {}

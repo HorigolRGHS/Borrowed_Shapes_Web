@@ -17,7 +17,10 @@ import { ResolveReportDto } from './dto/resolve-report.dto';
 import { RejectReportDto } from './dto/reject-report.dto';
 import { UploadReportMediaDto } from './dto/upload-report-media.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  type RequestUser,
+} from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -27,7 +30,7 @@ import { ReportStatus } from '../entities/ReportStatus';
 @Controller('reports')
 @UseGuards(AuthGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) { }
+  constructor(private readonly reportsService: ReportsService) {}
 
   @Post('upload')
   @HttpCode(HttpStatus.OK)
@@ -37,12 +40,18 @@ export class ReportsController {
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.reportsService.uploadReportMedia(dto, user.userId);
-    return okResponse('reports.upload_url_created', data, 'POST /reports/upload');
+    return okResponse(
+      'reports.upload_url_created',
+      data,
+      'POST /reports/upload',
+    );
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Submit a report against a user, thread, or comment' })
+  @ApiOperation({
+    summary: 'Submit a report against a user, thread, or comment',
+  })
   async create(
     @Body() createReportDto: CreateReportDto,
     @CurrentUser() user: RequestUser,
@@ -52,20 +61,36 @@ export class ReportsController {
   }
 
   @Get('my-reports')
-  @ApiOperation({ summary: 'Get list of reports submitted by the logged-in user' })
-  async findMyReports(@CurrentUser() user: RequestUser): Promise<ApiResponseDto<any>> {
+  @ApiOperation({
+    summary: 'Get list of reports submitted by the logged-in user',
+  })
+  async findMyReports(
+    @CurrentUser() user: RequestUser,
+  ): Promise<ApiResponseDto<any>> {
     const data = await this.reportsService.findMyReports(user.userId);
-    return okResponse('reports.my_list_success', data, 'GET /reports/my-reports');
+    return okResponse(
+      'reports.my_list_success',
+      data,
+      'GET /reports/my-reports',
+    );
   }
 
   @Get('admin/stats')
-  @ApiOperation({ summary: 'Admin: Get simple counts of reports grouped by status' })
-  async getAdminStats(@CurrentUser() user: RequestUser): Promise<ApiResponseDto<any>> {
+  @ApiOperation({
+    summary: 'Admin: Get simple counts of reports grouped by status',
+  })
+  async getAdminStats(
+    @CurrentUser() user: RequestUser,
+  ): Promise<ApiResponseDto<any>> {
     if (user.role !== 'ADMIN') {
       throw new ForbiddenException('reports.forbidden_admin_only');
     }
     const data = await this.reportsService.getAdminStats();
-    return okResponse('reports.stats_success', data, 'GET /reports/admin/stats');
+    return okResponse(
+      'reports.stats_success',
+      data,
+      'GET /reports/admin/stats',
+    );
   }
 
   @Get('admin/list')
@@ -94,7 +119,11 @@ export class ReportsController {
       pageNum,
       limitNum,
     );
-    return okResponse('reports.admin_list_success', data, 'GET /reports/admin/list');
+    return okResponse(
+      'reports.admin_list_success',
+      data,
+      'GET /reports/admin/list',
+    );
   }
 
   @Get(':id')
@@ -120,7 +149,11 @@ export class ReportsController {
       throw new ForbiddenException('reports.forbidden_admin_only');
     }
     const data = await this.reportsService.resolve(id, user.userId, dto);
-    return okResponse('reports.resolve_success', data, `POST /reports/${id}/resolve`);
+    return okResponse(
+      'reports.resolve_success',
+      data,
+      `POST /reports/${id}/resolve`,
+    );
   }
 
   @Post(':id/reject')
@@ -135,6 +168,10 @@ export class ReportsController {
       throw new ForbiddenException('reports.forbidden_admin_only');
     }
     const data = await this.reportsService.reject(id, user.userId, dto);
-    return okResponse('reports.reject_success', data, `POST /reports/${id}/reject`);
+    return okResponse(
+      'reports.reject_success',
+      data,
+      `POST /reports/${id}/reject`,
+    );
   }
 }

@@ -3,17 +3,29 @@ import { IsInt, IsString, Min } from 'class-validator';
 import { LobbyIdRequestDto } from './lobby.dto';
 
 export class InitGameRunRequestDto extends LobbyIdRequestDto {
-  @ApiProperty({ example: 8, minimum: 1, description: 'Total number of levels in the run' })
+  @ApiProperty({
+    example: 8,
+    minimum: 1,
+    description: 'Total number of levels in the run',
+  })
   @IsInt()
   @Min(1)
   totalLevels!: number;
 
-  @ApiProperty({ example: 2, minimum: 1, description: 'Minimum players required in the lobby' })
+  @ApiProperty({
+    example: 2,
+    minimum: 1,
+    description: 'Minimum players required in the lobby',
+  })
   @IsInt()
   @Min(1)
   minPlayers!: number;
 
-  @ApiProperty({ example: 5, minimum: 1, description: 'Maximum players allowed in the lobby' })
+  @ApiProperty({
+    example: 5,
+    minimum: 1,
+    description: 'Maximum players allowed in the lobby',
+  })
   @IsInt()
   @Min(1)
   maxPlayers!: number;

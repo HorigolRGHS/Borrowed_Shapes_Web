@@ -24,8 +24,12 @@ function makeRepos(em: any) {
       em.transactional(work),
     ),
     createPage: jest.fn((data: any) => em.create('WikiPage', data)),
-    findByIdWithLatestInTx: jest.fn((id: string) => em.findOne('WikiPage', { id })),
-    findByIdWithLatestAuthor: jest.fn((id: string) => em.findOne('WikiPage', { id })),
+    findByIdWithLatestInTx: jest.fn((id: string) =>
+      em.findOne('WikiPage', { id }),
+    ),
+    findByIdWithLatestAuthor: jest.fn((id: string) =>
+      em.findOne('WikiPage', { id }),
+    ),
     existsById: jest.fn((id: string) => em.findOne('WikiPage', { id })),
     flush: jest.fn(() => em.flush()),
     removeAndFlush: jest.fn((page: any) => em.removeAndFlush(page)),
@@ -61,7 +65,10 @@ function repoProviders(em: any) {
     { provide: WikiPageRepository, useValue: pageRepo },
     { provide: WikiRevisionRepository, useValue: revisionRepo },
     { provide: WikiAssetRepository, useValue: assetRepo },
-    { provide: WIKI_STORAGE, useValue: { upload: jest.fn(), delete: jest.fn() } },
+    {
+      provide: WIKI_STORAGE,
+      useValue: { upload: jest.fn(), delete: jest.fn() },
+    },
   ];
 }
 

@@ -36,7 +36,8 @@ const mockRedis = {
   zrem: jest.fn(),
 };
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('hex');
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 const mockEmail = {
   sendMail: jest.fn(),
@@ -90,14 +91,25 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('creates User and GameProfile in a transaction', async () => {
-      const createdUser = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: null };
+      const createdUser = {
+        id: 'user_1',
+        email: 'a@b.com',
+        role: 'USER',
+        displayName: null,
+      };
       mockEm.transactional.mockImplementation(async (fn: Function) => {
         const result = await fn(mockEm);
         return result;
       });
-      mockEm.create.mockImplementationOnce((_, data) => ({ ...data, id: 'user_1' }));
+      mockEm.create.mockImplementationOnce((_, data) => ({
+        ...data,
+        id: 'user_1',
+      }));
 
-      const result = await service.register({ email: 'a@b.com', password: 'password123', displayName: 'Test User' }, '127.0.0.1');
+      const result = await service.register(
+        { email: 'a@b.com', password: 'password123', displayName: 'Test User' },
+        '127.0.0.1',
+      );
 
       expect(mockEm.transactional).toHaveBeenCalledTimes(1);
       expect(result).toMatchObject({ userId: 'user_1', email: 'a@b.com' });
@@ -105,34 +117,57 @@ describe('AuthService', () => {
 
     it('throws ConflictException on unique constraint violation (email)', async () => {
       const err = new UniqueConstraintViolationException(
-        Object.assign(new Error('duplicate key'), { constraint: 'User_email_key' }),
+        Object.assign(new Error('duplicate key'), {
+          constraint: 'User_email_key',
+        }),
       );
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
-        service.register({ email: 'a@b.com', password: 'password123', displayName: 'Test User' }, '127.0.0.1'),
+        service.register(
+          {
+            email: 'a@b.com',
+            password: 'password123',
+            displayName: 'Test User',
+          },
+          '127.0.0.1',
+        ),
       ).rejects.toThrow('auth.email_in_use');
     });
 
     it('throws ConflictException for duplicate displayName', async () => {
       const err = new UniqueConstraintViolationException(
-        Object.assign(new Error('duplicate key'), { constraint: 'User_displayName_key' }),
+        Object.assign(new Error('duplicate key'), {
+          constraint: 'User_displayName_key',
+        }),
       );
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
-        service.register({ email: 'a@b.com', password: 'password123', displayName: 'taken' }, '127.0.0.1'),
+        service.register(
+          { email: 'a@b.com', password: 'password123', displayName: 'taken' },
+          '127.0.0.1',
+        ),
       ).rejects.toThrow('auth.unique_field_in_use');
     });
 
     it('throws generic conflict for unknown unique constraint', async () => {
       const err = new UniqueConstraintViolationException(
-        Object.assign(new Error('duplicate key'), { constraint: 'Some_other_unique_key' }),
+        Object.assign(new Error('duplicate key'), {
+          constraint: 'Some_other_unique_key',
+        }),
       );
       mockEm.transactional.mockRejectedValue(err);
 
       await expect(
-        service.register({ email: 'a@b.com', password: 'password123', displayName: 'Test User' }, '127.0.0.1'),
+        service.register(
+          {
+            email: 'a@b.com',
+            password: 'password123',
+            displayName: 'Test User',
+          },
+          '127.0.0.1',
+        ),
       ).rejects.toThrow('auth.unique_field_in_use');
     });
   });
@@ -141,29 +176,50 @@ describe('AuthService', () => {
     it('throws UnauthorizedException for unknown email', async () => {
       mockEm.findOne.mockResolvedValue(null);
       await expect(
-        service.login({ email: 'nope@b.com', password: 'pass', platform: 'web' }, '127.0.0.1'),
+        service.login(
+          { email: 'nope@b.com', password: 'pass', platform: 'web' },
+          '127.0.0.1',
+        ),
       ).rejects.toThrow(UnauthorizedException);
     });
 
     it('throws UnauthorizedException for wrong password', async () => {
-      mockEm.findOne.mockResolvedValue({ id: 'u1', passwordHash: '$2b$04$invalidhash', role: 'USER' });
+      mockEm.findOne.mockResolvedValue({
+        id: 'u1',
+        passwordHash: '$2b$04$invalidhash',
+        role: 'USER',
+      });
       await expect(
-        service.login({ email: 'a@b.com', password: 'wrongpass', platform: 'web' }, '127.0.0.1'),
+        service.login(
+          { email: 'a@b.com', password: 'wrongpass', platform: 'web' },
+          '127.0.0.1',
+        ),
       ).rejects.toThrow(UnauthorizedException);
     });
 
     it('writes Redis keys and DB record on successful login', async () => {
       const hash = await bcrypt.hash('password123', 4);
-      mockEm.findOne.mockResolvedValue({ id: 'u1', email: 'a@b.com', passwordHash: hash, role: 'USER' });
+      mockEm.findOne.mockResolvedValue({
+        id: 'u1',
+        email: 'a@b.com',
+        passwordHash: hash,
+        role: 'USER',
+      });
       mockRedis.hgetall.mockResolvedValue(null);
       mockRedis.pipeline.mockResolvedValue(undefined);
 
-      const result = await service.login({ email: 'a@b.com', password: 'password123', platform: 'web' }, '127.0.0.1');
+      const result = await service.login(
+        { email: 'a@b.com', password: 'password123', platform: 'web' },
+        '127.0.0.1',
+      );
 
       expect(mockRedis.pipeline).toHaveBeenCalledTimes(1);
       expect(mockEm.create).toHaveBeenCalled();
       expect(mockEm.flush).toHaveBeenCalled();
-      expect(result).toMatchObject({ accessToken: expect.any(String), refreshToken: expect.any(String) });
+      expect(result).toMatchObject({
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
+      });
     });
   });
 
@@ -178,8 +234,14 @@ describe('AuthService', () => {
       expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:web');
       expect(mockRedis.pipeline).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ cmd: 'zrem', args: ['online_users_by_last_active', 'sess_1'] }),
-          expect.objectContaining({ cmd: 'del', args: ['user_session_details:sess_1'] }),
+          expect.objectContaining({
+            cmd: 'zrem',
+            args: ['online_users_by_last_active', 'sess_1'],
+          }),
+          expect.objectContaining({
+            cmd: 'del',
+            args: ['user_session_details:sess_1'],
+          }),
         ]),
       );
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
@@ -206,10 +268,17 @@ describe('AuthService', () => {
       mockRedis.del.mockResolvedValue(undefined);
       mockRedis.zrem.mockResolvedValue(undefined);
 
-      await service.changePassword('u1', { oldPassword: 'oldPass123!', newPassword: 'NewPass123!' } as any, 'web');
+      await service.changePassword(
+        'u1',
+        { oldPassword: 'oldPass123!', newPassword: 'NewPass123!' } as any,
+        'web',
+      );
 
       expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:game');
-      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_game');
+      expect(mockRedis.zrem).toHaveBeenCalledWith(
+        'online_users_by_last_active',
+        'sess_game',
+      );
       expect(mockRedis.del).not.toHaveBeenCalledWith('rt:u1:web');
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
         expect.anything(),
@@ -247,15 +316,30 @@ describe('AuthService', () => {
 
       expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:web');
       expect(mockRedis.del).toHaveBeenCalledWith('rt:u1:game');
-      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_web');
-      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_game');
-      expect(mockRedis.del).toHaveBeenCalledWith('forgot_otp:player@example.com');
+      expect(mockRedis.zrem).toHaveBeenCalledWith(
+        'online_users_by_last_active',
+        'sess_web',
+      );
+      expect(mockRedis.zrem).toHaveBeenCalledWith(
+        'online_users_by_last_active',
+        'sess_game',
+      );
+      expect(mockRedis.del).toHaveBeenCalledWith(
+        'forgot_otp:player@example.com',
+      );
     });
   });
 
   describe('me', () => {
     it('should_return_equipped_achievement_when_seasonal_achievement_is_not_expired (Normal)', async () => {
-      const user = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: 'Test User', imgUrl: null, updatedAt: new Date() };
+      const user = {
+        id: 'user_1',
+        email: 'a@b.com',
+        role: 'USER',
+        displayName: 'Test User',
+        imgUrl: null,
+        updatedAt: new Date(),
+      };
       const achievement = {
         id: 'ach_1',
         name: 'June Season Badge',
@@ -293,7 +377,14 @@ describe('AuthService', () => {
     });
 
     it('should_unequip_and_clear_achievement_when_seasonal_achievement_is_expired (Abnormal)', async () => {
-      const user = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: 'Test User', imgUrl: null, updatedAt: new Date() };
+      const user = {
+        id: 'user_1',
+        email: 'a@b.com',
+        role: 'USER',
+        displayName: 'Test User',
+        imgUrl: null,
+        updatedAt: new Date(),
+      };
       const achievement = {
         id: 'ach_1',
         name: 'April Season Badge',
@@ -328,7 +419,14 @@ describe('AuthService', () => {
     });
 
     it('should_keep_equipped_achievement_when_achievement_is_permanent_even_if_expiredAt_is_past (Boundary)', async () => {
-      const user = { id: 'user_1', email: 'a@b.com', role: 'USER', displayName: 'Test User', imgUrl: null, updatedAt: new Date() };
+      const user = {
+        id: 'user_1',
+        email: 'a@b.com',
+        role: 'USER',
+        displayName: 'Test User',
+        imgUrl: null,
+        updatedAt: new Date(),
+      };
       const achievement = {
         id: 'ach_1',
         name: 'Permanent Badge',

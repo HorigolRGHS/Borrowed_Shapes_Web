@@ -1,3 +1,4 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { AuditLog } from '../../entities/AuditLog';
@@ -15,7 +16,7 @@ export interface WikiAuditLogParams {
 }
 
 @Injectable()
-export class WikiAuditRepository extends EntityRepository<AuditLog> {
+export class WikiAuditRepository extends BaseRepository<AuditLog> {
   constructor(em: EntityManager) {
     super(em, AuditLog);
   }

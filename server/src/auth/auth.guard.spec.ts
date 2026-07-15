@@ -50,7 +50,12 @@ describe('AuthGuard', () => {
     );
     jest.clearAllMocks();
     mockConfig.get.mockReturnValue('test-secret');
-    mockEm.findOne.mockResolvedValue({ id: 'user_1', role: 'USER', isBanned: false, deletedAt: null });
+    mockEm.findOne.mockResolvedValue({
+      id: 'user_1',
+      role: 'USER',
+      isBanned: false,
+      deletedAt: null,
+    });
   });
 
   it('allows @Public() routes without a token', async () => {
@@ -61,18 +66,27 @@ describe('AuthGuard', () => {
 
   it('throws 401 when Authorization header is missing', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    await expect(guard.canActivate(makeContext())).rejects.toThrow(UnauthorizedException);
+    await expect(guard.canActivate(makeContext())).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('throws 401 when JWT verification fails', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
     mockJwt.verifyAsync.mockRejectedValue(new Error('invalid token'));
-    await expect(guard.canActivate(makeContext('Bearer bad-token'))).rejects.toThrow(UnauthorizedException);
+    await expect(
+      guard.canActivate(makeContext('Bearer bad-token')),
+    ).rejects.toThrow(UnauthorizedException);
   });
 
   it('attaches req.user and returns true for a valid JWT', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    mockJwt.verifyAsync.mockResolvedValue({ sub: 'user_1', sid: 'sess_1', platform: 'web', role: 'USER' });
+    mockJwt.verifyAsync.mockResolvedValue({
+      sub: 'user_1',
+      sid: 'sess_1',
+      platform: 'web',
+      role: 'USER',
+    });
     mockRedis.hgetall.mockResolvedValue({ sessionId: 'sess_1' });
 
     const ctx = makeContext('Bearer valid-token');

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { GameResultController } from './game-results.controller';
 import { GameResultService } from './game-results.service';
-import { GameResultRepository } from './game-results.repository';
+import { GameResultRepository } from './repositories/game-results.repository';
 import { GameRun } from '../entities/GameRun';
 import { GameRunPlayer } from '../entities/GameRunPlayer';
 import { GameSession } from '../entities/GameSession';

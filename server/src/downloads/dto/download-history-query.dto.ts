@@ -1,5 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, Max, IsIn, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsInt,
+  Min,
+  Max,
+  IsIn,
+  IsDateString,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class DownloadHistoryQueryDto {
@@ -28,12 +36,18 @@ export class DownloadHistoryQueryDto {
   @IsString()
   version?: string;
 
-  @ApiPropertyOptional({ description: 'Filter downloads from this date (ISO 8601)', example: '2026-01-01' })
+  @ApiPropertyOptional({
+    description: 'Filter downloads from this date (ISO 8601)',
+    example: '2026-01-01',
+  })
   @IsOptional()
   @IsDateString()
   fromDate?: string;
 
-  @ApiPropertyOptional({ description: 'Filter downloads until this date (ISO 8601)', example: '2026-12-31' })
+  @ApiPropertyOptional({
+    description: 'Filter downloads until this date (ISO 8601)',
+    example: '2026-12-31',
+  })
   @IsOptional()
   @IsDateString()
   toDate?: string;

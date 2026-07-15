@@ -5,6 +5,9 @@ import { GameProfileRepository } from './repositories/game-profile.repository';
 import { GameRunRepository } from './repositories/game-run.repository';
 import { GameRunPlayerRepository } from './repositories/game-run-player.repository';
 import { GameSessionRepository } from './repositories/game-session.repository';
+import { GameRunPlayerRepository } from './repositories/game-run-player.repository';
+import { GameSessionPlayerRepository } from './repositories/game-session-player.repository';
+import { LevelRepository } from './repositories/level.repository';
 import { GameSessionPlayerRepository } from './repositories/game-session-player.repository';
 import { LevelRepository } from './repositories/level.repository';
 
@@ -26,6 +29,6 @@ import { LevelRepository } from './repositories/level.repository';
     GameSessionRepository,
     GameSessionPlayerRepository,
     LevelRepository,
-  ]
+  ],
 })
 export class GameModule {}

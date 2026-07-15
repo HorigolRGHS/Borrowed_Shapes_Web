@@ -8,9 +8,7 @@ describe('WikiAuditService', () => {
 
   beforeEach(() => {
     auditRepo = { insertForked: jest.fn().mockResolvedValue(undefined) };
-    service = new WikiAuditService(
-      auditRepo as unknown as WikiAuditRepository,
-    );
+    service = new WikiAuditService(auditRepo as unknown as WikiAuditRepository);
   });
 
   it('delegates to the repo with correct fields', async () => {

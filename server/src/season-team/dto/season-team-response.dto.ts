@@ -7,10 +7,18 @@ export class SeasonTeamMemberResponseDto {
   @ApiProperty({ example: 'PlayerOne', required: false, nullable: true })
   displayName?: string | null;
 
-  @ApiProperty({ example: 'https://cdn.example.com/avatar.png', required: false, nullable: true })
+  @ApiProperty({
+    example: 'https://cdn.example.com/avatar.png',
+    required: false,
+    nullable: true,
+  })
   imgUrl?: string | null;
 
-  @ApiProperty({ example: 'https://cdn.example.com/badge.png', required: false, nullable: true })
+  @ApiProperty({
+    example: 'https://cdn.example.com/badge.png',
+    required: false,
+    nullable: true,
+  })
   badgeImageUrl?: string | null;
 
   @ApiProperty({ example: '2026-05-17T08:41:32.000Z' })

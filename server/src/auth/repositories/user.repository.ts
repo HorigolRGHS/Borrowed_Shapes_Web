@@ -1,9 +1,10 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { User } from '../../entities/User';
 
 @Injectable()
-export class UserRepository extends EntityRepository<User> {
+export class UserRepository extends BaseRepository<User> {
   constructor(em: EntityManager) {
     super(em, User);
   }

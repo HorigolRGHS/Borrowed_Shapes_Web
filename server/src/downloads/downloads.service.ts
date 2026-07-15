@@ -8,6 +8,10 @@ import {
 import { EntityManager } from '@mikro-orm/postgresql';
 import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
+import { FileAssetRepository } from './repositories/file-asset.repository';
+import { DownloadLogRepository } from './repositories/download-log.repository';
+import { DownloadStatsRepository } from './repositories/download-stats.repository';
+import { AuditLogRepository } from '../auth/repositories/audit-log.repository';
 import { FileAsset } from '../entities/FileAsset';
 import { DownloadLog } from '../entities/DownloadLog';
 import { DownloadStats } from '../entities/DownloadStats';
@@ -25,7 +29,10 @@ export class DownloadsService {
   private readonly signedUrlExpires: number;
 
   constructor(
-    private readonly em: EntityManager,
+    private readonly fileAssetRepository: FileAssetRepository,
+    private readonly downloadLogRepository: DownloadLogRepository,
+    private readonly downloadStatsRepository: DownloadStatsRepository,
+    private readonly auditLogRepository: AuditLogRepository,
     private readonly r2: R2StorageService,
     private readonly configService: ConfigService,
   ) {
@@ -37,14 +44,26 @@ export class DownloadsService {
 
   // ─── 1. List game versions ───────────────────────────────
   async listVersions(query: GameVersionQueryDto) {
-    const { page = 1, limit = 10, search, sortBy = 'uploadedAt', sort = 'desc', version } = query;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'uploadedAt',
+      sort = 'desc',
+      version,
+    } = query;
     const offset = (page - 1) * limit;
 
-    const allowedSortBy = ['uploadedAt', 'fileVersion', 'fileSize', 'downloadCount'];
+    const allowedSortBy = [
+      'uploadedAt',
+      'fileVersion',
+      'fileSize',
+      'downloadCount',
+    ];
     const validSortBy = allowedSortBy.includes(sortBy) ? sortBy : 'uploadedAt';
     const sortDirection = sort === 'asc' ? 'ASC' : 'DESC';
 
-    const knex = this.em.getConnection().getKnex();
+    const knex = this.fileAssetRepository.getKnex();
 
     // Base query for counting
     const countQuery = knex('web.FileAsset as f').count('* as total');
@@ -60,7 +79,7 @@ export class DownloadsService {
         'f.isActive',
         'f.uploadedAt',
         'f.updatedAt',
-        knex.raw('COALESCE(ds."downloadCount", 0)::int AS "downloadCount"')
+        knex.raw('COALESCE(ds."downloadCount", 0)::int AS "downloadCount"'),
       ])
       .leftJoin(
         knex.raw(`(
@@ -69,7 +88,7 @@ export class DownloadsService {
           GROUP BY "fileAssetId"
         ) as ds`),
         'ds.fileAssetId',
-        'f.id'
+        'f.id',
       )
       .limit(limit)
       .offset(offset);
@@ -91,10 +110,7 @@ export class DownloadsService {
       dataQuery.orderBy(`f.${validSortBy}`, sortDirection);
     }
 
-    const [[countResult], items] = await Promise.all([
-      countQuery,
-      dataQuery,
-    ]);
+    const [[countResult], items] = await Promise.all([countQuery, dataQuery]);
 
     const total = Number(countResult.total);
 
@@ -135,8 +151,8 @@ export class DownloadsService {
 
   // ─── Active Version Management ───────────────────────────────
   async getActiveVersion() {
-    let active = await this.em.findOne(FileAsset, { isActive: true });
-    
+    let active = await this.fileAssetRepository.findOne({ isActive: true });
+
     if (!active) {
       // Fallback to latest
       active = await this.em
@@ -162,27 +178,35 @@ export class DownloadsService {
 
   async setActiveVersion(id: string, adminUser: { userId: string }) {
     return await this.em.transactional(async (em) => {
-      const target = await em.findOneOrFail(FileAsset, { id });
-      const previousActive = await em.findOne(FileAsset, { isActive: true });
+      const target = await this.fileAssetRepository.txFindOneOrFail(em, { id });
+      const previousActive = await this.fileAssetRepository.txFindOne(em, {
+        isActive: true,
+      });
 
       if (previousActive?.id !== target.id) {
         // Set all to false
-        await em.nativeUpdate(FileAsset, {}, { isActive: false });
-        
+        await this.fileAssetRepository.txNativeUpdate(
+          em,
+          {},
+          { isActive: false },
+        );
+
         // Set target to true
         target.isActive = true;
-        await em.persistAndFlush(target);
+        await this.fileAssetRepository.txPersistAndFlush(em, target);
 
         // Record AuditLog
-        const log = em.create(AuditLog, {
+        const log = this.auditLogRepository.txCreate(em, {
           userId: adminUser.userId,
           actionType: AuditActionType.UPDATE,
           entityName: 'FileAsset',
           entityId: target.id,
-          oldValue: previousActive ? { id: previousActive.id, fileVersion: previousActive.fileVersion } : null,
+          oldValue: previousActive
+            ? { id: previousActive.id, fileVersion: previousActive.fileVersion }
+            : null,
           newValue: { id: target.id, fileVersion: target.fileVersion },
         });
-        await em.persistAndFlush(log);
+        await this.auditLogRepository.txPersistAndFlush(em, log);
       }
 
       return {
@@ -206,7 +230,7 @@ export class DownloadsService {
     userId: string | null,
     clientIp: string,
   ) {
-    const file = await this.em.findOne(FileAsset, { id: fileAssetId });
+    const file = await this.fileAssetRepository.findOne({ id: fileAssetId });
     if (!file) {
       throw new NotFoundException('downloads.version_not_found');
     }
@@ -225,7 +249,7 @@ export class DownloadsService {
 
     // Record download log (only for authenticated users)
     if (userId) {
-      const log = this.em.create(DownloadLog, {
+      const log = this.downloadLogRepository.create({
         userId: this.em.getReference(User, userId),
         fileAssetId: this.em.getReference(FileAsset, file.id),
         // bytesSent = file.fileSize for schema compatibility only.
@@ -234,13 +258,13 @@ export class DownloadsService {
         bytesSent: file.fileSize,
         clientIp,
       });
-      this.em.persist(log);
+      this.downloadLogRepository.persist(log);
     }
 
     // Upsert download stats for today
     await this.upsertDownloadStats(file);
 
-    await this.em.flush();
+    await this.downloadLogRepository.flush();
 
     return {
       downloadUrl,
@@ -254,7 +278,7 @@ export class DownloadsService {
   private async upsertDownloadStats(file: FileAsset) {
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-    const existing = await this.em.findOne(DownloadStats, {
+    const existing = await this.downloadStatsRepository.findOne({
       fileAssetId: this.em.getReference(FileAsset, file.id),
       date: today,
     });
@@ -265,22 +289,30 @@ export class DownloadsService {
       existing.downloadCount = existing.downloadCount + 1n;
       existing.totalBytesSent = existing.totalBytesSent + file.fileSize;
     } else {
-      const stats = this.em.create(DownloadStats, {
+      const stats = this.downloadStatsRepository.create({
         fileAssetId: this.em.getReference(FileAsset, file.id),
         date: today,
         downloadCount: 1n,
         totalBytesSent: file.fileSize,
       });
-      this.em.persist(stats);
+      this.downloadStatsRepository.persist(stats);
     }
   }
 
   // ─── 3. Download history ─────────────────────────────────
   async getHistory(userId: string, query: DownloadHistoryQueryDto) {
-    const { page = 1, limit = 10, search, version, fromDate, toDate, sort = 'desc' } = query;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      version,
+      fromDate,
+      toDate,
+      sort = 'desc',
+    } = query;
     const offset = (page - 1) * limit;
 
-    const qb = this.em.createQueryBuilder(DownloadLog, 'dl');
+    const qb = this.downloadLogRepository.createQueryBuilder('dl');
     qb.leftJoinAndSelect('dl.fileAssetId', 'f');
     qb.andWhere({ userId: this.em.getReference(User, userId) });
 
@@ -311,7 +343,7 @@ export class DownloadsService {
     ]);
 
     // Summary stats (raw SQL to avoid quoting issues)
-    const summaryResult = await this.em.getConnection().execute(
+    const summaryResult = await this.fileAssetRepository.executeRaw(
       `
       SELECT 
         COUNT(dl."id")::bigint AS "totalDownloads",
@@ -319,7 +351,7 @@ export class DownloadsService {
       FROM web."DownloadLog" dl
       WHERE dl."userId" = ?
       `,
-      [userId]
+      [userId],
     );
     const summary = summaryResult[0] ?? {
       totalDownloads: '0',
@@ -330,7 +362,7 @@ export class DownloadsService {
 
     return {
       items: items.map((dl) => {
-        const f = dl.fileAssetId as FileAsset;
+        const f = dl.fileAssetId;
         return {
           id: dl.id,
           fileAssetId: f.id,
@@ -365,7 +397,7 @@ export class DownloadsService {
     }
 
     // Check version uniqueness before creating URL
-    const existing = await this.em.findOne(FileAsset, {
+    const existing = await this.fileAssetRepository.findOne({
       fileVersion,
     });
     if (existing) {
@@ -417,7 +449,7 @@ export class DownloadsService {
     }
 
     // Check version uniqueness
-    const existing = await this.em.findOne(FileAsset, {
+    const existing = await this.fileAssetRepository.findOne({
       fileVersion,
     });
     if (existing) {
@@ -437,7 +469,10 @@ export class DownloadsService {
     // Optionally verify content length matches
     try {
       const meta = await this.r2.getObjectMetadata(dto.filePath);
-      if (meta.contentLength > 0 && Math.abs(meta.contentLength - dto.fileSize) > 1024) {
+      if (
+        meta.contentLength > 0 &&
+        Math.abs(meta.contentLength - dto.fileSize) > 1024
+      ) {
         this.logger.warn(
           `File size mismatch: expected ${dto.fileSize}, got ${meta.contentLength} for ${dto.filePath}`,
         );
@@ -446,7 +481,7 @@ export class DownloadsService {
       // Non-blocking; continue with the reported size
     }
 
-    const fileAsset = this.em.create(FileAsset, {
+    const fileAsset = this.fileAssetRepository.create({
       fileName: dto.fileName,
       fileVersion,
       filePath: dto.filePath,
@@ -456,15 +491,20 @@ export class DownloadsService {
     });
 
     try {
-      await this.em.persistAndFlush(fileAsset);
+      await this.fileAssetRepository.persistAndFlush(fileAsset);
     } catch (error: any) {
-      if (error.name === 'UniqueConstraintViolationException' || error.code === '23505') {
+      if (
+        error.name === 'UniqueConstraintViolationException' ||
+        error.code === '23505'
+      ) {
         // Cleanup the object on R2 if it was just uploaded and DB insert failed
         try {
           await this.r2.deleteObject(dto.filePath);
           this.logger.log(`Cleaned up duplicate file from R2: ${dto.filePath}`);
         } catch (cleanupError) {
-          this.logger.warn(`Failed to cleanup duplicate file ${dto.filePath} from R2: ${cleanupError}`);
+          this.logger.warn(
+            `Failed to cleanup duplicate file ${dto.filePath} from R2: ${cleanupError}`,
+          );
         }
 
         throw new ConflictException({

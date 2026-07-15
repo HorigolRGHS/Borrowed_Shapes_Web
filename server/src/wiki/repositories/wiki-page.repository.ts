@@ -1,10 +1,11 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { FilterQuery } from '@mikro-orm/core';
 import { WikiPage } from '../../entities/WikiPage';
 
 @Injectable()
-export class WikiPageRepository extends EntityRepository<WikiPage> {
+export class WikiPageRepository extends BaseRepository<WikiPage> {
   constructor(em: EntityManager) {
     super(em, WikiPage);
   }
@@ -41,7 +42,11 @@ export class WikiPageRepository extends EntityRepository<WikiPage> {
 
   listPaged(
     where: FilterQuery<WikiPage>,
-    opts: { orderBy: Record<string, 'asc' | 'desc'>; limit: number; offset: number },
+    opts: {
+      orderBy: Record<string, 'asc' | 'desc'>;
+      limit: number;
+      offset: number;
+    },
   ): Promise<[WikiPage[], number]> {
     return this.findAndCount(where, {
       populate: ['latestRevisionId.authorId'],
@@ -80,7 +85,10 @@ export class WikiPageRepository extends EntityRepository<WikiPage> {
   }
 
   findByIdWithLatestAuthor(id: string): Promise<WikiPage | null> {
-    return this.findOne({ id }, { populate: ['latestRevisionId.authorId'] as any });
+    return this.findOne(
+      { id },
+      { populate: ['latestRevisionId.authorId'] as any },
+    );
   }
 
   flush(): Promise<void> {

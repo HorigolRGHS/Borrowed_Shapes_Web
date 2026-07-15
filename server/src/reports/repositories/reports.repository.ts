@@ -1,10 +1,11 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { Report } from '../entities/Report';
-import { ReportStatus } from '../entities/ReportStatus';
+import { Report } from '../../entities/Report';
+import { ReportStatus } from '../../entities/ReportStatus';
 
 @Injectable()
-export class ReportRepository extends EntityRepository<Report> {
+export class ReportRepository extends BaseRepository<Report> {
   constructor(em: EntityManager) {
     super(em, Report);
   }
@@ -39,21 +40,33 @@ export class ReportRepository extends EntityRepository<Report> {
       filterQuery.status = status;
     }
 
-    return this.findAndCount(
-      filterQuery,
-      {
-        populate: ['reporterId', 'reportedUserId', 'threadId', 'commentId', 'handledBy'],
-        orderBy: { createdAt: sort.toUpperCase() as any },
-        limit,
-        offset: (page - 1) * limit,
-      },
-    );
+    return this.findAndCount(filterQuery, {
+      populate: [
+        'reporterId',
+        'reportedUserId',
+        'threadId',
+        'commentId',
+        'handledBy',
+      ],
+      orderBy: { createdAt: sort.toUpperCase() as any },
+      limit,
+      offset: (page - 1) * limit,
+    });
   }
 
   async findOneReportWithRelations(id: string) {
     return this.findOne(
       { id },
-      { populate: ['reporterId', 'reportedUserId', 'threadId', 'commentId', 'commentId.threadId', 'handledBy'] },
+      {
+        populate: [
+          'reporterId',
+          'reportedUserId',
+          'threadId',
+          'commentId',
+          'commentId.threadId',
+          'handledBy',
+        ],
+      },
     );
   }
 }

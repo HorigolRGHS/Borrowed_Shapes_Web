@@ -4,7 +4,10 @@ import { User } from '../entities/User';
 import { AuditLog } from '../entities/AuditLog';
 import { AuditActionType } from '../entities/AuditActionType';
 
-export async function ensureAccountActive(user: User, em: EntityManager): Promise<void> {
+export async function ensureAccountActive(
+  user: User,
+  em: EntityManager,
+): Promise<void> {
   if (user.deletedAt) {
     throw new ForbiddenException({
       code: 'ACCOUNT_DELETED',
@@ -61,7 +64,9 @@ export async function ensureAccountActive(user: User, em: EntityManager): Promis
       ban: {
         reason: user.banReason ?? null,
         bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
-        banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
+        banExpiresAt: user.banExpiresAt
+          ? user.banExpiresAt.toISOString()
+          : null,
         isPermanent: !user.banExpiresAt,
       },
     });
@@ -75,12 +80,14 @@ export async function ensureAccountActive(user: User, em: EntityManager): Promis
 export function getProxyAvatarUrl(
   imgUrl: string | null | undefined,
   userId: string,
-  updatedAt: Date
+  updatedAt: Date,
 ): string | null {
   if (!imgUrl) return null;
   if (imgUrl.startsWith('/api/')) return imgUrl;
 
-  const r2Base = process.env.R2_PUBLIC_DEV_URL || 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev';
+  const r2Base =
+    process.env.R2_PUBLIC_DEV_URL ||
+    'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev';
 
   if (imgUrl.startsWith(r2Base) || imgUrl.startsWith('avatars/')) {
     const version = updatedAt.getTime();

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { FilterQuery } from '@mikro-orm/core';
 import { Announcement } from '../entities/Announcement';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
@@ -13,7 +17,7 @@ import {
   AnnouncementAdminDetailDto,
 } from './dto/announcements-response.dto';
 import { escapeLike } from '../common/utils/sql-like';
-import { AnnouncementRepository } from './announcements.repository';
+import { AnnouncementRepository } from './repositories/announcements.repository';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -28,7 +32,9 @@ function parseLang(raw?: string): Lang {
 
 @Injectable()
 export class AnnouncementService {
-  constructor(private readonly announcementRepository: AnnouncementRepository) { }
+  constructor(
+    private readonly announcementRepository: AnnouncementRepository,
+  ) {}
 
   // --- Public (user-facing) ---
 
@@ -38,31 +44,44 @@ export class AnnouncementService {
   ): Promise<AnnouncementPublicListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const [announcements, total] = await this.announcementRepository.findPublicAnnouncements(query);
+    const [announcements, total] =
+      await this.announcementRepository.findPublicAnnouncements(query);
 
-    const items: AnnouncementPublicListItemDto[] = announcements.map(
-      (a) => this.toPublicListDto(a, lang),
+    const items: AnnouncementPublicListItemDto[] = announcements.map((a) =>
+      this.toPublicListDto(a, lang),
     );
 
-    return { items, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
-  async findOnePublic(slug: string, lang: Lang): Promise<AnnouncementPublicDetailDto> {
-    const announcement = await this.announcementRepository.findOne({
-      $or: [
-        { slug },
-        { slugVi: slug },
-      ],
-    }, {
-      populate: ['authorId'],
-    });
+  async findOnePublic(
+    slug: string,
+    lang: Lang,
+  ): Promise<AnnouncementPublicDetailDto> {
+    const announcement = await this.announcementRepository.findOne(
+      {
+        $or: [{ slug }, { slugVi: slug }],
+      },
+      {
+        populate: ['authorId'],
+      },
+    );
 
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
 
     const now = new Date();
-    if (!announcement.isPublished || (announcement.publishedAt && announcement.publishedAt > now)) {
+    if (
+      !announcement.isPublished ||
+      (announcement.publishedAt && announcement.publishedAt > now)
+    ) {
       throw new NotFoundException('announcements.not_found');
     }
 
@@ -76,19 +95,29 @@ export class AnnouncementService {
   ): Promise<AnnouncementAdminListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const [announcements, total] = await this.announcementRepository.findAdminAnnouncements(query);
+    const [announcements, total] =
+      await this.announcementRepository.findAdminAnnouncements(query);
 
-    const items: AnnouncementAdminListItemDto[] = announcements.map(
-      (a) => this.toAdminListDto(a),
+    const items: AnnouncementAdminListItemDto[] = announcements.map((a) =>
+      this.toAdminListDto(a),
     );
 
-    return { items, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findOneAdmin(id: string): Promise<AnnouncementAdminDetailDto> {
-    const announcement = await this.announcementRepository.findOne({ id }, {
-      populate: ['authorId'],
-    });
+    const announcement = await this.announcementRepository.findOne(
+      { id },
+      {
+        populate: ['authorId'],
+      },
+    );
 
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
@@ -129,19 +158,25 @@ export class AnnouncementService {
   }
 
   async update(id: string, dto: UpdateAnnouncementDto): Promise<null> {
-    const announcement = await this.announcementRepository.findOne({ id }, {
-      populate: ['authorId'],
-    });
+    const announcement = await this.announcementRepository.findOne(
+      { id },
+      {
+        populate: ['authorId'],
+      },
+    );
 
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
 
     if (dto.slug || dto.slugVi) {
-      const existing = await this.announcementRepository.checkSlugUniqueness({
-        slug: dto.slug,
-        slugVi: dto.slugVi,
-      }, id);
+      const existing = await this.announcementRepository.checkSlugUniqueness(
+        {
+          slug: dto.slug,
+          slugVi: dto.slugVi,
+        },
+        id,
+      );
 
       if (existing) {
         throw new BadRequestException('announcements.slug_taken');
@@ -177,13 +212,18 @@ export class AnnouncementService {
 
   private buildAuthor(a: Announcement) {
     const author = a.authorId;
-    return author && author.id ? {
-      id: author.id,
-      displayName: (author.displayName as string | undefined) ?? '',
-    } : null;
+    return author && author.id
+      ? {
+          id: author.id,
+          displayName: (author.displayName as string | undefined) ?? '',
+        }
+      : null;
   }
 
-  private toPublicListDto(a: Announcement, lang: Lang): AnnouncementPublicListItemDto {
+  private toPublicListDto(
+    a: Announcement,
+    lang: Lang,
+  ): AnnouncementPublicListItemDto {
     const isVi = lang === 'vi';
     return {
       slug: isVi ? a.slugVi : a.slug,
@@ -199,7 +239,10 @@ export class AnnouncementService {
     };
   }
 
-  private toPublicDetailDto(a: Announcement, lang: Lang): AnnouncementPublicDetailDto {
+  private toPublicDetailDto(
+    a: Announcement,
+    lang: Lang,
+  ): AnnouncementPublicDetailDto {
     const isVi = lang === 'vi';
     return {
       slug: isVi ? a.slugVi : a.slug,

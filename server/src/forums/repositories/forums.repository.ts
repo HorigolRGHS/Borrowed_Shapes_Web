@@ -1,10 +1,11 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { ForumThread } from '../entities/ForumThread';
-import { Locale } from '../common/utils/resolve-locale';
+import { ForumThread } from '../../entities/ForumThread';
+import { Locale } from '../../common/utils/resolve-locale';
 
 @Injectable()
-export class ForumThreadRepository extends EntityRepository<ForumThread> {
+export class ForumThreadRepository extends BaseRepository<ForumThread> {
   constructor(em: EntityManager) {
     super(em, ForumThread);
   }

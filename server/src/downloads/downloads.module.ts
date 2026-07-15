@@ -7,14 +7,29 @@ import { DownloadsService } from './downloads.service';
 import { FileAsset } from '../entities/FileAsset';
 import { DownloadLog } from '../entities/DownloadLog';
 import { DownloadStats } from '../entities/DownloadStats';
+import { User } from '../entities/User';
+import { FileAssetRepository } from './repositories/file-asset.repository';
+import { DownloadLogRepository } from './repositories/download-log.repository';
+import { DownloadStatsRepository } from './repositories/download-stats.repository';
 
 @Module({
   imports: [
     StorageModule,
     AuthModule,
-    MikroOrmModule.forFeature([FileAsset, DownloadLog, DownloadStats]),
+    MikroOrmModule.forFeature([FileAsset, DownloadLog, DownloadStats, User]),
   ],
   controllers: [DownloadsController],
-  providers: [DownloadsService],
+  providers: [
+    DownloadsService,
+    FileAssetRepository,
+    DownloadLogRepository,
+    DownloadStatsRepository,
+  ],
+  exports: [
+    DownloadsService,
+    FileAssetRepository,
+    DownloadLogRepository,
+    DownloadStatsRepository,
+  ],
 })
 export class DownloadsModule {}

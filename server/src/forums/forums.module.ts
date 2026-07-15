@@ -9,11 +9,16 @@ import { ForumComment } from '../entities/ForumComment';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 
-import { ForumThreadRepository } from './forums.repository';
+import { ForumThreadRepository } from './repositories/forums.repository';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([ForumThread, ForumCategory, ForumThreadVote, ForumComment]),
+    MikroOrmModule.forFeature([
+      ForumThread,
+      ForumCategory,
+      ForumThreadVote,
+      ForumComment,
+    ]),
     AuthModule,
     StorageModule,
   ],

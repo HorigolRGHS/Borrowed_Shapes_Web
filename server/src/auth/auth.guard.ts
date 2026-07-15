@@ -43,10 +43,15 @@ export class AuthGuard implements CanActivate {
       if (token) {
         try {
           const payload = await this.jwt.verifyAsync(token, {
-            secret: this.config.get<string>('JWT_SECRET', 'change-me-in-production'),
+            secret: this.config.get<string>(
+              'JWT_SECRET',
+              'change-me-in-production',
+            ),
           });
           const userId = payload.sub as string | undefined;
-          const platform = (payload.pf ?? payload.platform) as string | undefined;
+          const platform = (payload.pf ?? payload.platform) as
+            | string
+            | undefined;
           const sessionId = payload.sid as string | undefined;
           const role = payload.role as string | undefined;
           if (userId && platform && role) {
@@ -67,10 +72,12 @@ export class AuthGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException('auth.unauthorized');
 
-
     try {
       const payload = await this.jwt.verifyAsync(token, {
-        secret: this.config.get<string>('JWT_SECRET', 'change-me-in-production'),
+        secret: this.config.get<string>(
+          'JWT_SECRET',
+          'change-me-in-production',
+        ),
       });
 
       const userId = payload.sub as string | undefined;
@@ -100,7 +107,16 @@ export class AuthGuard implements CanActivate {
       const user = await this.em.findOne(
         User,
         { id: userId },
-        { fields: ['id', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
+        {
+          fields: [
+            'id',
+            'isBanned',
+            'bannedAt',
+            'banReason',
+            'banExpiresAt',
+            'deletedAt',
+          ],
+        },
       );
 
       if (!user) {
@@ -118,10 +134,10 @@ export class AuthGuard implements CanActivate {
       };
 
       // Check roles if specified
-      const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+      const requiredRoles = this.reflector.getAllAndOverride<Role[]>(
+        ROLES_KEY,
+        [context.getHandler(), context.getClass()],
+      );
       if (requiredRoles && requiredRoles.length > 0) {
         if (!requiredRoles.includes(role as Role)) {
           throw new ForbiddenException('common.forbidden');

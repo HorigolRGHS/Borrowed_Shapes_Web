@@ -1,7 +1,11 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { GameRun } from '../entities/GameRun';
-import { ListGameResultsQueryDto, LeaderboardQueryDto } from './dto/game-results-response.dto';
+import { GameRun } from '../../entities/GameRun';
+import {
+  ListGameResultsQueryDto,
+  LeaderboardQueryDto,
+} from './dto/game-results-response.dto';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -9,7 +13,7 @@ function clamp(n: number, min: number, max: number): number {
 }
 
 @Injectable()
-export class GameResultRepository extends EntityRepository<GameRun> {
+export class GameResultRepository extends BaseRepository<GameRun> {
   constructor(em: EntityManager) {
     super(em, GameRun);
   }
@@ -30,7 +34,9 @@ export class GameResultRepository extends EntityRepository<GameRun> {
     await this.em.removeAndFlush(entity);
   }
 
-  async findPaginatedRuns(query: ListGameResultsQueryDto): Promise<{ rows: any[]; total: number }> {
+  async findPaginatedRuns(
+    query: ListGameResultsQueryDto,
+  ): Promise<{ rows: any[]; total: number }> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
@@ -71,7 +77,8 @@ export class GameResultRepository extends EntityRepository<GameRun> {
       params.push(query.startTo);
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countSql = `SELECT COUNT(*) as count FROM game."GameRun" gr ${whereClause}`;
     const countResult = await this.execute(countSql, params);
@@ -237,7 +244,9 @@ export class GameResultRepository extends EntityRepository<GameRun> {
     return rows || [];
   }
 
-  async getLeaderboardData(query: LeaderboardQueryDto): Promise<{ rows: any[]; total: number }> {
+  async getLeaderboardData(
+    query: LeaderboardQueryDto,
+  ): Promise<{ rows: any[]; total: number }> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;

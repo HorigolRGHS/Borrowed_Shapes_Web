@@ -1,17 +1,26 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { ForumComment } from '../entities/ForumComment';
+import { ForumComment } from '../../entities/ForumComment';
 
 @Injectable()
-export class ForumCommentRepository extends EntityRepository<ForumComment> {
+export class ForumCommentRepository extends BaseRepository<ForumComment> {
   constructor(em: EntityManager) {
     super(em, ForumComment);
   }
 
-  async findCommentsForThread(threadId: string, parentId: string | null, page: number, limit: number, userId?: string) {
+  async findCommentsForThread(
+    threadId: string,
+    parentId: string | null,
+    page: number,
+    limit: number,
+    userId?: string,
+  ) {
     const offset = (page - 1) * limit;
     const parentCheck = parentId ? `c."parentId" = ?` : `c."parentId" IS NULL`;
-    const params: any[] = parentId ? [threadId, parentId, limit, offset] : [threadId, limit, offset];
+    const params: any[] = parentId
+      ? [threadId, parentId, limit, offset]
+      : [threadId, limit, offset];
 
     const query = `
       SELECT 
@@ -38,21 +47,23 @@ export class ForumCommentRepository extends EntityRepository<ForumComment> {
 
     return rows.map((row: any) => ({
       id: row.id,
-      content: row.isDeleted ? "[Deleted]" : row.content,
+      content: row.isDeleted ? '[Deleted]' : row.content,
       score: Number(row.score || 0),
       isDeleted: row.isDeleted,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       parentId: row.parentId || null,
       parentContent: row.parentContent || null,
-      author: row.isDeleted ? null : {
-        id: row.authorId,
-        displayName: row.authorName || "Deleted User",
-        imgUrl: row.authorImg,
-        badgeImageUrl: row.badgeImageUrl,
-        role: row.authorRole,
-        createdAt: row.authorCreatedAt,
-      },
+      author: row.isDeleted
+        ? null
+        : {
+            id: row.authorId,
+            displayName: row.authorName || 'Deleted User',
+            imgUrl: row.authorImg,
+            badgeImageUrl: row.badgeImageUrl,
+            role: row.authorRole,
+            createdAt: row.authorCreatedAt,
+          },
       repliesCount: Number(row.repliesCount || 0),
       hasReplies: Number(row.repliesCount || 0) > 0,
       userVote: row.userVote ? Number(row.userVote) : null,

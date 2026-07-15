@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { Report } from '../entities/Report';
@@ -18,7 +24,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { ResolveReportDto } from './dto/resolve-report.dto';
 import { RejectReportDto } from './dto/reject-report.dto';
 import { UploadReportMediaDto } from './dto/upload-report-media.dto';
-import { ReportRepository } from './reports.repository';
+import { ReportRepository } from './repositories/reports.repository';
 
 @Injectable()
 export class ReportsService {
@@ -29,29 +35,37 @@ export class ReportsService {
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
-  ) { }
+  ) {}
 
   async create(dto: CreateReportDto, reporterId: string) {
-    const reporter = this.reportRepository.getEntityManager().getReference(User, reporterId);
+    const reporter = this.reportRepository
+      .getEntityManager()
+      .getReference(User, reporterId);
 
     let reportedUser: User | null = null;
     if (dto.reportedUserId) {
       if (String(dto.reportedUserId) === String(reporterId)) {
         throw new BadRequestException('reports.cannot_report_self');
       }
-      reportedUser = await this.reportRepository.getEntityManager().findOne(User, { id: dto.reportedUserId });
+      reportedUser = await this.reportRepository
+        .getEntityManager()
+        .findOne(User, { id: dto.reportedUserId });
       if (!reportedUser) throw new NotFoundException('reports.user_not_found');
     }
 
     let thread: ForumThread | null = null;
     if (dto.threadId) {
-      thread = await this.reportRepository.getEntityManager().findOne(ForumThread, { id: dto.threadId });
+      thread = await this.reportRepository
+        .getEntityManager()
+        .findOne(ForumThread, { id: dto.threadId });
       if (!thread) throw new NotFoundException('reports.thread_not_found');
     }
 
     let comment: ForumComment | null = null;
     if (dto.commentId) {
-      comment = await this.reportRepository.getEntityManager().findOne(ForumComment, { id: dto.commentId });
+      comment = await this.reportRepository
+        .getEntityManager()
+        .findOne(ForumComment, { id: dto.commentId });
       if (!comment) throw new NotFoundException('reports.comment_not_found');
     }
 
@@ -68,17 +82,21 @@ export class ReportsService {
     const mediaEntities: ReportMedia[] = [];
     if (dto.media && dto.media.length > 0) {
       for (const item of dto.media) {
-        const reportMedia = this.reportRepository.getEntityManager().create(ReportMedia, {
-          reportId: report,
-          mediaUrl: item.mediaUrl,
-          mediaType: item.mediaType as any,
-          fileSize: item.fileSize ? BigInt(item.fileSize) : undefined,
-        });
+        const reportMedia = this.reportRepository
+          .getEntityManager()
+          .create(ReportMedia, {
+            reportId: report,
+            mediaUrl: item.mediaUrl,
+            mediaType: item.mediaType as any,
+            fileSize: item.fileSize ? BigInt(item.fileSize) : undefined,
+          });
         mediaEntities.push(reportMedia);
       }
     }
 
-    await this.reportRepository.getEntityManager().persistAndFlush([report, ...mediaEntities]);
+    await this.reportRepository
+      .getEntityManager()
+      .persistAndFlush([report, ...mediaEntities]);
 
     return {
       id: report.id,
@@ -148,22 +166,22 @@ export class ReportsService {
       createdAt: report.createdAt,
       reportedUser: report.reportedUserId
         ? {
-          id: report.reportedUserId.id,
-          displayName: report.reportedUserId.displayName,
-        }
+            id: report.reportedUserId.id,
+            displayName: report.reportedUserId.displayName,
+          }
         : null,
       thread: report.threadId
         ? {
-          id: report.threadId.id,
-          title: report.threadId.title,
-          slug: report.threadId.slug,
-        }
+            id: report.threadId.id,
+            title: report.threadId.title,
+            slug: report.threadId.slug,
+          }
         : null,
       comment: report.commentId
         ? {
-          id: report.commentId.id,
-          content: report.commentId.content,
-        }
+            id: report.commentId.id,
+            content: report.commentId.content,
+          }
         : null,
     }));
   }
@@ -178,7 +196,12 @@ export class ReportsService {
     page = 1,
     limit = 20,
   ) {
-    const [list, count] = await this.reportRepository.findAdminReports(status, sort, page, limit);
+    const [list, count] = await this.reportRepository.findAdminReports(
+      status,
+      sort,
+      page,
+      limit,
+    );
 
     return {
       items: list.map((report) => ({
@@ -193,22 +216,22 @@ export class ReportsService {
         },
         reportedUser: report.reportedUserId
           ? {
-            id: report.reportedUserId.id,
-            displayName: report.reportedUserId.displayName,
-          }
+              id: report.reportedUserId.id,
+              displayName: report.reportedUserId.displayName,
+            }
           : null,
         thread: report.threadId
           ? {
-            id: report.threadId.id,
-            title: report.threadId.title,
-            slug: report.threadId.slug,
-          }
+              id: report.threadId.id,
+              title: report.threadId.title,
+              slug: report.threadId.slug,
+            }
           : null,
         comment: report.commentId
           ? {
-            id: report.commentId.id,
-            content: report.commentId.content,
-          }
+              id: report.commentId.id,
+              content: report.commentId.content,
+            }
           : null,
       })),
       total: count,
@@ -226,12 +249,12 @@ export class ReportsService {
       throw new ForbiddenException('reports.forbidden_view');
     }
 
-    const mediaList = await this.reportRepository.getEntityManager().find(ReportMedia, { reportId: report });
-    const response = await this.reportRepository.getEntityManager().findOne(
-      ReportResponse,
-      { reportId: report },
-      { populate: ['adminId'] },
-    );
+    const mediaList = await this.reportRepository
+      .getEntityManager()
+      .find(ReportMedia, { reportId: report });
+    const response = await this.reportRepository
+      .getEntityManager()
+      .findOne(ReportResponse, { reportId: report }, { populate: ['adminId'] });
 
     return {
       id: report.id,
@@ -247,25 +270,25 @@ export class ReportsService {
       },
       reportedUser: report.reportedUserId
         ? {
-          id: report.reportedUserId.id,
-          displayName: report.reportedUserId.displayName,
-          imgUrl: report.reportedUserId.imgUrl,
-        }
+            id: report.reportedUserId.id,
+            displayName: report.reportedUserId.displayName,
+            imgUrl: report.reportedUserId.imgUrl,
+          }
         : null,
       thread: report.threadId
         ? {
-          id: report.threadId.id,
-          title: report.threadId.title,
-          slug: report.threadId.slug,
-        }
+            id: report.threadId.id,
+            title: report.threadId.title,
+            slug: report.threadId.slug,
+          }
         : null,
       comment: report.commentId
         ? {
-          id: report.commentId.id,
-          content: report.commentId.content,
-          threadId: report.commentId.threadId?.id || null,
-          threadSlug: report.commentId.threadId?.slug || null,
-        }
+            id: report.commentId.id,
+            content: report.commentId.content,
+            threadId: report.commentId.threadId?.id || null,
+            threadSlug: report.commentId.threadId?.slug || null,
+          }
         : null,
       media: mediaList.map((m) => ({
         id: m.id,
@@ -273,24 +296,28 @@ export class ReportsService {
         mediaType: m.mediaType,
         fileSize: m.fileSize ? Number(m.fileSize) : null,
       })),
-      response: response && (isAdmin || response.isVisibleToReporter)
-        ? {
-          id: response.id,
-          message: response.message,
-          actionTaken: response.actionTaken,
-          isVisibleToReporter: response.isVisibleToReporter,
-          createdAt: response.createdAt,
-          admin: {
-            id: response.adminId.id,
-            displayName: response.adminId.displayName,
-          },
-        }
-        : null,
+      response:
+        response && (isAdmin || response.isVisibleToReporter)
+          ? {
+              id: response.id,
+              message: response.message,
+              actionTaken: response.actionTaken,
+              isVisibleToReporter: response.isVisibleToReporter,
+              createdAt: response.createdAt,
+              admin: {
+                id: response.adminId.id,
+                displayName: response.adminId.displayName,
+              },
+            }
+          : null,
     };
   }
 
   async resolve(id: string, adminId: string, dto: ResolveReportDto) {
-    const report = await this.reportRepository.findOne({ id }, { populate: ['reportedUserId', 'reporterId'] });
+    const report = await this.reportRepository.findOne(
+      { id },
+      { populate: ['reportedUserId', 'reporterId'] },
+    );
     if (!report) throw new NotFoundException('reports.report_not_found');
     if (report.status !== ReportStatus.PENDING) {
       throw new BadRequestException('reports.already_processed');
@@ -302,26 +329,32 @@ export class ReportsService {
       dto.actionTaken === ReportAction.BAN_CUSTOM
     ) {
       if (report.reportedUserId) {
-        const reportedUser = await this.reportRepository.getEntityManager().findOne(User, { id: report.reportedUserId.id });
+        const reportedUser = await this.reportRepository
+          .getEntityManager()
+          .findOne(User, { id: report.reportedUserId.id });
         if (reportedUser && reportedUser.role === 'ADMIN') {
           throw new BadRequestException('reports.cannot_ban_admin');
         }
       }
     }
 
-    const admin = this.reportRepository.getEntityManager().getReference(User, adminId);
+    const admin = this.reportRepository
+      .getEntityManager()
+      .getReference(User, adminId);
 
     report.status = ReportStatus.RESOLVED as any;
     report.handledBy = admin;
     report.handledAt = new Date();
 
-    const response = this.reportRepository.getEntityManager().create(ReportResponse, {
-      reportId: report,
-      adminId: admin,
-      message: dto.message,
-      actionTaken: dto.actionTaken as any,
-      isVisibleToReporter: dto.isVisibleToReporter !== false,
-    });
+    const response = this.reportRepository
+      .getEntityManager()
+      .create(ReportResponse, {
+        reportId: report,
+        adminId: admin,
+        message: dto.message,
+        actionTaken: dto.actionTaken as any,
+        isVisibleToReporter: dto.isVisibleToReporter !== false,
+      });
 
     if (
       dto.actionTaken === ReportAction.BAN_PERMANENT ||
@@ -331,7 +364,9 @@ export class ReportsService {
         throw new BadRequestException('reports.no_reported_user');
       }
 
-      const user = await this.reportRepository.getEntityManager().findOne(User, { id: report.reportedUserId.id });
+      const user = await this.reportRepository
+        .getEntityManager()
+        .findOne(User, { id: report.reportedUserId.id });
       if (user) {
         user.isBanned = true;
         user.bannedAt = new Date();
@@ -345,7 +380,9 @@ export class ReportsService {
       }
     }
 
-    await this.reportRepository.getEntityManager().persistAndFlush([report, response]);
+    await this.reportRepository
+      .getEntityManager()
+      .persistAndFlush([report, response]);
 
     if (report.reporterId?.email) {
       const reporter = report.reporterId;
@@ -358,17 +395,25 @@ export class ReportsService {
           adminMessage: dto.isVisibleToReporter !== false ? dto.message : null,
         });
       } catch (error) {
-        this.logger.warn(`Failed to send resolution email to reporter ${reporter.id}`);
+        this.logger.warn(
+          `Failed to send resolution email to reporter ${reporter.id}`,
+        );
       }
     }
 
     if (report.reportedUserId) {
-      const reportedUser = await this.reportRepository.getEntityManager().findOne(User, { id: report.reportedUserId.id });
+      const reportedUser = await this.reportRepository
+        .getEntityManager()
+        .findOne(User, { id: report.reportedUserId.id });
       if (reportedUser && reportedUser.email) {
-        if (dto.actionTaken === ReportAction.BAN_PERMANENT || dto.actionTaken === ReportAction.BAN_CUSTOM) {
-          const banExpiresAtStr = dto.actionTaken === ReportAction.BAN_CUSTOM && dto.banExpiresAt
-            ? new Date(dto.banExpiresAt)
-            : null;
+        if (
+          dto.actionTaken === ReportAction.BAN_PERMANENT ||
+          dto.actionTaken === ReportAction.BAN_CUSTOM
+        ) {
+          const banExpiresAtStr =
+            dto.actionTaken === ReportAction.BAN_CUSTOM && dto.banExpiresAt
+              ? new Date(dto.banExpiresAt)
+              : null;
           await this.emailService.sendAccountBannedEmail({
             to: String(reportedUser.email),
             displayName: reportedUser.displayName,
@@ -383,7 +428,9 @@ export class ReportsService {
               reason: dto.message,
             });
           } catch (error) {
-            this.logger.warn(`Failed to send warning email to user ${reportedUser.id}`);
+            this.logger.warn(
+              `Failed to send warning email to user ${reportedUser.id}`,
+            );
           }
         }
       }
@@ -393,27 +440,36 @@ export class ReportsService {
   }
 
   async reject(id: string, adminId: string, dto: RejectReportDto) {
-    const report = await this.reportRepository.findOne({ id }, { populate: ['reporterId'] });
+    const report = await this.reportRepository.findOne(
+      { id },
+      { populate: ['reporterId'] },
+    );
     if (!report) throw new NotFoundException('reports.report_not_found');
     if (report.status !== ReportStatus.PENDING) {
       throw new BadRequestException('reports.already_processed');
     }
 
-    const admin = this.reportRepository.getEntityManager().getReference(User, adminId);
+    const admin = this.reportRepository
+      .getEntityManager()
+      .getReference(User, adminId);
 
     report.status = ReportStatus.REJECTED as any;
     report.handledBy = admin;
     report.handledAt = new Date();
 
-    const response = this.reportRepository.getEntityManager().create(ReportResponse, {
-      reportId: report,
-      adminId: admin,
-      message: dto.message,
-      actionTaken: ReportAction.NO_ACTION as any,
-      isVisibleToReporter: dto.isVisibleToReporter !== false,
-    });
+    const response = this.reportRepository
+      .getEntityManager()
+      .create(ReportResponse, {
+        reportId: report,
+        adminId: admin,
+        message: dto.message,
+        actionTaken: ReportAction.NO_ACTION as any,
+        isVisibleToReporter: dto.isVisibleToReporter !== false,
+      });
 
-    await this.reportRepository.getEntityManager().persistAndFlush([report, response]);
+    await this.reportRepository
+      .getEntityManager()
+      .persistAndFlush([report, response]);
 
     if (report.reporterId?.email) {
       const reporter = report.reporterId;
@@ -424,7 +480,9 @@ export class ReportsService {
           adminMessage: dto.isVisibleToReporter !== false ? dto.message : null,
         });
       } catch (error) {
-        this.logger.warn(`Failed to send rejection email to reporter ${reporter.id}`);
+        this.logger.warn(
+          `Failed to send rejection email to reporter ${reporter.id}`,
+        );
       }
     }
 

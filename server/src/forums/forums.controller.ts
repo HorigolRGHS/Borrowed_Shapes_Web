@@ -39,9 +39,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 @ApiTags('Forum')
 @Controller('forums')
 export class ForumController {
-  constructor(
-    private readonly forumService: ForumService,
-  ) { }
+  constructor(private readonly forumService: ForumService) {}
 
   @Public()
   @Get()
@@ -70,7 +68,11 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
     const data = await this.forumService.findOneBySlug(slug, locale, user);
-    return okResponse('forums.detail_success', data, `GET /forums/slug/${slug}`);
+    return okResponse(
+      'forums.detail_success',
+      data,
+      `GET /forums/slug/${slug}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -103,7 +105,12 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
     const isAdmin = user.role === 'ADMIN';
-    const newThread = await this.forumService.create(createForumDto, user.userId, isAdmin, locale);
+    const newThread = await this.forumService.create(
+      createForumDto,
+      user.userId,
+      isAdmin,
+      locale,
+    );
     return okResponse('forums.create_success', newThread, 'POST /forums');
   }
 
@@ -123,7 +130,13 @@ export class ForumController {
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
     const locale = resolveLocale(acceptLanguage);
-    await this.forumService.update(id, updateForumDto, user.userId, isAdmin, locale);
+    await this.forumService.update(
+      id,
+      updateForumDto,
+      user.userId,
+      isAdmin,
+      locale,
+    );
     return okResponse('forums.update_success', null, `PATCH /forums/${id}`);
   }
 
@@ -163,7 +176,9 @@ export class ForumController {
   }
 
   @Post('upload')
-  @ApiOperation({ summary: 'Create presigned upload URL for forum thread image' })
+  @ApiOperation({
+    summary: 'Create presigned upload URL for forum thread image',
+  })
   async uploadThreadImage(
     @Body() dto: ThreadImageUploadRequestDto,
     @CurrentUser() user: RequestUser,

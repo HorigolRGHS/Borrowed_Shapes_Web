@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { getEffectiveExpiresAt } from './achievements.service';
-import { AchievementRepository } from './achievements.repository';
+import { AchievementRepository } from './repositories/achievements.repository';
 
 @Injectable()
 export class AchievementsCleanupJob {
@@ -17,7 +17,8 @@ export class AchievementsCleanupJob {
   async cleanupExpiredAchievements(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {
-        const profiles = await this.achievementRepository.findGameProfilesWithEquippedAchievements();
+        const profiles =
+          await this.achievementRepository.findGameProfilesWithEquippedAchievements();
 
         let unequippedCount = 0;
         const now = new Date();
@@ -25,7 +26,11 @@ export class AchievementsCleanupJob {
         for (const gp of profiles) {
           const ach = gp.equippedAchievementId;
           if (ach) {
-            const expiresAt = getEffectiveExpiresAt(ach.type, ach.seasonMonth, ach.expiresAt);
+            const expiresAt = getEffectiveExpiresAt(
+              ach.type,
+              ach.seasonMonth,
+              ach.expiresAt,
+            );
             if (ach.type === 'SEASONAL' && expiresAt && expiresAt < now) {
               gp.equippedAchievementId = undefined as any;
               unequippedCount++;
@@ -35,7 +40,9 @@ export class AchievementsCleanupJob {
 
         if (unequippedCount > 0) {
           await this.achievementRepository.flush();
-          this.logger.log(`Automatically unequipped ${unequippedCount} expired seasonal achievements.`);
+          this.logger.log(
+            `Automatically unequipped ${unequippedCount} expired seasonal achievements.`,
+          );
         }
       } catch (err) {
         this.logger.error('Failed to run achievements cleanup job', err);

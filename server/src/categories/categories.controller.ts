@@ -16,18 +16,27 @@ import type { Request } from 'express';
 import { CategoryService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-categories.dto';
 import { UpdateCategoryDto } from './dto/update-categories.dto';
-import { CategoryImageUploadRequestDto, CategoryImageUploadResponseDto } from './dto/category-image-upload.dto';
+import {
+  CategoryImageUploadRequestDto,
+  CategoryImageUploadResponseDto,
+} from './dto/category-image-upload.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { resolveLocale } from '../common/utils/resolve-locale';
 
 @ApiTags('Category')
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
   @Public()
   @Get()
@@ -50,7 +59,11 @@ export class CategoryController {
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(req.headers['accept-language']);
     const data = await this.categoryService.findAllUnofficial(locale, order);
-    return okResponse('category.list_success', data, 'GET /category/unofficial');
+    return okResponse(
+      'category.list_success',
+      data,
+      'GET /category/unofficial',
+    );
   }
 
   @Public()
@@ -68,7 +81,9 @@ export class CategoryController {
 
   @Roles('ADMIN')
   @Post('upload')
-  @ApiOperation({ summary: 'Create presigned upload URL for category icon image' })
+  @ApiOperation({
+    summary: 'Create presigned upload URL for category icon image',
+  })
   async uploadCategoryIcon(
     @Body() dto: CategoryImageUploadRequestDto,
     @Req() req: Request,
@@ -110,6 +125,10 @@ export class CategoryController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.categoryService.remove(id);
-    return okResponse('category.delete_success', data, `DELETE /category/${id}`);
+    return okResponse(
+      'category.delete_success',
+      data,
+      `DELETE /category/${id}`,
+    );
   }
 }

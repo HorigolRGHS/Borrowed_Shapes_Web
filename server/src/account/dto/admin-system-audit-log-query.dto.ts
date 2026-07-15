@@ -1,4 +1,12 @@
-import { IsOptional, IsInt, Min, Max, IsEnum, IsString, IsISO8601 } from 'class-validator';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsEnum,
+  IsString,
+  IsISO8601,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { AuditActionType } from '../../entities/AuditActionType';
@@ -19,7 +27,10 @@ export class AdminSystemAuditLogQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Action type to filter by', enum: AuditActionType })
+  @ApiPropertyOptional({
+    description: 'Action type to filter by',
+    enum: AuditActionType,
+  })
   @IsOptional()
   @IsEnum(AuditActionType)
   actionType?: AuditActionType;
@@ -39,7 +50,9 @@ export class AdminSystemAuditLogQueryDto {
   @IsString()
   userId?: string;
 
-  @ApiPropertyOptional({ description: 'Search query for actor email/name or entity details' })
+  @ApiPropertyOptional({
+    description: 'Search query for actor email/name or entity details',
+  })
   @IsOptional()
   @IsString()
   search?: string;

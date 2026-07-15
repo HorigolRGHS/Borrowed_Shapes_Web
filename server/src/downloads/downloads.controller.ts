@@ -16,7 +16,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  type RequestUser,
+} from '../auth/decorators/current-user.decorator';
 import { DownloadsService } from './downloads.service';
 import { GameVersionQueryDto } from './dto/game-version-query.dto';
 import { CreateUploadUrlDto } from './dto/create-upload-url.dto';
@@ -45,7 +48,11 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.listVersions(query);
-    return okResponse('downloads.list_versions_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'downloads.list_versions_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   /**
@@ -58,7 +65,11 @@ export class DownloadsController {
   async getActiveVersion(@Req() req: Request): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.getActiveVersion();
     // Return null data if no active version found, so frontend can show empty state.
-    return okResponse('downloads.active_version_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'downloads.active_version_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   /**
@@ -86,10 +97,18 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const userId = this.tryExtractUserId(req);
-    const clientIp = (req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0') as string;
+    const clientIp = req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0';
 
-    const data = await this.downloadsService.requestDownload(id, userId, clientIp);
-    return okResponse('downloads.download_url_created', data, `${req.method} ${req.path}`);
+    const data = await this.downloadsService.requestDownload(
+      id,
+      userId,
+      clientIp,
+    );
+    return okResponse(
+      'downloads.download_url_created',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   /**
@@ -100,7 +119,8 @@ export class DownloadsController {
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'View own download history (authenticated users only)',
-    description: 'Download request history. Records when a download link was created, not completion.',
+    description:
+      'Download request history. Records when a download link was created, not completion.',
   })
   async getHistory(
     @CurrentUser() user: RequestUser,
@@ -108,7 +128,11 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.getHistory(user.userId, query);
-    return okResponse('downloads.history_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'downloads.history_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   /**
@@ -129,7 +153,11 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.createUploadUrl(dto);
-    return okResponse('downloads.upload_url_created', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'downloads.upload_url_created',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   /**
@@ -141,14 +169,19 @@ export class DownloadsController {
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Confirm upload and create FileAsset record (Admin)',
-    description: 'Verifies the object exists on R2 and creates the database record.',
+    description:
+      'Verifies the object exists on R2 and creates the database record.',
   })
   async confirmUpload(
     @Body() dto: ConfirmUploadDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.confirmUpload(dto);
-    return okResponse('downloads.upload_confirmed', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'downloads.upload_confirmed',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   /**
@@ -160,7 +193,8 @@ export class DownloadsController {
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Set active download version (Admin)',
-    description: 'Sets the specified version as active and deactivates all others.',
+    description:
+      'Sets the specified version as active and deactivates all others.',
   })
   async setActiveVersion(
     @Param('id') id: string,
@@ -168,7 +202,11 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.downloadsService.setActiveVersion(id, user);
-    return okResponse('downloads.set_active_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'downloads.set_active_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   // ─── Helper: Optional JWT extraction ─────────────────────

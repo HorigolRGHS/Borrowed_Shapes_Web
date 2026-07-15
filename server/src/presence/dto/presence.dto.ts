@@ -16,7 +16,12 @@ export class PresenceResponseDto {
   @ApiProperty({ example: true })
   isOnline: boolean;
 
-  @ApiProperty({ example: '2024-03-20T10:00:00Z', required: false, nullable: true, type: Date })
+  @ApiProperty({
+    example: '2024-03-20T10:00:00Z',
+    required: false,
+    nullable: true,
+    type: Date,
+  })
   lastOnline: Date | null;
 
   @ApiProperty({ example: ['web', 'game'], type: [String] })

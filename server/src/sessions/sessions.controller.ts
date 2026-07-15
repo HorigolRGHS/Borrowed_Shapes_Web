@@ -1,11 +1,22 @@
-import { Controller, Get, Delete, Param, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Delete,
+  Param,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserSessionResponseDto, SessionMeResponseDto } from './dto/sessions.dto';
+import {
+  UserSessionResponseDto,
+  SessionMeResponseDto,
+} from './dto/sessions.dto';
 
 @ApiTags('Sessions')
 @Controller('sessions')
@@ -22,7 +33,9 @@ export class SessionsController {
   @Get()
   @ApiOperation({ summary: 'List all active sessions for the user' })
   @ApiResponse({ status: 200, type: [UserSessionResponseDto] })
-  listSessions(@CurrentUser() user: RequestUser): Promise<UserSessionResponseDto[]> {
+  listSessions(
+    @CurrentUser() user: RequestUser,
+  ): Promise<UserSessionResponseDto[]> {
     return this.sessionsService.listSessions(user.userId, user.platform);
   }
 
@@ -30,7 +43,10 @@ export class SessionsController {
   @Get('admin/users/:userId')
   @ApiOperation({ summary: 'List sessions of a specific user (Admin only)' })
   @ApiResponse({ status: 200, type: [UserSessionResponseDto] })
-  listSessionsForAdmin(@Param('userId') userId: string, @CurrentUser() admin: RequestUser): Promise<UserSessionResponseDto[]> {
+  listSessionsForAdmin(
+    @Param('userId') userId: string,
+    @CurrentUser() admin: RequestUser,
+  ): Promise<UserSessionResponseDto[]> {
     return this.sessionsService.listSessions(userId, admin.platform);
   }
 

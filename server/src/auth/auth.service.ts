@@ -32,6 +32,9 @@ import {
   ChangePasswordRequestDto,
 } from './dto/password.dto';
 import { User } from '../entities/User';
+import { GameProfileRepository } from '../game/repositories/game-profile.repository';
+import { UserSessionRepository } from '../sessions/repositories/user-session.repository';
+import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
 import { UserSession } from '../entities/UserSession';
 import { AuditLog } from '../entities/AuditLog';
 import { ensureAccountActive, getProxyAvatarUrl } from './auth-utils';
@@ -181,11 +184,13 @@ export class AuthService {
   // Removed ensureNotBanned in favor of ensureAccountActive from auth-utils.ts
 
   private async getOrCreateGameProfile(user: User): Promise<GameProfile> {
-    const existing = await this.gameProfileRepository.findOne({ userId: user.id });
+    const existing = await this.gameProfileRepository.findOne({
+      userId: user.id,
+    });
     if (existing) return existing;
 
     const created = this.gameProfileRepository.create({ userId: user });
-    await this.em.flush();
+    await this.userRepository.flush();
     return created;
   }
 
@@ -292,7 +297,7 @@ export class AuthService {
       entityId: sessionId,
       ipAddress,
     });
-    await this.em.flush();
+    await this.userRepository.flush();
     void session;
     void auditLog;
 
@@ -322,7 +327,7 @@ export class AuthService {
 
     try {
       const result = await this.em.transactional(async (em) => {
-        let user = await em.findOne(User, { email });
+        const user = await this.userRepository.txFindOne(em, { email });
 
         if (user) {
           if (
@@ -333,7 +338,7 @@ export class AuthService {
             user.displayName = dto.displayName ?? email.split('@')[0];
             user.bannedAt = new Date();
 
-            const auditLog = em.create(AuditLog, {
+            const auditLog = this.auditLogRepository.txCreate(em, {
               userId: user,
               actionType: AuditActionType.UPDATE,
               entityName: 'User',
@@ -344,15 +349,17 @@ export class AuthService {
               },
               ipAddress,
             });
-            await em.flush();
+            await this.userRepository.txFlush(em);
             void auditLog;
 
-            let gameProfile = await em.findOne(GameProfile, {
+            let gameProfile = await this.gameProfileRepository.txFindOne(em, {
               userId: user.id,
             });
             if (!gameProfile) {
-              gameProfile = em.create(GameProfile, { userId: user });
-              await em.flush();
+              gameProfile = this.gameProfileRepository.txCreate(em, {
+                userId: user,
+              });
+              await this.userRepository.txFlush(em);
             }
 
             return { user, gameProfile };
@@ -361,7 +368,7 @@ export class AuthService {
           }
         }
 
-        const created = em.create(User, {
+        const created = this.userRepository.txCreate(em, {
           email,
           passwordHash,
           displayName: dto.displayName ?? email.split('@')[0],
@@ -371,10 +378,12 @@ export class AuthService {
           banReason: 'auth.unverified_email_ban_reason',
         });
 
-        await em.flush();
+        await this.userRepository.txFlush(em);
 
-        const gameProfile = em.create(GameProfile, { userId: created });
-        const auditLog = em.create(AuditLog, {
+        const gameProfile = this.gameProfileRepository.txCreate(em, {
+          userId: created,
+        });
+        const auditLog = this.auditLogRepository.txCreate(em, {
           userId: created,
           actionType: AuditActionType.CREATE,
           entityName: 'User',
@@ -382,7 +391,7 @@ export class AuthService {
           newValue: { email: created.email, role: created.role },
           ipAddress,
         });
-        await em.flush();
+        await this.userRepository.txFlush(em);
         void auditLog;
 
         return {
@@ -520,9 +529,9 @@ export class AuthService {
       const picture = payload.picture ? String(payload.picture) : null;
       const name = payload.name ? String(payload.name) : null;
 
-      let found = await em.findOne(User, { googleId });
+      let found = await this.userRepository.txFindOne(em, { googleId });
       if (!found) {
-        found = await em.findOne(User, { email });
+        found = await this.userRepository.txFindOne(em, { email });
         if (found?.googleId && String(found.googleId) !== googleId) {
           throw new ConflictException('auth.email_already_linked');
         }
@@ -539,7 +548,7 @@ export class AuthService {
 
       const user =
         found ??
-        em.create(User, {
+        this.userRepository.txCreate(em, {
           email,
           googleId,
           imgUrl: picture,
@@ -576,16 +585,18 @@ export class AuthService {
         }
       }
 
-      await em.flush();
+      await this.userRepository.txFlush(em);
 
-      let gameProfile = await em.findOne(GameProfile, { userId: user.id });
+      let gameProfile = await this.gameProfileRepository.txFindOne(em, {
+        userId: user.id,
+      });
       if (!gameProfile) {
-        gameProfile = em.create(GameProfile, { userId: user });
-        await em.flush();
+        gameProfile = this.gameProfileRepository.txCreate(em, { userId: user });
+        await this.userRepository.txFlush(em);
       }
 
       if (created) {
-        const auditLog = em.create(AuditLog, {
+        const auditLog = this.auditLogRepository.txCreate(em, {
           userId: user,
           actionType: AuditActionType.CREATE,
           entityName: 'User',
@@ -597,7 +608,7 @@ export class AuthService {
           },
           ipAddress,
         });
-        await em.flush();
+        await this.userRepository.txFlush(em);
         void auditLog;
       }
 
@@ -669,8 +680,7 @@ export class AuthService {
     }
 
     if (stored.sessionId) {
-      const dbSession = await this.em.findOne(
-        UserSession,
+      const dbSession = await this.userSessionRepository.findOne(
         { sessionId: stored.sessionId, status: SessionStatus.ACTIVE },
         { fields: ['id'] },
       );
@@ -686,7 +696,16 @@ export class AuthService {
 
     const user = await this.userRepository.findOne(
       { id: userId },
-      { fields: ['role', 'isBanned', 'bannedAt', 'banReason', 'banExpiresAt', 'deletedAt'] },
+      {
+        fields: [
+          'role',
+          'isBanned',
+          'bannedAt',
+          'banReason',
+          'banExpiresAt',
+          'deletedAt',
+        ],
+      },
     );
     if (!user) throw new UnauthorizedException('auth.unauthorized');
 
@@ -707,8 +726,7 @@ export class AuthService {
     const newRefreshToken = `${userId}:${platform}:${newSessionId}`;
     const newTokenHash = hashToken(newRefreshToken);
     // Fetch gameProfile id for embedding in token
-    const gpRecord = await this.em.findOne(
-      GameProfile,
+    const gpRecord = await this.gameProfileRepository.findOne(
       { userId },
       { fields: ['id'] },
     );
@@ -784,11 +802,14 @@ export class AuthService {
 
     try {
       const existingStatus = await this.userOnlineStatusRepository.findOne({
-        userId: this.em.getReference(User, userId),
+        userId: this.userRepository.getReference(userId),
       });
       if (existingStatus) {
         if (platform) {
-          existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter((p: string) => p !== platform);
+          existingStatus.onlinePlatforms =
+            existingStatus.onlinePlatforms.filter(
+              (p: string) => p !== platform,
+            );
           if (existingStatus.onlinePlatforms.length === 0) {
             existingStatus.isOnline = false;
           }
@@ -802,21 +823,20 @@ export class AuthService {
     }
 
     if (stored?.sessionId) {
-      await this.em.nativeUpdate(
-        UserSession,
+      await this.userSessionRepository.nativeUpdate(
         { sessionId: stored.sessionId, status: SessionStatus.ACTIVE },
         { status: SessionStatus.LOGGED_OUT, logoutTime: new Date() },
       );
     }
 
-    const auditLog = this.em.create(AuditLog, {
-      userId: this.em.getReference(User, userId),
+    const auditLog = this.auditLogRepository.create({
+      userId: this.userRepository.getReference(userId),
       actionType: AuditActionType.LOGOUT,
       entityName: 'UserSession',
       entityId: userId,
       ipAddress,
     });
-    await this.em.flush();
+    await this.userRepository.flush();
     void auditLog;
   }
 
@@ -824,10 +844,9 @@ export class AuthService {
     userId: string,
     options?: { excludePlatform?: string },
   ): Promise<void> {
-    const sessions = await this.em.find(
-      UserSession,
+    const sessions = await this.userSessionRepository.find(
       {
-        userId: this.em.getReference(User, userId),
+        userId: this.userRepository.getReference(userId),
         status: SessionStatus.ACTIVE,
       },
       { fields: ['id', 'sessionId', 'platform'] },
@@ -857,12 +876,15 @@ export class AuthService {
       await this.redis.del(presenceDetailsKey(session.sessionId));
 
       try {
-        const existingStatus = await this.em.findOne(UserOnlineStatus, {
-          userId: this.em.getReference(User, userId),
+        const existingStatus = await this.userOnlineStatusRepository.findOne({
+          userId: this.userRepository.getReference(userId),
         });
         if (existingStatus) {
           if (session.platform) {
-            existingStatus.onlinePlatforms = existingStatus.onlinePlatforms.filter((p: string) => p !== session.platform);
+            existingStatus.onlinePlatforms =
+              existingStatus.onlinePlatforms.filter(
+                (p: string) => p !== session.platform,
+              );
             if (existingStatus.onlinePlatforms.length === 0) {
               existingStatus.isOnline = false;
             }
@@ -872,11 +894,12 @@ export class AuthService {
           }
         }
       } catch (err) {
-        this.logger.warn(`Failed to clear presence on revoke for user ${userId}`);
+        this.logger.warn(
+          `Failed to clear presence on revoke for user ${userId}`,
+        );
       }
 
-      await this.em.nativeUpdate(
-        UserSession,
+      await this.userSessionRepository.nativeUpdate(
         { id: session.id, status: SessionStatus.ACTIVE },
         { status: SessionStatus.REVOKED, logoutTime: now },
       );
@@ -892,7 +915,7 @@ export class AuthService {
       throw new BadRequestException('auth.verification_link_expired');
     }
 
-    const user = await this.em.findOne(User, { id: userId });
+    const user = await this.userRepository.findOne({ id: userId });
     if (!user) {
       throw new BadRequestException('auth.user_not_found');
     }
@@ -902,14 +925,14 @@ export class AuthService {
     user.bannedAt = undefined;
     user.banReason = undefined;
     user.banExpiresAt = undefined;
-    await this.em.flush();
+    await this.userRepository.flush();
 
     // Clean up token
     await this.redis.del(emailVerifyTokenKey(dto.token));
   }
 
   async forgotPassword(dto: ForgotPasswordRequestDto): Promise<void> {
-    const user = await this.em.findOne(User, { email: dto.email });
+    const user = await this.userRepository.findOne({ email: dto.email });
     if (!user) {
       // Don't leak that email exists or doesn't exist
       return;
@@ -963,7 +986,7 @@ export class AuthService {
       throw new UnauthorizedException('auth.otp_expired');
     }
 
-    const user = await this.em.findOne(User, { id: otpRecord.userId });
+    const user = await this.userRepository.findOne({ id: otpRecord.userId });
     if (!user) {
       throw new UnauthorizedException('auth.user_not_found');
     }
@@ -981,7 +1004,7 @@ export class AuthService {
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
-    await this.em.flush();
+    await this.userRepository.flush();
 
     await this.revokeUserSessions(String(user.id));
 
@@ -994,7 +1017,7 @@ export class AuthService {
     dto: ChangePasswordRequestDto,
     currentPlatform?: string,
   ): Promise<void> {
-    const user = await this.em.findOne(User, { id: userId });
+    const user = await this.userRepository.findOne({ id: userId });
     if (!user) {
       throw new UnauthorizedException('auth.user_not_found');
     }
@@ -1019,7 +1042,7 @@ export class AuthService {
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
-    await this.em.flush();
+    await this.userRepository.flush();
 
     await this.revokeUserSessions(userId, { excludePlatform: currentPlatform });
   }
@@ -1029,11 +1052,10 @@ export class AuthService {
    * includeCsv: comma-separated list, e.g. 'achievements'
    */
   async me(userId: string, platform: string, includeCsv?: string) {
-    const user = await this.em.findOne(User, { id: userId });
+    const user = await this.userRepository.findOne({ id: userId });
     if (!user) throw new UnauthorizedException('auth.user_not_found');
 
-    const gameProfile = await this.em.findOne(
-      GameProfile,
+    const gameProfile = await this.gameProfileRepository.findOne(
       { userId: user.id },
       { populate: ['equippedAchievementId'] },
     );
@@ -1045,9 +1067,13 @@ export class AuthService {
         achievement.seasonMonth,
         achievement.expiresAt,
       );
-      if (achievement.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+      if (
+        achievement.type === 'SEASONAL' &&
+        expiresAt &&
+        expiresAt < new Date()
+      ) {
         gameProfile.equippedAchievementId = undefined as any;
-        await this.em.flush();
+        await this.userRepository.flush();
       }
     }
 
@@ -1089,18 +1115,26 @@ export class AuthService {
     }
     if (includes.includes('achievements') && gameProfile) {
       // load user's achievements (lightweight)
-      const rows = await this.em.execute(
-        `select ua."achievementId" as id, a.name, a."badgeImageUrl" as "badgeImageUrl", 
+      const rows = await this.userRepository
+        .getEntityManager()
+        .getConnection()
+        .execute(
+          `select ua."achievementId" as id, a.name, a."badgeImageUrl" as "badgeImageUrl", 
                 a.type, a."seasonMonth", a."expiresAt", ua."achievedAt" as "achievedAt"
          from game."UserAchievement" ua
          join game."Achievement" a on a.id = ua."achievementId"
          where ua."gameProfileId" = ?`,
-        [gameProfile.id],
-      );
+          [gameProfile.id],
+        );
 
       result.achievements = (rows || []).map((r: any) => {
-        const expiresAt = getEffectiveExpiresAt(r.type, r.seasonMonth, r.expiresAt);
-        const isExpired = r.type === 'SEASONAL' && expiresAt && expiresAt < new Date();
+        const expiresAt = getEffectiveExpiresAt(
+          r.type,
+          r.seasonMonth,
+          r.expiresAt,
+        );
+        const isExpired =
+          r.type === 'SEASONAL' && expiresAt && expiresAt < new Date();
         return {
           id: r.id,
           name: r.name,

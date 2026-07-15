@@ -1,14 +1,30 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  type Opt,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/core';
 import { Achievement } from './Achievement';
 import { User } from './User';
 
 @Entity({ schema: 'game' })
 export class GameProfile {
-
-  @PrimaryKey({ type: 'text', defaultRaw: `('BS'::text || lpad((nextval('game.gameprofile_id_seq'::regclass))::text, 8, '0'::text))` })
+  @PrimaryKey({
+    type: 'text',
+    defaultRaw: `('BS'::text || lpad((nextval('game.gameprofile_id_seq'::regclass))::text, 8, '0'::text))`,
+  })
   id!: string & Opt;
 
-  @Unique({ name: 'GameProfile_userId_key', expression: 'CREATE UNIQUE INDEX "GameProfile_userId_key" ON game."GameProfile" USING btree ("userId")' })
+  @Unique({
+    name: 'GameProfile_userId_key',
+    expression:
+      'CREATE UNIQUE INDEX "GameProfile_userId_key" ON game."GameProfile" USING btree ("userId")',
+  })
   @OneToOne({ entity: () => User, fieldName: 'userId', deleteRule: 'cascade' })
   userId!: User;
 
@@ -33,10 +49,17 @@ export class GameProfile {
   @Property({ type: 'datetime', defaultRaw: `now()` })
   updatedAt!: Date & Opt;
 
-  @ManyToOne({ entity: () => Achievement, fieldName: 'equippedAchievementId', nullable: true })
+  @ManyToOne({
+    entity: () => Achievement,
+    fieldName: 'equippedAchievementId',
+    nullable: true,
+  })
   equippedAchievementId?: Achievement;
 
-  @ManyToMany({ entity: () => Achievement, joinColumn: 'gameProfileId', inverseJoinColumn: 'achievementId' })
+  @ManyToMany({
+    entity: () => Achievement,
+    joinColumn: 'gameProfileId',
+    inverseJoinColumn: 'achievementId',
+  })
   UserAchievement = new Collection<Achievement>(this);
-
 }

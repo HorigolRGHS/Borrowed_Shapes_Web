@@ -1,9 +1,15 @@
-import { Entity, type Opt, PrimaryKey, PrimaryKeyProp, Property, Unique } from '@mikro-orm/core';
+import {
+  Entity,
+  type Opt,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  Unique,
+} from '@mikro-orm/core';
 
 @Entity({ tableName: 'job', schema: 'cron' })
 @Unique({ name: 'jobname_username_uniq', properties: ['jobname', 'username'] })
 export class Job {
-
   [PrimaryKeyProp]?: 'jobid';
 
   @PrimaryKey()
@@ -32,5 +38,4 @@ export class Job {
 
   @Property({ type: 'text', nullable: true })
   jobname?: string;
-
 }

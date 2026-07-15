@@ -39,5 +39,12 @@ export function errorResponse<T>(
   data?: T,
   timestamp: string = new Date().toISOString(),
 ): ApiResponseDto<T> {
-  return new ApiResponseDto(statusCode, false, message, data ?? (null as T), path, timestamp);
+  return new ApiResponseDto(
+    statusCode,
+    false,
+    message,
+    data ?? (null as T),
+    path,
+    timestamp,
+  );
 }

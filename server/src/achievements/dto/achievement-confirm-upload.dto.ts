@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsNumber, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumber,
+  Min,
+} from 'class-validator';
 export class AchievementConfirmUploadDto {
   @ApiProperty({ description: 'Achievement ID', example: 'ach-123' })
   @IsNotEmpty({ message: 'achievements.id_required' })
@@ -21,7 +27,10 @@ export class AchievementConfirmUploadDto {
   @IsNumber({}, { message: 'achievements.file_size_must_be_number' })
   @Min(1, { message: 'achievements.file_size_invalid' })
   fileSize!: number;
-  @ApiPropertyOptional({ description: 'Old badge image URL to delete', example: 'https://pub-x.r2.dev/achievement/ach-123/old-uuid.png' })
+  @ApiPropertyOptional({
+    description: 'Old badge image URL to delete',
+    example: 'https://pub-x.r2.dev/achievement/ach-123/old-uuid.png',
+  })
   @IsOptional()
   @IsString({ message: 'achievements.old_url_must_be_string' })
   oldBadgeImageUrl?: string;

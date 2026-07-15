@@ -1,9 +1,16 @@
-import { Entity, Enum, Index, type Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import {
+  Entity,
+  Enum,
+  Index,
+  type Opt,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/core';
 import { Auth$46Role } from './Auth$46Role';
 
 @Entity({ schema: 'auth' })
 export class User {
-
   @PrimaryKey({ type: 'text', defaultRaw: `(gen_random_uuid())::text` })
   id!: string & Opt;
 
@@ -13,7 +20,11 @@ export class User {
   @Property({ type: 'text', nullable: true })
   passwordHash?: string;
 
-  @Unique({ name: 'User_googleId_key', expression: 'CREATE UNIQUE INDEX "User_googleId_key" ON auth."User" USING btree ("googleId")' })
+  @Unique({
+    name: 'User_googleId_key',
+    expression:
+      'CREATE UNIQUE INDEX "User_googleId_key" ON auth."User" USING btree ("googleId")',
+  })
   @Property({ type: 'text', nullable: true })
   googleId?: string;
 
@@ -35,11 +46,19 @@ export class User {
   @Property({ type: 'text', nullable: true })
   banReason?: string;
 
-  @Index({ name: 'User_banExpiresAt_idx', expression: 'CREATE INDEX "User_banExpiresAt_idx" ON auth."User" USING btree ("banExpiresAt") WHERE ("isBanned" = true)' })
+  @Index({
+    name: 'User_banExpiresAt_idx',
+    expression:
+      'CREATE INDEX "User_banExpiresAt_idx" ON auth."User" USING btree ("banExpiresAt") WHERE ("isBanned" = true)',
+  })
   @Property({ nullable: true })
   banExpiresAt?: Date;
 
-  @Index({ name: 'User_deletedAt_idx', expression: 'CREATE INDEX "User_deletedAt_idx" ON auth."User" USING btree ("deletedAt") WHERE ("deletedAt" IS NULL)' })
+  @Index({
+    name: 'User_deletedAt_idx',
+    expression:
+      'CREATE INDEX "User_deletedAt_idx" ON auth."User" USING btree ("deletedAt") WHERE ("deletedAt" IS NULL)',
+  })
   @Property({ nullable: true })
   deletedAt?: Date;
 
@@ -48,5 +67,4 @@ export class User {
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   updatedAt!: Date & Opt;
-
 }

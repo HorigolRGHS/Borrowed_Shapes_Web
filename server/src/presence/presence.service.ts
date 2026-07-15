@@ -7,7 +7,8 @@ import { User } from '../entities/User';
 
 import { UserOnlineStatusRepository } from './repositories/user-online-status.repository';
 
-const presenceDetailsKey = (sessionId: string) => `user_session_details:${sessionId}`;
+const presenceDetailsKey = (sessionId: string) =>
+  `user_session_details:${sessionId}`;
 const onlineZsetKey = 'online_users_by_last_active';
 
 @Injectable()
@@ -21,13 +22,23 @@ export class PresenceService {
     private userOnlineStatusRepository: UserOnlineStatusRepository,
   ) {}
 
-  async touchOnline(userId: string, platform: string, sessionId?: string): Promise<void> {
+  async touchOnline(
+    userId: string,
+    platform: string,
+    sessionId?: string,
+  ): Promise<void> {
     const nowIso = new Date().toISOString();
     const nowMs = Date.now();
 
     if (sessionId) {
       await this.redis.pipeline([
-        { cmd: 'hset', args: [presenceDetailsKey(sessionId), { userId, platform, lastActive: nowIso }] },
+        {
+          cmd: 'hset',
+          args: [
+            presenceDetailsKey(sessionId),
+            { userId, platform, lastActive: nowIso },
+          ],
+        },
         { cmd: 'zadd', args: [onlineZsetKey, nowMs, sessionId] },
       ]);
     }
@@ -45,7 +56,7 @@ export class PresenceService {
       lastOnline: new Date(nowMs),
       onlinePlatforms: Array.from(platforms),
     });
-    await this.em.flush();
+    await this.userOnlineStatusRepository.flush();
   }
 
   async cleanupExpiredSessions(): Promise<void> {
@@ -67,7 +78,10 @@ export class PresenceService {
     const raw = await this.redis.zrangeWithScores(onlineZsetKey);
 
     // raw = [sessionId, score, sessionId, score, ...]
-    const userMap = new Map<string, { platforms: Set<string>; lastActive: number }>();
+    const userMap = new Map<
+      string,
+      { platforms: Set<string>; lastActive: number }
+    >();
 
     for (let i = 0; i < raw.length; i += 2) {
       const sessionId = raw[i];
@@ -75,7 +89,10 @@ export class PresenceService {
       const details = await this.redis.hgetall(presenceDetailsKey(sessionId));
       if (!details?.userId) continue;
 
-      const entry = userMap.get(details.userId) ?? { platforms: new Set<string>(), lastActive: 0 };
+      const entry = userMap.get(details.userId) ?? {
+        platforms: new Set<string>(),
+        lastActive: 0,
+      };
       if (details.platform) entry.platforms.add(details.platform);
       entry.lastActive = Math.max(entry.lastActive, score);
       userMap.set(details.userId, entry);

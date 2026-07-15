@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -18,13 +18,15 @@ import { AuditLogRepository } from './repositories/audit-log.repository';
     EmailModule,
     GameModule,
     PresenceModule,
-    SessionsModule,
+    forwardRef(() => SessionsModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET', 'change-me-in-production'),
-        signOptions: { expiresIn: config.get<number>('ACCESS_TOKEN_TTL_SEC', 900) },
+        signOptions: {
+          expiresIn: config.get<number>('ACCESS_TOKEN_TTL_SEC', 900),
+        },
       }),
     }),
   ],
@@ -37,6 +39,12 @@ import { AuditLogRepository } from './repositories/audit-log.repository';
     UserRepository,
     AuditLogRepository,
   ],
-  exports: [AuthGuard, JwtModule, AuthService, UserRepository, AuditLogRepository],
+  exports: [
+    AuthGuard,
+    JwtModule,
+    AuthService,
+    UserRepository,
+    AuditLogRepository,
+  ],
 })
 export class AuthModule {}

@@ -1,4 +1,14 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, IsDateString, MaxLength, Matches, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsDateString,
+  MaxLength,
+  Matches,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AchievementType } from '../../entities/Achievement';
 

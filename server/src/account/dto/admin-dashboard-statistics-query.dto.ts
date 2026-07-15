@@ -8,7 +8,10 @@ export enum DashboardRange {
 }
 
 export class AdminDashboardStatisticsQueryDto {
-  @ApiPropertyOptional({ enum: DashboardRange, default: DashboardRange.DAYS_30 })
+  @ApiPropertyOptional({
+    enum: DashboardRange,
+    default: DashboardRange.DAYS_30,
+  })
   @IsOptional()
   @IsEnum(DashboardRange)
   range?: DashboardRange = DashboardRange.DAYS_30;

@@ -14,7 +14,7 @@ import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 import { EmailModule } from '../email/email.module';
 
-import { ReportRepository } from './reports.repository';
+import { ReportRepository } from './repositories/reports.repository';
 
 @Module({
   imports: [

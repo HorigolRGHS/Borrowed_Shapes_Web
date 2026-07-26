@@ -48,30 +48,55 @@ export class EmailService {
       });
       this.logger.log(`Email sent to ${to}`);
     } catch (err) {
-      this.logger.error(`Failed to send email to ${to}: ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `Failed to send email to ${to}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
-  private renderBaseEmailTemplate(title: string, bodyHtml: string): string {
+  public renderBaseEmailTemplate(title: string, bodyHtml: string, isCentered: boolean = false): string {
     return `
-      <div style="font-family: Arial, sans-serif; background-color: #0d0d0d; color: #f3f4f6; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
-          <div style="background-color: #0f766e; padding: 20px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Borrowed Shapes</h1>
-          </div>
-          <div style="padding: 30px;">
-            <h2 style="color: #f3f4f6; margin-top: 0;">${title}</h2>
-            <div style="color: #d1d5db; line-height: 1.6; font-size: 16px;">
-              ${bodyHtml}
-            </div>
-            <hr style="border: 0; border-top: 1px solid #333; margin: 30px 0;" />
-            <p style="color: #9ca3af; font-size: 14px; text-align: center; margin: 0;">
-              Borrowed Shapes Team<br/>
-              <a href="#" style="color: #0f766e; text-decoration: none;">Support & Community</a>
-            </p>
-          </div>
-        </div>
-      </div>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #07070f; font-family: 'Arial', sans-serif;">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #07070f; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #0b0b17; border-radius: 16px; border: 1px solid #1e1e3a; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);">
+                <tr>
+                  <td align="center" style="padding: 40px 0 20px 0; background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1px;">Borrowed Shapes</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 32px; color: #d1d5db; font-size: 16px; line-height: 1.6; text-align: ${isCentered ? 'center' : 'left'};">
+                    <h2 style="color: #22d3ee; margin: 0 0 24px 0; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; ${isCentered ? '' : 'text-align: center;'}">${title}</h2>
+                    ${bodyHtml}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 24px 32px; background-color: #080812; border-top: 1px solid #1a1a2e; text-align: center;">
+                    <p style="color: #64748b; font-size: 13px; margin: 0 0 8px 0; line-height: 1.5;">
+                      This is an automated message from <strong>Borrowed Shapes</strong>.<br/>
+                      Please do not reply directly to this email.
+                    </p>
+                    <div style="margin-top: 16px;">
+                      <a href="#" style="color: #7c3aed; text-decoration: none; font-size: 13px; font-weight: 600; margin: 0 10px;">Privacy Policy</a>
+                      <span style="color: #334155;">|</span>
+                      <a href="#" style="color: #7c3aed; text-decoration: none; font-size: 13px; font-weight: 600; margin: 0 10px;">Terms of Service</a>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `;
   }
 
@@ -103,7 +128,11 @@ export class EmailService {
       <p>We appreciate your contribution to maintaining a positive community environment.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendReportWarningEmail(params: {
@@ -125,7 +154,11 @@ export class EmailService {
       <p style="color: #ef4444; font-weight: 600;">Please review the platform rules and community guidelines. Further violations may result in temporary or permanent restriction of your account.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendReportRejectedEmail(params: {
@@ -150,7 +183,11 @@ export class EmailService {
       <p>We appreciate your diligence in reporting potential issues to us.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendAccountBannedEmail(params: {
@@ -190,7 +227,11 @@ export class EmailService {
       <p>If you believe this action was made by mistake, please contact the Borrowed Shapes team through the official contact channels.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendAccountUnbannedEmail(params: {
@@ -206,7 +247,11 @@ export class EmailService {
       <p>Thank you for your understanding.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 
   async sendAccountDeletedEmail(params: {
@@ -223,6 +268,10 @@ export class EmailService {
       <p>If you believe this action was made by mistake, please contact the Borrowed Shapes team through the official contact channels.</p>
     `;
 
-    await this.sendMail(params.to, subject, this.renderBaseEmailTemplate(subject, bodyHtml));
+    await this.sendMail(
+      params.to,
+      subject,
+      this.renderBaseEmailTemplate(subject, bodyHtml),
+    );
   }
 }

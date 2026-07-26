@@ -53,6 +53,8 @@ uploads/
 
 CLAUDE.md
 AGENTS.md
+classdiagram.md
+Fearture.md
 
 docs/
 .superpowers/
@@ -62,3 +64,6 @@ skills-lock.json
 
 SampleFigma/
 test_reports/
+
+Sample/
+

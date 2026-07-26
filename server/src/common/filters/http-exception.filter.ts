@@ -40,12 +40,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         const resObj = res as any;
         rawMessage = resObj.messageKey ?? resObj.message ?? rawMessage;
         // Preserve structured payload (e.g. currentLatest for optimistic concurrency conflicts)
-        const { message: _m, messageKey: _mk, statusCode: _sc, error: _e, ...rest } = resObj;
+        const {
+          message: _m,
+          messageKey: _mk,
+          statusCode: _sc,
+          error: _e,
+          ...rest
+        } = resObj;
         extraData = Object.keys(rest).length > 0 ? rest : null;
       }
 
       // Body parser throws BadRequestException for malformed JSON before DTO validation runs.
-      if (statusCode === HttpStatus.BAD_REQUEST && this.isInvalidJsonPayload(rawMessage)) {
+      if (
+        statusCode === HttpStatus.BAD_REQUEST &&
+        this.isInvalidJsonPayload(rawMessage)
+      ) {
         rawMessage = 'common.invalid_json_payload';
       }
     } else {

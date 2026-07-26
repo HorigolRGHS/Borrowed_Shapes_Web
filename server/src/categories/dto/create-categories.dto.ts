@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsUrl, IsBoolean, IsInt, Length, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsUrl,
+  IsBoolean,
+  IsInt,
+  Length,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
@@ -23,13 +31,21 @@ export class CreateCategoryDto {
   @Length(0, 200)
   slugVi?: string;
 
-  @ApiPropertyOptional({ example: 'This is a general category for discussions.', minLength: 0, maxLength: 500 })
+  @ApiPropertyOptional({
+    example: 'This is a general category for discussions.',
+    minLength: 0,
+    maxLength: 500,
+  })
   @IsOptional()
   @IsString()
   @Length(0, 500)
   description?: string;
 
-  @ApiPropertyOptional({ example: 'Đây là chuyên mục chung cho các cuộc thảo luận.', minLength: 0, maxLength: 500 })
+  @ApiPropertyOptional({
+    example: 'Đây là chuyên mục chung cho các cuộc thảo luận.',
+    minLength: 0,
+    maxLength: 500,
+  })
   @IsOptional()
   @IsString()
   @Length(0, 500)
@@ -37,7 +53,7 @@ export class CreateCategoryDto {
 
   @ApiPropertyOptional({ example: 'https://example.com/icon.png' })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   iconUrl?: string;
 
   @ApiPropertyOptional({ example: false })

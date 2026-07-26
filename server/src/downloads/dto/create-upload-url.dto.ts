@@ -8,7 +8,10 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 export class CreateUploadUrlDto {
-  @ApiProperty({ description: 'Original file name', example: 'BorrowedShapes-1.4.2.exe' })
+  @ApiProperty({
+    description: 'Original file name',
+    example: 'BorrowedShapes-1.4.2.exe',
+  })
   @IsNotEmpty({ message: 'downloads.file_name_required' })
   @IsString()
   fileName!: string;

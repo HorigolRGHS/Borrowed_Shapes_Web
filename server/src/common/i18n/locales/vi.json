@@ -124,7 +124,19 @@
     "upload_missing": "Không có file được tải lên",
     "upload_missing_id": "ID thành tựu là bắt buộc khi tải huy hiệu",
     "upload_failed": "Tải lên thất bại",
-    "uploaded": "Tải huy hiệu thành tựu lên thành công"
+    "uploaded": "Tải huy hiệu thành tựu lên thành công",
+    "upload_url_created": "Tạo liên kết upload thành công",
+    "invalid_file_path": "Đường dẫn file không hợp lệ",
+    "file_not_found_on_storage": "Không tìm thấy file trên bộ nhớ",
+    "id_required": "ID thành tựu là bắt buộc",
+    "id_must_be_string": "ID thành tựu phải là chuỗi ký tự",
+    "file_name_required": "Tên file là bắt buộc",
+    "file_name_must_be_string": "Tên file phải là chuỗi ký tự",
+    "file_size_must_be_number": "Dung lượng file phải là dạng số",
+    "file_size_invalid": "Dung lượng file không hợp lệ",
+    "mime_type_required": "MIME type là bắt buộc",
+    "mime_type_invalid": "MIME type không hợp lệ",
+    "old_url_must_be_string": "URL huy hiệu cũ phải là chuỗi ký tự"
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",
@@ -193,6 +205,30 @@
     "vote_value_invalid": "Giá trị bình chọn phải là 1 hoặc -1",
     "invalid_sort_field": "Trường sort phải là một trong: score, createdAt, updatedAt",
     "invalid_sort_order": "Sort order phải là asc hoặc desc"
+  },
+  "comments": {
+    "thread_not_found": "Không tìm thấy chủ đề",
+    "parent_not_found": "Không tìm thấy bình luận cha",
+    "parent_thread_mismatch": "Bình luận cha thuộc về một chủ đề khác",
+    "user_not_found": "Không tìm thấy người dùng",
+    "comment_not_found": "Không tìm thấy bình luận",
+    "forbidden_edit": "Bạn không có quyền chỉnh sửa bình luận này",
+    "cannot_edit_deleted": "Không thể chỉnh sửa bình luận đã bị xóa",
+    "forbidden_delete": "Bạn không có quyền xóa bình luận này",
+    "invalid_user": "Người dùng không hợp lệ"
+  },
+  "reports": {
+    "cannot_report_self": "Bạn không thể tố cáo chính mình",
+    "cannot_ban_admin": "Bạn không thể xử lý người dùng này",
+    "report_not_found": "Không tìm thấy tố cáo",
+    "forbidden_view": "Bạn không có quyền xem báo cáo này",
+    "already_processed": "Báo cáo đã được xử lý",
+    "no_reported_user": "Không có người dùng bị tố cáo liên quan đến báo cáo này",
+    "forbidden_admin_only": "Chỉ quản trị viên mới được phép thực hiện hành động này",
+    "file_too_large": "Dung lượng tệp bằng chứng vượt quá giới hạn",
+    "user_not_found": "Không tìm thấy người dùng bị tố cáo",
+    "thread_not_found": "Không tìm thấy chủ đề bị tố cáo",
+    "comment_not_found": "Không tìm thấy bình luận bị tố cáo"
   },
   "category": {
     "list_success": "Lấy danh sách danh mục thành công",

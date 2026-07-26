@@ -148,22 +148,50 @@ export default function AchievementsPage() {
 
     try {
       setIsUploadingImage(true);
-      const form = new FormData();
-      form.append("file", file);
-      form.append("achievementId", editingAchievement?.id ?? createAchievementIdRef.current);
-      if (formData.badgeImageUrl) {
-        form.append("oldBadgeImageUrl", formData.badgeImageUrl);
-      }
+      const achievementId = editingAchievement?.id ?? createAchievementIdRef.current;
 
-      const res = await axios.post("/api/achievements/upload", form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      // 1. Get Presigned URL
+      const uploadUrlRes = await axios.post("/api/achievements/admin/upload-url", {
+        fileName: file.name,
+        achievementId,
+        fileSize: file.size,
+        mimeType: file.type,
       });
 
-      const data = res.data ?? res;
-      if (data?.success && data?.data?.url) {
-        const url = data.data.url;
+      const uploadUrlData = uploadUrlRes.data ?? uploadUrlRes;
+      if (!uploadUrlData?.success) {
+        throw new Error(uploadUrlData?.message || "Failed to get upload URL");
+      }
+
+      const { uploadUrl, key, method, headers } = uploadUrlData.data;
+
+      // 2. Upload file directly to R2
+      const putRes = await fetch(uploadUrl, {
+        method: method || "PUT",
+        headers: headers || {
+          "Content-Type": file.type,
+        },
+        body: file,
+        credentials: "omit",
+      });
+
+      if (!putRes.ok) {
+        const errorText = await putRes.text().catch(() => "");
+        throw new Error(`R2 upload failed: ${putRes.status} ${errorText}`);
+      }
+
+      // 3. Confirm upload
+      const confirmRes = await axios.post("/api/achievements/admin/confirm-upload", {
+        achievementId,
+        filePath: key,
+        mimeType: file.type,
+        fileSize: file.size,
+        oldBadgeImageUrl: formData.badgeImageUrl || undefined,
+      });
+
+      const confirmData = confirmRes.data ?? confirmRes;
+      if (confirmData?.success && confirmData?.data?.url) {
+        const url = confirmData.data.url;
         setFormData((prev) => ({ ...prev, badgeImageUrl: url }));
         setFormErrors((prev) => {
           const copy = { ...prev };
@@ -172,7 +200,7 @@ export default function AchievementsPage() {
         });
         toast.success(t("achievements.uploaded") || "Uploaded successfully");
       } else {
-        throw new Error(data?.message || "Upload failed");
+        throw new Error(confirmData?.message || "Upload confirmation failed");
       }
     } catch (err: any) {
       console.error("Upload error:", err);
@@ -200,7 +228,6 @@ export default function AchievementsPage() {
         return "";
       case "badgeImageUrl":
         if (!value.trim()) return t("achievements.validation.badge_url_required");
-        if (!/^https?:\/\/.+/.test(value.trim())) return t("achievements.validation.badge_url_invalid");
         return "";
       case "description": {
         const plainText = value.replace(/<[^>]*>/g, "");
@@ -332,7 +359,7 @@ export default function AchievementsPage() {
   const handleCreate = async () => {
     if (!validateAllFields()) return;
     try {
-      const payload = buildPayload();
+      const payload = buildPayload(false);
       const response = await axios.post("/api/achievements/create", payload);
       if (response.data?.success) {
         toast.success(t("achievements.create_success"));
@@ -356,7 +383,7 @@ export default function AchievementsPage() {
     if (!validateAllFields()) return;
 
     try {
-      const payload = buildPayload();
+      const payload = buildPayload(true);
 
       const response = await axios.put(
         `/api/achievements/update/${editingAchievement.id}`,
@@ -447,8 +474,9 @@ export default function AchievementsPage() {
     setFormTouched({});
   };
 
-  const buildPayload = () => ({
+  const buildPayload = (isEdit: boolean) => ({
     ...formData,
+    ...(isEdit ? {} : { id: createAchievementIdRef.current }),
     seasonMonth:
       formData.type === "SEASONAL" && formData.seasonMonth
         ? formData.seasonMonth
@@ -684,12 +712,21 @@ export default function AchievementsPage() {
                                   className="h-full w-full object-cover"
                                 />
                               </div>
-                              <span className="font-medium text-foreground">{achievement.name}</span>
+                              <span 
+                                className="font-medium text-foreground truncate max-w-[120px] sm:max-w-[200px] block"
+                                title={achievement.name}
+                              >
+                                {achievement.name}
+                              </span>
                             </div>
                           </TableCell>
                           {/* Criteria Code */}
                           <TableCell>
-                            <Badge variant="outline" className={`${BADGE_BASE_CLASS} border-amber-500/60 bg-amber-500/10 text-amber-300`}>
+                            <Badge 
+                              variant="outline" 
+                              className={`${BADGE_BASE_CLASS} border-amber-500/60 bg-amber-500/10 text-amber-300 truncate max-w-[120px] sm:max-w-[150px] inline-block align-bottom`}
+                              title={achievement.criteriaCode}
+                            >
                               {achievement.criteriaCode}
                             </Badge>
                           </TableCell>

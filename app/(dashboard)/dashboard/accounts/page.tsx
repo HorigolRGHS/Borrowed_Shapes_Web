@@ -226,9 +226,9 @@ export default function AccountManagementPage() {
   }, []);
 
   // API Call: Fetch list
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchUsers = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
+    if (!isBackground) setError(null);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -246,9 +246,9 @@ export default function AccountManagementPage() {
       setTotalPages(data.pagination?.totalPages || 1);
       setTotal(data.pagination?.total || data.items?.length || 0);
     } catch (err: any) {
-      setError(err.message || t("admin.account.messages.generic_error"));
+      if (!isBackground) setError(err.message || t("admin.account.messages.generic_error"));
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, [page, searchTrigger, roleFilter, statusFilter, sortBy, sort]);
 
@@ -275,29 +275,14 @@ export default function AccountManagementPage() {
     fetchUsers().then(() => fetchPresenceData());
   }, [fetchUsers, fetchPresenceData]);
 
-  // Polling presence
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchPresenceData();
-    };
 
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        fetchPresenceData();
-      }
-    }, 15000); // 15s heartbeat check
-
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [fetchPresenceData]);
 
   // API Call: Fetch details
-  const fetchUserSessions = async (id: string) => {
-    setSessionsLoading(true);
-    setSessionsChecked(false);
+  const fetchUserSessions = useCallback(async (id: string, isBackground = false) => {
+    if (!isBackground) {
+      setSessionsLoading(true);
+      setSessionsChecked(false);
+    }
     console.log("[RevokeSession] fetching sessions", id);
     try {
       const res = await api.get(`/sessions/admin/users/${id}`);
@@ -305,12 +290,24 @@ export default function AccountManagementPage() {
       setSessions(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error("[RevokeSession] failed to fetch sessions", err);
-      setSessions([]);
+      if (!isBackground) setSessions([]);
     } finally {
-      setSessionsLoading(false);
-      setSessionsChecked(true);
+      if (!isBackground) {
+        setSessionsLoading(false);
+        setSessionsChecked(true);
+      }
     }
-  };
+  }, []);
+
+  const fetchUserDetails = useCallback(async (id: string, isBackground = false) => {
+    try {
+      const res = await api.get(`/account/admin/users/${id}`);
+      setSelectedUser(res.data || res);
+      fetchUserSessions(id, isBackground);
+    } catch (err: any) {
+      console.error(err);
+    }
+  }, [fetchUserSessions]);
 
   useEffect(() => {
     if (viewingDetail && selectedUser?.id) {
@@ -320,17 +317,34 @@ export default function AccountManagementPage() {
       setSessions([]);
       setSessionsChecked(false);
     }
-  }, [viewingDetail, selectedUser?.id]);
+  }, [viewingDetail, selectedUser?.id, fetchUserSessions]);
 
-  const fetchUserDetails = async (id: string) => {
-    try {
-      const res = await api.get(`/account/admin/users/${id}`);
-      setSelectedUser(res.data || res);
-      fetchUserSessions(id);
-    } catch (err: any) {
-      console.error(err);
-    }
-  };
+  // Polling presence and lists
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchPresenceData();
+      fetchUsers(true);
+      if (viewingDetail && selectedUser?.id) {
+        fetchUserDetails(selectedUser.id, true);
+      }
+    };
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchPresenceData();
+        fetchUsers(true);
+        if (viewingDetail && selectedUser?.id) {
+          fetchUserDetails(selectedUser.id, true);
+        }
+      }
+    }, 15000); // 15s heartbeat check
+
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchPresenceData, fetchUsers, fetchUserDetails, viewingDetail, selectedUser?.id]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -424,7 +438,12 @@ export default function AccountManagementPage() {
     try {
       let expires = null;
       if (banForm.banExpiresAt) {
-        expires = new Date(banForm.banExpiresAt).toISOString();
+        const banDate = new Date(banForm.banExpiresAt);
+        if (banDate <= new Date()) {
+          toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
+          return;
+        }
+        expires = banDate.toISOString();
       }
       await api.patch(`/account/admin/users/${selectedUser?.id}/ban`, {
         reason: stripHtml(banForm.reason), // Ensure we only store plain text to prevent XSS

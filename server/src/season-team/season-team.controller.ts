@@ -13,7 +13,10 @@ import {
 import type { Request } from 'express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto } from '../common/dto/api-response.dto';
-import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  type RequestUser,
+} from '../auth/decorators/current-user.decorator';
 import { SeasonTeamService } from './season-team.service';
 import { CreateSeasonTeamDto } from './dto/create-season-team.dto';
 import { JoinSeasonTeamDto } from './dto/join-season-team.dto';

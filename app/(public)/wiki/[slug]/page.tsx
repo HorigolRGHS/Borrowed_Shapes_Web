@@ -114,7 +114,12 @@ export default async function WikiDetailPage({
           Wiki
         </Link>
         <span className="mx-2">›</span>
-        <span className="text-foreground">{title}</span>
+        <span 
+          className="text-foreground truncate max-w-[250px] inline-block align-bottom"
+          title={title}
+        >
+          {title}
+        </span>
       </nav>
 
       <WikiPageShell

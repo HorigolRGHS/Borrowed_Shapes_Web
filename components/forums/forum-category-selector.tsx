@@ -54,7 +54,10 @@ export default function ForumCategorySelector({
               </div>
             )}
             <div>
-              <h3 className="text-slate-900 dark:text-white font-bold text-lg transition-colors group-hover:text-violet-500">
+              <h3 
+                className="text-slate-900 dark:text-white font-bold text-lg transition-colors group-hover:text-violet-500 line-clamp-2 break-words"
+                title={cat.name}
+              >
                 {cat.name}
               </h3>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">

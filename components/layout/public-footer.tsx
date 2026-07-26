@@ -87,13 +87,8 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
-                  {t("footer.privacy")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
-                  {t("footer.terms")}
+                <Link href="/legal" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
+                  {t("footer.termsAndPolicy") || "Terms & Policy"}
                 </Link>
               </li>
             </ul>

@@ -1,4 +1,3 @@
-// app/api/achievements/upload/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import type { ApiResponse } from "@/models/dtos/api-response.dto";
@@ -8,19 +7,20 @@ const BACKEND_BASE =
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
+    const body = await req.json();
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
     const locale = cookieStore.get("NEXT_LOCALE")?.value ?? "en";
 
     const headers: Record<string, string> = {
+      "Content-Type": "application/json",
       "Accept-Language": locale,
     };
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-    const upstream = await fetch(`${BACKEND_BASE}/achievements/upload`, {
+    const upstream = await fetch(`${BACKEND_BASE}/achievements/admin/upload-url`, {
       method: "POST",
-      body: formData,
+      body: JSON.stringify(body),
       headers,
     });
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const errorRes: ApiResponse<null> = {
       statusCode: 502,
       success: false,
-      message: err instanceof Error ? err.message : "Upload upstream unavailable",
+      message: err instanceof Error ? err.message : "Upstream unavailable",
       data: null,
       path: req.nextUrl.pathname,
       timestamp: new Date().toISOString(),

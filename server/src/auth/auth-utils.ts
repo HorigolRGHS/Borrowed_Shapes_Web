@@ -1,10 +1,14 @@
 import { ForbiddenException } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { User } from '../entities/User';
-import { AuditLog } from '../entities/AuditLog';
+import { AuditService } from '../audit/audit.service';
 import { AuditActionType } from '../entities/AuditActionType';
 
-export async function ensureAccountActive(user: User, em: EntityManager): Promise<void> {
+export async function ensureAccountActive(
+  user: User,
+  em: EntityManager,
+  auditService: AuditService,
+): Promise<void> {
   if (user.deletedAt) {
     throw new ForbiddenException({
       code: 'ACCOUNT_DELETED',
@@ -28,9 +32,9 @@ export async function ensureAccountActive(user: User, em: EntityManager): Promis
       user.banReason = undefined;
       user.banExpiresAt = undefined;
 
-      const auditLog = em.create(AuditLog, {
-        userId: null,
+      await auditService.recordInCurrentUnitOfWork({
         actionType: AuditActionType.UNBAN_USER,
+        userId: user.id,
         entityName: 'User',
         entityId: user.id,
         oldValue: {
@@ -40,17 +44,15 @@ export async function ensureAccountActive(user: User, em: EntityManager): Promis
           banExpiresAt: oldBanExpiresAt,
         },
         newValue: {
+          operation: 'AUTO_UNBAN',
           isBanned: false,
           bannedAt: null,
           banReason: null,
           banExpiresAt: null,
-          auto: true,
-          reason: 'BAN_EXPIRED_AUTO_UNBAN',
         },
-        ipAddress: null,
+        ipAddress: null, // As there's no IP context available here currently
       });
 
-      em.persist(auditLog);
       await em.flush();
       return;
     }
@@ -61,7 +63,9 @@ export async function ensureAccountActive(user: User, em: EntityManager): Promis
       ban: {
         reason: user.banReason ?? null,
         bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,
-        banExpiresAt: user.banExpiresAt ? user.banExpiresAt.toISOString() : null,
+        banExpiresAt: user.banExpiresAt
+          ? user.banExpiresAt.toISOString()
+          : null,
         isPermanent: !user.banExpiresAt,
       },
     });
@@ -75,15 +79,18 @@ export async function ensureAccountActive(user: User, em: EntityManager): Promis
 export function getProxyAvatarUrl(
   imgUrl: string | null | undefined,
   userId: string,
-  updatedAt: Date
+  updatedAt: Date,
 ): string | null {
   if (!imgUrl) return null;
   if (imgUrl.startsWith('/api/')) return imgUrl;
 
-  const r2Base = process.env.R2_PUBLIC_DEV_URL || 'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev';
+  const r2Base =
+    process.env.R2_PUBLIC_DEV_URL ||
+    'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev';
 
   if (imgUrl.startsWith(r2Base) || imgUrl.startsWith('avatars/')) {
-    const version = updatedAt.getTime();
+    const d = typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt;
+    const version = d.getTime();
     return `/api/account/avatar/${userId}?v=${version}`;
   }
 

@@ -14,6 +14,13 @@ import { ForumThreadStatus } from '../../entities/ForumThreadStatus';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateForumDto {
+  @ApiPropertyOptional({
+    example: '3bcdd74c-a56f-4e1a-ad62-581be8d9cdca',
+  })
+  @IsOptional()
+  @IsUUID('4', { message: 'forums.thread_id_invalid' })
+  id?: string;
+
   @ApiProperty({
     example: 'How to get over it?',
   })
@@ -45,7 +52,7 @@ export class CreateForumDto {
     example: 'https://example.com/image.jpg',
   })
   @IsOptional()
-  @IsUrl({}, { message: 'forums.invalid_image_url' })
+  @IsString({ message: 'forums.invalid_image_url' })
   imageUrl?: string;
 
   @ApiPropertyOptional({

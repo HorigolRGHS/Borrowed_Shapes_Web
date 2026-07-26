@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Plus } from "lucide-react";
-import CreateThreadModal from "@/components/forums/create-thread-modal";
+import dynamic from "next/dynamic";
+const CreateThreadModal = dynamic(() => import("@/components/forums/create-thread-modal"), { ssr: false });
 import { getUserProfile } from "@/lib/api/api-client";
 import { toast } from "react-toastify";
 import Link from "next/link";
@@ -153,44 +154,40 @@ export default function ForumsPage() {
     setMessage(null);
 
     try {
+      const threadId = crypto.randomUUID();
+      let finalImageUrl = null;
+
+      if (file) {
+        const uploadResp = await axios.post("/api/forums/upload", {
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          threadId: threadId,
+        });
+
+        const uploadData = uploadResp.data?.data;
+        if (uploadData) {
+          const putRes = await fetch(uploadData.uploadUrl, {
+            method: uploadData.method,
+            headers: uploadData.headers,
+            body: file,
+          });
+
+          if (!putRes.ok) {
+            throw new Error("Thread image upload failed");
+          }
+          finalImageUrl = uploadData.publicUrl;
+        }
+      }
+
       const createPayload = {
         ...payload,
-        imageUrl: null,
+        id: threadId,
+        imageUrl: finalImageUrl,
       };
       const response = await axios.post("/api/forums/create", createPayload);
 
       if (response.data?.success) {
-        const createdThread = response.data.data;
-        const threadId = createdThread.id;
-        let finalImageUrl = null;
-
-        if (file) {
-          const uploadResp = await axios.post("/api/forums/upload", {
-            fileName: file.name,
-            fileSize: file.size,
-            mimeType: file.type,
-            threadId: threadId,
-          });
-
-          const uploadData = uploadResp.data?.data;
-          if (uploadData) {
-            const putRes = await fetch(uploadData.uploadUrl, {
-              method: uploadData.method,
-              headers: uploadData.headers,
-              body: file,
-            });
-
-            if (!putRes.ok) {
-              throw new Error("Thread image upload failed");
-            }
-            finalImageUrl = uploadData.publicUrl;
-
-            await axios.patch(`/api/forums/update/${threadId}`, {
-              imageUrl: finalImageUrl,
-            });
-          }
-        }
-
         toast.success(t("forums.thread_created"));
         setMessage(t("forums.thread_created"));
         setShowCreate(false);
@@ -203,14 +200,21 @@ export default function ForumsPage() {
           fetchThreads();
         }
       } else {
-        const errMsg = response.data?.message || t("forums.create_failed");
-        setMessage(errMsg);
-        toast.error(errMsg);
+        const errMsg = response.data?.message;
+        const displayMsg = errMsg ? t(errMsg) : t("forums.create_failed");
+        setMessage(displayMsg);
+        toast.error(displayMsg);
       }
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || t("forums.create_failed");
-      setMessage(errMsg);
-      toast.error(errMsg);
+      const msg = error.response?.data?.message;
+      let displayMsg = t("forums.create_failed");
+      if (msg) {
+        displayMsg = Array.isArray(msg) ? msg.map((m: string) => t(m)).join(", ") : t(msg);
+      } else if (error.message) {
+        displayMsg = error.message;
+      }
+      setMessage(displayMsg);
+      toast.error(displayMsg);
     }
   };
 
@@ -284,7 +288,10 @@ export default function ForumsPage() {
                     Forums
                   </Link>
                   <span className="text-slate-300 dark:text-slate-700">/</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[200px]">
+                  <span 
+                    className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[200px]"
+                    title={categories.find(c => c.id === selectedCategory)?.name}
+                  >
                     {categories.find(c => c.id === selectedCategory)?.name}
                   </span>
                 </div>

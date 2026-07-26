@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { FilterQuery } from '@mikro-orm/core';
 import { Announcement } from '../entities/Announcement';
-import { User } from '../entities/User';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import {
@@ -14,7 +16,9 @@ import {
   AnnouncementAdminListItemDto,
   AnnouncementAdminDetailDto,
 } from './dto/announcements-response.dto';
-import { escapeLike } from '../common/utils/sql-like';
+import { AnnouncementRepository } from './repositories/announcements.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -29,7 +33,10 @@ function parseLang(raw?: string): Lang {
 
 @Injectable()
 export class AnnouncementService {
-  constructor(private readonly em: EntityManager) { }
+  constructor(
+    private readonly announcementRepository: AnnouncementRepository,
+    private readonly auditService: AuditService,
+  ) {}
 
   // --- Public (user-facing) ---
 
@@ -39,70 +46,44 @@ export class AnnouncementService {
   ): Promise<AnnouncementPublicListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const offset = (page - 1) * limit;
+    const [announcements, total] =
+      await this.announcementRepository.findPublicAnnouncements(query);
 
-    const where: FilterQuery<Announcement> = {
-      isPublished: true,
-      publishedAt: { $lte: new Date() },
+    const items: AnnouncementPublicListItemDto[] = announcements.map((a) =>
+      this.toPublicListDto(a, lang),
+    );
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     };
-
-    if (query.type) {
-      where.type = query.type;
-    }
-
-    if (query.q && query.q.trim().length > 0) {
-      const pattern = `%${escapeLike(query.q.trim())}%`;
-      where.$or = [
-        { title: { $ilike: pattern } },
-        { titleVi: { $ilike: pattern } },
-        { summary: { $ilike: pattern } },
-        { summaryVi: { $ilike: pattern } },
-      ];
-    }
-
-    const sortBy = query.sortBy ?? 'publishedAt';
-    const order = query.order ?? 'desc';
-
-    const [announcements, total] = await this.em.findAndCount(
-      Announcement,
-      where,
-      {
-        populate: ['authorId'],
-        orderBy: [
-          { isPinned: 'desc' },
-          { [sortBy]: order },
-          { id: 'desc' },
-        ],
-        limit,
-        offset,
-      },
-    );
-
-    const items: AnnouncementPublicListItemDto[] = announcements.map(
-      (a) => this.toPublicListDto(a, lang),
-    );
-
-    return { items, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
   }
 
-  async findOnePublic(slug: string, lang: Lang): Promise<AnnouncementPublicDetailDto> {
-    const where: FilterQuery<Announcement> = {
-      $or: [
-        { slug },
-        { slugVi: slug },
-      ],
-    };
-
-    const announcement = await this.em.findOne(Announcement, where, {
-      populate: ['authorId'],
-    });
+  async findOnePublic(
+    slug: string,
+    lang: Lang,
+  ): Promise<AnnouncementPublicDetailDto> {
+    const announcement = await this.announcementRepository.findOne(
+      {
+        $or: [{ slug }, { slugVi: slug }],
+      },
+      {
+        populate: ['authorId'],
+      },
+    );
 
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
 
     const now = new Date();
-    if (!announcement.isPublished || (announcement.publishedAt && announcement.publishedAt > now)) {
+    if (
+      !announcement.isPublished ||
+      (announcement.publishedAt && announcement.publishedAt > now)
+    ) {
       throw new NotFoundException('announcements.not_found');
     }
 
@@ -116,53 +97,29 @@ export class AnnouncementService {
   ): Promise<AnnouncementAdminListResponseDto> {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
-    const offset = (page - 1) * limit;
+    const [announcements, total] =
+      await this.announcementRepository.findAdminAnnouncements(query);
 
-    const where: FilterQuery<Announcement> = {};
-
-    if (query.type) {
-      where.type = query.type;
-    }
-
-    if (query.q && query.q.trim().length > 0) {
-      const pattern = `%${escapeLike(query.q.trim())}%`;
-      where.$or = [
-        { title: { $ilike: pattern } },
-        { titleVi: { $ilike: pattern } },
-        { summary: { $ilike: pattern } },
-        { summaryVi: { $ilike: pattern } },
-      ];
-    }
-
-    const sortBy = query.sortBy ?? 'publishedAt';
-    const order = query.order ?? 'desc';
-
-    const [announcements, total] = await this.em.findAndCount(
-      Announcement,
-      where,
-      {
-        populate: ['authorId'],
-        orderBy: [
-          { isPinned: 'desc' },
-          { [sortBy]: order },
-          { id: 'desc' },
-        ],
-        limit,
-        offset,
-      },
+    const items: AnnouncementAdminListItemDto[] = announcements.map((a) =>
+      this.toAdminListDto(a),
     );
 
-    const items: AnnouncementAdminListItemDto[] = announcements.map(
-      (a) => this.toAdminListDto(a),
-    );
-
-    return { items, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async findOneAdmin(id: string): Promise<AnnouncementAdminDetailDto> {
-    const announcement = await this.em.findOne(Announcement, { id }, {
-      populate: ['authorId'],
-    });
+    const announcement = await this.announcementRepository.findOne(
+      { id },
+      {
+        populate: ['authorId'],
+      },
+    );
 
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
@@ -171,22 +128,19 @@ export class AnnouncementService {
     return this.toAdminDetailDto(announcement);
   }
 
-  // --- Mutations (unchanged) ---
+  // --- Mutations ---
 
   async create(dto: CreateAnnouncementDto, authorId: string): Promise<null> {
-    // Check if slug or slug_vi are already taken
-    const existing = await this.em.findOne(Announcement, {
-      $or: [
-        { slug: dto.slug },
-        { slugVi: dto.slugVi },
-      ],
+    const existing = await this.announcementRepository.checkSlugUniqueness({
+      slug: dto.slug,
+      slugVi: dto.slugVi,
     });
 
     if (existing) {
       throw new BadRequestException('announcements.slug_taken');
     }
 
-    const author = this.em.getReference(User, authorId);
+    const author = this.announcementRepository.getUserReference(authorId);
     let publishedAt: Date | undefined;
     if (dto.publishedAt) {
       publishedAt = new Date(dto.publishedAt);
@@ -194,45 +148,60 @@ export class AnnouncementService {
       publishedAt = new Date();
     }
 
-    const announcement = this.em.create(Announcement, {
+    const announcement = this.announcementRepository.create({
       ...dto,
       authorId: author,
       publishedAt,
     });
 
-    await this.em.persistAndFlush(announcement);
+    await this.announcementRepository.persistAndFlush(announcement);
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'Announcement',
+      entityId: announcement.id,
+      newValue: {
+        title: announcement.title,
+        type: announcement.type,
+      },
+    });
+
+    await this.announcementRepository.flush();
 
     return null;
   }
 
-  async update(id: string, dto: UpdateAnnouncementDto): Promise<null> {
-    const announcement = await this.em.findOne(Announcement, { id }, {
-      populate: ['authorId'],
-    });
+  async update(
+    id: string,
+    dto: UpdateAnnouncementDto,
+    authorId?: string,
+  ): Promise<null> {
+    const announcement = await this.announcementRepository.findOne(
+      { id },
+      {
+        populate: ['authorId'],
+      },
+    );
 
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
 
-    // Check slug uniqueness if updated
     if (dto.slug || dto.slugVi) {
-      const conditions: FilterQuery<Announcement>[] = [];
-      if (dto.slug) conditions.push({ slug: dto.slug });
-      if (dto.slugVi) conditions.push({ slugVi: dto.slugVi });
-
-      const existing = await this.em.findOne(Announcement, {
-        $and: [
-          { id: { $ne: id } },
-          { $or: conditions },
-        ],
-      });
+      const existing = await this.announcementRepository.checkSlugUniqueness(
+        {
+          slug: dto.slug,
+          slugVi: dto.slugVi,
+        },
+        id,
+      );
 
       if (existing) {
         throw new BadRequestException('announcements.slug_taken');
       }
     }
 
-    // Update publishedAt logic if state toggles to published and has no publishedAt
     let publishedAt = announcement.publishedAt;
     if (dto.publishedAt !== undefined) {
       publishedAt = dto.publishedAt ? new Date(dto.publishedAt) : undefined;
@@ -240,35 +209,63 @@ export class AnnouncementService {
       publishedAt = new Date();
     }
 
-    this.em.assign(announcement, {
+    this.announcementRepository.assign(announcement, {
       ...dto,
       publishedAt,
     });
 
-    await this.em.flush();
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'Announcement',
+      entityId: announcement.id,
+      newValue: {
+        title: announcement.title,
+        type: announcement.type,
+      },
+    });
+
+    await this.announcementRepository.flush();
 
     return null;
   }
 
-  async delete(id: string): Promise<void> {
-    const announcement = await this.em.findOne(Announcement, { id });
+  async delete(id: string, authorId?: string): Promise<void> {
+    const announcement = await this.announcementRepository.findOne({ id });
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
-    await this.em.removeAndFlush(announcement);
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'Announcement',
+      entityId: announcement.id,
+      oldValue: {
+        title: announcement.title,
+        type: announcement.type,
+      },
+    });
+
+    await this.announcementRepository.removeAndFlush(announcement);
   }
 
   // --- Mappers ---
 
   private buildAuthor(a: Announcement) {
     const author = a.authorId;
-    return author && author.id ? {
-      id: author.id,
-      displayName: (author.displayName as string | undefined) ?? '',
-    } : null;
+    return author && author.id
+      ? {
+          id: author.id,
+          displayName: (author.displayName as string | undefined) ?? '',
+        }
+      : null;
   }
 
-  private toPublicListDto(a: Announcement, lang: Lang): AnnouncementPublicListItemDto {
+  private toPublicListDto(
+    a: Announcement,
+    lang: Lang,
+  ): AnnouncementPublicListItemDto {
     const isVi = lang === 'vi';
     return {
       slug: isVi ? a.slugVi : a.slug,
@@ -284,7 +281,10 @@ export class AnnouncementService {
     };
   }
 
-  private toPublicDetailDto(a: Announcement, lang: Lang): AnnouncementPublicDetailDto {
+  private toPublicDetailDto(
+    a: Announcement,
+    lang: Lang,
+  ): AnnouncementPublicDetailDto {
     const isVi = lang === 'vi';
     return {
       slug: isVi ? a.slugVi : a.slug,

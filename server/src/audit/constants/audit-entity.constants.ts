@@ -1,0 +1,17 @@
+export const SENSITIVE_KEYS = [
+  'password',
+  'passwordHash',
+  'accessToken',
+  'refreshToken',
+  'token',
+  'jwt',
+  'cookie',
+  'authorization',
+  'secret',
+  'resetToken',
+  'verificationToken',
+  'oauthToken',
+  'googleToken',
+  'presignedUrl',
+  'signedUrl',
+];

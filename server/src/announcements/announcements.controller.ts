@@ -13,12 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 import { AnnouncementService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
@@ -39,7 +34,7 @@ import { Public } from '../auth/decorators/public.decorator';
 @ApiTags('Announcements')
 @Controller('announcements')
 export class AnnouncementController {
-  constructor(private readonly announcementService: AnnouncementService) { }
+  constructor(private readonly announcementService: AnnouncementService) {}
 
   @Public()
   @Get()
@@ -50,20 +45,34 @@ export class AnnouncementController {
     @Headers('accept-language') lang: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AnnouncementPublicListResponseDto>> {
-    const data = await this.announcementService.findAllPublic(query, lang?.toLowerCase().startsWith('vi') ? 'vi' : 'en');
-    return okResponse('announcements.list_success', data, `${req.method} ${req.path}`);
+    const data = await this.announcementService.findAllPublic(
+      query,
+      lang?.toLowerCase().startsWith('vi') ? 'vi' : 'en',
+    );
+    return okResponse(
+      'announcements.list_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
   @Get('admin')
-  @ApiOperation({ summary: 'Admin: List all announcements (including drafts/scheduled, no content)' })
+  @ApiOperation({
+    summary:
+      'Admin: List all announcements (including drafts/scheduled, no content)',
+  })
   @ApiResponse({ status: 200, type: AnnouncementAdminListResponseDto })
   async findAllAdmin(
     @Query() query: ListAnnouncementsQueryDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AnnouncementAdminListResponseDto>> {
     const data = await this.announcementService.findAllAdmin(query);
-    return okResponse('announcements.list_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'announcements.list_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Public()
@@ -75,20 +84,33 @@ export class AnnouncementController {
     @Headers('accept-language') lang: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AnnouncementPublicDetailDto>> {
-    const data = await this.announcementService.findOnePublic(slug, lang?.toLowerCase().startsWith('vi') ? 'vi' : 'en');
-    return okResponse('announcements.detail_success', data, `${req.method} ${req.path}`);
+    const data = await this.announcementService.findOnePublic(
+      slug,
+      lang?.toLowerCase().startsWith('vi') ? 'vi' : 'en',
+    );
+    return okResponse(
+      'announcements.detail_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
   @Get('admin/:id')
-  @ApiOperation({ summary: 'Admin: Get full details of any announcement by ID' })
+  @ApiOperation({
+    summary: 'Admin: Get full details of any announcement by ID',
+  })
   @ApiResponse({ status: 200, type: AnnouncementAdminDetailDto })
   async findOneAdmin(
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<AnnouncementAdminDetailDto>> {
     const data = await this.announcementService.findOneAdmin(id);
-    return okResponse('announcements.detail_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'announcements.detail_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Post()
@@ -102,7 +124,11 @@ export class AnnouncementController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const data = await this.announcementService.create(dto, user.userId);
-    return okResponse('announcements.create_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'announcements.create_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Put(':id')
@@ -113,10 +139,15 @@ export class AnnouncementController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateAnnouncementDto,
+    @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    const data = await this.announcementService.update(id, dto);
-    return okResponse('announcements.update_success', data, `${req.method} ${req.path}`);
+    const data = await this.announcementService.update(id, dto, user.userId);
+    return okResponse(
+      'announcements.update_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Delete(':id')
@@ -125,9 +156,14 @@ export class AnnouncementController {
   @ApiOperation({ summary: 'Delete announcement' })
   async delete(
     @Param('id') id: string,
+    @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.announcementService.delete(id);
-    return okResponse('announcements.delete_success', null, `${req.method} ${req.path}`);
+    await this.announcementService.delete(id, user.userId);
+    return okResponse(
+      'announcements.delete_success',
+      null,
+      `${req.method} ${req.path}`,
+    );
   }
 }

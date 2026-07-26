@@ -3,6 +3,8 @@ import { SessionsService } from './sessions.service';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { RedisService } from '../redis/redis.service';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { UserSessionRepository } from './repositories/user-session.repository';
+import { AuditService } from '../audit/audit.service';
 
 const mockRedis = {
   hgetall: jest.fn(),
@@ -21,6 +23,21 @@ const mockEm = {
   getReference: jest.fn((_, id) => ({ id })),
 };
 
+const mockUserSessionRepo = {
+  findSessionsByUserId: jest.fn((userId) =>
+    mockEm.find('UserSession', { userId }),
+  ),
+  findOne: jest.fn((filter) => mockEm.findOne('UserSession', filter)),
+  revokeSessionById: jest.fn((id) =>
+    mockEm.nativeUpdate('UserSession', { id }, { status: 'REVOKED' }),
+  ),
+  nativeUpdate: jest.fn((...args) => mockEm.nativeUpdate(...args)),
+};
+
+const mockAuditService = {
+  recordStandalone: jest.fn().mockResolvedValue(undefined),
+};
+
 describe('SessionsService', () => {
   let service: SessionsService;
 
@@ -30,6 +47,8 @@ describe('SessionsService', () => {
         SessionsService,
         { provide: EntityManager, useValue: mockEm },
         { provide: RedisService, useValue: mockRedis },
+        { provide: UserSessionRepository, useValue: mockUserSessionRepo },
+        { provide: AuditService, useValue: mockAuditService },
       ],
     }).compile();
     service = module.get(SessionsService);
@@ -42,7 +61,9 @@ describe('SessionsService', () => {
   describe('revoke', () => {
     it('throws NotFoundException when session does not exist', async () => {
       mockEm.findOne.mockResolvedValue(null);
-      await expect(service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws ForbiddenException when non-owner non-admin tries to revoke', async () => {
@@ -52,7 +73,9 @@ describe('SessionsService', () => {
         sessionId: 'sess_1',
         platform: 'web',
       });
-      await expect(service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1')).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1'),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('allows ADMIN to revoke any session', async () => {
@@ -63,7 +86,9 @@ describe('SessionsService', () => {
         platform: null,
       });
 
-      await expect(service.revoke('db_id_1', 'admin_user', 'ADMIN', '127.0.0.1')).resolves.toBeUndefined();
+      await expect(
+        service.revoke('db_id_1', 'admin_user', 'ADMIN', '127.0.0.1'),
+      ).resolves.toBeUndefined();
     });
 
     it('deletes Redis key and updates DB to REVOKED when platform matches', async () => {
@@ -80,7 +105,10 @@ describe('SessionsService', () => {
       await service.revoke('db_id_1', 'user_1', 'USER', '127.0.0.1');
 
       expect(mockRedis.del).toHaveBeenCalledWith('rt:user_1:web');
-      expect(mockRedis.zrem).toHaveBeenCalledWith('online_users_by_last_active', 'sess_1');
+      expect(mockRedis.zrem).toHaveBeenCalledWith(
+        'online_users_by_last_active',
+        'sess_1',
+      );
       expect(mockRedis.del).toHaveBeenCalledWith('user_session_details:sess_1');
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
         expect.anything(),

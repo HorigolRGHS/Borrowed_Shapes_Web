@@ -1,33 +1,41 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { EntityManager } from '@mikro-orm/postgresql';
-import { AchievementService, getEffectiveExpiresAt } from './achievements.service';
+import {
+  AchievementService,
+  getEffectiveExpiresAt,
+} from './achievements.service';
 import { Achievement, AchievementType } from '../entities/Achievement';
-import { UserAchievement } from '../entities/UserAchievement';
-import { GameProfile } from '../entities/GameProfile';
 import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
+import { AchievementRepository } from './repositories/achievements.repository';
 
 describe('AchievementService', () => {
   let service: AchievementService;
-  let em: EntityManager;
+  let repository: AchievementRepository;
   let r2StorageService: R2StorageService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: 'AuditService', useValue: {} },
         AchievementService,
         {
-          provide: EntityManager,
+          provide: AchievementRepository,
           useValue: {
-            find: jest.fn(),
+            findAll: jest.fn(),
+            execute: jest.fn(),
             findOne: jest.fn(),
-            create: jest.fn(),
+            findOneByCriteria: jest.fn(),
+            findOneByCriteriaExcludeId: jest.fn(),
+            countUserAchievements: jest.fn(),
+            findUserAchievements: jest.fn(),
+            findOneUserAchievement: jest.fn(),
+            createAchievement: jest.fn(),
+            createUserAchievement: jest.fn(),
             persistAndFlush: jest.fn(),
             assign: jest.fn(),
             flush: jest.fn(),
             removeAndFlush: jest.fn(),
-            count: jest.fn(),
+            findGameProfilesWithEquippedAchievements: jest.fn(),
           },
         },
         {
@@ -35,6 +43,8 @@ describe('AchievementService', () => {
           useValue: {
             putObject: jest.fn(),
             deleteObject: jest.fn(),
+            createUploadUrl: jest.fn(),
+            objectExists: jest.fn(),
           },
         },
         {
@@ -54,7 +64,7 @@ describe('AchievementService', () => {
     }).compile();
 
     service = module.get<AchievementService>(AchievementService);
-    em = module.get<EntityManager>(EntityManager);
+    repository = module.get<AchievementRepository>(AchievementRepository);
     r2StorageService = module.get<R2StorageService>(R2StorageService);
   });
 
@@ -65,7 +75,7 @@ describe('AchievementService', () => {
   describe('findAll', () => {
     it('should return all achievements (Normal)', async () => {
       const achievements = [new Achievement()];
-      jest.spyOn(em, 'find').mockResolvedValue(achievements);
+      jest.spyOn(repository, 'findAll').mockResolvedValue(achievements);
 
       const result = await service.findAll();
       expect(result).toEqual(achievements);
@@ -75,17 +85,19 @@ describe('AchievementService', () => {
   describe('findOne', () => {
     it('should return achievement if found (Normal)', async () => {
       const achievement = new Achievement();
-      jest.spyOn(em, 'findOne').mockResolvedValue(achievement);
-      jest.spyOn(em, 'count').mockResolvedValue(5);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(achievement);
+      jest.spyOn(repository, 'countUserAchievements').mockResolvedValue(5);
 
       const result = await service.findOne('1');
       expect(result).toEqual(Object.assign(achievement, { earnedCount: 5 }));
     });
 
     it('should throw NotFoundException if not found (Abnormal)', async () => {
-      jest.spyOn(em, 'findOne').mockResolvedValue(null);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.findOne('1')).rejects.toThrow('achievements.not_found');
+      await expect(service.findOne('1')).rejects.toThrow(
+        'achievements.not_found',
+      );
     });
   });
 
@@ -98,42 +110,203 @@ describe('AchievementService', () => {
         type: AchievementType.PERMANENT,
       };
       const achievement = new Achievement();
-      jest.spyOn(em, 'findOne').mockResolvedValue(null);
-      jest.spyOn(em, 'create').mockReturnValue(achievement);
-      jest.spyOn(em, 'persistAndFlush').mockResolvedValue();
+      jest.spyOn(repository, 'findOneByCriteria').mockResolvedValue(null);
+      jest.spyOn(repository, 'createAchievement').mockReturnValue(achievement);
+      jest.spyOn(repository, 'persistAndFlush').mockResolvedValue();
 
       const result = await service.create(dto);
       expect(result).toBeNull();
     });
   });
 
-  describe('uploadBadge', () => {
-    it('should upload a badge image to R2 and return the public URL with nested path (Normal)', async () => {
-      const buffer = Buffer.from('fake-image');
-      jest.spyOn(r2StorageService, 'putObject').mockResolvedValue(undefined as any);
+  describe('update', () => {
+    it('should update achievement and exclude id from assign (Normal)', async () => {
+      const achievement = new Achievement();
+      achievement.id = 'ach-123';
+      achievement.name = 'Old Name';
 
-      const result = await service.uploadBadge(buffer, 'image/png', 'achv-123');
-      expect(result.startsWith('https://pub-x.r2.dev/achievement/achv-123/')).toBe(true);
-      expect(result.endsWith('.png')).toBe(true);
-      expect(r2StorageService.putObject).toHaveBeenCalledWith(
-        expect.stringMatching(/^achievement\/achv-123\/[a-f0-9-]+\.png$/),
-        buffer,
-        'image/png',
+      const dto = {
+        id: 'ach-123',
+        name: 'New Name',
+        criteriaCode: 'NEW_CODE',
+      };
+
+      jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValue(Object.assign(achievement, { earnedCount: 0 }));
+      jest
+        .spyOn(repository, 'findOneByCriteriaExcludeId')
+        .mockResolvedValue(null);
+      jest
+        .spyOn(repository, 'assign')
+        .mockImplementation((entity: any, data: any): any => {
+          expect(data.id).toBeUndefined(); // Verify ID is excluded!
+          return Object.assign(entity, data);
+        });
+      jest.spyOn(repository, 'flush').mockResolvedValue();
+
+      const result = await service.update('ach-123', dto as any);
+      expect(result).toBeNull();
+      expect(achievement.name).toBe('New Name');
+      expect(repository.flush).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException if criteriaCode already exists on another achievement (Abnormal)', async () => {
+      const achievement = new Achievement();
+      achievement.id = 'ach-123';
+
+      const dto = {
+        criteriaCode: 'DUPLICATE_CODE',
+      };
+
+      jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValue(Object.assign(achievement, { earnedCount: 0 }));
+      jest
+        .spyOn(repository, 'findOneByCriteriaExcludeId')
+        .mockResolvedValue(new Achievement());
+
+      await expect(service.update('ach-123', dto as any)).rejects.toThrow(
+        'achievements.already_exists',
       );
     });
 
-    it('should delete old badge image when oldBadgeImageUrl is provided (Normal)', async () => {
-      const buffer = Buffer.from('fake-image');
-      jest.spyOn(r2StorageService, 'putObject').mockResolvedValue(undefined as any);
-      jest.spyOn(r2StorageService, 'deleteObject').mockResolvedValue(undefined as any);
+    it('should throw NotFoundException if achievement does not exist (Boundary)', async () => {
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
-      await service.uploadBadge(buffer, 'image/png', 'achv-123', 'https://pub-x.r2.dev/achievement/achv-123/old-uuid.png');
-      expect(r2StorageService.deleteObject).toHaveBeenCalledWith('achievement/achv-123/old-uuid.png');
+      await expect(service.update('ach-999', {} as any)).rejects.toThrow(
+        'achievements.not_found',
+      );
+    });
+  });
+
+  describe('createUploadUrl', () => {
+    it('should create upload URL when file size and type are valid (Normal)', async () => {
+      const dto = {
+        fileName: 'badge.png',
+        achievementId: 'ach-123',
+        fileSize: 100 * 1024,
+        mimeType: 'image/png',
+      };
+      jest
+        .spyOn(r2StorageService, 'createUploadUrl')
+        .mockResolvedValue('https://put-url.com');
+
+      const result = await service.createUploadUrl(dto);
+      expect(result.uploadUrl).toBe('https://put-url.com');
+      expect(result.key.startsWith('achievement/ach-123/')).toBe(true);
+      expect(result.key.endsWith('.png')).toBe(true);
+      expect(
+        result.publicUrl.startsWith(
+          'https://pub-x.r2.dev/achievement/ach-123/',
+        ),
+      ).toBe(true);
+      expect(result.method).toBe('PUT');
+      expect(result.headers['Content-Type']).toBe('image/png');
     });
 
     it('should throw BadRequestException if MIME type is invalid (Abnormal)', async () => {
-      const buffer = Buffer.from('fake-file');
-      await expect(service.uploadBadge(buffer, 'application/pdf', 'achv-123')).rejects.toThrow();
+      const dto = {
+        fileName: 'badge.pdf',
+        achievementId: 'ach-123',
+        fileSize: 100 * 1024,
+        mimeType: 'application/pdf',
+      };
+      await expect(service.createUploadUrl(dto)).rejects.toThrow(
+        'achievements.upload_invalid_type',
+      );
+    });
+
+    it('should throw BadRequestException if file size exceeds limit (Boundary)', async () => {
+      const dto = {
+        fileName: 'badge.png',
+        achievementId: 'ach-123',
+        fileSize: 6 * 1024 * 1024, // 6MB
+        mimeType: 'image/png',
+      };
+      await expect(service.createUploadUrl(dto)).rejects.toThrow(
+        'achievements.upload_too_large',
+      );
+    });
+  });
+
+  describe('confirmUpload', () => {
+    it('should confirm upload, update achievement badgeImageUrl and delete old R2 object if valid (Normal)', async () => {
+      const dto = {
+        achievementId: 'ach-123',
+        filePath: 'achievement/ach-123/new-file.png',
+        mimeType: 'image/png',
+        fileSize: 100 * 1024,
+        oldBadgeImageUrl:
+          'https://pub-x.r2.dev/achievement/ach-123/old-file.png',
+      };
+
+      const achievement = new Achievement();
+      achievement.id = 'ach-123';
+      achievement.badgeImageUrl = dto.oldBadgeImageUrl;
+
+      jest.spyOn(r2StorageService, 'objectExists').mockResolvedValue(true);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(achievement);
+      jest.spyOn(repository, 'flush').mockResolvedValue();
+      jest
+        .spyOn(r2StorageService, 'deleteObject')
+        .mockResolvedValue(undefined as any);
+
+      const result = await service.confirmUpload(dto);
+      expect(result.url).toBe(
+        'https://pub-x.r2.dev/achievement/ach-123/new-file.png',
+      );
+      expect(achievement.badgeImageUrl).toBe(
+        'https://pub-x.r2.dev/achievement/ach-123/new-file.png',
+      );
+      expect(r2StorageService.deleteObject).toHaveBeenCalledWith(
+        'achievement/ach-123/old-file.png',
+      );
+      expect(repository.flush).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException if filePath does not match expected prefix (Abnormal)', async () => {
+      const dto = {
+        achievementId: 'ach-123',
+        filePath: 'achievement/other-id/new-file.png',
+        mimeType: 'image/png',
+        fileSize: 100 * 1024,
+      };
+
+      await expect(service.confirmUpload(dto)).rejects.toThrow(
+        'achievements.invalid_file_path',
+      );
+    });
+
+    it('should throw NotFoundException if file does not exist on R2 (Abnormal)', async () => {
+      const dto = {
+        achievementId: 'ach-123',
+        filePath: 'achievement/ach-123/new-file.png',
+        mimeType: 'image/png',
+        fileSize: 100 * 1024,
+      };
+      jest.spyOn(r2StorageService, 'objectExists').mockResolvedValue(false);
+
+      await expect(service.confirmUpload(dto)).rejects.toThrow(
+        'achievements.file_not_found_on_storage',
+      );
+    });
+
+    it('should confirm upload and return the public URL successfully even if the achievement is not found in database (Boundary)', async () => {
+      const dto = {
+        achievementId: 'ach-123',
+        filePath: 'achievement/ach-123/new-file.png',
+        mimeType: 'image/png',
+        fileSize: 100 * 1024,
+      };
+
+      jest.spyOn(r2StorageService, 'objectExists').mockResolvedValue(true);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
+
+      const result = await service.confirmUpload(dto);
+      expect(result.url).toBe(
+        'https://pub-x.r2.dev/achievement/ach-123/new-file.png',
+      );
     });
   });
 
@@ -141,16 +314,27 @@ describe('AchievementService', () => {
     it('should delete the achievement and its R2 badge image if badge image is on R2 (Normal)', async () => {
       const achievement = new Achievement();
       achievement.id = 'a1';
-      achievement.badgeImageUrl = 'https://pub-x.r2.dev/achievement/some-uuid.png';
+      achievement.badgeImageUrl =
+        'https://pub-x.r2.dev/achievement/some-uuid.png';
 
       jest.spyOn(service, 'findOne').mockResolvedValue(achievement as any);
-      jest.spyOn(em, 'removeAndFlush').mockResolvedValue(undefined as any);
-      jest.spyOn(r2StorageService, 'deleteObject').mockResolvedValue(undefined as any);
+      jest
+        .spyOn(repository, 'findGameProfilesWithEquippedAchievements')
+        .mockResolvedValue([]);
+      jest.spyOn(repository, 'flush').mockResolvedValue();
+      jest
+        .spyOn(repository, 'removeAndFlush')
+        .mockResolvedValue(undefined as any);
+      jest
+        .spyOn(r2StorageService, 'deleteObject')
+        .mockResolvedValue(undefined as any);
 
       await service.delete('a1');
 
-      expect(r2StorageService.deleteObject).toHaveBeenCalledWith('achievement/some-uuid.png');
-      expect(em.removeAndFlush).toHaveBeenCalledWith(achievement);
+      expect(r2StorageService.deleteObject).toHaveBeenCalledWith(
+        'achievement/some-uuid.png',
+      );
+      expect(repository.removeAndFlush).toHaveBeenCalledWith(achievement);
     });
 
     it('should delete the achievement but not call R2 deleteObject if badge image is not on R2 (Boundary)', async () => {
@@ -159,20 +343,32 @@ describe('AchievementService', () => {
       achievement.badgeImageUrl = 'https://external-site.com/avatar.png';
 
       jest.spyOn(service, 'findOne').mockResolvedValue(achievement as any);
-      jest.spyOn(em, 'removeAndFlush').mockResolvedValue(undefined as any);
-      const deleteSpy = jest.spyOn(r2StorageService, 'deleteObject').mockClear();
+      jest
+        .spyOn(repository, 'findGameProfilesWithEquippedAchievements')
+        .mockResolvedValue([]);
+      jest.spyOn(repository, 'flush').mockResolvedValue();
+      jest
+        .spyOn(repository, 'removeAndFlush')
+        .mockResolvedValue(undefined as any);
+      const deleteSpy = jest
+        .spyOn(r2StorageService, 'deleteObject')
+        .mockClear();
 
       await service.delete('a1');
 
       expect(deleteSpy).not.toHaveBeenCalled();
-      expect(em.removeAndFlush).toHaveBeenCalledWith(achievement);
+      expect(repository.removeAndFlush).toHaveBeenCalledWith(achievement);
     });
   });
 
   describe('getEffectiveExpiresAt', () => {
     it('should_return_original_expiresAt_when_type_is_not_SEASONAL (Normal)', () => {
       const originalExpiresAt = new Date('2026-12-31T23:59:59.000Z');
-      const result = getEffectiveExpiresAt('PERMANENT', null, originalExpiresAt);
+      const result = getEffectiveExpiresAt(
+        'PERMANENT',
+        null,
+        originalExpiresAt,
+      );
       expect(result).toEqual(originalExpiresAt);
     });
 

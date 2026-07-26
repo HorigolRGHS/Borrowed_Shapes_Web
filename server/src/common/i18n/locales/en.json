@@ -124,7 +124,19 @@
     "upload_missing": "No file provided",
     "upload_missing_id": "Achievement ID is required for badge upload",
     "upload_failed": "Upload failed",
-    "uploaded": "Achievement badge uploaded successfully"
+    "uploaded": "Achievement badge uploaded successfully",
+    "upload_url_created": "Upload URL created successfully",
+    "invalid_file_path": "Invalid file path",
+    "file_not_found_on_storage": "File not found on storage",
+    "id_required": "Achievement ID is required",
+    "id_must_be_string": "Achievement ID must be a string",
+    "file_name_required": "File name is required",
+    "file_name_must_be_string": "File name must be a string",
+    "file_size_must_be_number": "File size must be a number",
+    "file_size_invalid": "File size is invalid",
+    "mime_type_required": "MIME type is required",
+    "mime_type_invalid": "MIME type is invalid",
+    "old_url_must_be_string": "Old badge URL must be a string"
   },
   "wiki": {
     "list_success": "Wiki list retrieved",
@@ -193,6 +205,30 @@
     "vote_value_invalid": "Vote value must be 1 or -1",
     "invalid_sort_field": "Sort field must be one of: score, createdAt, updatedAt",
     "invalid_sort_order": "Sort order must be either asc or desc"
+  },
+  "comments": {
+    "thread_not_found": "Thread not found",
+    "parent_not_found": "Parent comment not found",
+    "parent_thread_mismatch": "Parent comment belongs to a different thread",
+    "user_not_found": "User not found",
+    "comment_not_found": "Comment not found",
+    "forbidden_edit": "You do not have permission to edit this comment",
+    "cannot_edit_deleted": "Cannot edit a deleted comment",
+    "forbidden_delete": "You do not have permission to delete this comment",
+    "invalid_user": "Invalid user"
+  },
+  "reports": {
+    "cannot_report_self": "You cannot report yourself",
+    "cannot_ban_admin": "You cannot process this user",
+    "report_not_found": "Report not found",
+    "forbidden_view": "You do not have permission to view this report",
+    "already_processed": "Report is already processed",
+    "no_reported_user": "No reported user associated with this report",
+    "forbidden_admin_only": "Only administrators can perform this action",
+    "file_too_large": "Evidence file size exceeds limit",
+    "user_not_found": "Reported user not found",
+    "thread_not_found": "Reported thread not found",
+    "comment_not_found": "Reported comment not found"
   },
   "category": {
     "list_success": "Categories retrieved successfully",

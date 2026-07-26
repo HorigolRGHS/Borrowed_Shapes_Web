@@ -731,7 +731,8 @@
     "privacy": "Chính sách bảo mật",
     "terms": "Điều khoản dịch vụ",
     "copyright": "© 2026 Borrowed Shapes. Đã đăng ký bản quyền.",
-    "tagline": "Dành cho những người chơi cùng nhau giải quyết thử thách."
+    "tagline": "Dành cho những người chơi cùng nhau giải quyết thử thách.",
+    "termsAndPolicy": "Chính sách & Điều khoản"
   },
   "home": {
     "hero": {
@@ -745,7 +746,7 @@
         "current_season": "Mùa hiện tại",
         "latest_patch": "Bản vá mới nhất"
       },
-      "season_live": "MÙA 2 — ĐANG DIỄN RA"
+      "season_live": "MÙA 1 — ĐANG DIỄN RA"
     },
     "intro": {
       "label": "// VỀ TRÒ CHƠI",
@@ -864,7 +865,10 @@
         "REVOKE_SESSION": "Thu hồi phiên",
         "BAN_USER": "Khóa tài khoản",
         "UNBAN_USER": "Mở khóa tài khoản",
-        "PROCESS_REPORT": "Xử lý báo cáo"
+        "CREATE_REPORT": "Tạo báo cáo",
+        "PROCESS_REPORT": "Xử lý báo cáo",
+        "RESOLVE_REPORT": "Giải quyết báo cáo",
+        "REJECT_REPORT": "Từ chối báo cáo"
       }
     },
     "account": {
@@ -958,6 +962,7 @@
         "ban_reason_editor_hint": "Mô tả lý do tài khoản này bị cấm.",
         "ban_reason_plain_required": "Lý do cấm không được để trống.",
         "ban_reason_plain_too_long": "Lý do cấm tối đa 500 ký tự.",
+        "ban_date_past": "Thời gian hết hạn cấm phải nằm ở tương lai.",
         "restore_title": "Khôi phục tài khoản",
         "restore_description": "Tài khoản này sẽ được khôi phục và có thể truy cập hệ thống lại nếu không còn bị cấm."
       },
@@ -1378,136 +1383,1026 @@
     "close": "Đóng"
   },
   "legal": {
+    "sidebar": {
+      "phase1": "Section 1 – Nền tảng Pháp lý",
+      "phase2": "Section 2 – Cộng đồng",
+      "phase3": "Section 3 – Quyền sở hữu",
+      "phase4": "Section 4 – Nền tảng"
+    },
     "common": {
-      "projectName": "Borrowed Shapes",
       "lastUpdated": "Cập nhật lần cuối",
-      "backHome": "Về trang chủ",
-      "contactPage": "Trang liên hệ",
-      "comingSoon": "Sắp ra mắt",
-      "externalLink": "Mở liên kết"
-    },
-    "contact": {
-      "metaTitle": "Liên hệ | Borrowed Shapes",
-      "badge": "Borrowed Shapes",
-      "title": "Liên hệ",
-      "description": "Bạn muốn góp ý, báo lỗi, hỏi về bản tải game hoặc theo dõi tiến độ của Borrowed Shapes? Hãy liên hệ với nhóm qua các kênh bên dưới.",
-      "intro": "Borrowed Shapes là dự án game co-op 3D kết hợp nền tảng web cộng đồng. Chúng tôi luôn hoan nghênh phản hồi về trải nghiệm chơi, lỗi kỹ thuật, nội dung diễn đàn, wiki và hệ thống tải game.",
-      "methods": {
-        "facebook": {
-          "title": "Facebook",
-          "description": "Theo dõi thông báo, cập nhật và gửi tin nhắn cho nhóm qua Facebook."
-        },
-        "email": {
-          "title": "Email",
-          "description": "Gửi phản hồi chi tiết, câu hỏi hỗ trợ hoặc thông tin liên quan đến tài khoản."
-        },
-        "community": {
-          "title": "Cộng đồng",
-          "description": "Tham gia kênh cộng đồng để trao đổi, tìm người chơi cùng và cập nhật hoạt động mới."
-        },
-        "project": {
-          "title": "Mã nguồn / Dự án",
-          "description": "Xem thông tin kỹ thuật hoặc theo dõi tiến độ phát triển nếu đường dẫn được công khai."
-        }
-      },
-      "noteTitle": "Lưu ý",
-      "note": "Hiện tại trang liên hệ chỉ hiển thị thông tin liên hệ tĩnh. Chức năng gửi biểu mẫu trực tiếp sẽ được cân nhắc ở các phiên bản sau."
-    },
-    "privacy": {
-      "metaTitle": "Chính sách bảo mật | Borrowed Shapes",
-      "badge": "Privacy",
-      "title": "Chính sách bảo mật",
-      "lastUpdatedValue": "22/06/2026",
-      "intro": "Chính sách này giải thích cách Borrowed Shapes thu thập, sử dụng và bảo vệ thông tin khi bạn sử dụng website, tài khoản, diễn đàn, wiki, bảng xếp hạng, hệ thống tải game và các tính năng liên quan.",
-      "sections": [
-        {
-          "title": "1. Thông tin chúng tôi có thể thu thập",
-          "body": "Khi bạn sử dụng Borrowed Shapes, hệ thống có thể lưu một số thông tin cần thiết để vận hành dịch vụ, bao gồm:\n- Thông tin tài khoản như email, tên hiển thị, ảnh đại diện và phương thức đăng nhập.\n- Thông tin phiên đăng nhập như thời điểm đăng nhập, trạng thái phiên, nền tảng, địa chỉ IP và thông tin thiết bị cơ bản.\n- Nội dung do bạn tạo như bài viết diễn đàn, bình luận, báo cáo, phản hồi hoặc nội dung wiki nếu bạn có quyền chỉnh sửa.\n- Dữ liệu gameplay như hồ sơ game, thành tích, lượt chơi, kết quả phiên chơi và thống kê liên quan.\n- Lịch sử tải game như phiên bản tải xuống, thời điểm tải và thông tin kỹ thuật cần thiết để thống kê lượt tải.\n- Nhật ký hệ thống và audit log để hỗ trợ bảo mật, quản trị và xử lý sự cố."
-        },
-        {
-          "title": "2. Cách chúng tôi sử dụng thông tin",
-          "body": "Thông tin được sử dụng để:\n- Tạo và quản lý tài khoản người dùng.\n- Cho phép đăng nhập, đăng xuất và duy trì phiên hoạt động an toàn.\n- Hiển thị hồ sơ, thành tích, lịch sử chơi và các nội dung cộng đồng.\n- Vận hành diễn đàn, wiki, thông báo, báo cáo vi phạm và hệ thống tải game.\n- Ghi nhận hoạt động quản trị nhằm đảm bảo minh bạch và bảo mật.\n- Phát hiện lỗi, ngăn chặn lạm dụng, spam hoặc hành vi gây hại.\n- Tổng hợp thống kê ở dạng hệ thống để cải thiện trải nghiệm sản phẩm."
-        },
-        {
-          "title": "3. Nội dung cộng đồng",
-          "body": "Các nội dung bạn đăng công khai trên diễn đàn, bình luận hoặc wiki có thể được người dùng khác nhìn thấy. Bạn không nên đăng thông tin cá nhân nhạy cảm hoặc thông tin mà bạn không muốn công khai."
-        },
-        {
-          "title": "4. Nhật ký bảo mật và audit log",
-          "body": "Một số hành động như đăng nhập, đăng xuất, cập nhật tài khoản, khóa/mở khóa tài khoản, xử lý báo cáo hoặc thay đổi dữ liệu quan trọng có thể được ghi vào audit log. Các log này giúp quản trị viên kiểm tra hoạt động hệ thống và xử lý sự cố."
-        },
-        {
-          "title": "5. Chia sẻ dữ liệu",
-          "body": "Borrowed Shapes không bán dữ liệu cá nhân của người dùng. Dữ liệu chỉ được sử dụng trong phạm vi vận hành dự án, bảo mật hệ thống, thống kê nội bộ và hỗ trợ người dùng."
-        },
-        {
-          "title": "6. Lưu trữ và bảo vệ dữ liệu",
-          "body": "Chúng tôi áp dụng các biện pháp hợp lý để bảo vệ dữ liệu, bao gồm phân quyền quản trị, kiểm soát phiên đăng nhập và ghi nhận audit log. Tuy nhiên, không có hệ thống nào có thể đảm bảo an toàn tuyệt đối trong mọi trường hợp."
-        },
-        {
-          "title": "7. Thay đổi chính sách",
-          "body": "Chính sách này có thể được cập nhật khi hệ thống có thêm tính năng mới hoặc thay đổi cách vận hành. Phiên bản mới sẽ được hiển thị trên trang này."
-        },
-        {
-          "title": "8. Liên hệ",
-          "body": "Nếu bạn có câu hỏi về quyền riêng tư hoặc dữ liệu của mình, hãy liên hệ với nhóm Borrowed Shapes qua trang Liên hệ."
-        }
-      ]
+      "contactPage": "Liên hệ Hỗ trợ",
+      "policies": "Các chính sách"
     },
     "terms": {
-      "metaTitle": "Điều khoản dịch vụ | Borrowed Shapes",
-      "badge": "Terms",
-      "title": "Điều khoản dịch vụ",
-      "lastUpdatedValue": "22/06/2026",
-      "intro": "Khi sử dụng website, tài khoản, diễn đàn, wiki, hệ thống tải game hoặc các tính năng liên quan của Borrowed Shapes, bạn đồng ý tuân thủ các điều khoản dưới đây.",
-      "ruleZero": {
-        "badge": "Điều khoản tối thượng",
-        "title": "Luật 0 — Sắc lệnh tối cao của Công chúa Điện hạ",
-        "body": "Bằng việc truy cập, duyệt, sử dụng hoặc tiếp tục hiện diện trong phạm vi dịch vụ của Borrowed Shapes, người dùng long trọng xác nhận rằng mình đã đọc, hiểu và tự nguyện chấp thuận Luật 0 này. Theo đó, người dùng tuyên bố tuyệt đối trung thành với tinh thần tích cực, tôn trọng cộng đồng, giữ gìn trật tự hệ thống, và trên phương diện hoàn toàn mang tính giải trí, phụng sự cho sự vĩ đại huy hoàng của Công chúa Điện hạ.",
-        "note": "=))"
-      },
-      "sections": [
-        {
+      "title": "Điều khoản Dịch vụ",
+      "badge": "Section 1 – Nền tảng Pháp lý",
+      "sections": {
+        "1": {
           "title": "1. Giới thiệu",
-          "body": "Borrowed Shapes là dự án game co-op 3D kết hợp nền tảng web cộng đồng, bao gồm các tính năng như tài khoản, hồ sơ người chơi, diễn đàn, wiki, thông báo, bảng xếp hạng, thành tích và tải bản game."
+          "content": "Điều khoản Dịch vụ (\"Thỏa thuận\") này thiết lập một hợp đồng ràng buộc về mặt pháp lý giữa người dùng (\"Người chơi\", \"bạn\") và các nhà phát triển cũng như nhà điều hành của trò chơi trực tuyến Borrowed Shapes (\"Công ty\", \"chúng tôi\"). Mục đích của phần giới thiệu này là truyền đạt rõ ràng việc thiết lập mối quan hệ pháp lý ngay khi bắt đầu sử dụng phần mềm. Người chơi có quyền xem xét Thỏa thuận này trước khi truy cập phần mềm và có quyền từ chối các điều khoản này bằng cách không sử dụng hoặc gỡ cài đặt trò chơi. Ngược lại, Công ty giữ quyền cơ bản trong việc thực thi các quy tắc này để duy trì một môi trường kỹ thuật số an toàn, hoạt động tốt và khả thi về mặt thương mại. Một kịch bản thực tế liên quan đến điều khoản này xảy ra khi một cá nhân tải xuống máy khách (client) của trò chơi; màn hình tải ban đầu yêu cầu xác nhận rõ ràng về tài liệu này thông qua thỏa thuận nhấp chuột (clickwrap), qua đó bắt đầu mối quan hệ pháp lý. Việc lảng tránh hoặc từ chối các điều khoản này sẽ bị nghiêm cấm truy cập vào trò chơi và tất cả các nền tảng web liên quan. Hơn nữa, đối với cư dân Hoa Kỳ và một số khu vực tài phán khác, phần giới thiệu này đóng vai trò như một thông báo sơ bộ rằng các tranh chấp sẽ được giải quyết thông qua trọng tài cá nhân có tính ràng buộc thay vì xét xử bồi thẩm đoàn hoặc các vụ kiện tập thể."
         },
-        {
-          "title": "2. Tài khoản người dùng",
-          "body": "Bạn chịu trách nhiệm bảo mật thông tin đăng nhập của mình và các hoạt động diễn ra trên tài khoản. Bạn không nên chia sẻ tài khoản, cố gắng truy cập tài khoản của người khác hoặc sử dụng thông tin giả mạo để gây ảnh hưởng đến hệ thống."
+        "2": {
+          "title": "2. Định nghĩa",
+          "content": "Để loại bỏ sự mơ hồ về mặt pháp lý và đảm bảo việc giải thích nhất quán trong toàn bộ Thỏa thuận, các thuật ngữ viết hoa cụ thể được định nghĩa tại đây. Người chơi có quyền được cung cấp các định nghĩa rõ ràng, minh bạch để hiểu đầy đủ vị thế pháp lý của mình, trong khi Công ty có quyền dựa vào các định nghĩa nghiêm ngặt này trong quá trình kiểm duyệt và giải quyết tranh chấp."
         },
-        {
-          "title": "3. Quy tắc cộng đồng",
-          "body": "Khi sử dụng diễn đàn, bình luận, báo cáo hoặc các khu vực cộng đồng, bạn đồng ý không:\n- Đăng nội dung spam, quấy rối, xúc phạm hoặc gây hại cho người khác.\n- Đăng nội dung sai lệch, lừa đảo hoặc gây hiểu nhầm.\n- Chia sẻ nội dung không phù hợp với môi trường cộng đồng của dự án.\n- Cố tình khai thác lỗi, phá hoại hệ thống hoặc làm gián đoạn dịch vụ.\n- Mạo danh người khác hoặc sử dụng tài khoản cho mục đích xấu."
+        "3": {
+          "title": "3. Thuật ngữ / Định nghĩa Pháp lý cho Borrowed Shapes",
+          "content": "- Dịch vụ: Bao gồm máy khách (client) trò chơi Borrowed Shapes, nền tảng web, hệ thống wiki, máy chủ ghép trận và cơ sở hạ tầng phụ trợ (backend).\n- Nội dung do người dùng tạo (UGC): Biểu thị bất kỳ hình ảnh, văn bản, đóng góp wiki hoặc tùy chỉnh ảnh đại diện nào được Người chơi tạo, gửi hoặc tải lên.\n- Hàng hóa ảo: Đại diện cho bất kỳ vật phẩm kỹ thuật số, tiền tệ cao cấp trong trò chơi hoặc đồ trang trí nào được tích hợp vào nền tảng trong tương lai.\n- Tài khoản: Hồ sơ kỹ thuật số bảo mật do Người chơi đăng ký để xác thực và truy cập Dịch vụ.\nVí dụ: nếu phát sinh tranh chấp liên quan đến việc ngừng hoạt động tính năng trong \"Dịch vụ\", định nghĩa này làm rõ rằng nền tảng web chính thức và hệ thống wiki của trò chơi được xử lý pháp lý theo cùng các quy tắc hoạt động và giới hạn trách nhiệm pháp lý như trò chơi nhiều người chơi trực tuyến cốt lõi."
         },
-        {
-          "title": "4. Nội dung do người dùng tạo",
-          "body": "Bạn chịu trách nhiệm với nội dung mình đăng. Nhóm quản trị có thể chỉnh sửa, ẩn, khóa hoặc xóa nội dung vi phạm quy định cộng đồng hoặc ảnh hưởng đến hoạt động của hệ thống."
+        "4": {
+          "title": "4. Chấp nhận Điều khoản",
+          "content": "Phần này trình bày chi tiết cơ chế chính xác mà hợp đồng này được thực thi và công nhận về mặt pháp lý. Người chơi có quyền được thông báo rõ ràng khi hành động của họ cấu thành việc chấp nhận một hợp đồng pháp lý. Công ty có quyền theo dõi, ghi nhật ký và kiểm toán việc chấp nhận này một cách có hệ thống để phục vụ mục đích tuân thủ và phòng thủ pháp lý. Việc chấp nhận được hoàn tất khi Người dùng đăng ký Tài khoản, xác thực qua phương thức được chỉ định hoặc tích cực sử dụng bất kỳ Dịch vụ nào. Hãy xem xét một kịch bản trong đó Người dùng bỏ qua màn hình đăng nhập đồ họa truyền thống bằng cách tương tác trực tiếp với API phụ trợ hoặc sử dụng công cụ khởi chạy của bên thứ ba tự động. Bởi vì họ đang truyền dữ liệu đến máy chủ trò chơi và sử dụng Dịch vụ, hành động của họ cấu thành sự chấp nhận rõ ràng, đảm bảo Công ty vẫn được bảo vệ về mặt pháp lý chống lại việc thao túng phụ trợ trái phép hoặc các khiếu nại về việc không biết về hợp đồng."
         },
-        {
-          "title": "5. Tải game và sử dụng bản build",
-          "body": "Các bản tải game được cung cấp để người dùng trải nghiệm Borrowed Shapes. Bạn không được phân phối lại, chỉnh sửa hoặc sử dụng bản build theo cách gây hiểu nhầm về nguồn gốc dự án nếu chưa được phép."
+        "5": {
+          "title": "5. Yêu cầu Đủ điều kiện",
+          "content": "Mục đích của phần này là thực thi các hạn chế độ tuổi theo luật định và đảm bảo năng lực pháp lý để ký kết hợp đồng theo luật bảo vệ dữ liệu và người tiêu dùng toàn cầu. Người chơi có quyền truy cập Dịch vụ miễn là họ đáp ứng độ tuổi đồng ý kỹ thuật số hợp pháp tối thiểu trong phạm vi quyền tài phán của họ (ví dụ: 13 tuổi ở Hoa Kỳ theo COPPA, hoặc lên đến 16 tuổi ở một số quốc gia thành viên Liên minh Châu Âu). Công ty giữ quyền tuyệt đối và trách nhiệm pháp lý trong việc chấm dứt các Tài khoản vi phạm các mức tối thiểu về độ tuổi này để duy trì sự tuân thủ quy định. Ví dụ: nếu một đứa trẻ 11 tuổi cố gắng đăng ký Borrowed Shapes, hệ thống được thiết kế để từ chối việc tạo Tài khoản. Nếu một thiếu niên 15 tuổi đăng ký ở một khu vực tài phán nơi 16 tuổi là tuổi trưởng thành, Công ty yêu cầu sự đồng ý có thể xác minh của phụ huynh hoặc người giám hộ trước khi cấp quyền truy cập đầy đủ vào các tính năng nhiều người chơi, đảm bảo hợp đồng vẫn có tính ràng buộc pháp lý."
         },
-        {
-          "title": "6. Gameplay, thành tích và bảng xếp hạng",
-          "body": "Dữ liệu gameplay, thành tích, lịch sử chơi và bảng xếp hạng có thể được ghi nhận để hiển thị trong hệ thống. Nếu phát hiện hành vi gian lận, khai thác lỗi hoặc can thiệp dữ liệu, nhóm quản trị có thể điều chỉnh, ẩn hoặc xóa kết quả liên quan."
+        "6": {
+          "title": "6. Đăng ký Tài khoản",
+          "content": "Điều khoản này nêu rõ các quy tắc quản lý việc tạo và duy trì hồ sơ Người dùng duy nhất. Người chơi có quyền tạo một Tài khoản chính để truy cập Dịch vụ và theo dõi tiến trình của họ. Công ty có quyền yêu cầu thông tin đăng ký chính xác và giới hạn về mặt kỹ thuật số lượng Tài khoản mà một cá nhân có thể vận hành để ngăn chặn lạm dụng hệ thống. Trong kịch bản thực tế, Người dùng tạo Tài khoản bằng địa chỉ email hợp pháp và chọn một tên người dùng duy nhất. Nếu thay vào đó, Người dùng sử dụng các địa chỉ email dùng một lần, được tạo nhanh chóng để tạo hàng chục Tài khoản nhằm lách luật kiểm duyệt (được gọi là \"smurfing\" hoặc trốn tránh), Công ty giữ quyền đình chỉ đăng ký và cấm vĩnh viễn địa chỉ IP cơ bản để bảo vệ tính toàn vẹn của hệ sinh thái nhiều người chơi."
         },
-        {
-          "title": "7. Quyền quản trị",
-          "body": "Quản trị viên có quyền xử lý báo cáo, cảnh báo, khóa tài khoản, mở khóa tài khoản, xóa nội dung hoặc thực hiện các hành động cần thiết để bảo vệ cộng đồng và hệ thống."
+        "7": {
+          "title": "7. Phương thức Xác thực",
+          "content": "Phần này định nghĩa hợp pháp các phương thức được chấp nhận để xác minh danh tính trong Borrowed Shapes, đặc biệt hỗ trợ xác thực Email tiêu chuẩn và tích hợp bên thứ ba thông qua Google Login. Người chơi có quyền tự do lựa chọn giữa các phương pháp được hỗ trợ này và mong đợi việc xử lý các token đăng nhập mật mã của họ một cách an toàn, theo tiêu chuẩn ngành. Công ty có quyền ngừng sử dụng, đình chỉ hoặc cập nhật các phương thức xác thực này khi các tiêu chuẩn bảo mật công nghệ phát triển. Ví dụ: nếu Người chơi sử dụng Google Login, token xác thực sẽ được xử lý để cấp quyền truy cập liền mạch mà Công ty không bao giờ lưu trữ hoặc quan sát mật khẩu Google gốc. Nếu Google gặp sự cố ngừng hoạt động toàn cầu ngăn cản việc xác thực token, Công ty được cách ly về mặt pháp lý và không chịu trách nhiệm về việc Người dùng tạm thời không thể xác thực vào trò chơi."
         },
-        {
-          "title": "8. Thay đổi dịch vụ",
-          "body": "Borrowed Shapes có thể thay đổi, cập nhật, tạm ngưng hoặc gỡ bỏ một số tính năng trong quá trình phát triển. Một số nội dung, bản build hoặc dữ liệu thử nghiệm có thể thay đổi theo từng phiên bản."
+        "8": {
+          "title": "8. Bảo mật Tài khoản",
+          "content": "Điều khoản này thiết lập sự phân bổ trách nhiệm nghiêm ngặt liên quan đến việc bảo vệ thông tin đăng nhập Tài khoản. Người chơi duy trì quyền sử dụng các công cụ do nền tảng cung cấp, chẳng hạn như đặt lại mật khẩu và quản lý phiên, để bảo mật Tài khoản của họ, nhưng đồng thời chịu trách nhiệm tuyệt đối trong việc giữ bí mật thông tin đăng nhập của mình. Công ty có quyền từ chối khôi phục Hàng hóa Ảo, dữ liệu ảnh đại diện hoặc quyền truy cập wiki nếu Tài khoản bị xâm phạm do sự sơ suất của Người dùng hoặc kỹ thuật lừa đảo qua mạng (social engineering). Ví dụ: nếu Người chơi tự nguyện chia sẻ thông tin đăng nhập với bạn bè để hoàn thành một thử thách hợp tác nhiều người chơi và người bạn đó sau đó xóa cấu hình ảnh đại diện tùy chỉnh của Người chơi, Công ty không có nghĩa vụ pháp lý phải khôi phục dữ liệu bị mất, vì vi phạm bắt nguồn trực tiếp từ việc Người dùng vi phạm các giao thức bảo mật."
         },
-        {
-          "title": "9. Giới hạn trách nhiệm",
-          "body": "Dự án được phát triển cho mục đích học tập, trải nghiệm và giới thiệu sản phẩm. Chúng tôi cố gắng duy trì hệ thống ổn định, nhưng không đảm bảo rằng dịch vụ sẽ luôn không có lỗi, không bị gián đoạn hoặc phù hợp với mọi nhu cầu sử dụng."
+        "9": {
+          "title": "9. Trách nhiệm của Người dùng",
+          "content": "Mục đích của phần này là thiết lập tiêu chuẩn cơ sở về hành vi mong đợi của người dùng và bảo trì công nghệ cần thiết để tương tác với phần mềm. Người chơi có quyền tận hưởng Dịch vụ, miễn là họ duy trì kết nối internet ổn định và sử dụng phần cứng đáp ứng các yêu cầu tối thiểu được công bố công khai. Công ty có quyền liên tục cập nhật công cụ trò chơi, điều này có thể khiến các thiết bị hoặc hệ điều hành cũ trở nên không tương thích theo thời gian. Một kịch bản thực tế liên quan đến việc Công ty triển khai một bản cập nhật đồ họa lớn cho máy khách Borrowed Shapes; trách nhiệm của Người dùng là đảm bảo phần cứng của họ đáp ứng các thông số kỹ thuật mới được công bố. Công ty không có nghĩa vụ pháp lý phải cung cấp hỗ trợ kế thừa, hoàn tiền hoặc định tuyến mạng chuyên biệt cho các hệ điều hành lỗi thời không còn chạy được máy khách đã cập nhật."
         },
-        {
-          "title": "10. Liên hệ",
-          "body": "Nếu bạn có câu hỏi về điều khoản dịch vụ, vui lòng liên hệ với nhóm Borrowed Shapes qua trang Liên hệ."
+        "10": {
+          "title": "10. Sử dụng Chấp nhận được",
+          "content": "Phần này xác định phạm vi ủy quyền, dự kiến của sự tương tác với nền tảng Borrowed Shapes. Người chơi được cấp một giấy phép có giới hạn, cá nhân, phi thương mại, không thể chuyển nhượng và có thể thu hồi để tương tác với máy khách trò chơi, đóng góp vào wiki và tham gia vào môi trường nhiều người chơi. Công ty có quyền áp đặt nghiêm ngặt các thông số này để ngăn chặn việc khai thác thương mại trái phép hoặc phân phối phần mềm. Ví dụ: Người dùng có thể phát trực tuyến quá trình chơi của họ trên một nền tảng như Twitch hoặc YouTube để giải trí cá nhân hoặc sáng tạo nội dung, điều này nằm trong phạm vi sử dụng được chấp nhận. Tuy nhiên, họ không được cho bên thứ ba thuê Tài khoản của mình, bán dịch vụ cày thuê (boosting) hoặc sử dụng giấy phép tiêu dùng duy nhất để thiết lập hoạt động quán cà phê internet thương mại mà không ký kết thỏa thuận cấp phép thương mại riêng biệt với Công ty."
+        },
+        "11": {
+          "title": "11. Hành vi Bị Cấm",
+          "content": "Điều khoản này lập danh mục rõ ràng các hành vi đe dọa tính toàn vẹn kỹ thuật, khả năng thương mại và an toàn cộng đồng của Dịch vụ. Người chơi có quyền được hưởng một môi trường chơi game công bằng, an toàn và cạnh tranh, đòi hỏi phải hạn chế nghiêm ngặt các tác nhân độc hại. Công ty duy trì quyền đơn phương xác định, điều tra và trừng phạt các hành vi bị cấm. Các hoạt động bị cấm bao gồm, nhưng không giới hạn ở, việc sử dụng aimbot, trình đọc bộ nhớ, triển khai các cuộc tấn công từ chối dịch vụ phân tán (DDoS), dàn xếp trận đấu, khai thác lỗ hổng máy chủ hoặc tham gia vào ngôn từ kích động thù địch. Trong kịch bản thực tế, nếu Người dùng phát triển hoặc cài đặt một tập lệnh cấp nhân (kernel-level script) để tự động hóa các chuyển động của ảnh đại diện (botting) nhằm cày cuốc tiến trình một cách không công bằng trong các trận đấu nhiều người chơi, cơ sở hạ tầng chống gian lận của Công ty sẽ phát hiện ra sự bất thường này. Công ty giữ quyền tuyệt đối được chấm dứt Tài khoản ngay lập tức vì vi phạm môi trường chơi công bằng, phản ánh các tiêu chuẩn ngành cần thiết để chống lại các trò gian lận đang phát triển nhanh chóng."
+        },
+        "12": {
+          "title": "12. Nội dung do Người dùng Tạo",
+          "content": "Phần này quy định tất cả các tài liệu được Người dùng tạo ra ban đầu hoặc tải lên, bao gồm hình ảnh tùy chỉnh cho ảnh đại diện, sửa đổi cấu trúc hoặc văn bản được gửi đến hệ thống wiki tập trung. Người chơi có quyền tải lên nội dung nằm trong ranh giới của luật sở hữu trí tuệ hiện hành và nguyên tắc cộng đồng. Công ty có quyền giám sát, lọc, sửa đổi hoặc xóa vĩnh viễn bất kỳ Nội dung do Người dùng tạo (UGC) nào mà họ coi là xúc phạm, bất hợp pháp, phỉ báng hoặc gây tổn hại đến thương hiệu. Ví dụ: nếu Người dùng tải logo công ty có bản quyền hoặc hình ảnh khiêu dâm lên bộ nhớ Cloudflare R2 để sử dụng làm ảnh đại diện trong trò chơi, hệ thống kiểm duyệt của Công ty (dù tự động hay thủ công) sẽ gắn cờ và xóa hình ảnh, sau đó đưa ra cảnh báo hoặc đình chỉ đối với Tài khoản vi phạm để ngăn ngừa trách nhiệm pháp lý cho nền tảng."
+        },
+        "13": {
+          "title": "13. Quyền sở hữu Nội dung Người dùng",
+          "content": "Mục đích của điều khoản này là thiết lập ranh giới sở hữu trí tuệ rõ ràng liên quan đến UGC. Người chơi duy trì quyền sở hữu ban đầu và sở hữu trí tuệ cơ bản đối với các tác phẩm gốc do họ tạo và tải lên, miễn là nội dung đó không vi phạm quyền của bên thứ ba hoặc kết hợp các tài sản độc quyền của Công ty. Công ty khẳng định quyền tránh trách nhiệm pháp lý đối với các tài liệu Người dùng tải lên, phân loại nền tảng này là máy chủ lưu trữ trung lập theo các quy định bến đỗ an toàn (safe harbor) có liên quan. Nếu Người dùng viết một bài báo truyền thuyết gốc, có độ chi tiết cao cho hệ thống wiki dựa trên câu chuyện viễn tưởng độc lập của riêng họ, Người dùng tiếp tục sở hữu văn bản cơ bản đó. Tuy nhiên, hành động tải lên của nó kích hoạt các yêu cầu cấp phép nền tảng cụ thể được nêu trong phần tiếp theo để đảm bảo trò chơi có thể hiển thị văn bản cho những người chơi khác một cách hợp pháp."
+        },
+        "14": {
+          "title": "14. Giấy phép do Người dùng Cấp",
+          "content": "Để vận hành một trò chơi nhiều người chơi và một wiki cộng đồng, Công ty yêu cầu các quyền pháp lý cụ thể để truyền tải và hiển thị dữ liệu người dùng. Bằng cách tải nội dung lên, Người chơi cấp cho Công ty quyền sử dụng trên toàn thế giới, miễn phí bản quyền, vĩnh viễn, không thể thu hồi, có thể cấp phép phụ và không độc quyền để lưu trữ, sao chép, hiển thị, phân phối và sửa đổi tài liệu liên quan đến việc vận hành và quảng bá Dịch vụ. Trong kịch bản thực tế, khi Người dùng tải lên hình ảnh tùy chỉnh qua máy khách trò chơi, giấy phép này đảm bảo Công ty không vi phạm bản quyền bằng cách hiển thị hình ảnh đó trên màn hình của những người chơi khác trong phòng chờ nhiều người chơi, sao lưu hình ảnh trên máy chủ Cloudflare hoặc làm nổi bật ảnh đại diện độc đáo của Người dùng trong một đoạn giới thiệu lối chơi quảng cáo cho Borrowed Shapes."
+        },
+        "15": {
+          "title": "15. Giấy phép do Borrowed Shapes Cấp",
+          "content": "Điều khoản này thiết lập khuôn khổ pháp lý cho phép Người dùng tương tác với phần mềm độc quyền và tài sản kỹ thuật số của Công ty. Người chơi được cấp một quyền hạn chế, có thể thu hồi, không thể chuyển nhượng và không độc quyền để tải xuống, cài đặt và thực thi máy khách trò chơi chỉ cho mục đích giải trí cá nhân, phi thương mại. Công ty giữ quyền tuyệt đối thu hồi giấy phép này bất cứ lúc nào do vi phạm Thỏa thuận này. Ví dụ: Người dùng được cấp phép xem, thao tác và tương tác với các hình dạng 3D, kết cấu và giao diện người dùng của trò chơi trong quá trình chơi đang hoạt động. Tuy nhiên, họ hoàn toàn bị cấm trích xuất các mô hình đó từ các tệp trò chơi cục bộ, dịch ngược mã nguồn hoặc sử dụng các tài sản trong một dự án thương mại độc lập hoặc trò chơi điện tử cạnh tranh."
+        },
+        "16": {
+          "title": "16. Sở hữu Trí tuệ",
+          "content": "Phần này được thiết kế để bảo vệ mạnh mẽ nhận diện thương hiệu, mã độc quyền và tài sản hình ảnh của Công ty. Người chơi có quyền tương tác với sở hữu trí tuệ chỉ trong giới hạn dự kiến của máy khách trò chơi. Công ty nắm giữ và bảo lưu tất cả các quyền, quyền sở hữu và lợi ích độc quyền trong mã trò chơi, nhãn hiệu \"Borrowed Shapes\", kiến trúc máy chủ, yếu tố cốt truyện và tất cả tác phẩm nghệ thuật chính thức. Nếu Người dùng cố gắng thiết kế ngược các giao thức mạng của máy khách trò chơi để tạo trình giả lập máy chủ riêng tư, trái phép (thường được gọi là \"máy chủ lậu\"), Công ty có thẩm quyền pháp lý để ban hành lệnh ngừng và hủy bỏ, chấm dứt Tài khoản của Người dùng và theo đuổi các khoản bồi thường thiệt hại theo luật định vì vi phạm bản quyền và nhãn hiệu."
+        },
+        "17": {
+          "title": "17. Tính năng Cộng đồng",
+          "content": "Điều khoản này chi phối các tương tác trong không gian kỹ thuật số chia sẻ, cụ thể là hệ thống wiki và phòng chờ nhiều người chơi trực tuyến. Người chơi có quyền tham gia vào các cộng đồng này mà không bị quấy rối nghiêm trọng, phân biệt đối xử và mức độ độc hại cực đoan. Công ty có quyền thực thi các chính sách kiểm duyệt nghiêm ngặt và hạn chế quyền truy cập vào các tính năng cụ thể này một cách độc lập với quyền truy cập trò chơi cốt lõi. Ví dụ: nếu Người dùng liên tục sử dụng ngôn từ kích động thù địch hoặc gửi thư rác quảng cáo trong cuộc trò chuyện nhiều người chơi, Công ty có thể ban hành \"lệnh cấm giao tiếp\" cục bộ. Điều này hạn chế Người dùng nhập liệu trong các kênh trò chuyện hoặc chỉnh sửa các trang wiki, vô hiệu hóa tiếng nói của họ trong các không gian cộng đồng một cách hiệu quả trong khi về mặt kỹ thuật vẫn cho phép họ đăng nhập và chơi trò chơi một cách cô lập."
+        },
+        "18": {
+          "title": "18. Hàng hóa Ảo và Mua sắm Kỹ thuật số Tương lai",
+          "content": "Để thiết lập trước thực tế kinh tế và pháp lý của việc kiếm tiền, phần này chi phối bất kỳ dịch vụ cao cấp, vật phẩm kỹ thuật số hoặc tiền ảo nào được đưa vào trò chơi. Người chơi có quyền sử dụng Hàng hóa ảo đã mua nghiêm ngặt trong hệ sinh thái trò chơi khép kín. Công ty giữ quyền kiểm soát tuyệt đối đối với giá cả, tính khả dụng, sửa đổi và sự tồn tại của các mặt hàng này, quy định rằng Hàng hóa Ảo đại diện cho một giấy phép có giới hạn, không có giá trị tiền tệ trong thế giới thực và không thể rút ra tiền mặt, giao dịch bên ngoài hoặc thừa kế. Nếu Người dùng mua các tùy chọn tùy chỉnh cao cấp cho ảnh đại diện của mình và sau đó Công ty thay đổi tính thẩm mỹ hình ảnh của các tùy chọn đó trong bản cập nhật đồ họa toàn cầu để tối ưu hóa kỹ thuật, Người dùng không được hoàn tiền vì họ chỉ mua giấy phép có thể thu hồi để sử dụng hàng hóa như Công ty hiện đang cung cấp."
+        },
+        "19": {
+          "title": "19. Dịch vụ của Bên thứ ba",
+          "content": "Quy định này giới hạn trách nhiệm pháp lý của Công ty đối với các nhà cung cấp dịch vụ bên ngoài, vốn không thể thiếu đối với cơ sở hạ tầng của trò chơi. Người chơi có quyền nhận thông tin minh bạch liên quan đến các dịch vụ cơ sở hạ tầng bên ngoài nào được sử dụng để xử lý kết nối của họ. Công ty duy trì quyền sử dụng các nền tảng như Cloudflare R2 để lưu trữ tài sản, Cloudflare CDN để phân phối nội dung và Google để xác thực OAuth mà không chịu trách nhiệm pháp lý đối với những hỏng hóc hoặc ngừng hoạt động thảm khốc của các nền tảng độc lập đó. Ví dụ: nếu mạng định tuyến Cloudflare gặp sự cố ngừng hoạt động toàn cầu khiến máy khách Borrowed Shapes không thể kết nối với máy chủ ghép trận, Công ty được bảo vệ hợp pháp trước các khiếu nại vi phạm hợp đồng hoặc yêu cầu bồi thường liên quan đến sự gián đoạn dịch vụ."
+        },
+        "20": {
+          "title": "20. Cập nhật và Thay đổi Dịch vụ",
+          "content": "Phần này đảm bảo khả năng pháp lý và kỹ thuật của Công ty để lặp lại, vá lỗi và phát triển phần mềm sau khi ra mắt. Người chơi có quyền nhận các bản cập nhật này để tiếp tục truy cập vào hệ sinh thái nhiều người chơi, nhưng không có quyền yêu cầu bảo tồn các phiên bản cũ hơn, chưa được vá của trò chơi. Công ty có quyền tự động triển khai các bản vá, sửa đổi cân bằng trò chơi hoặc loại bỏ các tính năng theo quyết định riêng của mình mà không cần sự đồng ý trước. Trong kịch bản thực tế, nếu một hình dạng tùy chỉnh ảnh đại diện cụ thể bị phát hiện gây ra tình trạng tụt khung hình đồ họa nghiêm trọng trong môi trường nhiều người chơi, Công ty có thể triển khai bản sửa lỗi (hotfix) ngay lập tức để loại bỏ hoặc thay đổi vật phẩm. Người dùng bị bắt buộc theo hợp đồng phải tải bản cập nhật để kết nối lại với máy chủ và không thể khiếu nại rằng sản phẩm đã bị \"phá hủy\" bởi bản vá."
+        },
+        "21": {
+          "title": "21. Chấm dứt Tài khoản bởi Borrowed Shapes",
+          "content": "Công ty có toàn quyền chấm dứt, đình chỉ hoặc hạn chế quyền truy cập của bất kỳ Người chơi nào vào Dịch vụ vào bất kỳ lúc nào, dù có hay không có lý do hoặc thông báo trước. Điều khoản này là một biện pháp phòng thủ tiêu chuẩn trong phần mềm thương mại, cho phép vô hiệu hóa ngay lập tức các mối đe dọa đối với sự ổn định của nền tảng hoặc sự an toàn của cộng đồng. Nếu Công ty phát hiện các khoản bồi hoàn thanh toán gian lận (chargeback) liên quan đến một Tài khoản, họ có quyền đơn phương cấm vĩnh viễn Tài khoản đó và tịch thu mọi tiến trình cũng như Hàng hóa Ảo liên quan mà không phải chịu trách nhiệm pháp lý."
+        },
+        "22": {
+          "title": "22. Chấm dứt Tài khoản bởi Người dùng",
+          "content": "Người chơi duy trì quyền cơ bản được cắt đứt mối quan hệ pháp lý của họ với Công ty bằng cách xóa vĩnh viễn Tài khoản của họ. Quá trình này được trình bày chi tiết trong Chính sách Xóa Tài khoản chuyên biệt. Quyền chấm dứt đảm bảo Người dùng không bị ràng buộc vĩnh viễn bởi hợp đồng này trái với ý muốn của họ."
+        },
+        "23": {
+          "title": "23. Hiệu lực của Chấm dứt",
+          "content": "Phần này làm rõ vị thế pháp lý của cả hai bên sau khi chấm dứt. Khi Xóa hoặc Cấm tài khoản, tất cả các giấy phép được cấp cho Người chơi để chơi trò chơi hoặc truy cập wiki sẽ bị thu hồi ngay lập tức. Tuy nhiên, các quy định liên quan đến giới hạn trách nhiệm pháp lý, quyền sở hữu trí tuệ và bồi thường sẽ vẫn tồn tại sau khi chấm dứt, đảm bảo Công ty vẫn được bảo vệ khỏi các vụ kiện sau đó."
+        },
+        "24": {
+          "title": "24. Tuyên bố Từ chối Trách nhiệm Bảo hành",
+          "content": "Để giảm thiểu rủi ro pháp lý, Dịch vụ được cung cấp nghiêm ngặt trên cơ sở \"NGUYÊN TRẠNG\" (AS IS) và \"CÓ SẴN\" (AS AVAILABLE). Công ty từ chối rõ ràng mọi bảo đảm ngụ ý về khả năng thương mại, sự phù hợp cho một mục đích cụ thể và không vi phạm. Nếu Người chơi gặp sự cố máy chủ trong một trận đấu giải mang tính cạnh tranh cao, điều khoản này ngăn cản Người chơi kiện Công ty thành công vì một sản phẩm \"bị lỗi\", vì dịch vụ không bị gián đoạn chưa bao giờ được đảm bảo theo hợp đồng."
+        },
+        "25": {
+          "title": "25. Giới hạn Trách nhiệm",
+          "content": "Điều khoản này giới hạn mức thiệt hại tài chính tối đa mà Người chơi có thể yêu cầu Công ty bồi thường trong trường hợp có tranh chấp. Công ty sẽ không chịu trách nhiệm đối với bất kỳ thiệt hại gián tiếp, ngẫu nhiên, đặc biệt hoặc do hậu quả nào (chẳng hạn như mất lợi nhuận hoặc mất vật phẩm ảo). Tổng trách nhiệm pháp lý tối đa được giới hạn rõ ràng ở số tiền Người chơi đã thanh toán cho Công ty trong mười hai (12) tháng trước khi có khiếu nại."
+        },
+        "26": {
+          "title": "26. Bồi thường",
+          "content": "Người chơi đồng ý bồi thường, bảo vệ và giữ cho Công ty không bị tổn hại khỏi bất kỳ khiếu nại, tổn thất hoặc phí pháp lý nào phát sinh trực tiếp từ việc Người chơi vi phạm các Điều khoản này hoặc vi phạm quyền của bên thứ ba. Nếu Người dùng tải nhạc có bản quyền lên máy chủ trò chơi và nghệ sĩ gốc kiện Công ty, điều khoản này bắt buộc Người dùng phải trang trải chi phí bào chữa pháp lý của Công ty."
+        },
+        "27": {
+          "title": "27. Luật Áp dụng",
+          "content": "Phần này thiết lập khu vực tài phán pháp lý cụ thể sẽ giải thích Thỏa thuận này, mang lại khả năng dự đoán cho Công ty. Bất kể Người chơi cư trú ở đâu trên toàn cầu, các Điều khoản sẽ được điều chỉnh bởi luật pháp của Tiểu bang California (hoặc khu vực hoạt động chính của Công ty), loại trừ các nguyên tắc xung đột pháp luật của tiểu bang này."
+        },
+        "28": {
+          "title": "28. Giải quyết Tranh chấp và Trọng tài Ràng buộc",
+          "content": "Để tránh những khoản chi phí khổng lồ cho các vụ kiện tụng công khai, mọi tranh chấp phát sinh từ các Điều khoản này phải được giải quyết thông qua trọng tài cá nhân bảo mật và có tính ràng buộc, thay vì tại phòng xử án. Cả Người chơi và Công ty đều từ bỏ quyền hiến định của họ đối với một phiên tòa có bồi thẩm đoàn."
+        },
+        "29": {
+          "title": "29. Từ bỏ Vụ kiện Tập thể",
+          "content": "Người chơi đồng ý rằng mọi thủ tục tố tụng trọng tài hoặc pháp lý sẽ chỉ được tiến hành trên cơ sở cá nhân. Người chơi từ bỏ rõ ràng quyền tham gia vào một vụ kiện tập thể, hành động tập thể hoặc thủ tục tố tụng đại diện chống lại Công ty."
+        },
+        "30": {
+          "title": "30. Tính hiệu lực Từng phần",
+          "content": "Nếu bất kỳ điều khoản cụ thể nào của Thỏa thuận này bị tòa án có thẩm quyền phán quyết là không thể thực thi về mặt pháp lý hoặc không hợp lệ, thì điều khoản cụ thể đó sẽ bị cắt bỏ hoặc giới hạn, trong khi phần còn lại của Thỏa thuận vẫn giữ nguyên hiệu lực."
+        },
+        "31": {
+          "title": "31. Toàn bộ Thỏa thuận",
+          "content": "Tài liệu này, cùng với Chính sách quyền riêng tư và các quy tắc được tham chiếu khác, cấu thành toàn bộ thỏa thuận pháp lý giữa Người chơi và Công ty, thay thế mọi thông tin liên lạc bằng miệng hoặc văn bản trước đó, quảng cáo hoặc các tuyên bố không chính thức của người quản lý cộng đồng."
+        },
+        "32": {
+          "title": "32. Thông tin Liên hệ",
+          "content": "Công ty có trách nhiệm duy trì một kênh chính thức cho thư từ pháp lý. Nếu Người chơi muốn tống đạt thông báo pháp lý chính thức hoặc yêu cầu làm rõ về các Điều khoản này, họ phải chuyển thông tin liên lạc đến legal@borrowedshapes.com."
         }
-      ]
+      }
+    },
+    "privacy": {
+      "title": "Chính sách Bảo mật",
+      "badge": "Section 1 – Nền tảng Pháp lý",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Mục đích của phần Giới thiệu này là làm sáng tỏ các thực tiễn xử lý dữ liệu của Công ty và thiết lập sự minh bạch tuyệt đối về những gì xảy ra với thông tin cá nhân sau khi nó đi vào hệ sinh thái của Borrowed Shapes. Người chơi nắm giữ quyền cơ bản được thông báo về các hoạt động thu thập dữ liệu trước khi tham gia, trong khi Công ty có trách nhiệm pháp lý theo các khuôn khổ toàn cầu như GDPR và CCPA phải công bố một chính sách chính xác, dễ tiếp cận. Một kịch bản thực tế liên quan đến một Người dùng có ý thức về quyền riêng tư đọc tài liệu này để xác minh rằng địa chỉ email của họ sẽ không bị bán cho các công ty tiếp thị bên thứ ba trước khi họ cam kết tạo Tài khoản."
+        },
+        "2": {
+          "title": "2. Phạm vi",
+          "content": "Phần này xác định ranh giới kỹ thuật số chính xác của Chính sách Quyền riêng tư. Chính sách này áp dụng độc quyền cho nền tảng web Borrowed Shapes, máy khách trò chơi nhiều người chơi, hệ thống wiki và tất cả các dịch vụ định tuyến và lưu trữ phụ trợ liên quan. Người chơi có quyền biết chính xác các tài sản kỹ thuật số nào được áp dụng các biện pháp bảo vệ này. Công ty có trách nhiệm đảm bảo dữ liệu được thu thập trên tất cả các nền tảng nội bộ này được quản lý đồng nhất. Nếu Người dùng nhấp vào một siêu liên kết bên ngoài trên wiki cộng đồng điều hướng đến một trang web của bên thứ ba không liên kết, điều khoản này làm rõ rằng các biện pháp bảo vệ quyền riêng tư của Công ty sẽ bị cắt đứt tại thời điểm đó và các quy tắc của bên thứ ba sẽ được áp dụng."
+        },
+        "3": {
+          "title": "3. Định nghĩa",
+          "content": "Điều khoản này cung cấp các thông số pháp lý nghiêm ngặt cho thuật ngữ liên quan đến quyền riêng tư để phù hợp với luật bảo vệ dữ liệu quốc tế. Người chơi có quyền đối với ngôn ngữ rõ ràng, trong khi Công ty có trách nhiệm chuẩn hóa các định nghĩa của mình.\n- Dữ liệu cá nhân: Biểu thị bất kỳ thông tin nào có thể trực tiếp hoặc gián tiếp xác định danh tính một cá nhân, chẳng hạn như địa chỉ email, địa chỉ IP hoặc mã định danh phần cứng cụ thể.\n- Xử lý: Đề cập đến bất kỳ hoạt động tự động hoặc thủ công nào được thực hiện trên dữ liệu, bao gồm thu thập, lưu trữ, thay đổi hoặc xóa.\n- Bên kiểm soát: Chỉ định Công ty là pháp nhân quyết định mục đích và phương tiện xử lý Dữ liệu Cá nhân.\n- Bên xử lý: Đề cập đến các nhà cung cấp bên thứ ba (ví dụ: Cloudflare) hành động thay mặt cho Bên kiểm soát."
+        },
+        "4": {
+          "title": "4. Thông tin Chúng tôi Thu thập",
+          "content": "Phần bao quát này trình bày chi tiết các danh mục dữ liệu chính xác mà hệ thống thu thập. Công ty chịu trách nhiệm pháp lý trong việc thực hành giảm thiểu dữ liệu — chỉ thu thập những gì thực sự cần thiết để vận hành trò chơi. Người chơi có quyền hiểu toàn bộ bề rộng dấu chân kỹ thuật số của họ trong hệ sinh thái.\n* Danh mục Dữ liệu | Thông tin cụ thể liên quan | Mục đích chính\n* Tài khoản & Xác thực | Email, tên người dùng, token OAuth, mật khẩu băm. | Xác minh danh tính và truy cập tài khoản.\n* Đo từ xa & Mạng | Địa chỉ IP, ID phần cứng, ping, mất gói tin. | Tối ưu hóa ghép trận và chống gian lận.\n* Nội dung do người dùng tạo | Hình ảnh tải lên, văn bản wiki, cấu hình ảnh đại diện. | Kết xuất trong trò chơi và tính năng cộng đồng.\n* Hỗ trợ & Bảo mật | Yêu cầu hỗ trợ, báo cáo, dấu thời gian đăng nhập, nhật ký lỗi. | Giải quyết tranh chấp và bảo vệ cơ sở hạ tầng."
+        },
+        "5": {
+          "title": "5. Thông tin Tài khoản",
+          "content": "Chính sách yêu cầu thu thập các định danh cơ bản để thiết lập một hồ sơ liên tục. Thông tin liên quan bao gồm địa chỉ email của Người dùng, tên hồ sơ đã chọn và dấu thời gian tạo tài khoản. Công ty xử lý việc này bằng cách lưu trữ dữ liệu trong cơ sở dữ liệu quan hệ được mã hóa, bảo mật. Người chơi có quyền xem và cập nhật thông tin này trong cài đặt hồ sơ của họ. Công ty có trách nhiệm bảo vệ dữ liệu cốt lõi này chống lại các vi phạm trái phép và quyền truy cập nội bộ trái phép."
+        },
+        "6": {
+          "title": "6. Thông tin Xác thực",
+          "content": "Để bảo mật Tài khoản khỏi sự truy cập trái phép, hệ thống xử lý dữ liệu xác thực. Điều này liên quan đến các hàm băm mật mã của mật khẩu (nếu sử dụng xác thực email tiêu chuẩn) và các mã thông báo (token) phiên đăng nhập đang hoạt động. Công ty băm và thêm muối (salt) cho tất cả mật khẩu, có nghĩa là văn bản thô không bao giờ được biết đến hoặc lưu trữ. Người chơi có quyền đặt lại thông tin đăng nhập một cách an toàn theo ý muốn. Công ty phải đảm bảo token phiên hết hạn một cách thích hợp để ngăn chặn việc chiếm đoạt phiên nếu Người dùng đăng nhập từ một máy tính công cộng."
+        },
+        "7": {
+          "title": "7. Thông tin Đăng nhập Google",
+          "content": "Khi Người dùng chọn xác thực của bên thứ ba để thuận tiện, dữ liệu cụ thể sẽ được trao đổi. Thông tin liên quan là mã thông báo OAuth 2.0 và địa chỉ email đã được xác minh do Google API cung cấp. Công ty xử lý việc này bằng cách xác thực token với máy chủ của Google để cấp quyền truy cập. Người chơi có quyền thu hồi kết nối này bất cứ lúc nào thông qua cài đặt bảo mật tài khoản Google của họ. Công ty có trách nhiệm không thu thập dữ liệu không liên quan từ hồ sơ Google rộng hơn của Người dùng vượt quá phạm vi xác thực cơ bản cần thiết cho trò chơi."
+        },
+        "8": {
+          "title": "8. Thông tin Thiết bị",
+          "content": "Để tối ưu hóa engine và lập hồ sơ bảo mật, dữ liệu phần cứng được thu thập khi khởi chạy máy khách. Điều này bao gồm thông số kỹ thuật của GPU, phiên bản hệ điều hành và dung lượng RAM. Công ty sử dụng tính năng đo từ xa này để tối ưu hóa quy trình kết xuất của trò chơi và phát hiện việc giả mạo phần cứng thường liên quan đến việc lách luật cấm. Người chơi có quyền hiểu rằng chữ ký phần cứng của họ được ghi lại. Công ty phải bảo mật dữ liệu này để các tác nhân bên ngoài không thể sử dụng nó để lấy dấu vân tay Người dùng một cách ác ý trên internet rộng lớn hơn."
+        },
+        "9": {
+          "title": "9. Thông tin Trình duyệt",
+          "content": "Khi Người dùng truy cập nền tảng web hoặc hệ thống wiki, các chi tiết cụ thể về trình duyệt sẽ được ghi lại. Điều này bao gồm chuỗi tác nhân người dùng (user-agent), ngôn ngữ ưa thích và độ phân giải màn hình. Công ty sử dụng điều này hoàn toàn để tối ưu hóa bố cục web và kiểm tra bảo mật chống bot tự động. Quyền riêng tư của Người chơi ở đây được bảo vệ bằng cách hạn chế việc lưu giữ dữ liệu này. Công ty có trách nhiệm đảm bảo dữ liệu này được tổng hợp và ẩn danh để phân tích rộng rãi bất cứ khi nào có thể, thay vì theo dõi thói quen duyệt web của từng cá nhân."
+        },
+        "10": {
+          "title": "10. Thông tin Mạng",
+          "content": "Để tạo điều kiện cho trải nghiệm nhiều người chơi trực tuyến mượt mà, dữ liệu định tuyến mạng là cần thiết. Điều này liên quan đến các số liệu về độ trễ (ping), thống kê mất gói tin và các chặng định tuyến khu vực. Công ty sử dụng tính năng này để kết nối Người chơi với các máy chủ khu vực tối ưu nhất và đảm bảo sự cạnh tranh công bằng. Người chơi có quyền có một môi trường chơi ổn định, điều này đòi hỏi việc thu thập nền tảng này. Công ty không được sử dụng kiểm tra gói mạng để giám sát hoặc theo dõi dữ liệu không liên quan đến máy khách trò chơi Borrowed Shapes."
+        },
+        "11": {
+          "title": "11. Địa chỉ IP",
+          "content": "Việc thu thập địa chỉ Giao thức Internet (IP) là một yêu cầu cơ bản của giao tiếp internet. Địa chỉ IP được thu thập trong quá trình duyệt web, xác thực và ghép trận nhiều người chơi. Công ty sử dụng địa chỉ IP để định vị máy chủ, ngăn chặn gian lận thanh toán và ban hành các lệnh cấm quản trị ở cấp độ mạng. Người chơi có quyền sử dụng các mạng riêng ảo (VPN) tiêu chuẩn (nếu không bị cấm rõ ràng bởi Điều khoản Dịch vụ) để che giấu điều này, mặc dù nó có thể làm giảm độ trễ. Công ty có trách nhiệm coi địa chỉ IP là Dữ liệu Cá nhân nhạy cảm theo hướng dẫn của GDPR."
+        },
+        "12": {
+          "title": "12. Thông tin Sử dụng",
+          "content": "Dữ liệu hành vi trong trò chơi phải được theo dõi để cải thiện sản phẩm và cân bằng cơ chế. Điều này bao gồm thời gian sử dụng trong trò chơi, các tính năng cụ thể được tương tác và tỷ lệ tham gia phòng chờ nhiều người chơi. Công ty phân tích phép đo từ xa này để cân bằng cơ chế lối chơi và xác định các tính năng phổ biến. Người chơi có quyền biết hành vi của họ được theo dõi để phát triển sản phẩm. Công ty có trách nhiệm chỉ sử dụng dữ liệu này để cải thiện nội bộ và bị nghiêm cấm bán dữ liệu đó cho các nhà môi giới quảng cáo hành vi."
+        },
+        "13": {
+          "title": "13. Dữ liệu Phân tích",
+          "content": "Dữ liệu tổng hợp giúp studio hiểu được các xu hướng vĩ mô mà không cần xác định danh tính từng cá nhân. Điều này liên quan đến việc chuyển đổi số liệu thống kê sử dụng của từng cá nhân thành các nhóm đối tượng rộng lớn (ví dụ: \"15.000 người chơi đã đăng nhập vào ngày cập nhật\"). Công ty xử lý việc này bằng cách loại bỏ các số nhận dạng cá nhân khỏi dữ liệu thô bằng thuật toán toán học trước khi phân tích. Người chơi có quyền phản đối một số loại theo dõi trực tiếp nhất định, mặc dù các phân tích tổng hợp cốt lõi thường được miễn trừ. Công ty có trách nhiệm đảm bảo các công cụ phân tích của bên thứ ba tuân thủ các thỏa thuận bảo vệ dữ liệu nghiêm ngặt."
+        },
+        "14": {
+          "title": "14. Hình ảnh Tải lên",
+          "content": "Hệ thống cho phép tùy chỉnh hình ảnh, đòi hỏi khả năng lưu trữ hình ảnh có thể mở rộng. Thông tin liên quan đến các tệp hình ảnh nhị phân được Người dùng tải lên cho ảnh đại diện hoặc các trang wiki. Công ty xử lý việc này bằng cách tải trực tiếp các tệp lên bộ lưu trữ đối tượng Cloudflare R2. Người chơi có quyền xóa các hình ảnh này khỏi hồ sơ của họ bất cứ lúc nào. Công ty có trách nhiệm bảo mật các bucket Cloudflare R2, tước bỏ siêu dữ liệu EXIF nhạy cảm (chẳng hạn như tọa độ GPS) khỏi hình ảnh trước khi hiển thị công khai và theo dõi nội dung bất hợp pháp."
+        },
+        "15": {
+          "title": "15. Đóng góp Wiki",
+          "content": "Wiki cộng đồng phụ thuộc rất nhiều vào văn bản do người dùng gửi và các chỉnh sửa cấu trúc. Thông tin liên quan đến văn bản được Người dùng viết, gắn liền vĩnh viễn với tên người dùng của họ và dấu thời gian. Công ty xử lý việc này bằng cách xuất bản nó lên nền tảng web hướng ra công chúng. Người chơi có quyền chỉnh sửa các đóng góp của họ. Công ty có trách nhiệm duy trì lịch sử sửa đổi để ngăn chặn hành vi phá hoại và đảm bảo việc hiển thị công khai dữ liệu này phù hợp với các chính sách kiểm duyệt."
+        },
+        "16": {
+          "title": "16. Dữ liệu Hình đại diện",
+          "content": "Biểu diễn hình ảnh của Người chơi được lưu trữ tập trung trên máy chủ. Điều này bao gồm các thông số của ảnh đại diện (ví dụ: mã hex màu sắc, dữ liệu hình dạng hình học, vật phẩm trang bị). Công ty sử dụng dữ liệu này để hiển thị nhân vật một cách chính xác trong các không gian chia sẻ nhiều người chơi. Người chơi có quyền thay đổi cấu hình ảnh đại diện của họ theo ý muốn. Công ty phải đảm bảo dữ liệu ảnh đại diện đồng bộ hóa nhanh chóng trên Mạng phân phối nội dung (CDN) để đảm bảo tất cả người chơi quan sát thấy hình ảnh đại diện chính xác với độ trễ tối thiểu."
+        },
+        "17": {
+          "title": "17. Báo cáo",
+          "content": "Hệ thống kiểm duyệt dựa vào các báo cáo do người dùng tạo ra để duy trì các tiêu chuẩn cộng đồng. Điều này liên quan đến nội dung văn bản khiếu nại, ID nội bộ của người báo cáo và ID của người bị buộc tội. Công ty xử lý việc này một cách hoàn toàn bảo mật, lưu trữ nó trong cơ sở dữ liệu chỉ nhóm kiểm duyệt được ủy quyền mới có thể truy cập. Người chơi có quyền gửi báo cáo một cách an toàn mà không sợ bị trả thù công khai. Công ty có trách nhiệm điều tra dữ liệu một cách khách quan và duy trì quyền riêng tư tuyệt đối của cả người báo cáo và cá nhân bị báo cáo."
+        },
+        "18": {
+          "title": "18. Giao tiếp Hỗ trợ Khách hàng",
+          "content": "Khi Người dùng yêu cầu trợ giúp kỹ thuật hoặc thanh toán, các bản ghi liên lạc sẽ được tạo ra. Điều này bao gồm email, nội dung văn bản yêu cầu hỗ trợ và bất kỳ ảnh chụp màn hình chẩn đoán đính kèm nào. Công ty lưu trữ thông tin này trong phần mềm quản lý quan hệ khách hàng (CRM) của mình để theo dõi và giải quyết sự cố. Người chơi có quyền yêu cầu đóng và sau đó xóa các phiếu hỗ trợ. Công ty phải đảm bảo quyền truy cập CRM bị hạn chế nghiêm ngặt trong nội bộ để ngăn chặn nhân viên trái phép đọc các thư từ riêng tư."
+        },
+        "19": {
+          "title": "19. Nhật ký Bảo mật",
+          "content": "Để bảo vệ cơ sở hạ tầng phụ trợ khỏi các tác nhân độc hại, các sự kiện bảo mật được ghi lại liên tục. Điều này liên quan đến việc theo dõi các nỗ lực đăng nhập thất bại, các yêu cầu API nhanh chóng và các trình kích hoạt dựa trên suy luận chống gian lận. Công ty sử dụng dữ liệu này hoàn toàn để bảo vệ cơ sở hạ tầng và ban hành các lệnh cấm tự động. Người chơi có quyền được bảo vệ khỏi các hành vi vi phạm trên toàn bộ nền tảng. Công ty có trách nhiệm pháp lý phải lưu giữ các nhật ký này để phân tích pháp y và thông tin tình báo về mối đe dọa trong trường hợp xảy ra một cuộc tấn công mạng."
+        },
+        "20": {
+          "title": "20. Thông tin Thu thập Tự động",
+          "content": "Một số dữ liệu chẩn đoán nền nhất định được thu thập mà không cần sự can thiệp tích cực của Người dùng. Điều này liên quan đến các báo cáo sự cố, nhật ký lỗi và các yêu cầu định tuyến CDN được tạo ra khi máy khách trò chơi bị lỗi. Công ty tự động thu thập thông tin này qua máy khách trò chơi để sửa lỗi phần mềm và cải thiện tính ổn định. Người chơi có quyền hiểu rằng máy khách vận hành các công cụ chẩn đoán này. Công ty phải đảm bảo rằng các bãi chứa sự cố tự động (crash dump) không vô tình chụp hoặc truyền các tệp nhạy cảm từ ổ cứng máy tính cá nhân của Người dùng."
+        },
+        "21": {
+          "title": "21. Lý do Chúng tôi Thu thập Thông tin",
+          "content": "Phần này tổng hợp nhiều điểm thu thập thành các mục đích rõ ràng, có thể biện minh về mặt pháp lý. Công ty phải thiết lập chính xác lý do tại sao dữ liệu được yêu cầu để vận hành. Người chơi có quyền được lý giải minh bạch về tiện ích của dữ liệu. Công ty thu thập thông tin để vận hành các máy chủ nhiều người chơi, xác thực các tài khoản bảo mật, kiểm duyệt wiki cộng đồng, cung cấp hỗ trợ khách hàng và chuẩn bị cơ sở hạ tầng cho việc triển khai Hàng hóa ảo trong tương lai. Không có dữ liệu này, bản chất trực tuyến, liên kết nội bộ của Borrowed Shapes sẽ hoàn toàn ngừng hoạt động."
+        },
+        "22": {
+          "title": "22. Cơ sở Pháp lý để Xử lý",
+          "content": "Điều khoản này đảm bảo việc tuân thủ các yêu cầu nghiêm ngặt của GDPR và các đạo luật quốc tế tương tự. Người chơi có quyền biết chính xác cơ sở pháp lý nền tảng cho việc xử lý dữ liệu của họ. Công ty dựa trên các trụ cột sau để xử lý:\n- Sự cần thiết của hợp đồng: Việc xử lý email và mật khẩu là bắt buộc để hoàn thành các Điều khoản dịch vụ.\n- Lợi ích hợp pháp: Việc xử lý nhật ký bảo mật, địa chỉ IP và phép đo từ xa của trò chơi là cần thiết cho lợi ích hợp pháp của Công ty trong việc bảo mật nền tảng và cải thiện sản phẩm.\n- Sự đồng ý: Việc xử lý các email tiếp thị không cần thiết hoặc dữ liệu hồ sơ được liên kết tùy chọn hoàn toàn dựa trên sự đồng ý rõ ràng, có thể thu hồi của Người dùng."
+        },
+        "23": {
+          "title": "23. Cách Chúng tôi Sử dụng Thông tin",
+          "content": "Phần này kết nối việc thu thập dữ liệu và ứng dụng thực tế của nó trong hệ sinh thái. Thông tin được sử dụng trực tiếp trong vòng lặp cốt lõi của trò chơi. Công ty sử dụng dữ liệu độ trễ và IP để xếp người chơi vào các phòng chờ tối ưu và sử dụng dữ liệu ảnh đại diện để hiển thị môi trường hình ảnh. Người chơi có quyền biết dữ liệu của họ chỉ được sử dụng cho các chức năng liên quan đến trò chơi. Công ty có trách nhiệm đảm bảo rằng cơ sở dữ liệu được xây dựng để xác thực tài khoản an toàn không bao giờ bị pha trộn với cơ sở dữ liệu được xây dựng để quảng cáo bên ngoài hoặc môi giới dữ liệu."
+        },
+        "24": {
+          "title": "24. Chia sẻ Thông tin",
+          "content": "Phần này xác định các trường hợp cụ thể mà dữ liệu rời khỏi sự kiểm soát kỹ thuật số hoặc vật lý trực tiếp của Công ty. Người chơi có quyền biết chính xác ai khác đang chạm vào dữ liệu của họ. Công ty có trách nhiệm đảm bảo dữ liệu chỉ được chia sẻ với các bên thứ ba có hợp đồng, đáng tin cậy, cơ quan thực thi pháp luật xuất trình trát đòi hầu tòa hợp lệ hoặc những người chơi khác thông qua hồ sơ wiki công khai. Công ty đảm bảo rõ ràng rằng họ không bán Dữ liệu cá nhân cho các nhà môi giới dữ liệu bên thứ ba."
+        },
+        "25": {
+          "title": "25. Nhà cung cấp Dịch vụ Bên thứ ba",
+          "content": "Công ty sử dụng các nhà cung cấp bên ngoài chuyên môn hóa để vận hành trò chơi ở quy mô lớn. Thông tin liên quan bao gồm dữ liệu lưu trữ đám mây và số liệu định tuyến mạng. Công ty xử lý vấn đề này bằng cách thực hiện các Thỏa thuận Xử lý Dữ liệu (DPA) nghiêm ngặt với các nhà cung cấp này. Quyền riêng tư của Người chơi mở rộng liền mạch đến các bên thứ ba này. Công ty chịu hoàn toàn trách nhiệm trong việc thẩm định các tiêu chuẩn bảo mật của các nhà cung cấp này và đảm bảo họ không thể sử dụng dữ liệu cho các mục đích độc lập của riêng mình."
+        },
+        "26": {
+          "title": "26. Dịch vụ Cloudflare",
+          "content": "Borrowed Shapes phụ thuộc rất nhiều vào Cloudflare cho cơ sở hạ tầng toàn cầu. Thông tin liên quan bao gồm dữ liệu bộ nhớ đệm CDN, địa chỉ IP để bảo vệ chống DDoS và tất cả hình ảnh của người dùng được tải lên kho lưu trữ đối tượng Cloudflare R2. Công ty xử lý việc này bằng cách định tuyến lưu lượng truy cập độc quyền thông qua các nút biên an toàn của Cloudflare. Người chơi được hưởng lợi từ thời gian tải nhanh hơn đáng kể và khả năng bảo vệ cấp độ doanh nghiệp chống lại các cuộc tấn công mạng. Công ty có trách nhiệm định cấu hình đúng các bucket R2 để đảm bảo dữ liệu riêng tư vẫn được mã hóa ở trạng thái nghỉ."
+        },
+        "27": {
+          "title": "27. Xác thực Google",
+          "content": "Khi Người dùng liên kết tài khoản Google của họ để đăng nhập liền mạch, dữ liệu được chia sẻ hai chiều. Thông tin liên quan đến các yêu cầu xác thực mã thông báo mật mã được gửi từ Công ty đến máy chủ Google. Công ty xử lý việc này thông qua các lệnh gọi API được mã hóa, bảo mật. Người chơi có quyền đăng nhập liền mạch bằng cách sử dụng tích hợp này mà không cần tạo mật khẩu mới. Công ty có trách nhiệm tuân thủ các điều khoản dịch vụ API nghiêm ngặt của Google liên quan đến việc xử lý dữ liệu người dùng và giảm thiểu dấu chân dữ liệu."
+        },
+        "28": {
+          "title": "28. Phân tích",
+          "content": "Để hiểu cơ sở người chơi và cân bằng trò chơi, dữ liệu được chia sẻ với phần mềm phân tích. Thông tin liên quan đến từ xa tổng hợp, chẳng hạn như thời lượng phiên trung bình và các trang wiki phổ biến. Công ty xử lý việc này bằng cách ẩn danh dữ liệu trước khi xuất sang trang tổng quan phân tích. Người chơi có quyền không bị lập hồ sơ hoặc theo dõi cá nhân. Công ty có trách nhiệm đảm bảo nhà cung cấp phân tích không thể thiết kế ngược dữ liệu ẩn danh trở lại cho một người chơi cá nhân cụ thể."
+        },
+        "29": {
+          "title": "29. Phát hiện Gian lận",
+          "content": "Để chuẩn bị cho Hàng hóa Ảo trong tương lai, an ninh tài chính là tối quan trọng. Thông tin liên quan bao gồm ID thiết bị, địa chỉ IP và các nỗ lực mua hàng. Công ty chia sẻ thông tin này với các cổng thanh toán chuyên biệt và thuật toán phát hiện gian lận. Người chơi có quyền đối với các giao dịch tài chính an toàn, được bảo vệ. Công ty có trách nhiệm sử dụng các đối tác tuân thủ PCI-DSS để đảm bảo số thẻ tín dụng nhạy cảm không bao giờ được lưu trữ trực tiếp trên máy chủ gốc của trò chơi."
+        },
+        "30": {
+          "title": "30. Giám sát Bảo mật",
+          "content": "Để bảo vệ tính toàn vẹn của trò chơi và người dùng, dữ liệu bảo mật được chia sẻ với các nhà cung cấp an ninh mạng. Điều này liên quan đến việc phân tích các mẫu lưu lượng mạng để phát hiện các cuộc tấn công DDoS, bot cào dữ liệu (scraping) hoặc các nỗ lực đăng nhập bạo lực (brute-force). Công ty sử dụng các công cụ tự động để phân tích dữ liệu này trong thời gian thực. Người chơi có quyền có một môi trường chơi game an toàn, không bị xâm phạm. Công ty phải đảm bảo các công cụ giám sát này tôn trọng các nguyên tắc giảm thiểu dữ liệu và không ghi nhật ký các hoạt động người dùng lành tính một cách không cần thiết."
+        },
+        "31": {
+          "title": "31. Cookie",
+          "content": "Phần này giải thích việc sử dụng các công nghệ lưu trữ web cục bộ trên nền tảng web và wiki. Thông tin liên quan bao gồm ID phiên và mã thông báo xác thực được lưu trữ trực tiếp trên trình duyệt của Người dùng. Công ty chỉ sử dụng các cookie thực sự cần thiết để giữ cho Người dùng đăng nhập và bảo mật phiên chống lại hành vi giả mạo yêu cầu trên nhiều trang web (cross-site request forgery). Người chơi có quyền xóa các cookie này bất cứ lúc nào qua cài đặt trình duyệt của họ. Công ty có trách nhiệm không sử dụng các cookie quảng cáo hoặc theo dõi xâm nhập của bên thứ ba mà không có sự đồng ý rõ ràng, tự nguyện."
+        },
+        "32": {
+          "title": "32. Chuyển Dữ liệu Quốc tế",
+          "content": "Điều khoản này đề cập đến tính chất toàn cầu của điện toán đám mây và lưu trữ máy chủ. Thông tin liên quan bao gồm tất cả Dữ liệu Cá nhân, có thể được chuyển từ quốc gia quê nhà của Người dùng (ví dụ: trong Khu vực Kinh tế Châu Âu) đến các máy chủ đặt tại Hoa Kỳ hoặc các khu vực khác. Công ty xử lý việc này một cách hợp pháp bằng cách sử dụng Điều khoản Hợp đồng Tiêu chuẩn (SCC) và các khuôn khổ như Khuôn khổ Quyền riêng tư Dữ liệu EU-US (DPF). Người chơi có quyền biết dữ liệu của họ vượt qua biên giới quốc tế. Công ty chịu trách nhiệm pháp lý trong việc đảm bảo các cơ sở xử lý của quốc gia đích cung cấp mức độ bảo vệ dữ liệu đầy đủ, tuân thủ pháp luật."
+        },
+        "33": {
+          "title": "33. Lưu giữ Dữ liệu",
+          "content": "Phần này thiết lập tuổi thọ chính xác của dữ liệu được lưu trữ để ngăn chặn việc tích trữ vĩnh viễn. Công ty có trách nhiệm không lưu giữ dữ liệu vĩnh viễn sau khi mục đích của nó đã hoàn thành. Người chơi có quyền \"được lãng quên\".\n* Loại dữ liệu | Thời gian lưu giữ | Xử lý sau khi xóa\n* Dữ liệu tài khoản | Thời lượng của tài khoản đang hoạt động. | Bị xóa trong vòng 30 ngày kể từ ngày yêu cầu đóng.\n* Nhật ký máy chủ | 90 ngày. | Tự động xóa sạch sau khi phân tích bảo mật.\n* Hình ảnh đã tải lên | Thời lượng của tài khoản đang hoạt động. | Xóa khỏi Cloudflare R2 khi chấm dứt tài khoản.\n* Hồ sơ tài chính | Tối đa 7 năm. | Được giữ lại hoàn toàn để tuân thủ thuế theo luật định."
+        },
+        "34": {
+          "title": "34. Quyền của Người dùng",
+          "content": "Phần bao quát này trình bày chi tiết các quyền theo luật định mạnh mẽ được cấp cho Người dùng liên quan đến dữ liệu của họ, chịu ảnh hưởng nặng nề bởi luật bảo mật toàn cầu. Công ty bị ràng buộc về mặt pháp lý phải tạo điều kiện thuận lợi cho các quyền này một cách hiệu quả và không chậm trễ quá mức. Người chơi có quyền kiểm soát tối thượng đối với dấu chân và danh tính kỹ thuật số của họ."
+        },
+        "35": {
+          "title": "35. Yêu cầu Truy cập",
+          "content": "Người chơi có quyền yêu cầu một bản sao đầy đủ của tất cả Dữ liệu Cá nhân mà Công ty lưu giữ về họ. Thông tin liên quan đến việc tổng hợp dữ liệu tài khoản, nhật ký trò chuyện và UGC. Công ty xử lý việc này bằng cách cung cấp kho lưu trữ kỹ thuật số trong vòng 30 ngày kể từ ngày xác minh yêu cầu. Công ty có trách nhiệm đảm bảo dữ liệu được phân phối ở định dạng dễ đọc, an toàn mà không làm lộ dữ liệu của những người dùng khác."
+        },
+        "36": {
+          "title": "36. Yêu cầu Sửa đổi",
+          "content": "Nếu dữ liệu không chính xác hoặc lỗi thời, nó phải được sửa. Thông tin liên quan đến những thứ như địa chỉ email đã lỗi thời hoặc tên hồ sơ bị sai chính tả. Người chơi có quyền chỉnh sửa thông tin này trực tiếp qua giao diện người dùng của nền tảng hoặc bằng cách liên hệ với bộ phận hỗ trợ. Công ty có trách nhiệm cập nhật cơ sở dữ liệu trung tâm và đảm bảo việc sửa chữa lan truyền qua CDN và tất cả các dịch vụ được kết nối ngay lập tức."
+        },
+        "37": {
+          "title": "37. Yêu cầu Xóa",
+          "content": "Người chơi giữ \"quyền được xóa\" cơ bản. Thông tin liên quan đến tất cả dữ liệu nhận dạng tài khoản và UGC. Công ty xử lý việc này bằng cách ẩn danh vĩnh viễn mục cơ sở dữ liệu và thanh lọc các tệp hình ảnh Cloudflare R2 được liên kết. Người chơi thực hiện quyền này để cắt đứt hoàn toàn kết nối của họ với trò chơi. Công ty phải tuân thủ, ngoại trừ dữ liệu cụ thể mà họ phải giữ lại theo yêu cầu pháp lý (ví dụ: hồ sơ tài chính cho mục đích thuế hoặc ID phần cứng liên kết với các lệnh cấm chống gian lận nghiêm trọng)."
+        },
+        "38": {
+          "title": "38. Tính di động Dữ liệu",
+          "content": "Người chơi có quyền mang dữ liệu của họ đến nơi khác ở một định dạng có thể sử dụng được. Thông tin liên quan đến hồ sơ có cấu trúc và dữ liệu đo từ xa. Công ty cung cấp dữ liệu này qua một định dạng chuẩn mà máy có thể đọc được, chẳng hạn như tệp CSV hoặc JSON. Công ty có trách nhiệm đảm bảo tệp được xuất chứa dữ liệu của Người dùng mà không làm lộ các thuật toán độc quyền, cấu trúc cơ sở dữ liệu hoặc bí mật thương mại của chính trò chơi."
+        },
+        "39": {
+          "title": "39. Hạn chế Xử lý",
+          "content": "Người chơi có thể yêu cầu tạm dừng xử lý dữ liệu trong các điều kiện pháp lý cụ thể, chẳng hạn như trong quá trình tranh chấp về độ chính xác của dữ liệu hoặc khiếu nại xử lý trái pháp luật. Thông tin liên quan đến việc tạm thời đình chỉ quy trình phân tích hoặc hiển thị hồ sơ. Công ty xử lý việc này bằng cách đóng băng trạng thái dữ liệu của tài khoản. Công ty có trách nhiệm tạm dừng quy trình xử lý tự động mà không xóa hoàn toàn dữ liệu trong khi tranh chấp đang được tích cực giải quyết."
+        },
+        "40": {
+          "title": "40. Quyền riêng tư của Trẻ em",
+          "content": "Phần này nêu rõ lập trường nghiêm ngặt của Công ty đối với dữ liệu thu thập từ trẻ vị thành niên. Thông tin liên quan đến việc ngăn chặn thu thập dữ liệu từ các cá nhân dưới 13 tuổi (hoặc cao hơn, tùy thuộc vào khu vực tài phán địa phương cụ thể). Công ty xử lý vấn đề này thông qua cơ chế kiểm soát độ tuổi (age-gating) trong quá trình đăng ký Tài khoản. Người chơi (và người giám hộ hợp pháp của họ) có quyền yêu cầu xóa ngay lập tức dữ liệu trẻ em vô tình bị thu thập. Công ty có trách nhiệm duy trì chính sách không khoan nhượng đối với việc thu thập trái phép dữ liệu của trẻ em và thanh lọc nó ngay lập tức khi phát hiện."
+        },
+        "41": {
+          "title": "41. Biện pháp Bảo mật",
+          "content": "Điều khoản này trình bày chi tiết về tư thế phòng thủ của cơ sở hạ tầng trò chơi. Thông tin liên quan đến việc bảo vệ tất cả các cơ sở dữ liệu, bucket R2 và điểm cuối API. Công ty xử lý vấn đề này bằng cách triển khai mã hóa khi truyền (TLS) và mã hóa ở trạng thái nghỉ (AES-256) trên tất cả các phương tiện lưu trữ. Người chơi có quyền cho rằng dữ liệu của họ được xử lý bằng các tiêu chuẩn an ninh mạng cấp doanh nghiệp, hiện đại. Công ty có trách nhiệm tiến hành đánh giá lỗ hổng định kỳ, kiểm tra xâm nhập và hạn chế quyền truy cập cơ sở dữ liệu một cách nghiêm ngặt đối với nhân viên kỹ thuật thiết yếu."
+        },
+        "42": {
+          "title": "42. Ứng phó Sự cố",
+          "content": "Phần này phác thảo giao thức pháp lý và kỹ thuật trong trường hợp xảy ra vi phạm không gian mạng. Thông tin liên quan đến khả năng rò rỉ thông tin đăng nhập, email hoặc dữ liệu hồ sơ của Người dùng cho các tác nhân trái phép. Công ty xử lý việc này bằng cách cách ly ngay lập tức các máy chủ bị ảnh hưởng, vá lỗ hổng và đánh giá phạm vi rò rỉ. Người chơi có quyền được thông báo nhanh chóng nếu Dữ liệu Cá nhân không được mã hóa của họ bị xâm phạm. Công ty chịu trách nhiệm pháp lý báo cáo vi phạm cho các cơ quan giám sát có liên quan (ví dụ: Cơ quan Bảo vệ Dữ liệu địa phương) trong vòng 72 giờ sau khi phát hiện."
+        },
+        "43": {
+          "title": "43. Cập nhật Chính sách",
+          "content": "Phần này cho phép Chính sách Bảo mật thích ứng với các quy định pháp lý mới, khuôn khổ quốc tế hoặc các tính năng trò chơi mới lạ. Thông tin liên quan đến văn bản và quy tắc của chính tài liệu này. Công ty xử lý việc này bằng cách xuất bản phiên bản sửa đổi trên nền tảng web với dấu thời gian \"Cập nhật lần cuối\" mới, hiển thị rõ ràng. Người chơi có quyền xem xét những thay đổi này trước khi tiếp tục tương tác. Công ty có trách nhiệm thông báo cho Người dùng đang hoạt động qua email hoặc lời nhắc trong trò chơi nếu những thay đổi làm thay đổi đáng kể cách Dữ liệu Cá nhân của họ được xử lý, đòi hỏi sự thừa nhận được gia hạn."
+        },
+        "44": {
+          "title": "44. Thông tin Liên hệ",
+          "content": "Phần cuối cùng này cung cấp một đường dây liên lạc trực tiếp đến Cán bộ Bảo vệ Dữ liệu (DPO) hoặc nhóm quyền riêng tư chuyên trách. Thông tin liên quan đến địa chỉ email hoặc địa chỉ thực của bộ phận pháp lý của Công ty. Người chơi có quyền gửi các câu hỏi về quyền riêng tư, yêu cầu xóa hoặc khiếu nại quy định chính thức. Công ty có trách nhiệm duy trì một hộp thư đến đang hoạt động tại một địa chỉ được chỉ định (ví dụ: privacy@borrowedshapes.com) và phản hồi tất cả các yêu cầu hợp pháp trong khung thời gian luật định để duy trì sự tuân thủ pháp luật và chịu trách nhiệm trước cơ sở người chơi của mình."
+        }
+      }
+    },
+    "community-guidelines": {
+      "title": "Nguyên tắc Cộng đồng",
+      "badge": "Section 2 – Cộng đồng",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Lý do & Thực thi: Phần này tồn tại để thiết lập hợp đồng xã hội nền tảng giữa Borrowed Shapes và người chơi. Chúng tôi thực thi điều này bằng cách coi nó là tinh thần ràng buộc của cộng đồng chúng ta. Hành vi & Ví dụ: Chúng tôi mong đợi người chơi đọc và hiểu những nguyên tắc này. Hành vi có thể chấp nhận được bao gồm việc chủ động áp dụng các nguyên tắc này trong quá trình chơi trò chơi. Hành vi không thể chấp nhận được bao gồm việc phớt lờ các quy tắc này hoặc cho rằng mình không biết khi bị bắt quả tang vi phạm. Hậu quả: Việc không biết về phần Giới thiệu sẽ không ngăn chặn các hình thức xử phạt tài khoản."
+        },
+        "2": {
+          "title": "2. Giá trị Cộng đồng",
+          "content": "Lý do & Thực thi: Điều này tồn tại để xác định các trụ cột cốt lõi của chúng tôi: sự sáng tạo, công bằng và bao trùm. Việc thực thi tập trung vào phần thưởng cho những đóng góp tích cực và trừng phạt những kẻ phá hoại hệ sinh thái. Hành vi & Ví dụ: Người chơi được mong đợi sẽ thúc đẩy một môi trường thân thiện. Hành vi có thể chấp nhận được bao gồm việc giúp người chơi mới điều hướng wiki. Hành vi không thể chấp nhận được liên quan đến việc gác cổng (gatekeeping) hoặc làm nản lòng những người khác tham gia. Hậu quả: Vi phạm các giá trị cốt lõi dẫn đến các biện pháp kỷ luật lũy tiến."
+        },
+        "3": {
+          "title": "3. Tôn trọng Người khác",
+          "content": "Lý do & Thực thi: Sự tôn trọng lẫn nhau đảm bảo nền tảng luôn thú vị đối với hàng triệu người chơi toàn cầu. Chúng tôi thực thi điều này thông qua kiểm duyệt trò chuyện chủ động và báo cáo của người dùng. Hành vi & Ví dụ: Đối xử với người khác bằng nhân phẩm cơ bản. Hành vi có thể chấp nhận được là chúc mừng đối thủ sau một trận đấu. Hành vi không thể chấp nhận được bao gồm các cuộc tấn công cá nhân dựa trên phong cách chơi của ai đó. Hậu quả: Vi phạm có thể dẫn đến cảnh cáo hoặc đình chỉ giao tiếp tạm thời."
+        },
+        "4": {
+          "title": "4. Tính Bao trùm",
+          "content": "Lý do & Thực thi: Điều này tồn tại để đảm bảo Borrowed Shapes có thể truy cập được đối với mọi người bất kể nền tảng xuất thân. Chúng tôi thực thi điều này thông qua các chính sách không khoan nhượng nghiêm ngặt đối với hành vi loại trừ. Hành vi & Ví dụ: Người chơi phải chào đón những cá nhân đa dạng. Hành vi có thể chấp nhận được bao gồm mời người chơi từ các khu vực khác nhau đến sự kiện cộng đồng của bạn. Hành vi không thể chấp nhận được là tạo một bang hội trong tương lai cấm rõ ràng người chơi dựa trên nhân khẩu học trong thế giới thực. Hậu quả: Các hành động loại trừ sẽ dẫn đến các lệnh cấm tạm thời hoặc vĩnh viễn ngay lập tức."
+        },
+        "5": {
+          "title": "5. Giao tiếp Tôn trọng",
+          "content": "Lý do & Thực thi: Để giữ cho các cuộc trò chuyện công khai và thảo luận trên wiki mang tính xây dựng. Việc kiểm duyệt dựa trên các bộ lọc tự động và đánh giá thủ công các văn bản được báo cáo. Hành vi & Ví dụ: Giao tiếp rõ ràng và lịch sự. Hành vi có thể chấp nhận được bao gồm tranh luận về cơ chế trò chơi một cách tôn trọng trên wiki. Hành vi không thể chấp nhận được bao gồm chửi thề quá mức hoặc la hét trong các kênh thoại. Hậu quả: Hạn chế trò chuyện hoặc \"cấm ngôn\" (mutes)."
+        },
+        "6": {
+          "title": "6. Quấy rối",
+          "content": "Lý do & Thực thi: Quấy rối làm suy giảm sức khỏe tâm thần và sự an toàn của cộng đồng. Chúng tôi áp dụng triết lý không khoan nhượng đối với hành vi lạm dụng có chủ đích, sử dụng nhật ký trò chuyện để xác minh. Hành vi & Ví dụ: Người chơi phải để người khác yên nếu được yêu cầu. Hành vi có thể chấp nhận được là tham gia vào các câu nói đùa nhẹ nhàng, đôi bên cùng có lợi. Hành vi không thể chấp nhận được là rình rập một người chơi qua các phòng chờ hoặc liên tục gửi các tin nhắn không mong muốn. Hậu quả: Các lệnh cấm quấy rối leo thang nhanh chóng đến việc xóa tài khoản vĩnh viễn."
+        },
+        "7": {
+          "title": "7. Bắt nạt",
+          "content": "Lý do & Thực thi: Tồn tại để bảo vệ những người chơi dễ bị tổn thương khỏi sự đe dọa có phối hợp. Chúng tôi điều tra các khiếu nại bắt nạt bằng cách xem xét các mô hình hành vi theo thời gian. Hành vi & Ví dụ: Hỗ trợ đồng nghiệp thay vì hạ bệ họ. Hành vi có thể chấp nhận được là đưa ra phản hồi mang tính xây dựng về ảnh đại diện mà người dùng đã tải lên. Hành vi không thể chấp nhận được là tổ chức một nhóm để chế nhạo các đóng góp trên wiki của người chơi. Hậu quả: Đình chỉ tạm thời leo thang thành cấm vĩnh viễn."
+        },
+        "8": {
+          "title": "8. Phân biệt Đối xử",
+          "content": "Lý do & Thực thi: Để ngăn chặn sự cố chấp trong hệ sinh thái trò chơi. Việc thực thi là tuyệt đối và không nhượng bộ; ý định phân biệt đối xử bị phạt rất nặng. Hành vi & Ví dụ: Đối xử bình đẳng với mọi danh tính trong thế giới thực. Hành vi có thể chấp nhận được là kỷ niệm các ngày lễ toàn cầu trong thế giới thực ở trong trò chơi. Hành vi không thể chấp nhận được là đối xử khác biệt với ai đó do quốc tịch hoặc giới tính của họ. Hậu quả: Đình chỉ dài hạn ngay lập tức hoặc cấm vĩnh viễn."
+        },
+        "9": {
+          "title": "9. Ngôn từ Kích động Thù địch",
+          "content": "Lý do & Thực thi: Ngôn từ kích động thù địch tạo ra một môi trường thù địch và vi phạm các chuẩn mực quốc tế. Chúng tôi sử dụng tính năng phát hiện tự động và đánh giá của con người để thực thi việc xóa nghiêm ngặt. Hành vi & Ví dụ: Hoàn toàn tránh xa những lời lẽ bôi nhọ và luận điệu thù hận. Hành vi có thể chấp nhận được là thể hiện niềm tự hào về di sản của chính mình. Hành vi không thể chấp nhận được bao gồm sử dụng những lời lẽ bôi nhọ chủng tộc hoặc quảng bá các nhóm thù hận. Hậu quả: Lệnh cấm vĩnh viễn ngay lập tức, không thể thương lượng."
+        },
+        "10": {
+          "title": "10. Đe dọa",
+          "content": "Lý do & Thực thi: Các mối đe dọa kỹ thuật số hoặc trong thế giới thực làm tổn hại đến sự an toàn về thể chất và tâm lý. Chúng tôi thực thi điều này một cách nghiêm ngặt và có thể báo cáo các mối đe dọa nghiêm trọng cho cơ quan thực thi pháp luật. Hành vi & Ví dụ: Không bao giờ đe dọa gây hại. Hành vi có thể chấp nhận được là nói \"Tôi sẽ đánh bại bạn trong trận đấu tiếp theo.\" Hành vi không thể chấp nhận được là đe dọa gây tổn hại về thể chất cho ai đó hoặc hack mạng của họ. Hậu quả: Lệnh cấm vĩnh viễn ngay lập tức và khả năng leo thang pháp lý."
+        },
+        "11": {
+          "title": "11. Bạo lực",
+          "content": "Lý do & Thực thi: Để giữ cho nền tảng tập trung vào giải trí kỹ thuật số, không phải tác hại trong thế giới thực. Chúng tôi tích cực theo dõi và xóa bỏ mọi hành vi xúi giục bạo lực. Hành vi & Ví dụ: Giữ các xung đột hoàn toàn trong cơ chế trò chơi. Hành vi có thể chấp nhận được là đánh bại đối thủ trong một trận đấu ảo. Hành vi không thể chấp nhận được là khuyến khích người khác thực hiện các hành vi bạo lực trong thế giới thực. Hậu quả: Loại bỏ vĩnh viễn khỏi Dịch vụ."
+        },
+        "12": {
+          "title": "12. Quấy rối Tình dục",
+          "content": "Lý do & Thực thi: Để ngăn chặn hành vi tình dục săn mồi và không phù hợp. Chúng tôi thực thi điều này thông qua các hệ thống báo cáo bảo mật và phản hồi nhanh chóng. Hành vi & Ví dụ: Duy trì một môi trường PG-13, phi tình dục. Hành vi có thể chấp nhận được là khen ngợi thiết kế thẩm mỹ của ảnh đại diện. Hành vi không thể chấp nhận được bao gồm đưa ra những lời tán tỉnh tình dục không mong muốn hoặc chia sẻ các liên kết rõ ràng. Hậu quả: Chấm dứt tài khoản vĩnh viễn."
+        },
+        "13": {
+          "title": "13. Vi phạm Quyền riêng tư",
+          "content": "Lý do & Thực thi: Để bảo vệ danh tính và dữ liệu trong thế giới thực của người chơi. Việc kiểm duyệt ưu tiên xóa ngay lập tức thông tin cá nhân bị rò rỉ. Hành vi & Ví dụ: Tôn trọng ranh giới giữa trò chơi và đời thực. Hành vi có thể chấp nhận được là gọi người chơi bằng Tên người dùng trong trò chơi của họ. Hành vi không thể chấp nhận được là chia sẻ vị trí ngoài đời thực hoặc phương tiện truyền thông xã hội của người chơi khác mà không có sự đồng ý. Hậu quả: Lệnh cấm leo thang và xóa nội dung."
+        },
+        "14": {
+          "title": "14. Mạo danh",
+          "content": "Lý do & Thực thi: Để ngăn chặn gian lận và bảo vệ danh tiếng của các cá nhân và nhân viên. Chúng tôi thực thi điều này bằng cách xác minh danh tính và tước bỏ thông tin xác thực giả mạo. Hành vi & Ví dụ: Hãy là chính mình. Hành vi có thể chấp nhận được là tạo ra một tính cách độc đáo cho Borrowed Shapes. Hành vi không thể chấp nhận được là tự xưng là nhà phát triển Borrowed Shapes hoặc một streamer nổi tiếng để lừa dối người khác. Hậu quả: Khóa tài khoản hoặc cấm vĩnh viễn."
+        },
+        "15": {
+          "title": "15. Tiết lộ thông tin cá nhân (Doxxing)",
+          "content": "Lý do & Thực thi: Doxxing (tiết lộ thông tin cá nhân trực tuyến) là một vi phạm quyền riêng tư nghiêm trọng được sử dụng để đe dọa. Chúng tôi coi đây là một sự cố an toàn nghiêm trọng cần can thiệp ngay lập tức. Hành vi & Ví dụ: Không bao giờ biên soạn hoặc chia sẻ dữ liệu thế giới thực. Hành vi có thể chấp nhận được là giữ các tương tác ẩn danh. Hành vi không thể chấp nhận được là công bố tên thật và số điện thoại của người dùng trên wiki. Hậu quả: Lệnh cấm vĩnh viễn ngay lập tức."
+        },
+        "16": {
+          "title": "16. Thư rác",
+          "content": "Lý do & Thực thi: Để giữ cho các kênh liên lạc hoạt động tốt và dễ đọc. Chúng tôi sử dụng giới hạn tốc độ (rate-limiting) tự động để thực thi điều này. Hành vi & Ví dụ: Giao tiếp có mục đích. Hành vi có thể chấp nhận được là gửi một tin nhắn duy nhất để tìm nhóm. Hành vi không thể chấp nhận được là dán cùng một văn bản 20 lần trong cuộc trò chuyện toàn cầu. Hậu quả: Tạm thời cấm ngôn và hạn chế trò chuyện."
+        },
+        "17": {
+          "title": "17. Quảng cáo",
+          "content": "Lý do & Thực thi: Trò chơi không phải là bảng quảng cáo cho hoạt động thương mại trái phép. Chúng tôi dựa vào báo cáo của cộng đồng để gắn cờ các quảng cáo lừa đảo. Hành vi & Ví dụ: Tập trung các cuộc trò chuyện vào trò chơi. Hành vi có thể chấp nhận được là liên kết đến một trang wiki Borrowed Shapes có liên quan. Hành vi không thể chấp nhận được là gửi spam các liên kết đến một cửa hàng giày bên ngoài hoặc một dự án tiền điện tử. Hậu quả: Cấm ngôn, xóa nội dung hoặc cấm."
+        },
+        "18": {
+          "title": "18. Lừa đảo",
+          "content": "Lý do & Thực thi: Để bảo vệ nền kinh tế kỹ thuật số trong tương lai và lòng tin của người chơi. Chúng tôi theo dõi nhật ký giao dịch và lịch sử trò chuyện để xác định các mô hình lừa dối. Hành vi & Ví dụ: Tham gia vào các tương tác trung thực. Hành vi có thể chấp nhận được là hoàn thành một giao dịch công bằng, đã được thỏa thuận trong tương lai. Hành vi không thể chấp nhận được là hứa gửi tiền trong thế giới thực để đổi lấy Hàng hóa ảo và không thực hiện được. Hậu quả: Cấm giao dịch vĩnh viễn và chấm dứt tài khoản."
+        },
+        "19": {
+          "title": "19. Gian lận",
+          "content": "Lý do & Thực thi: Để bảo vệ tính toàn vẹn tài chính của nền tảng. Chúng tôi sử dụng bảo mật cổng thanh toán và giám sát bồi hoàn (chargeback) để thực thi điều này. Hành vi & Ví dụ: Sử dụng các phương thức thanh toán hợp pháp. Hành vi có thể chấp nhận được là mua tiền tệ cao cấp bằng thẻ tín dụng của riêng bạn. Hành vi không thể chấp nhận được là sử dụng thẻ tín dụng bị đánh cắp hoặc bắt đầu các khoản bồi hoàn sai. Hậu quả: Lệnh cấm tài khoản vĩnh viễn ngay lập tức."
+        },
+        "20": {
+          "title": "20. Tấn công Giả mạo (Phishing)",
+          "content": "Lý do & Thực thi: Để ngăn chặn hành vi trộm cắp tài khoản và vi phạm dữ liệu. Chúng tôi chủ động chặn các URL độc hại đã biết và giáo dục người chơi về bảo mật. Hành vi & Ví dụ: Không bao giờ hỏi thông tin xác thực. Hành vi có thể chấp nhận được là hướng người chơi đến trang đăng nhập chính thức. Hành vi không thể chấp nhận được là tạo một trang web giả mạo trông giống Borrowed Shapes để đánh cắp mật khẩu. Hậu quả: Cấm tài khoản vĩnh viễn và chặn IP cấp mạng."
+        },
+        "21": {
+          "title": "21. Chia sẻ Tài khoản",
+          "content": "Lý do & Thực thi: Để duy trì bảo mật tài khoản và đảm bảo ghép trận chính xác. Chúng tôi giám sát ID phần cứng và vị trí IP để phát hiện việc chia sẻ. Hành vi & Ví dụ: Giữ tài khoản cho riêng bạn. Hành vi có thể chấp nhận được là chơi trên máy tính xách tay của riêng bạn. Hành vi không thể chấp nhận được là đưa mật khẩu của bạn cho một người bạn để họ có thể hoàn thành một thử thách khó khăn cho bạn. Hậu quả: Khóa tài khoản hoặc đình chỉ."
+        },
+        "22": {
+          "title": "22. Gian lận trong Trò chơi",
+          "content": "Lý do & Thực thi: Để bảo vệ tính toàn vẹn cạnh tranh. Chúng tôi sử dụng phần mềm chống gian lận mạnh mẽ (tương tự như tiêu chuẩn ngành) để phát hiện thao tác bộ nhớ. Hành vi & Ví dụ: Chơi trò chơi công bằng bằng cách sử dụng các máy khách được ủy quyền. Hành vi có thể chấp nhận được là luyện tập để cải thiện kỹ năng của bạn. Hành vi không thể chấp nhận được là chèn mã để tạo \"aimbot\" hoặc wallhack. Hậu quả: Lệnh cấm vĩnh viễn không thể đảo ngược ngay lập tức."
+        },
+        "23": {
+          "title": "23. Lợi dụng Lỗi",
+          "content": "Lý do & Thực thi: Để ngăn chặn người chơi giành được lợi thế không công bằng thông qua sự sơ suất của nhà phát triển. Chúng tôi đánh giá xem lỗi đó được kích hoạt một cách cố ý hay vô tình. Hành vi & Ví dụ: Báo cáo lỗi thay vì lạm dụng chúng. Hành vi có thể chấp nhận được là tìm thấy một lỗi và gửi phiếu hỗ trợ. Hành vi không thể chấp nhận được là liên tục sử dụng lỗi bản đồ để trở nên bất khả chiến bại trong chế độ nhiều người chơi. Hậu quả: Khôi phục chỉ số, đình chỉ tạm thời hoặc cấm."
+        },
+        "24": {
+          "title": "24. Tự động hóa",
+          "content": "Lý do & Thực thi: Để đảm bảo tất cả các hành động đều do con người thực hiện, duy trì sự cân bằng kinh tế và cạnh tranh. Chúng tôi sử dụng phân tích hành vi để phát hiện các yếu tố đầu vào không phải của con người. Hành vi & Ví dụ: Chơi trò chơi thủ công. Hành vi có thể chấp nhận được là sử dụng các phím nóng tiêu chuẩn trong trò chơi. Hành vi không thể chấp nhận được là viết một kịch bản (script) để tự động cày tài nguyên trong khi bạn ngủ. Hậu quả: Lệnh cấm tài khoản vĩnh viễn."
+        },
+        "25": {
+          "title": "25. Sử dụng Bot",
+          "content": "Lý do & Thực thi: Bot làm hỏng hiệu suất máy chủ và lạm phát nền kinh tế. Chúng tôi tích cực càn quét và cấm các mạng bot. Hành vi & Ví dụ: Chỉ người chơi là con người mới được phép. Hành vi có thể chấp nhận được là tự mình chơi trò chơi. Hành vi không thể chấp nhận được là chạy các máy khách trò chơi không giao diện (headless) để cày tiền tệ cao cấp trong tương lai. Hậu quả: Cấm phần cứng và chấm dứt tài khoản vĩnh viễn."
+        },
+        "26": {
+          "title": "26. Sử dụng Macro",
+          "content": "Lý do & Thực thi: Macro cung cấp tốc độ đầu vào siêu phàm. Chúng tôi theo dõi tính đều đặn của đầu vào để phát hiện phần mềm macro. Hành vi & Ví dụ: Một lần nhấn phím phải tương đương với một hành động trong trò chơi. Hành vi có thể chấp nhận được là ánh xạ một hành động duy nhất vào nút chuột. Hành vi không thể chấp nhận được là sử dụng macro để thực hiện ngay lập tức sự kết hợp 10 nút phức tạp. Hậu quả: Cảnh cáo leo thang thành cấm vĩnh viễn."
+        },
+        "27": {
+          "title": "27. Hành vi Tiêu cực (Toxic)",
+          "content": "Lý do & Thực thi: Để ngăn chặn văn hóa tiêu cực đẩy người chơi ra xa. Chúng tôi xem xét các báo cáo về sự tiêu cực liên tục và tinh thần thể thao kém. Hành vi & Ví dụ: Duy trì thái độ tích cực hoặc trung lập. Hành vi có thể chấp nhận được là chơi trong im lặng. Hành vi không thể chấp nhận được là liên tục mắng mỏ đồng đội của bạn vì mắc lỗi. Hậu quả: Hạn chế giao tiếp và trì hoãn ghép trận."
+        },
+        "28": {
+          "title": "28. Phá hoại",
+          "content": "Lý do & Thực thi: Để ngăn người chơi cố ý làm hỏng trải nghiệm của đồng minh. Chúng tôi sử dụng phép đo từ xa trong trò chơi (như số liệu thống kê bắn nhầm đồng đội) để xác minh hành vi phá hoại (griefing). Hành vi & Ví dụ: Cố gắng giành chiến thắng và hợp tác. Hành vi có thể chấp nhận được là chơi kém vì bạn là người mới. Hành vi không thể chấp nhận được là cố tình cản trở đồng đội của bạn hoặc phá hoại các dự án cộng đồng. Hậu quả: Đình chỉ tạm thời."
+        },
+        "29": {
+          "title": "29. Hành vi Phi thể thao",
+          "content": "Lý do & Thực thi: Để duy trì tính toàn vẹn của lối chơi cạnh tranh. Việc thực thi dựa trên đánh giá thủ công về các gián đoạn trận đấu nghiêm trọng. Hành vi & Ví dụ: Chơi công bằng và tôn trọng. Hành vi có thể chấp nhận được là nhượng bộ một trận đấu đã thua một cách duyên dáng. Hành vi không thể chấp nhận được là \"thoát trận trong cơn tức giận\" (rage-quitting) liên tục hoặc tham gia dàn xếp tỷ số trong tương lai. Hậu quả: Cấm ghép trận cạnh tranh và mất thứ hạng."
+        },
+        "30": {
+          "title": "30. Chính sách Tên người dùng",
+          "content": "Lý do & Thực thi: Tên người dùng rất dễ nhìn thấy và phải phù hợp với mọi lứa tuổi. Chúng tôi sử dụng bộ lọc từ ngữ và báo cáo của người dùng để kiểm soát tên. Hành vi & Ví dụ: Chọn một mã định danh tôn trọng. Hành vi có thể chấp nhận được là đặt tên cho mình là \"ShapeMaster99.\" Hành vi không thể chấp nhận được là sử dụng những lời nói tục tĩu, thuật ngữ khiêu dâm rõ ràng hoặc mạo danh nhân viên trong tên người dùng của bạn. Hậu quả: Bắt buộc đổi tên hoặc cấm tài khoản."
+        },
+        "31": {
+          "title": "31. Chính sách Tên hiển thị",
+          "content": "Lý do & Thực thi: Tương tự như Tên người dùng, Tên hiển thị quyết định bầu không khí xã hội. Chúng tôi thực thi bộ lọc tiêu chuẩn trên tất cả các văn bản hồ sơ. Hành vi & Ví dụ: Giữ cho nó trong sạch. Hành vi có thể chấp nhận được là sử dụng tên thật của bạn. Hành vi không thể chấp nhận được là sử dụng các kỹ thuật lách luật để đánh vần những từ ngữ xúc phạm. Hậu quả: Buộc đặt lại và khóa hồ sơ tạm thời."
+        },
+        "32": {
+          "title": "32. Chính sách Ảnh đại diện",
+          "content": "Lý do & Thực thi: Thể hiện bằng hình ảnh phải phù hợp với các tiêu chuẩn an toàn của chúng tôi. Chúng tôi xem xét các hình ảnh Cloudflare R2 được tải lên để tìm nội dung không phù hợp. Hành vi & Ví dụ: Tạo ảnh đại diện thú vị, sáng tạo. Hành vi có thể chấp nhận được là tải lên bản vẽ của một con mèo. Hành vi không thể chấp nhận được là tải lên một hình ảnh bạo lực, đồ họa để ánh xạ lên nhân vật của bạn. Hậu quả: Xóa hình ảnh và đình chỉ tài khoản tạm thời."
+        },
+        "33": {
+          "title": "33. Nội dung Hồ sơ",
+          "content": "Lý do & Thực thi: Hồ sơ công khai hiển thị cho cộng đồng và phải an toàn. Chúng tôi kiểm duyệt văn bản và nội dung được liên kết trên hồ sơ. Hành vi & Ví dụ: Chia sẻ sở thích chơi game của bạn một cách an toàn. Hành vi có thể chấp nhận được là viết một tiểu sử ngắn về phong cách chơi của bạn. Hành vi không thể chấp nhận được là liên kết đến các trang web phần mềm độc hại bên ngoài hoặc nội dung người lớn trong tiểu sử của bạn. Hậu quả: Xóa hồ sơ và cấm khỏi cộng đồng."
+        },
+        "34": {
+          "title": "34. Đóng góp Wiki",
+          "content": "Lý do & Thực thi: Wiki là một công cụ giáo dục hợp tác. Chúng tôi thực thi chất lượng và sự an toàn thông qua kiểm duyệt của cộng đồng và lịch sử sửa đổi. Hành vi & Ví dụ: Đóng góp thông tin chính xác, hữu ích. Hành vi có thể chấp nhận được là sửa lỗi chính tả trên hướng dẫn. Hành vi không thể chấp nhận được là phá hoại một trang bằng thư rác hoặc xóa các bài viết hữu ích. Hậu quả: Cấm chỉnh sửa wiki."
+        },
+        "35": {
+          "title": "35. Bình luận",
+          "content": "Lý do & Thực thi: Các phần bình luận công khai phải thúc đẩy thảo luận, không phải sự thù địch. Chúng tôi sử dụng các bộ lọc tự động cho các vi phạm nghiêm trọng. Hành vi & Ví dụ: Tranh luận mang tính xây dựng. Hành vi có thể chấp nhận được là không đồng ý với một chiến lược. Hành vi không thể chấp nhận được là tung ra các cuộc tấn công cá nhân trong phần bình luận về hướng dẫn của người dùng. Hậu quả: Xóa bình luận và cấm đăng bài."
+        },
+        "36": {
+          "title": "36. Hợp tác Người chơi",
+          "content": "Lý do & Thực thi: Việc khuyến khích tinh thần đồng đội giúp nâng cao tuổi thọ của trò chơi. Chúng tôi thúc đẩy sự hợp tác tích cực và trừng phạt hành vi phá hoại. Hành vi & Ví dụ: Làm việc cùng nhau để đạt được các mục tiêu của trò chơi. Hành vi có thể chấp nhận được là chia sẻ tài nguyên để xây dựng một cấu trúc. Hành vi không thể chấp nhận được là giả vờ hợp tác chỉ để phá hủy tiến độ của đội vào giây cuối cùng. Hậu quả: Phạt điểm uy tín và cấm tạm thời."
+        },
+        "37": {
+          "title": "37. Hành vi Bang hội",
+          "content": "Lý do & Thực thi: Các bang hội (guild) trong tương lai đại diện cho các cộng đồng vi mô (micro-communities) vẫn phải tuân thủ các quy tắc toàn cầu. Chúng tôi buộc các Trưởng bang hội phải chịu trách nhiệm về văn hóa nhóm của họ. Hành vi & Ví dụ: Quản lý bang hội một cách có trách nhiệm. Hành vi có thể chấp nhận được là đuổi một người chơi độc hại khỏi bang hội của bạn. Hành vi không thể chấp nhận được là một Trưởng bang hội điều phối một chiến dịch quấy rối quy mô lớn nhằm vào một nhóm đối thủ. Hậu quả: Giải tán bang hội và cấm trưởng bang hội."
+        },
+        "38": {
+          "title": "38. Hành vi Chợ",
+          "content": "Lý do & Thực thi: Các hệ thống giao dịch trong tương lai đòi hỏi sự tin tưởng tuyệt đối. Chúng tôi ghi nhật ký tất cả các giao dịch để ngăn chặn gian lận và bóc lột. Hành vi & Ví dụ: Giao dịch công bằng. Hành vi có thể chấp nhận được là trao đổi vật phẩm theo giá trị thị trường. Hành vi không thể chấp nhận được là sử dụng phần mềm bên ngoài để thao túng giả tạo giá cả thị trường. Hậu quả: Cấm giao dịch vĩnh viễn."
+        },
+        "39": {
+          "title": "39. Báo cáo Vi phạm",
+          "content": "Lý do & Thực thi: Báo cáo là huyết mạch của hệ thống kiểm duyệt của chúng tôi. Chúng tôi thực thi văn hóa báo cáo lành mạnh bằng cách hành động dựa trên các khiếu nại hợp lệ. Hành vi & Ví dụ: Báo cáo chính xác những người vi phạm quy tắc. Hành vi có thể chấp nhận được là sử dụng công cụ trong trò chơi để gắn cờ kẻ gian lận. Hành vi không thể chấp nhận được là phớt lờ sự độc hại nghiêm trọng thay vì báo cáo. Hậu quả: Các báo cáo bị phớt lờ không dẫn đến hình phạt, nhưng việc sử dụng hệ thống giúp cải thiện cộng đồng."
+        },
+        "40": {
+          "title": "40. Báo cáo Sai sự thật",
+          "content": "Lý do & Thực thi: Việc vũ khí hóa hệ thống báo cáo làm lãng phí tài nguyên kiểm duyệt. Chúng tôi theo dõi tính chính xác của báo cáo và trừng phạt những kẻ lạm dụng. Hành vi & Ví dụ: Chỉ báo cáo các vi phạm hợp pháp. Hành vi có thể chấp nhận được là báo cáo một người chơi mà bạn nghi ngờ sử dụng bot. Hành vi không thể chấp nhận được là tổ chức một nhóm báo cáo sai sự thật về một người chơi vô tội để kích hoạt lệnh cấm tự động. Hậu quả: Thu hồi đặc quyền báo cáo hoặc cấm tài khoản."
+        },
+        "41": {
+          "title": "41. Thẩm quyền Quản trị viên",
+          "content": "Lý do & Thực thi: Người điều hành (Moderator) cần có thẩm quyền để duy trì trật tự. Chúng tôi thực thi việc tôn trọng các quyết định của người điều hành để ngăn chặn các cuộc tranh cãi không hồi kết. Hành vi & Ví dụ: Tôn trọng hướng dẫn của nhân viên. Hành vi có thể chấp nhận được là tuân thủ yêu cầu của người điều hành về việc thay đổi chủ đề trong trò chuyện. Hành vi không thể chấp nhận được là tranh cãi, xúc phạm hoặc công khai thách thức người điều hành. Hậu quả: Lệnh cấm leo thang."
+        },
+        "42": {
+          "title": "42. Cảnh cáo",
+          "content": "Lý do & Thực thi: Giáo dục là bước đầu tiên của chúng tôi đối với các vi phạm nhỏ. Lời cảnh báo đóng vai trò như một cơ hội được ghi lại để sửa chữa hành vi. Hành vi & Ví dụ: Học hỏi từ những sai lầm. Hành vi có thể chấp nhận được là thừa nhận lời cảnh báo về thư rác nhỏ và dừng lại. Hành vi không thể chấp nhận được là phớt lờ cảnh báo và tiếp tục hành vi y hệt. Hậu quả: Các vi phạm tiếp theo sẽ leo thang thành đình chỉ."
+        },
+        "43": {
+          "title": "43. Hạn chế Tạm thời",
+          "content": "Lý do & Thực thi: Thời gian \"tạm lắng\" (cool-down) bắt buộc đối với các hành vi vi phạm nhiều lần hoặc ở mức độ vừa phải. Chúng tôi tự động thực thi các hình phạt này khi đạt đến ngưỡng phạt. Hành vi & Ví dụ: Chờ đợi hạn chế hết hạn một cách duyên dáng. Hành vi có thể chấp nhận được là trở lại chơi công bằng sau khi lệnh cấm hết hạn. Hành vi không thể chấp nhận được là tạo một tài khoản \"smurf\" phụ để vượt qua hạn chế tạm thời. Hậu quả: Lách các hạn chế dẫn đến cấm vĩnh viễn."
+        },
+        "44": {
+          "title": "44. Cấm Vĩnh viễn",
+          "content": "Lý do & Thực thi: Hình phạt tối cao để bảo vệ nền tảng khỏi các mối đe dọa nghiêm trọng. Chúng tôi dành hình phạt này cho các hành vi độc hại, không hối cải hoặc bất hợp pháp. Hành vi & Ví dụ: Không tham gia vào các hoạt động không khoan nhượng. Hành vi có thể chấp nhận được là không bao giờ gặp phải màn hình này. Hành vi không thể chấp nhận được là triển khai phần mềm độc hại, điều này đảm bảo việc bị loại bỏ vĩnh viễn. Hậu quả: Mất hoàn toàn quyền truy cập, vật phẩm và quyền nền tảng."
+        },
+        "45": {
+          "title": "45. Quy trình Kháng cáo",
+          "content": "Lý do & Thực thi: Để đảm bảo tính công bằng và sửa chữa các kết quả dương tính giả tiềm ẩn. Chúng tôi thực thi một hệ thống đánh giá có cấu trúc cho các lệnh cấm bị khiếu nại. Hành vi & Ví dụ: Kháng cáo một cách tôn trọng và có bằng chứng. Hành vi có thể chấp nhận được là gửi một phiếu hỗ trợ nêu chi tiết lý do tại sao lệnh cấm là một lỗi. Hành vi không thể chấp nhận được là spam trên phương tiện truyền thông xã hội hoặc đe dọa nhân viên để được bỏ cấm. Hậu quả: Lạm dụng quy trình kháng cáo dẫn đến việc từ chối kháng cáo."
+        },
+        "46": {
+          "title": "46. Trách nhiệm Cộng đồng",
+          "content": "Lý do & Thực thi: Mọi người đều đóng vai trò trong việc giữ cho trò chơi an toàn. Chúng tôi nuôi dưỡng một văn hóa nơi người chơi chủ động bảo vệ hệ sinh thái. Hành vi & Ví dụ: Làm gương. Hành vi có thể chấp nhận được là làm dịu một cuộc tranh luận căng thẳng trong trò chuyện. Hành vi không thể chấp nhận được là cổ vũ cho một người chơi độc hại. Hậu quả: Hành vi tích cực mang lại một trò chơi phát triển mạnh mẽ; hành vi tiêu cực làm suy giảm trải nghiệm của tất cả mọi người."
+        },
+        "47": {
+          "title": "47. Cập nhật Chính sách",
+          "content": "Lý do & Thực thi: Các nguyên tắc phải phát triển cùng với trò chơi. Chúng tôi chỉ thực thi các quy tắc mới sau khi chúng được công bố. Hành vi & Ví dụ: Luôn cập nhật thông tin. Hành vi có thể chấp nhận được là đọc các ghi chú bản vá và quy tắc cập nhật. Hành vi không thể chấp nhận được là cho rằng một quy tắc không áp dụng vì nó không có ở đó vào năm ngoái. Hậu quả: Việc tiếp tục chơi cấu thành sự chấp nhận các bản cập nhật."
+        },
+        "48": {
+          "title": "48. Thông tin Liên hệ",
+          "content": "Lý do & Thực thi: Cung cấp một con đường chính thức cho các câu hỏi về chính sách. Chúng tôi quản lý kênh này để mang lại sự rõ ràng trong các tình huống phức tạp. Hành vi & Ví dụ: Sử dụng các kênh chính thức để được hỗ trợ. Hành vi có thể chấp nhận được là gửi email cho bộ phận hỗ trợ để hỏi xem một chỉnh sửa wiki cụ thể có được phép hay không. Hành vi không thể chấp nhận được là sử dụng biểu mẫu liên hệ để gửi thư rác. Hậu quả: Việc lạm dụng có thể dẫn đến việc bị chặn liên lạc."
+        }
+      }
+    },
+    "content-policy": {
+      "title": "Chính sách Nội dung",
+      "badge": "Section 2 – Cộng đồng",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Tại sao tồn tại: Để thiết lập sự rõ ràng tuyệt đối về những tài liệu nào được phép trên máy chủ Borrowed Shapes. Bao gồm: Tất cả nội dung tải lên kỹ thuật số, văn bản và phương tiện. Được phép: Nội dung gốc, an toàn. Bị hạn chế: Nội dung cần giới hạn độ tuổi. Bị cấm: Tài liệu bất hợp pháp hoặc có tính xúc phạm cao. Đánh giá/Quyết định: Quét tự động và đánh giá thủ công dựa trên các nguyên tắc nghiêm ngặt. Kháng cáo: Người dùng có thể kháng cáo việc xóa thông qua cổng hỗ trợ."
+        },
+        "2": {
+          "title": "2. Mục đích",
+          "content": "Tại sao tồn tại: Để bảo vệ cộng đồng và đảm bảo tuân thủ pháp luật. Bao gồm: Triết lý bao trùm áp dụng cho tất cả nội dung do người dùng tạo (UGC). Được phép/Bị hạn chế/Bị cấm: Đặt cơ sở cho tất cả các danh mục tiếp theo. Đánh giá/Quyết định/Kháng cáo: Hướng dẫn người điều hành trong các tình huống mơ hồ bằng cách ưu tiên sự an toàn của nền tảng."
+        },
+        "3": {
+          "title": "3. Định nghĩa",
+          "content": "Tại sao tồn tại: Để loại bỏ sự mơ hồ về mặt pháp lý. Bao gồm: Các thuật ngữ như \"Nội dung\", \"Tải lên\" và \"Bị cấm\". Được phép/Bị hạn chế/Bị cấm: Không có. Đánh giá/Quyết định/Kháng cáo: Người điều hành sử dụng các định nghĩa nghiêm ngặt này để chuẩn hóa logic thực thi của họ."
+        },
+        "4": {
+          "title": "4. Quyền sở hữu Nội dung",
+          "content": "Tại sao tồn tại: Để làm rõ quyền sở hữu trí tuệ. Bao gồm: Quyền hợp pháp đối với UGC. Được phép: Nội dung gốc thuộc sở hữu của người dùng. Bị hạn chế/Bị cấm: Nội dung bị đánh cắp hoặc vi phạm. Đánh giá/Quyết định: Người điều hành không đánh giá quyền sở hữu trừ khi có khiếu nại DMCA chính thức được đệ trình. Kháng cáo: Được xử lý thông qua các thông báo phản đối pháp lý chính thức."
+        },
+        "5": {
+          "title": "5. Trách nhiệm của Người dùng",
+          "content": "Tại sao tồn tại: Để buộc người dùng phải chịu trách nhiệm về các bản tải lên của họ. Bao gồm: Mọi thứ được gửi qua tài khoản của người dùng. Được phép: Nội dung được người dùng kiểm tra kỹ lưỡng trước khi tải lên. Bị hạn chế/Bị cấm: Tải lên các tệp ẩn. Đánh giá/Quyết định: Người điều hành cho rằng chủ tài khoản phải chịu trách nhiệm về việc tải lên. Kháng cáo: Người dùng phải chứng minh tài khoản của họ đã bị xâm phạm nếu khẳng định họ không tải lên nội dung bị cấm."
+        },
+        "6": {
+          "title": "6. Xem xét Nội dung",
+          "content": "Tại sao tồn tại: Để giải thích quy trình kiểm duyệt. Bao gồm: Các quy trình lọc tự động (ví dụ: đối chiếu băm) và đánh giá hàng đợi thủ công. Được phép: Nội dung sạch sẽ được thông qua. Bị hạn chế/Bị cấm: Nội dung bị gắn cờ sẽ bị giữ lại. Đánh giá/Quyết định: AI gắn cờ nội dung đáng ngờ; người điều hành là con người sẽ đưa ra quyết định cuối cùng đối với các trường hợp phức tạp. Kháng cáo: Có sẵn nếu quá trình tự động hóa gây ra lỗi."
+        },
+        "7": {
+          "title": "7. Kiểm duyệt Nội dung",
+          "content": "Tại sao tồn tại: Để thiết lập thẩm quyền gỡ bỏ nội dung. Bao gồm: Các hành động được thực hiện đối với tài liệu bị gắn cờ. Được phép: Nội dung không bị ảnh hưởng. Bị hạn chế/Bị cấm: Nội dung có thể bị xóa, làm mờ hoặc cảnh cáo. Đánh giá/Quyết định: Người điều hành hành động dựa trên ma trận mức độ nghiêm trọng. Kháng cáo: Áp dụng kháng cáo bằng phiếu hỗ trợ tiêu chuẩn."
+        },
+        "8": {
+          "title": "8. Nội dung được Phép",
+          "content": "Tại sao tồn tại: Để khuyến khích sự sáng tạo. Bao gồm: Phương tiện thông thường, lành tính. Được phép: Nghệ thuật nguyên bản, văn bản tiêu chuẩn, thảo luận thân thiện. Bị hạn chế/Bị cấm: Bất cứ điều gì vi phạm các lệnh cấm cụ thể dưới đây. Đánh giá/Quyết định: Thường bỏ qua đánh giá thủ công trừ khi bị báo cáo. Kháng cáo: Không áp dụng trừ khi bị gắn cờ sai."
+        },
+        "9": {
+          "title": "9. Nội dung Giáo dục",
+          "content": "Tại sao tồn tại: Để bồi dưỡng kiến thức về trò chơi. Bao gồm: Hướng dẫn, số liệu thống kê và cẩm nang. Được phép: Thông tin thực tế, hữu ích về trò chơi. Bị hạn chế/Bị cấm: Hướng dẫn về cách khai thác lỗi hoặc gian lận. Đánh giá/Quyết định: Các biên tập viên và người điều hành wiki cộng đồng kiểm tra tính chính xác và tuân thủ quy tắc. Kháng cáo: Việc khôi phục bản sửa đổi trên wiki có thể được kháng cáo lên các quản trị viên trưởng."
+        },
+        "10": {
+          "title": "10. Nội dung Sáng tạo",
+          "content": "Tại sao tồn tại: Để hỗ trợ các tính năng tùy chỉnh của trò chơi. Bao gồm: Ảnh đại diện và hình dạng tùy chỉnh. Được phép: Các thiết kế ban đầu phù hợp với thẩm mỹ của trò chơi. Bị hạn chế/Bị cấm: Các thiết kế mang tính xúc phạm hoặc vi phạm pháp luật. Đánh giá/Quyết định: Phần mềm nhận dạng hình ảnh quét các tệp tải lên để tìm các mẫu xúc phạm đã biết. Kháng cáo: Người dùng có thể kháng cáo đối với ảnh đại diện bị từ chối."
+        },
+        "11": {
+          "title": "11. Nghệ thuật Người hâm mộ",
+          "content": "Tại sao tồn tại: Để tôn vinh niềm đam mê của cộng đồng. Bao gồm: Hình ảnh mô tả trò chơi do người dùng vẽ. Được phép: Nghệ thuật SFW (An toàn cho công việc). Bị hạn chế/Bị cấm: NSFW (Không an toàn cho công việc) hoặc các mô tả cực kỳ bạo lực về các nhân vật trong trò chơi. Đánh giá/Quyết định: Được kiểm duyệt dựa trên các chính sách nội dung trực quan. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "12": {
+          "title": "12. Hình ảnh Trò chơi",
+          "content": "Tại sao tồn tại: Để cho phép chia sẻ thành tích. Bao gồm: Ảnh chụp màn hình và đoạn phim ngắn. Được phép: Chụp lối chơi tiêu chuẩn. Bị hạn chế/Bị cấm: Ảnh chụp màn hình hiển thị việc sử dụng các lớp phủ gian lận hoặc khai thác lỗi. Đánh giá/Quyết định: Được xem xét khi bị người dùng khác báo cáo. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "13": {
+          "title": "13. Bài viết Wiki",
+          "content": "Tại sao tồn tại: Để xây dựng cơ sở kiến thức tập trung. Bao gồm: Toàn bộ văn bản và cấu trúc trên wiki. Được phép: Cốt truyện, cơ chế và chiến lược. Bị hạn chế/Bị cấm: Phá hoại hoặc những bài viết lạc đề. Đánh giá/Quyết định: Được bình duyệt bởi cộng đồng; được thực thi bởi các quản trị viên wiki. Kháng cáo: Hòa giải trên các trang thảo luận của wiki."
+        },
+        "14": {
+          "title": "14. Hướng dẫn",
+          "content": "Tại sao tồn tại: Để hỗ trợ người chơi. Bao gồm: Nội dung hướng dẫn dạng dài. Được phép: Các chiến lược trò chơi hợp pháp. Bị hạn chế/Bị cấm: Các liên kết đến các trang lừa đảo ngụy trang dưới dạng \"hướng dẫn lên cấp\". Đánh giá/Quyết định: Bot quét liên kết kiểm tra các URL bên ngoài. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "15": {
+          "title": "15. Dự án Cộng đồng",
+          "content": "Tại sao tồn tại: Để quản lý các hoạt động hợp tác quy mô lớn của người dùng. Bao gồm: Các bản xây dựng nhiều người dùng hoặc sự kiện. Được phép: Các dự án bao trùm, tuân thủ luật lệ. Bị hạn chế/Bị cấm: Các dự án được thiết kế để làm sập máy chủ hoặc loại trừ các nhóm được bảo vệ. Đánh giá/Quyết định: Được theo dõi bởi các nhà quản lý cộng đồng. Kháng cáo: Các trưởng dự án có thể kháng cáo các quyết định gỡ xuống."
+        },
+        "16": {
+          "title": "16. Nội dung Hạn chế",
+          "content": "Tại sao tồn tại: Để quản lý nội dung yêu cầu ngữ cảnh. Bao gồm: Tài liệu không hoàn toàn bất hợp pháp nhưng yêu cầu phải có cổng kiểm soát. Được phép: Thảo luận về các chủ đề trưởng thành trong bối cảnh cốt truyện lịch sử. Bị hạn chế: Yêu cầu cảnh báo hoặc xác minh độ tuổi. Bị cấm: Vượt sang ranh giới nội dung khiêu dâm. Đánh giá/Quyết định: Đánh giá thủ công mang tính ngữ cảnh nặng nề. Kháng cáo: Tùy từng trường hợp."
+        },
+        "17": {
+          "title": "17. Nội dung Nhạy cảm",
+          "content": "Tại sao tồn tại: Để bảo vệ người dùng khỏi sự đau buồn bất ngờ. Bao gồm: Ám ảnh, kinh dị nhẹ hoặc các chủ đề mãnh liệt. Được phép: Nội dung rùng rợn phù hợp với sự kiện Halloween. Bị hạn chế/Bị cấm: Hình ảnh gây sốc cực kỳ chân thực. Đánh giá/Quyết định: Người điều hành áp dụng các bài kiểm tra \"an toàn cho khán giả đại chúng\". Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "18": {
+          "title": "18. Nội dung Gây nhầm lẫn",
+          "content": "Tại sao tồn tại: Để ngăn chặn hành vi thao túng cộng đồng. Bao gồm: Các thông báo giả mạo hoặc ảnh chụp màn hình giả mạo. Được phép: Châm biếm hoặc nói đùa rõ ràng. Bị hạn chế/Bị cấm: Tuyên bố là ghi chú bản vá chính thức để làm sập nền kinh tế. Đánh giá/Quyết định: Được kiểm tra tính xác thực so với các thông tin liên lạc chính thức của studio. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "19": {
+          "title": "19. Nội dung Thương mại",
+          "content": "Tại sao tồn tại: Để ngăn trò chơi trở thành bảng quảng cáo. Bao gồm: Lời mời chào, quảng cáo bán hàng và xây dựng thương hiệu. Được phép: Thảo luận về một thương hiệu một cách tự nhiên. Bị hạn chế/Bị cấm: Tải lên logo của công ty làm ảnh đại diện cho các chiến dịch tiếp thị trái phép. Đánh giá/Quyết định: Người điều hành xóa các quảng cáo trắng trợn. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "20": {
+          "title": "20. Nội dung Chính trị",
+          "content": "Tại sao tồn tại: Để duy trì một môi trường tập trung vào trò chơi. Bao gồm: Vận động chính trị trong thế giới thực. Được phép: Các cuộc thảo luận triết học rộng rãi. Bị hạn chế/Bị cấm: Sử dụng wiki để lưu trữ các tuyên ngôn chính trị trong thế giới thực hoặc quảng cáo chiến dịch. Đánh giá/Quyết định: Bị xóa khi gây rối cho cộng đồng. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "21": {
+          "title": "21. Nội dung Tôn giáo",
+          "content": "Tại sao tồn tại: Để ngăn chặn xung đột giáo phái. Bao gồm: Hình ảnh và văn bản tôn giáo trong thế giới thực. Được phép: Thể hiện đức tin cá nhân trong một tiểu sử. Bị hạn chế/Bị cấm: Cải đạo, gièm pha các tôn giáo khác hoặc bắt đầu các cuộc chiến tranh tôn giáo trong trò chuyện. Đánh giá/Quyết định: Đánh giá theo ngữ cảnh tập trung vào sự phá vỡ. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "22": {
+          "title": "22. Nội dung do AI tạo ra",
+          "content": "Tại sao tồn tại: Để quản lý dòng tài liệu ít nỗ lực hoặc vùng xám về mặt pháp lý. Bao gồm: Văn bản hoặc hình ảnh do LLM hoặc trình tạo hình ảnh tạo ra. Được phép: Sử dụng AI để giúp phác thảo dàn ý wiki. Bị hạn chế/Bị cấm: Đăng spam wiki bằng hàng trăm bài viết AI chưa qua chỉnh sửa; tải lên hình ảnh AI vi phạm luật sở hữu trí tuệ (IP). Đánh giá/Quyết định: Được xem xét về chất lượng và các dấu hiệu spam. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "23": {
+          "title": "23. Nội dung Được Tài trợ",
+          "content": "Tại sao tồn tại: Để đảm bảo tuân thủ FTC/pháp lý. Bao gồm: Nội dung được trả tiền bởi các bên bên ngoài. Được phép: Tài trợ được tiết lộ (ví dụ: sự kiện của một streamer). Bị hạn chế/Bị cấm: Quảng cáo gốc (native advertising) không được tiết lộ. Đánh giá/Quyết định: Chúng tôi yêu cầu tiết lộ rõ ​​ràng; các khoản tài trợ không được khai báo sẽ bị xóa. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "24": {
+          "title": "24. Nội dung Bị Cấm",
+          "content": "Tại sao tồn tại: Để cấm dứt khoát các tài liệu nguy hiểm. Bao gồm: Danh mục tải lên không khoan nhượng. Được phép: Không có. Bị hạn chế: Không có. Bị cấm: Tất cả các mục được liệt kê trong các phần bị cấm tiếp theo. Đánh giá/Quyết định: Xóa ngay lập tức khi phát hiện. Kháng cáo: Bị hạn chế cao; chỉ thành công nếu cung cấp được bằng chứng về việc nhận diện sai (false positive)."
+        },
+        "25": {
+          "title": "25. Nội dung Khiêu dâm",
+          "content": "Tại sao tồn tại: Để tuân thủ xếp hạng của cửa hàng ứng dụng và bảo vệ trẻ vị thành niên. Bao gồm: Bất kỳ mô tả trực quan hoặc văn bản nào về hành vi tình dục. Được phép: Không có. Bị hạn chế: Không có. Bị cấm: Cấm 100%. Đánh giá/Quyết định: Băm hình ảnh NSFW tự động và cấm thủ công ngay lập tức. Kháng cáo: Quy trình tiêu chuẩn (hiếm khi bị đảo ngược)."
+        },
+        "26": {
+          "title": "26. Nội dung Khêu gợi Tình dục",
+          "content": "Tại sao tồn tại: Mở rộng lệnh cấm khiêu dâm để bao gồm các tài liệu có tính gợi dục cao. Bao gồm: Nhập vai khiêu dâm, ảnh đại diện gợi cảm. Được phép: Các mô hình trò chơi tiêu chuẩn. Bị hạn chế/Bị cấm: Sửa đổi ảnh đại diện để mô phỏng các hành vi tình dục. Đánh giá/Quyết định: Đánh giá theo ngữ cảnh của người điều hành. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "27": {
+          "title": "27. Ảnh Khỏa thân",
+          "content": "Tại sao tồn tại: Duy trì xếp hạng PG-13. Bao gồm: Các mô tả thực tế về bộ phận sinh dục người hoặc ngực/vú trần. Được phép: Các hình ảnh đại diện của nghệ thuật cổ điển trong bối cảnh wiki mang tính giáo dục nghiêm ngặt (hiếm). Bị hạn chế/Bị cấm: Tải lên ảnh selfie khỏa thân hoặc hình vẽ rõ ràng. Đánh giá/Quyết định: Xóa ngay lập tức. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "28": {
+          "title": "28. Bóc lột Trẻ em",
+          "content": "Tại sao tồn tại: Đây là một tội phạm quốc tế nghiêm trọng. Bao gồm: Tài liệu bóc lột tình dục trẻ em (CSAM), hành vi dụ dỗ (grooming) và tình dục hóa trẻ vị thành niên. Được phép: Không có. Bị hạn chế: Không có. Bị cấm: Tuyệt đối nghiêm cấm. Đánh giá/Quyết định: Chấm dứt tài khoản ngay lập tức, bảo quản dữ liệu và báo cáo cho cơ quan chức năng (ví dụ: NCMEC). Kháng cáo: Không được xử lý bởi bộ phận hỗ trợ tiêu chuẩn; yêu cầu can thiệp pháp lý."
+        },
+        "29": {
+          "title": "29. Bạo lực",
+          "content": "Tại sao tồn tại: Để ngăn ngừa tác hại trong thế giới thực. Bao gồm: Các mô tả hoặc mối đe dọa về bạo lực thể xác trong thế giới thực. Được phép: Chiến đấu giả tưởng trong trò chơi. Bị hạn chế/Bị cấm: Tải lên các video về các cuộc tấn công trong thế giới thực. Đánh giá/Quyết định: Xóa và cấm ngay lập tức. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "30": {
+          "title": "30. Hình ảnh Máu me",
+          "content": "Tại sao tồn tại: Để bảo vệ người dùng khỏi cú sốc nghiêm trọng. Bao gồm: Mô tả cực kỳ chân thực về sự cắt xén hoặc cái chết. Được phép: Sát thương theo phong cách hoạt hình trong trò chơi. Bị hạn chế/Bị cấm: Ảnh tai nạn ngoài đời thực hoặc hình vẽ siêu máu me. Đánh giá/Quyết định: Sàng lọc trực quan tự động và báo cáo của người dùng. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "31": {
+          "title": "31. Cổ xúy Tự hại",
+          "content": "Tại sao tồn tại: Để bảo vệ những cá nhân dễ bị tổn thương. Bao gồm: Nội dung khuyến khích tự tử, rạch tay hoặc rối loạn ăn uống. Được phép: Tìm kiếm các nguồn hỗ trợ sức khỏe tâm thần trong các kênh hỗ trợ. Bị hạn chế/Bị cấm: Tôn vinh hoặc cung cấp hướng dẫn tự làm hại bản thân. Đánh giá/Quyết định: Xóa ngay lập tức; chúng tôi có thể hướng người dùng đến các nguồn lực hỗ trợ khủng hoảng. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "32": {
+          "title": "32. Hoạt động Bất hợp pháp",
+          "content": "Tại sao tồn tại: Chúng tôi không thể lưu trữ nền tảng cho tội phạm. Bao gồm: Nội dung tạo điều kiện hoặc tổ chức các hành vi bất hợp pháp. Được phép: Không có. Bị hạn chế: Không có. Bị cấm: Tổ chức trộm cắp, hack hoặc buôn bán trên máy chủ của chúng tôi. Đánh giá/Quyết định: Điều tra và xóa bỏ, có khả năng bị báo cáo cho cơ quan thực thi pháp luật. Kháng cáo: Phản tố pháp lý."
+        },
+        "33": {
+          "title": "33. Ma túy",
+          "content": "Tại sao tồn tại: Để tuân thủ các quy định toàn cầu. Bao gồm: Việc bán, quảng bá hoặc tôn vinh ma túy bất hợp pháp. Được phép: Thảo luận về các \"bình thuốc\" trong trò chơi. Bị hạn chế/Bị cấm: Sử dụng wiki hoặc thị trường để điều phối hoạt động bán ma túy trong thế giới thực. Đánh giá/Quyết định: Lệnh cấm ngay lập tức đối với các nỗ lực phân phối. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "34": {
+          "title": "34. Cổ xúy Vũ khí",
+          "content": "Tại sao tồn tại: Để ngăn nền tảng trở thành thị trường vũ khí. Bao gồm: Nội dung quảng bá việc bán vũ khí hoặc sửa đổi trái phép súng và chất nổ trong thế giới thực. Được phép: Thảo luận về vũ khí lịch sử trong bối cảnh thực tế; vũ khí trong trò chơi. Bị hạn chế/Bị cấm: Đăng các tệp máy in 3D để in súng hoặc liên kết đến những kẻ buôn bán vũ khí bất hợp pháp. Đánh giá/Quyết định: Gỡ xuống ngay lập tức. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "35": {
+          "title": "35. Khủng bố",
+          "content": "Tại sao tồn tại: Bắt buộc theo luật pháp quốc tế và đạo đức cơ bản. Bao gồm: Nội dung quảng bá, tài trợ hoặc tôn vinh các tổ chức khủng bố được công nhận. Được phép: Không có. Bị hạn chế: Không có. Bị cấm: Tuyên truyền khủng bố, tài liệu tuyển dụng hoặc tuyên ngôn. Đánh giá/Quyết định: Xóa ngay lập tức, cấm vĩnh viễn và báo cáo cho các cơ quan có thẩm quyền liên quan. Kháng cáo: Xử lý thông qua leo thang pháp lý nghiêm ngặt."
+        },
+        "36": {
+          "title": "36. Cực đoan",
+          "content": "Tại sao tồn tại: Để ngăn chặn các đường dây cực đoan hóa. Bao gồm: Nội dung quảng bá chủ nghĩa cực đoan bạo lực không được phân loại chính thức là khủng bố. Được phép: Không có. Bị hạn chế/Bị cấm: Tuyển dụng nhóm thù hận và tài liệu cực đoan hóa bạo lực. Đánh giá/Quyết định: Các nhóm chuyên gia đánh giá an toàn & tin cậy xử lý các trường hợp leo thang này. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "37": {
+          "title": "37. Ngôn từ Thù địch",
+          "content": "Tại sao tồn tại: Tham khảo Nguyên tắc Cộng đồng; chính sách này quy định việc xóa nội dung. Bao gồm: Những lời nói tục tĩu, hình ảnh phân biệt chủng tộc (ví dụ: chữ vạn). Được phép: Không có. Bị hạn chế/Bị cấm: Tất cả các phương tiện truyền thông tải lên mang tính thù hận. Đánh giá/Quyết định: Tự động lọc văn bản/hình ảnh và cấm thủ công nghiêm ngặt. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "38": {
+          "title": "38. Quấy rối",
+          "content": "Tại sao tồn tại: Để loại bỏ các đồ tạo tác (vết tích) của hành vi bắt nạt. Bao gồm: Hình ảnh hoặc văn bản được thiết kế để hạ thấp một người cụ thể. Được phép: Không có. Bị hạn chế/Bị cấm: \"Các trang tấn công\" trên wiki hoặc tải lên những bức ảnh đáng xấu hổ của một người dùng khác. Đánh giá/Quyết định: Đánh giá theo ngữ cảnh dựa trên báo cáo của người dùng. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "39": {
+          "title": "39. Đe dọa",
+          "content": "Tại sao tồn tại: Để loại bỏ ý định nguy hiểm. Bao gồm: Văn bản hoặc hình ảnh truyền tải ý định gây hại. Được phép: Không có. Bị hạn chế/Bị cấm: Đe dọa giết người trong bình luận hoặc tiểu sử hồ sơ. Đánh giá/Quyết định: Xóa và cấm ngay lập tức. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "40": {
+          "title": "40. Bôi nhọ",
+          "content": "Tại sao tồn tại: Để ngăn chặn trách nhiệm pháp lý và bảo vệ danh tiếng. Bao gồm: Những tuyên bố sai sự thật có thể chứng minh được, làm tổn hại đến danh tiếng của một thực thể trong thế giới thực. Được phép: Nêu ý kiến (\"Tôi không thích streamer này\"). Bị hạn chế/Bị cấm: Vu cáo một người trong thế giới thực phạm tội trên wiki. Đánh giá/Quyết định: Thường được xử lý khi nhận được khiếu nại chính thức. Kháng cáo: Thông báo phản đối pháp lý."
+        },
+        "41": {
+          "title": "41. Vi phạm Quyền riêng tư",
+          "content": "Tại sao tồn tại: Để xóa dữ liệu cá nhân bị rò rỉ. Bao gồm: Tên thật, địa chỉ, thẻ ID. Được phép: Chia sẻ số liệu thống kê trò chơi ẩn danh của riêng bạn. Bị hạn chế/Bị cấm: Tải lên hình ảnh bằng lái xe của ai đó. Đánh giá/Quyết định: Xóa thủ công với ưu tiên cao nhất để ngăn chặn rò rỉ. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "42": {
+          "title": "42. Vi phạm Bản quyền",
+          "content": "Tại sao tồn tại: Để tuân thủ DMCA và luật sở hữu trí tuệ quốc tế. Bao gồm: Sử dụng trái phép phương tiện truyền thông có bản quyền. Được phép: Nội dung bạn sở hữu hoặc có giấy phép sử dụng. Bị hạn chế/Bị cấm: Tải lên các nhân vật độc quyền của một xưởng phim làm ảnh đại diện của bạn. Đánh giá/Quyết định: Được xử lý nghiêm ngặt thông qua các thông báo gỡ bỏ DMCA chính thức. Kháng cáo: Thông báo phản đối DMCA."
+        },
+        "43": {
+          "title": "43. Vi phạm Thương hiệu",
+          "content": "Tại sao tồn tại: Để ngăn chặn sự nhầm lẫn thương hiệu. Bao gồm: Sử dụng trái phép logo hoặc tên thương hiệu đã đăng ký. Được phép: Nhại lại (nơi được pháp luật bảo vệ). Bị hạn chế/Bị cấm: Đặt tên bang hội của bạn theo một tập đoàn trong thế giới thực và sử dụng logo của họ. Đánh giá/Quyết định: Được thực hiện theo yêu cầu của chủ sở hữu nhãn hiệu. Kháng cáo: Kháng cáo pháp lý chính thức."
+        },
+        "44": {
+          "title": "44. Nội dung Lậu",
+          "content": "Tại sao tồn tại: Để ngăn nền tảng lưu trữ phần mềm bị đánh cắp. Bao gồm: Các liên kết đến các trò chơi, phim hoặc nhạc vi phạm bản quyền. Được phép: Thảo luận về các phương tiện truyền thông một cách hợp pháp. Bị hạn chế/Bị cấm: Sử dụng wiki để lưu trữ các liên kết torrent cho phần mềm thương mại. Đánh giá/Quyết định: Xóa liên kết và cấm. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "45": {
+          "title": "45. Phần mềm Độc hại",
+          "content": "Tại sao tồn tại: Để bảo vệ hệ thống máy tính của người dùng. Bao gồm: Các liên kết hoặc tệp chứa mã độc hại. Được phép: Không có. Bị hạn chế/Bị cấm: Tải lên một \"bản mod trò chơi\" thực chất chứa virus trojan. Đánh giá/Quyết định: Quét bảo mật tự động tất cả các tệp. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "46": {
+          "title": "46. Vi-rút",
+          "content": "Tại sao tồn tại: Một tập hợp con cụ thể của phần mềm độc hại nhằm mục đích lây nhiễm phá hoại. Bao gồm: Các tệp thực thi được thiết kế để gây hại cho hệ thống. Được phép: Không có. Bị hạn chế/Bị cấm: Phân phối virus thông qua các nội dung tải lên của cộng đồng. Đánh giá/Quyết định: Xóa ngay lập tức và cấm vĩnh viễn. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "47": {
+          "title": "47. Lừa đảo",
+          "content": "Tại sao tồn tại: Để loại bỏ nội dung lừa dối. Bao gồm: Văn bản/hình ảnh được thiết kế để đánh cắp thông tin đăng nhập hoặc tiền. Được phép: Giao dịch trò chơi hợp pháp. Bị hạn chế/Bị cấm: Các liên kết trình tạo \"Tiền tệ cao cấp miễn phí\" (Free Premium Currency). Đánh giá/Quyết định: Xóa nhanh các mạng lừa đảo được báo cáo. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "48": {
+          "title": "48. Gian lận",
+          "content": "Tại sao tồn tại: Để xóa nội dung tạo điều kiện cho tội phạm tài chính. Bao gồm: Hướng dẫn hoặc liên kết cho gian lận thẻ tín dụng. Được phép: Không có. Bị hạn chế/Bị cấm: Bán tài khoản bị đánh cắp thông qua thị trường. Đánh giá/Quyết định: Lệnh cấm vĩnh viễn và xóa. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "49": {
+          "title": "49. Mạo danh",
+          "content": "Tại sao tồn tại: Để loại bỏ nội dung giả mạo. Bao gồm: Các hồ sơ được thiết kế trông giống hệt quản trị viên. Được phép: Tài khoản người hâm mộ (được dán nhãn rõ ràng). Bị hạn chế/Bị cấm: Sử dụng logo Borrowed Shapes chính thức làm ảnh đại diện của bạn trong khi tự nhận là bộ phận hỗ trợ. Đánh giá/Quyết định: Buộc đặt lại hồ sơ. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "50": {
+          "title": "50. Thư rác",
+          "content": "Tại sao tồn tại: Để loại bỏ nội dung rác. Bao gồm: Nội dung tải lên lặp đi lặp lại, giá trị thấp. Được phép: Sự tham gia thực sự của cộng đồng. Bị hạn chế/Bị cấm: Tạo 50 trang wiki giống hệt nhau để thao túng SEO. Đánh giá/Quyết định: Quản trị viên xóa hàng loạt. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "51": {
+          "title": "51. Quảng cáo",
+          "content": "Tại sao tồn tại: Để xóa nội dung thương mại trái phép. Bao gồm: Tài liệu tiếp thị không được yêu cầu. Được phép: Không có, trừ khi hợp tác chính thức. Bị hạn chế/Bị cấm: Tải lên quảng cáo biểu ngữ lên máy chủ hình ảnh. Đánh giá/Quyết định: Xóa. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "52": {
+          "title": "52. Phương tiện Bị thao túng",
+          "content": "Tại sao tồn tại: Để ngăn chặn thông tin sai lệch. Bao gồm: Hình ảnh/video được chỉnh sửa một cách lừa dối. Được phép: Ảnh chế (meme) và truyện cười rõ ràng. Bị hạn chế/Bị cấm: Giả mạo ảnh chụp màn hình một người chơi nói những lời lẽ bôi nhọ chủng tộc để khiến họ bị cấm. Đánh giá/Quyết định: Đánh giá theo ngữ cảnh; hình phạt đối với việc làm giả bằng chứng. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "53": {
+          "title": "53. Deepfake",
+          "content": "Tại sao tồn tại: Để bảo vệ các cá nhân khỏi các phương tiện tổng hợp không đồng thuận. Bao gồm: Khuôn mặt/giọng nói do AI tạo ra của người thật. Được phép: Không có trong bối cảnh lừa dối hoặc có hại. Bị hạn chế/Bị cấm: Nội dung khiêu dâm deepfake không đồng thuận của các cá nhân thực. Đánh giá/Quyết định: Xóa và cấm ngay lập tức. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "54": {
+          "title": "54. Tin giả",
+          "content": "Tại sao tồn tại: Để ngăn chặn sự lây lan của thông tin sai lệch độc hại trong thế giới thực. Bao gồm: Các chiến dịch thông tin sai lệch có phối hợp. Được phép: Thảo luận về các sự kiện hiện tại. Bị hạn chế/Bị cấm: Sử dụng nền tảng để điều hành các mạng lưới thông tin sai lệch do nhà nước tài trợ. Đánh giá/Quyết định: Sự leo thang của nhóm An toàn & Tin cậy (Trust & Safety). Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "55": {
+          "title": "55. Thông tin Sai lệch",
+          "content": "Tại sao tồn tại: Để bảo vệ tính toàn vẹn của thông tin trò chơi. Bao gồm: Thông tin trò chơi sai lệch có chủ ý. Được phép: Những sai lầm trung thực trên wiki. Bị hạn chế/Bị cấm: Bạo ý viết lại một hướng dẫn wiki để cố ý khiến người chơi mất vật phẩm của họ. Đánh giá/Quyết định: Bị quản trị viên wiki khôi phục lại; vi phạm nhiều lần dẫn đến lệnh cấm chỉnh sửa. Kháng cáo: Giải quyết tranh chấp Wiki."
+        },
+        "56": {
+          "title": "56. Hình ảnh Hồ sơ",
+          "content": "Tại sao tồn tại: Để điều chỉnh việc thể hiện của người dùng. Bao gồm: Hình ảnh tĩnh được tải lên cho các tài khoản. Được phép: Hình ảnh SFW (An toàn cho công việc). Bị hạn chế/Bị cấm: Hình ảnh khiêu dâm hoặc vi phạm. Đánh giá/Quyết định: Quét lúc tải lên. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "57": {
+          "title": "57. Hình đại diện",
+          "content": "Tại sao tồn tại: Để điều chỉnh thể hiện hình ảnh trong trò chơi. Bao gồm: Kết cấu (textures) và hình ảnh được áp dụng cho ảnh đại diện 3D. Được phép: Kết cấu sáng tạo, an toàn. Bị hạn chế/Bị cấm: Áp dụng các kết cấu xúc phạm được thiết kế để vượt qua các bộ lọc trong không gian 3D. Đánh giá/Quyết định: Các công cụ báo cáo trong trò chơi kích hoạt đánh giá. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "58": {
+          "title": "58. Hình ảnh Wiki",
+          "content": "Tại sao tồn tại: Để quản lý phương tiện thông tin. Bao gồm: Sơ đồ, ảnh chụp màn hình và nghệ thuật trên wiki. Được phép: Phương tiện giáo dục có liên quan. Bị hạn chế/Bị cấm: Hình ảnh gây sốc không liên quan. Đánh giá/Quyết định: Quản trị viên Wiki quản lý và xóa. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "59": {
+          "title": "59. Tải lên Cộng đồng",
+          "content": "Tại sao tồn tại: Bao gồm các tệp chung và các tính năng trong tương lai. Bao gồm: Mọi dữ liệu được gửi tới Cloudflare R2. Được phép: Dữ liệu trò chơi được ủy quyền. Bị hạn chế/Bị cấm: Sử dụng bộ lưu trữ của chúng tôi làm máy chủ lưu trữ tệp bất hợp pháp cá nhân của bạn. Đánh giá/Quyết định: Theo dõi phần phụ trợ (backend) về kích thước và loại bucket. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "60": {
+          "title": "60. Xử lý Phương tiện",
+          "content": "Tại sao tồn tại: Để giải thích cách chúng tôi xử lý tệp về mặt kỹ thuật. Bao gồm: Việc loại bỏ dữ liệu EXIF (như tọa độ GPS) khỏi hình ảnh được tải lên. Được phép: Chúng tôi xử lý tất cả các tệp theo cách này để đảm bảo an toàn. Bị hạn chế/Bị cấm: Không áp dụng. Đánh giá/Quyết định: Quy trình tự động để bảo vệ quyền riêng tư. Kháng cáo: Không áp dụng."
+        },
+        "61": {
+          "title": "61. Xóa Nội dung",
+          "content": "Tại sao tồn tại: Để làm rõ rằng chúng tôi nắm giữ quyền quyết định cuối cùng đối với các máy chủ của mình. Bao gồm: Việc xóa dữ liệu vật lý. Được phép: Không áp dụng. Bị hạn chế/Bị cấm: Bất kỳ nội dung nào vi phạm các điều khoản này đều bị xóa. Đánh giá/Quyết định: Chúng tôi có quyền xóa bất kỳ nội dung nào theo quyết định riêng của mình mà không cần thông báo trước. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "62": {
+          "title": "62. Hiển thị Nội dung",
+          "content": "Tại sao tồn tại: Để giải thích \"shadowbanning\" (cấm ngầm) hoặc hạn chế lượt xem. Bao gồm: Nội dung bị ẩn khỏi chế độ xem công khai nhưng không bị xóa. Được phép: Nội dung đang được đánh giá tích cực. Bị hạn chế/Bị cấm: Nội dung bị mod tự động đánh dấu đang chờ quyết định của con người. Đánh giá/Quyết định: Tạm thời bị ẩn cho đến khi người điều hành xóa nội dung đó. Kháng cáo: Được giải quyết sau khi con người đánh giá."
+        },
+        "63": {
+          "title": "63. Kháng cáo",
+          "content": "Tại sao tồn tại: Để cung cấp phương sách cho các yêu cầu gỡ xuống. Bao gồm: Cơ chế để phản đối việc xóa. Được phép: Gửi một phiếu hỗ trợ lịch sự, dựa trên bằng chứng. Bị hạn chế/Bị cấm: Nhắn tin rác vào hệ thống kháng cáo. Đánh giá/Quyết định: Một người điều hành khác đánh giá quyết định ban đầu. Kháng cáo: Quyết định của lần đánh giá thứ hai là quyết định cuối cùng."
+        },
+        "64": {
+          "title": "64. Vi phạm Lặp lại",
+          "content": "Tại sao tồn tại: Để răn đe những người vi phạm quy tắc kinh niên. Bao gồm: Theo dõi lịch sử vi phạm (strike histories) của người dùng. Được phép: Sửa đổi hành vi sau một lần cảnh báo. Bị hạn chế/Bị cấm: Tiếp tục tải lên nội dung bị cấm. Đánh giá/Quyết định: Các hệ thống tự động gắn cờ những người tái phạm để áp dụng các hình phạt khắc nghiệt hơn. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "65": {
+          "title": "65. Hình phạt Tăng dần",
+          "content": "Tại sao tồn tại: Để mở rộng quy mô hình phạt một cách công bằng. Bao gồm: Quá trình diễn tiến từ cảnh báo -> xóa nội dung -> cấm tạm thời -> cấm vĩnh viễn. Được phép: Không áp dụng. Bị hạn chế/Bị cấm: Thoát khỏi quá trình leo thang mà không sửa đổi hành vi. Đánh giá/Quyết định: Xử lý một cách có hệ thống dựa trên lịch sử tài khoản. Kháng cáo: Quy trình tiêu chuẩn."
+        },
+        "66": {
+          "title": "66. Hạn chế Vĩnh viễn",
+          "content": "Tại sao tồn tại: Bước cuối cùng dành cho những người vi phạm chính sách nội dung. Bao gồm: Mất vĩnh viễn các đặc quyền cụ thể (ví dụ: bị cấm tải hình ảnh lên vĩnh viễn, nhưng vẫn có thể chơi). Được phép: Chơi trò chơi cốt lõi (nếu không bị cấm hoàn toàn). Bị hạn chế/Bị cấm: Lách qua hạn chế. Đánh giá/Quyết định: Áp dụng bởi các người điều hành cấp cao. Kháng cáo: Bị hạn chế rất nhiều."
+        },
+        "67": {
+          "title": "67. Cập nhật Chính sách",
+          "content": "Tại sao tồn tại: Các chính sách phải thích ứng với các loại nội dung mới (ví dụ: các công cụ AI mới). Bao gồm: Sửa đổi tài liệu này. Được phép: Không áp dụng. Bị hạn chế/Bị cấm: Mong đợi các quy tắc cũ áp dụng cho các bản cập nhật mới. Đánh giá/Quyết định: Chúng tôi sẽ thông báo cho người dùng về những thay đổi lớn. Kháng cáo: Không áp dụng."
+        },
+        "68": {
+          "title": "68. Thông tin Liên hệ",
+          "content": "Tại sao tồn tại: Đối với các thắc mắc về pháp lý và kiểm duyệt. Bao gồm: Các kênh liên lạc được chỉ định. Được phép: Gửi khiếu nại DMCA hoặc báo cáo an toàn. Bị hạn chế/Bị cấm: Gửi tin nhắn quấy rối tới nhóm pháp lý. Đánh giá/Quyết định: Được giám sát bởi nhóm An toàn & Tin cậy (Trust & Safety). Kháng cáo: Được xử lý thông qua các kênh liên lạc tương tự."
+        }
+      }
+    },
+    "copyright": {
+      "title": "Chính sách Bản quyền & Sở hữu Trí tuệ",
+      "badge": "Section 3 – Quyền sở hữu",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Hệ sinh thái kỹ thuật số của trò chơi trực tuyến thương mại Borrowed Shapes đại diện cho sự hội tụ phức tạp của nghệ thuật, công nghệ tiên tiến và sự tương tác của cộng đồng toàn cầu. Việc duy trì tính toàn vẹn của vũ trụ này đòi hỏi một khuôn khổ pháp lý vững chắc để quản lý quyền sở hữu vô số tài sản kỹ thuật số được tạo ra trong quá trình phát triển và vận hành. Chính sách Bản quyền & Sở hữu trí tuệ này đóng vai trò như một tài liệu nền tảng, xác định các quy tắc quản lý tương tác giữa nhà phát hành và cơ sở người chơi, đồng thời bảo vệ các nguồn lực cốt lõi khỏi bị khai thác trong một thị trường giải trí kỹ thuật số ngày càng phức tạp."
+        },
+        "2": {
+          "title": "2. Mục đích",
+          "content": "Mục đích cốt lõi của tài liệu này là thiết lập dứt khoát quyền sở hữu tuyệt đối của công ty đối với tất cả các thành phần của Borrowed Shapes và trình bày chi tiết các cơ chế pháp lý được sử dụng để bảo vệ tài sản trí tuệ này. Bằng cách phân định ranh giới pháp lý một cách minh bạch, chính sách này cung cấp cho người chơi, đối tác thương mại và người sáng tạo nội dung hiểu rõ về các hành vi được phép và các vi phạm bị cấm, thúc đẩy một môi trường an toàn, tôn trọng và giảm thiểu các vụ kiện tụng không cần thiết."
+        },
+        "3": {
+          "title": "3. Phạm vi",
+          "content": "Chính sách này có tính ràng buộc pháp lý đối với tất cả chủ tài khoản đã đăng ký, khách truy cập trang web, người sáng tạo nội dung, nhà phát triển bên thứ ba và bất kỳ thực thể nào tương tác với các sản phẩm của Borrowed Shapes trên toàn thế giới. Khuôn khổ pháp lý bao gồm toàn bộ ứng dụng khách của trò chơi (game client), kiến trúc máy chủ, trang web chính thức, wiki cộng đồng, nội dung có thể tải xuống trong tương lai, hàng hóa thương mại và các sự kiện thể thao điện tử, đảm bảo sự bảo vệ liền mạch không bị giới hạn bởi không gian địa lý hoặc nền tảng phân phối."
+        },
+        "4": {
+          "title": "4. Định nghĩa",
+          "content": "Để đảm bảo cách giải thích nhất quán:\n- **Bản quyền (Copyright)** bảo vệ các tác phẩm gốc của quyền tác giả được cố định trong môi trường vật chất hoặc kỹ thuật số, bao gồm mã nguồn, văn bản, âm nhạc và nghệ thuật thị giác.\n- **Nhãn hiệu (Trademark)** đề cập đến các dấu hiệu, logo và tên giúp phân biệt Borrowed Shapes với các sản phẩm khác trên thị trường.\n- **Bao bì thương mại (Trade Dress)** bảo vệ hình thức trực quan tổng thể, bao gồm cách phối màu đặc biệt của trò chơi và thiết kế giao diện người dùng (UI).\n- **Bằng sáng chế (Patents)** bảo vệ các quy trình công nghệ độc quyền, thuật toán mạng hoặc cơ chế xử lý dữ liệu.\n- **Bí mật thương mại (Trade Secrets)** bao gồm các thuật toán tạo trận (matchmaking), cơ sở dữ liệu người dùng và thông tin kỹ thuật không được tiết lộ mang lại lợi thế cạnh tranh cốt lõi.\n- **Quyền sở hữu Trò chơi (Ownership of the Game)** khẳng định rằng sản phẩm được cấp phép, không phải để bán; người chơi mua quyền truy cập trong giới hạn quy định thay vì sở hữu tài sản kỹ thuật số thực tế."
+        },
+        "5": {
+          "title": "5. Quyền sở hữu Phần mềm và Nền tảng Kỹ thuật",
+          "content": "- **Mã nguồn (Source Code)** là tài sản trí tuệ cơ bản nhất của chúng tôi, bao gồm tất cả các tập lệnh của máy khách (client) và máy chủ vận hành Borrowed Shapes. Công ty sở hữu mã này hoàn toàn và độc quyền. Người chơi được phép tải xuống, cài đặt và thực thi các tệp đã biên dịch thông qua trình khởi chạy chính thức để chơi trò chơi. Người chơi tuyệt đối bị cấm tháo rời (disassembling), dịch ngược (decompiling) hoặc trích xuất mã nguồn. Sự bảo vệ này duy trì các bí mật thương mại và ngăn chặn sự phát triển của phần mềm độc hại. Việc thực thi liên quan đến lệnh cấm phần cứng và các vụ kiện dân sự. Ví dụ: cố gắng dịch ngược tệp thực thi để dịch ngược mã hóa mạng sẽ dẫn đến việc bị truy tố ngay lập tức theo luật bảo vệ phần mềm.\n- **Thiết kế Trò chơi (Game Design)** bao gồm các quy tắc, số liệu cân bằng và cấu trúc tiến trình của người chơi. Borrowed Shapes giữ toàn quyền sở hữu các tài liệu thiết kế này. Người chơi có thể tự do thảo luận, phân tích và xây dựng chiến lược dựa trên thiết kế, nhưng không được sao chép thiết kế cấu trúc này để tạo ra đối thủ cạnh tranh thương mại trực tiếp. Điều này bảo vệ các khoản đầu tư R&D khổng lồ. Việc thực thi bao gồm việc đưa ra các yêu cầu gỡ xuống trên các nền tảng phân phối. Nếu một studio khác phát hành một trò chơi sao chép y hệt vòng lặp kinh tế và cách tính điểm của chúng tôi, chúng tôi sẽ can thiệp về mặt pháp lý.\n- **Hệ thống Lối chơi (Gameplay Systems)**, bao gồm các thuật toán tạo trận, trí tuệ nhân tạo NPC và công cụ vật lý, thuộc về công ty. Người chơi có thể tương tác với các hệ thống này thông qua các giao diện hợp lệ trong trò chơi nhưng bị cấm can thiệp, giả mạo các gói tin (spoofing packets) hoặc sử dụng bot để thao túng kết quả của hệ thống. Điều này đảm bảo tính toàn vẹn và công bằng của trò chơi. Việc can thiệp sẽ dẫn đến việc cấm tài khoản vĩnh viễn. Ví dụ: sử dụng phần mềm của bên thứ ba để thao túng quá trình tạo trận nhằm liên tục đối đầu với những người chơi mới sẽ kích hoạt tính năng phát hiện và xóa tự động."
+        },
+        "6": {
+          "title": "6. Quyền sở hữu Cốt truyện và Thế giới",
+          "content": "- **Nhân vật (Characters)** trong Borrowed Shapes—bao gồm ngoại hình, tính cách, kỹ năng và cốt truyện cá nhân của họ—là tài sản sở hữu trí tuệ độc quyền. Người chơi có thể điều khiển các nhân vật này trong trò chơi và tạo ra tác phẩm nghệ thuật phi thương mại để tôn vinh họ, nhưng bị cấm sử dụng hình ảnh nhân vật cho các mặt hàng thương mại, in áo thun để bán lẻ hoặc đăng ký nhãn hiệu cho tên nhân vật. Các nhân vật tạo thành nền tảng cho quá trình thương mại hóa lâu dài của chúng tôi. Việc thực thi liên quan đến các lá thư Yêu cầu Chấm dứt và Hủy bỏ (Cease & Desist) gửi cho các nhà sản xuất trái phép.\n- **Câu chuyện và Cốt truyện (Stories and Lore)** cung cấp chiều sâu lịch sử và bối cảnh của trò chơi, hoàn toàn thuộc sở hữu của Borrowed Shapes. Người chơi được khuyến khích đọc, thảo luận, đưa ra giả thuyết và viết fanfiction phi thương mại. Tuy nhiên, việc xuất bản tiểu thuyết thương mại, phim hoặc phương tiện truyền thông có tường thu phí (paywalled) dựa trên cốt truyện ban đầu bị cấm để duy trì tiềm năng nhượng quyền thương mại. Chúng tôi sử dụng các thông báo gỡ xuống DMCA đối với các tác phẩm vi phạm. Một nhà văn không thể xuất bản và bán một cách hợp pháp một cuốn sách điện tử sao chép các sự kiện lịch sử trong cốt truyện của chúng tôi.\n- **Bản đồ (Maps)** bao gồm thiết kế địa hình 3D, kiến trúc môi trường và bố trí chướng ngại vật, thuộc sở hữu của công ty. Người chơi có thể khám phá và sử dụng bản đồ trong quá trình chơi hợp lệ nhưng không thể trích xuất các mô hình bản đồ 3D sang các công cụ trò chơi khác hoặc sử dụng chúng cho mục đích thương mại. Bản đồ là các tác phẩm nghệ thuật kiến trúc kỹ thuật số đòi hỏi hàng ngàn giờ thiết kế. Việc thực thi liên quan đến việc gỡ xuống khỏi nền tảng và khởi tố tội trộm cắp tài sản nếu được bán trên cửa hàng tài sản phần mềm."
+        },
+        "7": {
+          "title": "7. Quyền sở hữu Nghệ thuật Thị giác và Giao diện",
+          "content": "- **Tác phẩm nghệ thuật, Nghệ thuật ý tưởng và Hình minh họa (Artwork, Concept Art, and Illustrations)** bao gồm tất cả các bản phác thảo, hình ảnh 2D/3D, màn hình tải và nghệ thuật lên ý tưởng. Công ty giữ toàn bộ bản quyền. Người chơi có thể lưu hình ảnh làm hình nền cá nhân hoặc chia sẻ chúng phi thương mại trên phương tiện truyền thông xã hội. Họ bị cấm bán các bản in, đúc (mint) chúng dưới dạng NFT hoặc sử dụng chúng làm dữ liệu đào tạo cho các mô hình AI tạo sinh. Điều này duy trì giá trị thẩm mỹ cốt lõi và bảo vệ sinh kế của các nghệ sĩ. Việc thực thi bao gồm cảnh cáo bản quyền trên mạng xã hội và hành động pháp lý chống lại các nền tảng NFT.\n- **Giao diện người dùng (UI) và Biểu tượng (Icons)** bao gồm bảng điều khiển, biểu tượng kỹ năng, menu và hệ thống điều hướng trực quan, hoàn toàn thuộc sở hữu của Borrowed Shapes. Người chơi có thể tương tác với UI và chụp ảnh màn hình cho các hướng dẫn, nhưng không thể trích xuất các tệp hình ảnh UI/Biểu tượng cho phần mềm độc quyền hoặc các gói tài nguyên UI. Điều này bảo vệ Bao bì thương mại (Trade Dress) và Trải nghiệm người dùng (UX) của chúng tôi. Việc trích xuất biểu tượng kỹ năng của chúng tôi cho một ứng dụng di động sẽ dẫn đến việc ứng dụng đó bị xóa khỏi các cửa hàng kỹ thuật số."
+        },
+        "8": {
+          "title": "8. Quyền sở hữu Âm thanh và Hoạt ảnh",
+          "content": "- **Âm nhạc và Hiệu ứng âm thanh (Music and Sound Effects)** tạo ra bầu không khí của trò chơi và được bảo vệ bởi luật bản quyền âm thanh; Borrowed Shapes giữ bản quyền hoặc giấy phép độc quyền. Người chơi có thể thưởng thức âm thanh trong trò chơi và làm nền cho các video trò chơi phi thương mại. Họ không được phân phối lại các bản nhạc trên nền tảng phát trực tuyến (ví dụ: Spotify) để kiếm tiền, cũng như không được bán hiệu ứng âm thanh dưới dạng thư viện mẫu. Việc thực thi được tự động hóa thông qua hệ thống Content ID. Tách nhạc phim để thu tiền bản quyền trên nền tảng âm nhạc sẽ dẫn đến việc bị tịch thu doanh thu và cấm tài khoản.\n- **Diễn viên lồng tiếng (Voice Acting)** thuộc sở hữu của Borrowed Shapes và mang các quyền nhân thân/quyền công khai của các diễn viên lồng tiếng. Người chơi có thể nghe và sử dụng các đoạn clip ngắn cho mục đích giải trí phi thương mại. Người chơi tuyệt đối bị cấm trích xuất dữ liệu giọng nói để đào tạo các mô hình Nhân bản giọng nói bằng AI (AI Voice Cloning). Điều này ngăn chặn việc thay thế các nghệ sĩ là con người và vũ khí hóa giọng nói cho nội dung độc hại. Việc thực thi liên quan đến các vụ kiện tụng nghiêm ngặt theo luật quyền công khai và bản quyền.\n- **Hoạt ảnh và Video (Animations and Videos)** bao gồm các khung xương nhân vật (character rigs), kỹ xảo điện ảnh và các đoạn cắt cảnh (cutscenes), có bản quyền do chi phí chụp chuyển động (motion-capture) và thiết kế cao. Người chơi có thể xem và tạo video phản ứng phi thương mại nhưng không thể trích xuất các khung xương 3D hoặc chuỗi hoạt ảnh để bán hoặc chuyển đổi (port) sang các trò chơi khác. Việc chuyển đổi các hoạt ảnh chiến đấu phức tạp của chúng tôi thành một bản mod thương mại cho một trò chơi đối thủ sẽ dẫn đến các lệnh cấm vĩnh viễn và bồi thường thiệt hại dân sự."
+        },
+        "9": {
+          "title": "9. Quyền sở hữu Nhận dạng Thương hiệu, Tài liệu và Dữ liệu",
+          "content": "- **Logo và Nhận diện Thương hiệu (Logos and Brand Identity)** là những tài sản nhãn hiệu tối quan trọng thuộc sở hữu của Borrowed Shapes. Người chơi có thể sử dụng logo trên các wiki cộng đồng với điều kiện tỷ lệ và màu sắc không bị thay đổi, nhưng không thể sử dụng chúng để xây dựng thương hiệu cho các sản phẩm cá nhân, giả mạo trang web hoặc ám chỉ sai sự thật về việc tài trợ chính thức. Điều này ngăn chặn sự nhầm lẫn của người tiêu dùng. Việc thực thi liên quan đến cảnh cáo nhãn hiệu và giải quyết tranh chấp tên miền.\n- **Tài liệu và Nội dung Trang web (Documentation and Website Content)** (sổ tay, điều khoản dịch vụ, bài viết, thông báo) thuộc về công ty. Người chơi có thể đọc, trích dẫn hợp lý và liên kết đến chúng, nhưng không thể sao chép mã nguồn trang web hoặc UI để tạo các trang web lừa đảo. Điều này ngăn chặn tội phạm mạng đánh cắp tài khoản. Việc sao chép trang đăng nhập của chúng tôi sẽ bị báo cáo cho các cơ quan thực thi pháp luật quốc tế.\n- **Tài liệu Tiếp thị (Marketing Materials)** (đoạn giới thiệu, quảng cáo kỹ thuật số, bộ tài liệu báo chí) thuộc sở hữu của công ty. Cộng đồng có thể chia sẻ và sử dụng các bộ tài liệu báo chí cho các đánh giá hợp lệ, nhưng không được cắt ghép các đoạn giới thiệu để quảng cáo cho các sản phẩm không liên quan hoặc sản phẩm cạnh tranh. Điều này ngăn chặn quảng cáo sai sự thật. Việc lạm dụng cảnh quay chiến đấu cho một quảng cáo trò chơi di động chất lượng thấp sẽ kích hoạt các thông báo gỡ xuống ngay lập tức.\n- **Cơ sở dữ liệu (Databases)** (phân tích hành vi, lịch sử trận đấu, thông tin nhân vật, cấu trúc kho đồ) hoàn toàn thuộc sở hữu của công ty. Người chơi có thể xem dữ liệu cá nhân của họ thông qua các UI hợp lệ nhưng tuyệt đối bị cấm quét web (web scraping), thu thập dữ liệu hàng loạt (bulk crawling) hoặc bán lại các bộ dữ liệu này. Điều này đảm bảo tuân thủ quyền riêng tư (ví dụ: GDPR) và bảo mật. Dịch vụ của bên thứ ba sử dụng bot để quét hàng triệu tài khoản cho một trang web định giá trả phí sẽ đối mặt với việc bị chặn API và kiện tụng."
+        },
+        "10": {
+          "title": "10. Quyền sở hữu Tài sản Cộng đồng và Nội dung Người dùng Tạo",
+          "content": "- **Tài sản Cộng đồng (Community Assets)** bao gồm bảng xếp hạng, diễn đàn chính thức và các sự kiện trong trò chơi, do Borrowed Shapes quản lý và sở hữu. Người chơi có thể tham gia và đóng góp mang tính xây dựng, nhưng không được phá hoại, gửi thư rác hoặc phân phối phần mềm độc hại trên các nền tảng này. Việc thực thi bao gồm từ cấm trò chuyện (muting) đến cấm vĩnh viễn. Đăng các liên kết độc hại để đánh cắp tài khoản dẫn đến việc bị xóa khỏi hệ sinh thái ngay lập tức.\n- **Nội dung do Người dùng Tạo (UGC - User Generated Content)** đại diện cho các bản mod, bản đồ tùy chỉnh hoặc trang phục do người chơi thiết kế được tạo thông qua các công cụ hợp lệ. Đối với UGC, bản quyền Sở hữu trí tuệ (IP) cơ bản vẫn thuộc về Borrowed Shapes, trong khi người chơi sở hữu quyền đối với các yếu tố sáng tạo phụ trợ ban đầu của họ, với điều kiện họ cấp giấy phép đảo ngược (reverse license) tự động cho công ty. Người chơi có thể tạo và chia sẻ UGC tự do trong hệ sinh thái, nhưng không thể chèn IP của bên thứ ba (ví dụ: các nhân vật Hollywood) hoặc thương mại hóa UGC để đổi lấy tiền pháp định. Điều này bảo vệ công ty khỏi bị vi phạm gián tiếp (contributory infringement). Tạo bản đồ bằng các tài sản phim có bản quyền và tính phí vào cửa sẽ dẫn đến việc bị xóa và phạt."
+        },
+        "11": {
+          "title": "11. Cơ chế Cấp phép và Vi phạm Phức tạp",
+          "content": "Quyền được phân phối thông qua hai cơ chế chính:\n- **Giấy phép được Cấp bởi Người chơi**: Bằng cách sử dụng các công cụ tạo nội dung hoặc gửi phản hồi/ý tưởng, người chơi cấp cho Borrowed Shapes một giấy phép vĩnh viễn, toàn cầu, không thể thu hồi, miễn phí bản quyền để sử dụng, sửa đổi, xuất bản và thương mại hóa nội dung đó. Điều này ngăn ngừa các rủi ro pháp lý nếu các tính năng chính thức trong tương lai giống với ý tưởng của cộng đồng.\n- **Giấy phép được Cấp bởi Borrowed Shapes**: Công ty cấp cho người chơi một giấy phép cá nhân, phi thương mại, không thể chuyển nhượng và có thể thu hồi để truy cập và sử dụng phần mềm.\n\nDựa trên khuôn khổ này, các hành vi sau đây bị nghiêm cấm:\n- **Vi phạm Bản quyền & Nhãn hiệu**: Sao chép, phân phối hoặc sửa đổi tài sản trò chơi để tạo ra các tác phẩm phái sinh mang tính thương mại hoặc hàng giả.\n- **Phân phối Trái phép & Khai thác Thương mại**: Phân phối các phiên bản trò chơi bị bẻ khóa (cracked), cung cấp dịch vụ cày thuê (boosting), tham gia Giao dịch Tiền thật (RMT) hoặc thương mại hóa quyền truy cập trò chơi mà không có hợp đồng bằng văn bản.\n- **Kỹ thuật Đảo ngược, Trích xuất Tài sản & Khai thác Dữ liệu**: Cố gắng truy cập mã nguồn đã biên dịch, giải mã luồng dữ liệu, trích xuất mô hình 3D/âm thanh hoặc sử dụng bot để trích xuất dữ liệu hàng loạt cho các ứng dụng không được phê duyệt.\n- **Phần mềm Gian lận, Máy chủ Riêng & Sửa đổi Tệp Trò chơi**: Tiêm mã (injecting code), phát triển aimbot, chạy các trình giả lập máy chủ trái phép để bỏ qua việc thanh toán hoặc thay đổi các tệp cấu hình cốt lõi là những vi phạm nghiêm trọng đe dọa mô hình kinh doanh."
+        },
+        "12": {
+          "title": "12. Quy trình Thực thi và Biện pháp Khắc phục",
+          "content": "Borrowed Shapes sử dụng một khuôn khổ thực thi phản hồi nhanh, minh bạch:\n- **Quy trình Thông báo DMCA**: Bất kỳ tổ chức nào có IP bị vi phạm bởi trò chơi của chúng tôi hoặc người dùng đều có thể gửi thông báo gỡ xuống cho đại diện pháp lý của chúng tôi, yêu cầu chữ ký điện tử, liên kết vi phạm và tuyên bố có thiện chí.\n- **Thông báo Phản đối**: Người dùng bị cáo buộc có thể gửi thông báo phản đối nếu họ tin rằng nội dung bị xóa do nhầm lẫn, kích hoạt khoảng thời gian chờ đợi để người khiếu nại theo đuổi lệnh của tòa án.\n- **Quy trình Điều tra**: Các vi phạm nghi ngờ trong trò chơi trải qua quá trình đánh giá tự động và thủ công đối với nhật ký mạng và dữ liệu bộ nhớ để xác minh hành vi.\n- **Người Tái phạm**: Chúng tôi duy trì chính sách không khoan nhượng đối với những người tái phạm, dẫn đến lệnh cấm phần cứng vĩnh viễn mà không được kháng cáo.\n- **Các Hành động Thực thi**: Các chế tài trải dài từ cảnh cáo và đình chỉ tạm thời đến Chấm dứt vĩnh viễn thỏa thuận, tước bỏ mọi quyền truy cập vào tài sản ảo mà không được hoàn tiền.\n- **Biện pháp Dân sự**: Đối với các thiệt hại thương mại hoặc quy mô lớn, công ty sẽ tìm kiếm các lệnh cấm vĩnh viễn và bồi thường thiệt hại theo luật định/thực tế đối với doanh thu bị mất.\n- **Bảo lưu Quyền**: Công ty bảo lưu mọi quyền đối với IP không được cấp phép rõ ràng và có thể đơn phương ban hành Bản cập nhật Chính sách để giải quyết các công nghệ mới.\n- **Thông tin Liên hệ**: Đối với các thắc mắc về pháp lý, hãy liên hệ legal@borrowedshapes.com."
+        }
+      }
+    },
+    "fan-content": {
+      "title": "Chính sách Nội dung của Người hâm mộ",
+      "badge": "Section 3 – Quyền sở hữu",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu và Nguyên tắc Chung",
+          "content": "Sức sống lâu dài của Borrowed Shapes dựa nhiều vào niềm đam mê của cộng đồng cũng như sự đổi mới nội bộ. Chính sách Nội dung Dành cho Người hâm mộ này tôn vinh sự sáng tạo đó đồng thời thiết lập các ranh giới pháp lý an toàn để ngăn chặn việc thương mại hóa trái phép hoặc vi phạm quyền của bên thứ ba. \"Nội dung của người hâm mộ\" bao gồm các tác phẩm phái sinh như nghệ thuật thị giác, video, mod và các dự án cộng đồng dựa trên IP của chúng tôi."
+        },
+        "2": {
+          "title": "2. Quyền sở hữu và Giấy phép Giới hạn",
+          "content": "Nguyên tắc chung quy định rằng trong khi người hâm mộ giữ quyền tác giả đối với những nỗ lực bổ sung ban đầu của họ, Borrowed Shapes vẫn giữ Quyền sở hữu tuyệt đối đối với tất cả IP cơ bản. Để tạo điều kiện cho việc sáng tạo, chúng tôi cấp một Giấy phép Hạn chế: giấy phép cá nhân, không độc quyền, phi thương mại, không thể chuyển nhượng và có thể thu hồi để tạo và chia sẻ Nội dung Dành cho Người hâm mộ, hoàn toàn phụ thuộc vào việc tuân thủ các nguyên tắc này."
+        },
+        "3": {
+          "title": "3. Nội dung Người hâm mộ được Phép",
+          "content": "- **Nghệ thuật & Thủ công Thị giác (Visual Arts & Crafts)**: Bao gồm Nghệ thuật Người hâm mộ, Minh họa, Tranh kỹ thuật số, Nghệ thuật Truyền thống, Cosplay và Dự án Thủ công. Chúng tôi khuyến khích điều này để thúc đẩy niềm đam mê của cộng đồng và sự hiện diện tại các sự kiện thực tế. Người chơi có thể tạo tác phẩm nghệ thuật vẽ tay/kỹ thuật số, may trang phục cosplay và chia sẻ miễn phí hoặc chế tạo đạo cụ cho mục đích sử dụng cá nhân. Việc sản xuất hàng loạt (ví dụ: một xưởng sản xuất trang phục) để bán lẻ mà không có giấy phép thương mại bị cấm. Vẽ chân dung nhân vật và đăng trực tuyến được phép; sao chép nó để bán hàng ngàn chiếc ốp lưng điện thoại trên Amazon sẽ kích hoạt lệnh gỡ xuống.\n- **Phương tiện & Biểu diễn (Media & Performance)**: Bao gồm Ảnh chụp màn hình trò chơi, Video trò chơi, Phát trực tuyến (Streaming), Phát sóng trực tiếp (Live Broadcasts) và Video YouTube/Hướng dẫn. Phương tiện truyền thông xã hội là động lực tiếp thị cốt lõi. Người chơi có thể tự do ghi hình, phát sóng và kiếm tiền thụ động thông qua các quảng cáo tự động trên nền tảng (ví dụ: YouTube, Twitch). Bán bản quyền phát sóng độc quyền cho một mạng lưới truyền hình hoặc đưa vào các khoản tài trợ cho các sản phẩm độc hại là bị cấm. Phát sóng trong khi quảng bá phần mềm gian lận sẽ dẫn đến cảnh cáo bản quyền và cấm tài khoản.\n- **Giáo dục & Cộng đồng (Education & Community)**: Bao gồm Đánh giá trò chơi, Đóng góp Wiki, Hướng dẫn cộng đồng, Ảnh chế (Memes), Sự kiện cộng đồng, Trang web người hâm mộ và Cơ sở dữ liệu người hâm mộ. Việc chia sẻ kiến thức giúp giữ chân người chơi. Người hâm mộ có thể xây dựng các trang web hướng dẫn, biên soạn dữ liệu công khai và tổ chức các sự kiện phi thương mại nhỏ. Cấm khai thác dữ liệu nội dung chưa phát hành hoặc thiết kế trang web bắt chước hoàn hảo trang chủ chính thức (gây nhầm lẫn). Cho phép một wiki chia sẻ số liệu thống kê vũ khí; việc đặt tên cho nó là \"Hướng dẫn Borrowed Shapes Chính thức\" bằng cách sử dụng logo công ty của chúng tôi sẽ kích hoạt các tranh chấp tên miền.\n- **Sửa đổi (Mods - Modifications)**: Bao gồm Mod phi thương mại, Mod hỗ trợ khả năng tiếp cận và Dự án dịch thuật của cộng đồng. Những điều này được phép để mở rộng khả năng tiếp cận cho người chơi khuyết tật và đa dạng hóa trải nghiệm. Các bản mod yêu cầu thanh toán, chứa phần mềm độc hại hoặc can thiệp vào hệ thống chống gian lận bị nghiêm cấm. Việc sửa đổi màu sắc giao diện người dùng để hỗ trợ người chơi mù màu được hoan nghênh; một bản mod loại bỏ \"sương mù chiến tranh\" (fog of war) để đạt lợi thế chiến thuật là gian lận và đảm bảo bị cấm vĩnh viễn."
+        },
+        "4": {
+          "title": "4. Nội dung Người hâm mộ bị Hạn chế và Công nghệ Mới nổi",
+          "content": "- **Thương mại hóa & Tiền điện tử (Commercialization & Crypto)**: Việc Sử dụng Thương mại và bán Hàng hóa quy mô lớn bị cấm, ngoại trừ các đơn đặt hàng làm thủ công, đơn chiếc (tổng cộng dưới 50 chiếc). Chúng tôi tuyệt đối cấm tích hợp tài sản trò chơi vào NFT và Dự án Blockchain do rủi ro đầu cơ cao. Điều này bảo vệ chất lượng hàng hóa và ngăn chặn các trò lừa đảo tài chính. Việc đúc ảnh chụp màn hình lối chơi dưới dạng NFT trên Ethereum sẽ dẫn đến việc kiện tụng ngay lập tức và chấm dứt tài khoản.\n- **Trí tuệ nhân tạo (Artificial Intelligence)**: AI thách thức bản quyền và quyền công khai. Chúng tôi nghiêm cấm sử dụng tài sản của mình cho Đào tạo Mô hình AI hoặc tạo Nội dung AI Tạo sinh thương mại. Cụ thể, việc Nhân bản giọng nói bằng AI đối với các diễn viên lồng tiếng của chúng tôi hoàn toàn bị cấm. Điều này bảo vệ sinh kế của các nghệ sĩ và ngăn chặn deepfake độc hại. Việc huấn luyện AI bằng giọng nói của một nhân vật để đọc các tuyên bố phỉ báng sẽ dẫn đến các vụ kiện dân sự nghiêm trọng vì vi phạm bản quyền và quyền công khai.\n- **Sửa đổi âm thanh (Audio Modifications)**: Bản cover (hát lại) và Bản phối lại (Remix) âm nhạc liên quan đến bản quyền sao chép cơ học (mechanical copyrights) phức tạp. Người chơi có thể tải lên các bản cover miễn phí trên YouTube (hiểu rằng chúng có thể bị tắt kiếm tiền qua Content ID), nhưng không thể bán các bản cover trên các nhà phân phối âm nhạc thương mại (như Apple Music) mà không có giấy phép cơ học hợp pháp. Một đoạn video quay cảnh người hâm mộ chơi bài hát chủ đề bằng guitar là ổn; ép nó lên một đĩa CD bán lẻ là hành vi vi phạm bản quyền hình sự.\n- **Mô hình Tài trợ (Funding Models)**: Chúng tôi tôn trọng những người sáng tạo nhưng quản lý chặt chẽ nguồn tài trợ của cộng đồng. Quảng cáo, Tài trợ, Gọi vốn cộng đồng, Patreon và Quyên góp hoàn toàn được phép dưới dạng trợ cấp thụ động, với điều kiện Nội dung của Người hâm mộ vẫn miễn phí và mọi người có thể truy cập công khai. Việc thiết lập tường thu phí (paywall) Nội dung của người hâm mộ hoặc nhận tài trợ từ các tổ chức cờ bạc/cá cược đều bị cấm. Một nghệ sĩ có thể nhận các khoản quyên góp Patreon để tài trợ cho thời gian của họ, nhưng không thể nói, \"Hãy trả 10 đô la để mở khóa bức vẽ Borrowed Shapes này.\"\n- **Bảo vệ Thương hiệu (Brand Protection)**: Việc sử dụng Biểu trưng, ​​Nhãn hiệu và Nhân vật được quy định để ngăn chặn việc Trình bày sai lệch và Giả mạo. Người hâm mộ không thể đặt thương hiệu ở nơi ngụ ý sự chứng thực chính thức. Việc bạo ý khai thác dữ liệu để đăng Tiết lộ nội dung (Spoilers) bị hạn chế. Chúng tôi mong đợi các thành viên cộng đồng hiển thị các tuyên bố từ chối trách nhiệm rõ ràng về công việc không chính thức. Một trang của người hâm mộ sử dụng logo của chúng tôi trong khi đóng giả làm bộ phận hỗ trợ khách hàng để đánh cắp mật khẩu sẽ phải đối mặt với các cáo buộc giả mạo và chuyển cho cơ quan thực thi pháp luật.\n- **Nội dung Có hại (Harmful Content)**: Nội dung Tấn công/Xúc phạm của Người hâm mộ và Nội dung Bất hợp pháp—bao gồm nội dung khiêu dâm, ngôn từ kích động thù địch, phân biệt chủng tộc hoặc bạo lực cực đoan sử dụng tài sản trò chơi của chúng tôi—bị cấm tuyệt đối để duy trì một cộng đồng an toàn, bao trùm. Các vi phạm sẽ dẫn đến việc gỡ xuống trên nhiều nền tảng và báo cáo cho chính quyền địa phương."
+        },
+        "5": {
+          "title": "5. Quản trị, Khiếu nại và Thực thi",
+          "content": "Để duy trì tính minh bạch, các quy trình sau đây chi phối Nội dung của Người hâm mộ:\n- **Khiếu nại về Bản quyền**: Cộng đồng hoặc các bên thứ ba có thể sử dụng cổng thông tin pháp lý của chúng tôi để báo cáo Nội dung của Người hâm mộ đạo văn hoặc vi phạm quyền sở hữu trí tuệ của người khác.\n- **Xóa Nội dung & Thu hồi Quyền**: Borrowed Shapes giữ quyền đơn phương, tối cao để yêu cầu xóa bất kỳ Nội dung nào của Người hâm mộ hoặc thu hồi giấy phép của một cá nhân vào bất kỳ lúc nào, vì bất kỳ lý do gì (hoặc không vì lý do gì). Các yêu cầu gỡ xuống là bắt buộc.\n- **Vi phạm Chính sách**: Các vi phạm chính sách nghiêm trọng sẽ không chỉ dẫn đến việc gỡ xuống trên phương tiện truyền thông xã hội mà còn có thể kích hoạt việc đình chỉ vĩnh viễn các tài khoản trò chơi của người vi phạm.\n- **Cập nhật Chính sách**: Khi công nghệ giải trí phát triển, công ty có quyền cập nhật chính sách này. Nội dung của người hâm mộ hiện có không tuân thủ phải được sửa đổi hoặc gỡ bỏ.\n- **Thông tin Liên hệ**: Các yêu cầu cấp phép thương mại, quyền mở rộng hoặc yêu cầu giải đáp về Nội dung Dành cho Người hâm mộ phải được gửi bằng văn bản tới: fan-creators@borrowedshapes.com."
+        }
+      }
+    },
+    "cookie": {
+      "title": "Chính sách Cookie",
+      "badge": "Section 4 – Nền tảng",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Cơ sở hạ tầng kỹ thuật số của Borrowed Shapes dựa vào các công nghệ theo dõi khác nhau để hoạt động hiệu quả và an toàn. Chính sách Cookie này được thiết kế để tuân thủ các khuôn khổ quyền riêng tư toàn cầu, bao gồm Chỉ thị ePrivacy của EU và Đạo luật Quyền riêng tư của Người tiêu dùng California (CCPA), bằng cách giải thích minh bạch cách chúng tôi triển khai cookie trên thiết bị của bạn. Mục đích của tài liệu này là trao quyền cho bạn những kiến thức cần thiết để đưa ra quyết định sáng suốt liên quan đến quyền riêng tư và sự đồng ý của bạn."
+        },
+        "2": {
+          "title": "2. Mục đích",
+          "content": "Chính sách này thiết lập về mặt pháp lý những loại cookie nào chúng tôi sử dụng, tại sao chúng lại cần thiết và cách bạn có thể thực hiện kiểm soát dấu chân kỹ thuật số của mình trong khi tương tác với trò chơi, trang web và nền tảng cộng đồng của chúng tôi."
+        },
+        "3": {
+          "title": "3. Định nghĩa",
+          "content": "Để rõ ràng về mặt pháp lý và hoạt động, \"Cookie\" là các tệp văn bản nhỏ do máy chủ của chúng tôi đặt trên thiết bị của bạn để nhận dạng trình duyệt của bạn trong các lần truy cập sau. \"Các công nghệ tương tự\" đề cập đến các phương pháp lưu trữ thay thế như Bộ nhớ cục bộ (Local Storage), Bộ nhớ phiên (Session Storage) và Báo hiệu web (Web Beacons) thực hiện các chức năng theo dõi hoặc lưu trữ đệm tương đương."
+        },
+        "4": {
+          "title": "4. Cookie là gì và Các loại Cookie",
+          "content": "- **Cookie Thiết yếu (Essential Cookies)**: Những cookie này thực sự cần thiết cho hoạt động cốt lõi của Borrowed Shapes. Chúng lưu trữ các mã thông báo định tuyến và số nhận dạng phiên. Chúng là bắt buộc, chỉ được giữ lại cho đến khi phiên duyệt web của bạn kết thúc và người dùng không thể kiểm soát hoặc vô hiệu hóa. Chúng tôi sử dụng chúng để giữ cho bạn kết nối với máy chủ của chúng tôi.\n- **Cookie Xác thực (Authentication Cookies)**: Những cookie này tồn tại để xác minh danh tính của bạn liên tục. Chúng lưu trữ Mã thông báo Web JSON (JWT) và các băm phiên (session hashes). Chúng rất cần thiết khi đăng nhập, được giữ lại trong tối đa 30 ngày hoặc cho đến khi bạn đăng xuất. Người dùng kiểm soát chúng bằng cách chủ động đăng xuất. Chúng tôi sử dụng chúng để giúp bạn không phải nhập lại thông tin đăng nhập của mình nhiều lần.\n- **Cookie Phiên (Session Cookies)**: Được sử dụng để duy trì các trạng thái tạm thời, chẳng hạn như thông tin nhập vào biểu mẫu trên Wiki cộng đồng. Chúng lưu trữ các vị trí giao diện và bắt buộc để điều hướng. Chúng hết hạn ngay sau khi đóng trình duyệt và không thể quản lý thủ công. Chúng tôi sử dụng chúng để chuyển trang liền mạch.\n- **Cookie Cố định (Persistent Cookies)**: Những cookie này ghi nhớ thiết bị của bạn trong nhiều phiên. Chúng lưu trữ số nhận dạng người dùng duy nhất (UUID). Chúng là tùy chọn, được giữ lại trong tối đa 13 tháng và có thể bị vô hiệu hóa qua biểu ngữ Đồng ý Cookie (Cookie Consent) của chúng tôi. Chúng tôi sử dụng chúng để tự động áp dụng các tùy chọn đã lưu của bạn.\n- **Cookie Sở thích (Preference Cookies)**: Được thiết kế để cá nhân hóa giao diện của bạn, lưu trữ dữ liệu như lựa chọn ngôn ngữ hoặc lựa chọn chế độ tối/sáng. Chúng là tùy chọn, được giữ lại trong 12 tháng và có thể kiểm soát được thông qua cài đặt trình duyệt. Chúng tôi sử dụng chúng để đảm bảo trải nghiệm UI của bạn được điều chỉnh theo sở thích của bạn.\n- **Cookie Bảo mật (Security Cookies)**: Những cookie này tồn tại để ngăn chặn gian lận, các cuộc tấn công bạo lực (brute-force) và truy cập trái phép. Chúng lưu trữ địa chỉ IP được băm và dấu vân tay thiết bị. Chúng rất cần thiết, được giữ lại trong tối đa 30 ngày dựa trên mức độ đe dọa và không thể vô hiệu hóa. Chúng tôi sử dụng chúng để bảo vệ hệ sinh thái nhiều người chơi.\n- **Cookie Hiệu suất (Performance Cookies)**: Được sử dụng để đo lường tính ổn định của cơ sở hạ tầng. Chúng lưu trữ dữ liệu liên quan đến thời gian tải trang và lỗi mạng. Chúng là tùy chọn, được giữ lại trong tối đa 90 ngày và có thể kiểm soát được thông qua biểu ngữ đồng ý. Chúng tôi sử dụng chúng để tối ưu hóa việc định tuyến máy chủ.\n- **Cookie Phân tích (Analytics Cookies)**: Những cookie này giúp chúng tôi hiểu hành vi của người chơi. Chúng lưu trữ luồng nhấp chuột (click streams) và dữ liệu sử dụng tính năng. Chúng là tùy chọn, được giữ lại trong tối đa 24 tháng và có thể bị vô hiệu hóa qua cài đặt tài khoản của bạn. Chúng tôi sử dụng chúng để quyết định những tính năng trò chơi nào cần được phát triển thêm.\n- **Cookie Cân bằng Tải (Load Balancing Cookies)**: Được cung cấp bởi Cloudflare (ví dụ: cookie _cflb), chúng đảm bảo tính liên kết phiên bằng cách định tuyến các yêu cầu trong tương lai của bạn đến cùng một máy chủ gốc. Chúng lưu trữ ID nút máy chủ, thực sự cần thiết và kéo dài tối đa 24 giờ. Chúng tôi sử dụng chúng để duy trì tính ổn định kết nối của bạn trong các sự kiện thể thao điện tử có lưu lượng truy cập cao.\n- **Cookie Cloudflare**: Cụ thể là cookie __cf_bm, cookie này được triển khai để tính toán điểm số bot độc quyền và xác định lưu lượng truy cập tự động độc hại. Nó thực sự cần thiết, lưu trữ dữ liệu mã hóa (không phải ID người dùng), hết hạn sau 30 phút không hoạt động và không thể vô hiệu hóa. Chúng tôi sử dụng nó để bảo vệ máy chủ của chúng tôi khỏi các cuộc tấn công DDoS.\n- **Cookie Xác thực Google**: Nếu bạn sử dụng Đăng nhập Google, những cookie này sẽ lưu trữ mã thông báo OAuth 2.0. Chúng rất cần thiết nếu bạn chọn phương thức đăng nhập này, được giữ lại theo vòng đời mã thông báo của Google và được quản lý thông qua các quyền của Tài khoản Google của bạn. Chúng tôi sử dụng chúng để tạo điều kiện đăng nhập an toàn cho bên thứ ba.\n- **Cookie Của Bên Thứ Ba**: Được thiết lập bởi các đối tác bên ngoài (ví dụ: trình phát video nhúng trên Wiki của chúng tôi). Chúng lưu trữ dữ liệu theo dõi trên nhiều trang web. Chúng là tùy chọn, được giữ lại theo chính sách của bên thứ ba và được kiểm soát thông qua trình chặn cookie của bên thứ ba trong trình duyệt của bạn. Chúng tôi sử dụng chúng để cung cấp nội dung đa phương tiện phong phú."
+        },
+        "5": {
+          "title": "5. Các Công nghệ Tương tự",
+          "content": "- **Bộ nhớ Cục bộ & Bộ nhớ Trình duyệt (Local Storage & Browser Storage)**: Những bộ nhớ này tồn tại để lưu vào bộ nhớ cache các nội dung trò chơi nặng (như tùy chỉnh Hình đại diện) cục bộ trên thiết bị của bạn để giảm thời gian tải. Chúng lưu trữ dữ liệu giao diện tĩnh, rất cần thiết cho hiệu suất trò chơi và được giữ lại vô thời hạn cho đến khi bạn xóa dữ liệu trang web của trình duyệt. Chúng tôi sử dụng chúng để giảm thiểu mức tiêu thụ băng thông.\n- **Bộ nhớ Phiên (Session Storage)**: Tạm thời lưu giữ dữ liệu như văn bản Hệ thống Báo cáo chưa gửi. Nó rất cần thiết cho trải nghiệm người dùng, bị xóa khi đóng tab và được kiểm soát bằng cách đóng cửa sổ. Chúng tôi sử dụng nó để ngăn mất dữ liệu nếu bạn vô tình làm mới trang.\n- **Báo hiệu Web & Điểm ảnh (Web Beacons & Pixels)**: Đồ họa vô hình được nhúng trong email. Chúng lưu trữ dữ liệu liên quan đến việc một email có được mở hay không và địa chỉ IP của bạn. Chúng là tùy chọn, được giữ lại trong 14 tháng và được kiểm soát bằng cách tắt tính năng tải hình ảnh tự động trong ứng dụng email của bạn. Chúng tôi sử dụng chúng để đo lường hiệu quả truyền thông của mình."
+        },
+        "6": {
+          "title": "6. Cách Sử dụng Cookie",
+          "content": "Borrowed Shapes sử dụng những công nghệ này một cách tổng thể. Cá nhân hóa và Ghi nhớ Tùy chọn dựa vào các cookie tùy chọn để duy trì UI tùy chỉnh của bạn. Phiên đăng nhập và Đăng nhập Google sử dụng cookie xác thực để giữ an toàn cho tài khoản của bạn trên các thiết bị. Ngăn chặn Gian lận và Giám sát Bảo mật phụ thuộc rất nhiều vào Cloudflare và các cookie bảo mật để phát hiện hành vi bất thường và cấm những kẻ độc hại trước khi chúng ảnh hưởng đến trò chơi. Hiệu suất Trang web và Hiệu suất Trò chơi được tối ưu hóa bằng cách sử dụng bộ nhớ cục bộ và cookie cân bằng tải, đảm bảo độ trễ thấp. Số liệu phân tích cung cấp dữ liệu đo từ xa cho nhóm thiết kế của chúng tôi. Về Các cân nhắc về Quảng cáo, nếu chúng tôi triển khai cookie tiếp thị cho các dịch vụ cao cấp trong tương lai, chúng sẽ yêu cầu nghiêm ngặt sự đồng ý rõ ràng, trước đó của bạn."
+        },
+        "7": {
+          "title": "7. Quản lý Cookie",
+          "content": "Bạn có các quyền cơ bản liên quan đến lưu trữ thiết bị của mình. Các kiểm soát của trình duyệt cho phép bạn chặn toàn bộ tất cả các cookie, mặc dù điều này sẽ phá vỡ chức năng cốt lõi của trò chơi. Hệ thống Đồng ý Cookie của chúng tôi cho phép kiểm soát chi tiết các cookie tùy chọn (Hiệu suất, Phân tích, Tùy chọn). Chúng tôi thực hiện Việc giữ lại Cookie một cách nghiêm ngặt, lưu trữ các lựa chọn đồng ý của bạn một cách an toàn trong tối đa 3 năm để tuân thủ các cuộc kiểm toán theo quy định. Về Chuyển Dữ liệu Quốc tế, vì chúng tôi sử dụng Cloudflare CDN, dữ liệu cookie của bạn có thể được định tuyến toàn cầu đến các máy chủ biên gần bạn nhất. Chúng tôi bảo vệ các hoạt động chuyển giao này bằng cách sử dụng các Điều khoản Hợp đồng Tiêu chuẩn."
+        },
+        "8": {
+          "title": "8. Cập nhật Chính sách và Thông tin Liên hệ",
+          "content": "Khi Borrowed Shapes mở rộng, chúng tôi có thể cập nhật chính sách này để phản ánh các công nghệ mới. Nếu bạn có thắc mắc về cách chúng tôi triển khai cookie, vui lòng liên hệ với Nhân viên Bảo vệ Dữ liệu của chúng tôi tại privacy@borrowedshapes.com."
+        }
+      }
+    },
+    "account-deletion": {
+      "title": "Chính sách Xóa Tài khoản",
+      "badge": "Section 4 – Nền tảng",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Chính sách Xóa Tài khoản quy định quá trình không thể đảo ngược trong đó người chơi có thể chấm dứt vĩnh viễn mối quan hệ của họ với Borrowed Shapes và xóa dữ liệu cá nhân của họ. Tài liệu này đảm bảo \"Quyền được Xóa\" (Right to Erasure) của bạn theo Quy định Chung về Bảo vệ Dữ liệu (GDPR) và Đạo luật Quyền Riêng tư của California (CPRA)."
+        },
+        "2": {
+          "title": "2. Mục đích",
+          "content": "Chính sách này xác định rõ về mặt pháp lý ranh giới giữa việc vô hiệu hóa tài khoản, xóa một phần dữ liệu và phá hủy vĩnh viễn danh tính kỹ thuật số. Nó đảm bảo tính minh bạch liên quan đến dữ liệu nào sẽ bị xóa và dữ liệu nào phải tồn tại hợp pháp sau quá trình xóa."
+        },
+        "3": {
+          "title": "3. Định nghĩa",
+          "content": "\"Xóa Vĩnh viễn\" có nghĩa là xóa sạch về mặt vật lý và mã hóa Thông tin Nhận dạng Cá nhân (PII) của bạn khỏi cơ sở dữ liệu của chúng tôi. \"Xóa Một phần\" đề cập đến việc xóa có mục tiêu nội dung cụ thể (ví dụ: xóa hình ảnh đã tải lên) mà không đóng tài khoản. \"Thời gian Ân hạn\" là khung thời gian hạ nhiệt được pháp luật quy định trước khi việc xóa không thể đảo ngược diễn ra."
+        },
+        "4": {
+          "title": "4. Điều kiện và Yêu cầu",
+          "content": "Bất kỳ người dùng nào có tài khoản đang hoạt động, không bị cấm đều đủ điều kiện gửi Yêu cầu Xóa thông qua bảng điều khiển tài khoản của họ. Quy tắc này tồn tại để đảm bảo bạn giữ quyền tối cao đối với dữ liệu của mình."
+        },
+        "5": {
+          "title": "5. Xác minh Danh tính và Yêu cầu Xác thực",
+          "content": "Để ngăn chặn những kẻ xấu xóa tiến trình khó khăn mới đạt được của bạn một cách ác ý, chúng tôi thực thi Xác minh Danh tính nghiêm ngặt. Bạn phải xác thực yêu cầu bằng Xác thực Đa yếu tố (MFA) hoặc xác thực lại mã thông báo Đăng nhập Google của bạn. Nếu chúng tôi không thể xác minh danh tính của bạn một cách hợp lý, chúng tôi có trách nhiệm pháp lý từ chối yêu cầu để bảo vệ dữ liệu của bạn."
+        },
+        "6": {
+          "title": "6. Quy trình Gửi và Xem xét",
+          "content": "Khi Gửi Yêu cầu, các hệ thống tự động của chúng tôi sẽ bắt đầu Quá trình Đánh giá. Quá trình này kiểm tra các giao dịch tài chính đang chờ xử lý, các cuộc điều tra gian lận đang hoạt động hoặc các lệnh cấm đang hoạt động. Chúng tôi sẽ ghi nhận yêu cầu của bạn trong vòng 5 ngày làm việc và bắt đầu tiến trình thời gian."
+        },
+        "7": {
+          "title": "7. Dòng thời gian Xử lý, Thời gian Ân hạn và Hủy",
+          "content": "Sau khi được xác minh, tài khoản của bạn sẽ bước vào Thời gian Ân hạn 30 ngày (Thời gian Hủy bỏ). Quy tắc này tồn tại để bảo vệ người chơi khỏi các quyết định bốc đồng và cho phép công ty có thời gian giải quyết các khoản bồi hoàn tài chính. Trong 30 ngày này, tài khoản của bạn bị đình chỉ và không thể nhìn thấy."
+        },
+        "8": {
+          "title": "8. Khôi phục Tài khoản",
+          "content": "Bạn có quyền tuyệt đối đối với việc Khôi phục Tài khoản trong Thời gian Ân hạn 30 ngày. Bằng cách chỉ cần đăng nhập lại vào ứng dụng khách Borrowed Shapes, yêu cầu xóa sẽ bị hủy bỏ và toàn bộ tiến trình sẽ được khôi phục ngay lập tức."
+        },
+        "9": {
+          "title": "9. Xóa Một phần so với Xóa Vĩnh viễn",
+          "content": "Bạn có thể yêu cầu Xóa Một phần đối với Hình ảnh Người dùng Đã tải lên cụ thể hoặc Bài đăng trên Diễn đàn bằng cách liên hệ với bộ phận hỗ trợ. Tuy nhiên, việc Xóa Vĩnh viễn nhắm vào gốc rễ danh tính của bạn."
+        },
+        "10": {
+          "title": "10. Thông tin Bị Xóa so với Thông tin Được Lưu giữ",
+          "content": "- **Thông tin bị Xóa**: Tên thật, email, thông tin xác thực Google OAuth được liên kết, tiến trình chơi trò chơi, tùy chỉnh hình đại diện và số dư tiền tệ cao cấp của bạn sẽ bị hủy vĩnh viễn. Khi Thời gian Ân hạn kết thúc, dữ liệu này sẽ biến mất mãi mãi.\n- **Yêu cầu Lưu giữ Pháp lý**: Chúng tôi có nghĩa vụ pháp lý phải lưu giữ Hồ sơ Mua hàng và lịch sử giao dịch trong tối đa 10 năm để tuân thủ luật thuế quốc tế và luật Chống Rửa tiền (AML). Bạn không thể yêu cầu xóa dữ liệu tài chính này.\n- **Điều tra Gian lận và Bảo mật**: Nếu tài khoản của bạn bị cấm vì sử dụng Phần mềm Gian lận, ID phần cứng, địa chỉ IP và nhật ký kiểm duyệt của bạn sẽ được giữ lại vô thời hạn. Quy tắc này tồn tại để ngăn bạn vượt qua lệnh cấm bằng cách tạo tài khoản mới.\n- **Hồ sơ Cộng đồng & Đóng góp Wiki**: Các Bài đăng trên Diễn đàn và Đóng góp Wiki của bạn đại diện cho kiến thức cộng đồng được chia sẻ. Thay vì xóa chúng và phá vỡ Wiki, chúng tôi giữ lại nội dung nhưng ẩn danh vĩnh viễn tên tác giả thành \"[Người dùng đã xóa]\".\n- **Phiếu Hỗ trợ (Support Tickets)**: Các tương tác dịch vụ khách hàng được lưu trữ trong 3 năm để giải quyết các tranh chấp pháp lý tiềm ẩn."
+        },
+        "11": {
+          "title": "11. Bản sao Lưu và Dịch vụ Bên thứ ba",
+          "content": "Đối với việc Phục hồi sau Thảm họa, dữ liệu của bạn có thể nằm trong các Bản sao lưu lưu trữ lạnh được mã hóa. Về mặt kỹ thuật, không thể trích xuất một người dùng duy nhất khỏi băng lưu trữ; do đó, dữ liệu của bạn sẽ hết hạn một cách tự nhiên khi chu kỳ sao lưu bị ghi đè (thường là sau 90 ngày). Về Các Dịch vụ Bên thứ Ba như Đăng nhập Google, việc ngắt kết nối quyền truy cập OAuth khỏi trang tổng quan Google của bạn sẽ kích hoạt yêu cầu xóa ngay lập tức đối với dữ liệu có nguồn gốc từ Google trong vòng 30 ngày. Hình ảnh đã tải lên được lưu trữ trên Cloudflare R2 Storage được đánh dấu để xóa và lọc ra thông qua bảo trì bảng tự động (hết hạn ảnh chụp nhanh)."
+        },
+        "12": {
+          "title": "12. Hậu quả của Việc Xóa",
+          "content": "Việc hoàn tất quy trình này dẫn đến Mất toàn bộ Quyền truy cập và Mất Tiến trình. Sẽ không có khoản hoàn tiền nào được cấp cho các dịch vụ cao cấp. Nếu bạn mong muốn Đăng ký trong Tương lai, bạn phải tạo một tài khoản hoàn toàn mới bắt đầu từ con số không."
+        },
+        "13": {
+          "title": "13. Kháng cáo và Trường hợp Ngoại lệ",
+          "content": "Trong trường hợp tài khoản bị xóa một cách bất hợp pháp (ví dụ: bị tấn công chiếm quyền điều khiển), bạn có thể nộp đơn Kháng cáo cho nhóm bảo mật của chúng tôi. Tuy nhiên, nếu Thời gian Ân hạn 30 ngày đã hết, việc khôi phục dữ liệu là không thể về mặt công nghệ."
+        },
+        "14": {
+          "title": "14. Cập nhật Chính sách và Thông tin Liên hệ",
+          "content": "Chúng tôi sẽ thông báo cho người chơi về bất kỳ thay đổi nào đối với khuôn khổ xóa này. Để tiến hành thủ công yêu cầu xóa qua email hoặc đặt câu hỏi, hãy liên hệ legal@borrowedshapes.com."
+        }
+      }
+    },
+    "data-retention": {
+      "title": "Chính sách Lưu giữ Dữ liệu",
+      "badge": "Section 4 – Nền tảng",
+      "sections": {
+        "1": {
+          "title": "1. Giới thiệu",
+          "content": "Chính sách Lưu giữ Dữ liệu phác thảo việc quản lý vòng đời toàn diện của tất cả thông tin được xử lý bởi Borrowed Shapes. Nó đóng vai trò là kế hoạch chi tiết hoạt động của chúng tôi để bảo mật, lưu trữ và cuối cùng là tiêu hủy dữ liệu theo cách có thể bảo vệ được."
+        },
+        "2": {
+          "title": "2. Mục đích",
+          "content": "Chính sách này thực thi về mặt pháp lý \"Nguyên tắc Giới hạn Lưu trữ\", đảm bảo rằng dữ liệu cá nhân chỉ được giữ lại trong khoảng thời gian thực sự cần thiết cho mục đích mà nó được thu thập. Nó phác thảo cơ sở lý luận kỹ thuật và các quy trình hoạt động ràng buộc đội ngũ kỹ thuật và pháp lý của chúng tôi."
+        },
+        "3": {
+          "title": "3. Định nghĩa",
+          "content": "\"Các Nguyên tắc Quản trị Dữ liệu\" quy định rằng mỗi byte dữ liệu đều yêu cầu một cơ sở pháp lý chính đáng. \"Xử lý Hợp pháp\" có nghĩa là chúng tôi dựa vào sự đồng ý của người dùng, việc thực hiện hợp đồng hoặc các lợi ích hợp pháp. \"Tạm giữ Pháp lý\" là việc đình chỉ tất cả các tập lệnh xóa do lệnh của tòa án hoặc tranh chấp pháp lý."
+        },
+        "4": {
+          "title": "4. Phân loại Dữ liệu và Lịch Lưu giữ",
+          "content": "- **Thông tin Tài khoản & Hồ sơ Người chơi**: Bao gồm email, mật khẩu được mã hóa và cài đặt hồ sơ. Được giữ lại trong suốt vòng đời của tài khoản cộng với thời gian ân hạn xóa 30 ngày. Được bảo vệ bằng mã hóa AES-256. Bạn có quyền truy cập và sửa chỉnh dữ liệu này bất cứ lúc nào.\n- **Hồ sơ Xác thực & Dữ liệu Xác thực Google**: Bao gồm nhật ký IP và mã thông báo OAuth. Nhật ký truy cập thông thường được lưu giữ trong 90 ngày để kiểm tra bảo mật. Dữ liệu Google chỉ được lưu giữ trong khi ủy quyền đang hoạt động và bị xóa trong vòng 30 ngày nếu bạn thu hồi quyền truy cập.\n- **Thông tin Hình đại diện & Hình ảnh Đã tải lên**: Được lưu trữ trên Cloudflare R2 Storage. Được giữ lại chừng nào tài khoản của bạn còn hoạt động. Sau khi xóa, các đối tượng sẽ bị xóa và việc hết hạn ảnh chụp nhanh Cloudflare R2 sẽ tự động lọc bỏ các tệp dữ liệu không được tham chiếu.\n- **Đóng góp Wiki, Hoạt động Cộng đồng & Dữ liệu Bảng xếp hạng**: Được lưu giữ vô thời hạn để duy trì tính toàn vẹn lịch sử của vũ trụ Borrowed Shapes. Khi chấm dứt tài khoản, dữ liệu này hoàn toàn bị ẩn danh, cắt đứt mọi liên kết với danh tính thực của bạn.\n- **Báo cáo, Hồ sơ Kiểm duyệt & Hồ sơ Kháng cáo**: Được lưu giữ trong 3 năm đối với các vi phạm nhỏ và vô thời hạn đối với các lệnh cấm vĩnh viễn. Dữ liệu này được nhóm An toàn & Tin cậy của chúng tôi truy cập nghiêm ngặt để bảo vệ hệ sinh thái khỏi những người tái phạm. Bạn không thể yêu cầu xóa các hồ sơ phạt đang hoạt động.\n- **Dữ liệu Lối chơi & Dữ liệu Thành tích**: Dữ liệu đo từ xa thô (tọa độ, tỷ lệ trúng) được lưu giữ trong 30 ngày. Dữ liệu thống kê tổng hợp được giữ vô thời hạn để cân bằng các bản cập nhật trò chơi trong tương lai.\n- **Hồ sơ Giao dịch & Dịch vụ Cao cấp**: Bao gồm lịch sử mua hàng và sổ cái tiền ảo. Được lưu giữ trong tối đa 10 năm để tuân thủ luật thuế doanh nghiệp và các quy định AML.\n- **Yêu cầu Hỗ trợ & Báo cáo Sự cố (Crash)**: Các phiếu hỗ trợ được giữ trong 3 năm; các bản kết xuất (dumps) sự cố kỹ thuật được giữ trong 90 ngày. Được hỗ trợ khách hàng và kỹ sư QA truy cập để sửa lỗi.\n- **Nhật ký Bảo mật, Nhật ký Kiểm toán, Nhật ký Máy chủ & Nhật ký Cloudflare**: Bao gồm các khối WAF, truy vấn API và lưu lượng mạng. Được giữ tối đa 180 ngày để điều tra các cuộc tấn công mạng và đảm bảo sự ổn định của cơ sở hạ tầng.\n- **Dữ liệu Sao lưu & Dữ liệu Được lưu trữ**: Các bản sao lưu khôi phục thảm họa toàn hệ thống được giữ an toàn ngoại tuyến. Các bản sao lưu hết hạn và bị ghi đè vĩnh viễn theo chu kỳ 90 ngày luân phiên."
+        },
+        "5": {
+          "title": "5. Mã hóa Dữ liệu và Kiểm soát Truy cập",
+          "content": "Tất cả dữ liệu ở trạng thái nghỉ đều được mã hóa. Chúng tôi thực thi Kiểm soát Truy cập nghiêm ngặt thông qua Nguyên tắc Đặc quyền Tối thiểu (PoLP). Truy cập Nội bộ bị hạn chế nặng nề và được ghi nhật ký. Chúng tôi chia sẻ dữ liệu với Bộ xử lý Bên thứ Ba (như Cloudflare cho CDN/Lưu trữ và Google cho Xác thực) một cách nghiêm ngặt theo Thỏa thuận Xử lý Dữ liệu cấm họ bán dữ liệu của bạn hoặc sử dụng dữ liệu đó để đào tạo AI của riêng họ. Các hoạt động Chuyển Dữ liệu Xuyên biên giới đến các máy chủ quốc tế của chúng tôi được bảo vệ hợp pháp bởi các Điều khoản Hợp đồng Tiêu chuẩn."
+        },
+        "6": {
+          "title": "6. Yêu cầu Tuân thủ và Tạm giữ Pháp lý",
+          "content": "Trong trường hợp có Sự cố Bảo mật, Điều tra Gian lận hoặc trát đòi hầu tòa, Borrowed Shapes có nghĩa vụ pháp lý phải khởi xướng Tạm giữ Pháp lý (Legal Hold). Trong thời gian này, lịch biểu xóa tiêu chuẩn bị đình chỉ đối với dữ liệu được nhắm mục tiêu và quyền được xóa của bạn tạm thời bị vô hiệu cho đến khi vấn đề pháp lý kết thúc."
+        },
+        "7": {
+          "title": "7. Quy trình Xóa Dữ liệu",
+          "content": "Khi dữ liệu đạt đến giới hạn lưu giữ, các tập lệnh Xóa Tự động sẽ lọc các bản ghi hàng đêm. Đối với cơ sở dữ liệu Cloudflare R2, chúng tôi sử dụng tính năng nén tự động và hết hạn ảnh chụp nhanh để xóa vĩnh viễn dữ liệu cũ. Việc Xóa Thủ công chỉ được thực hiện đối với các yêu cầu tuân thủ pháp luật cụ thể. Chúng tôi tiến hành Kiểm toán và Đánh giá hàng năm đối với các kho dữ liệu của mình để đảm bảo đáp ứng các tiêu chuẩn \"xóa có thể bảo vệ được\"."
+        },
+        "8": {
+          "title": "8. Cập nhật Chính sách và Thông tin Liên hệ",
+          "content": "Khi chúng tôi giới thiệu Ứng dụng Di động và các tính năng Thị trường (Marketplace), lịch trình lưu giữ này sẽ mở rộng. Người chơi sẽ được thông báo về những thay đổi quan trọng. Để thực hiện các quyền dữ liệu của bạn hoặc yêu cầu lưu trữ dữ liệu của bạn, vui lòng liên hệ với nhóm tuân thủ quyền riêng tư của chúng tôi tại privacy@borrowedshapes.com."
+        }
+      }
     }
   },
   "forums": {
@@ -1563,6 +2458,20 @@
     "image_too_large": "Dung lượng ảnh phải nhỏ hơn 5MB",
     "invalid_image_type": "Chỉ chấp nhận ảnh định dạng JPEG, PNG và WebP",
     "upload_failed": "Tải ảnh lên thất bại",
+    "forbidden_admin_only": "Chỉ quản trị viên mới được phép thực hiện hành động này",
+    "title_required": "Tiêu đề không được để trống",
+    "content_required": "Nội dung không được để trống",
+    "category_required": "Danh mục không được để trống",
+    "invalid_author": "Tác giả không hợp lệ",
+    "category_not_found": "Không tìm thấy danh mục",
+    "category_official_admin_only": "Chỉ quản trị viên mới có thể viết bài trong danh mục chính thức",
+    "slug_conflict": "Một chủ đề với slug/tiêu đề này đã tồn tại",
+    "forbidden_update": "Bạn không có quyền chỉnh sửa chủ đề này",
+    "slug_required": "Slug không được để trống",
+    "forbidden_delete": "Bạn không có quyền xóa chủ đề này",
+    "invalid_user": "Người dùng không hợp lệ",
+    "unauthenticated": "Bạn phải đăng nhập để thực hiện hành động này",
+    "thread_id_invalid": "ID chủ đề phải là định dạng UUID hợp lệ",
     "quick_category": "Chọn Nhanh Danh Mục",
     "join_discussion": "Tham gia thảo luận ngay",
     "sign_in": "Đăng nhập để đăng bài, phản hồi bài viết, và đánh giá các nội dung.",
@@ -1731,7 +2640,28 @@
     "ranked": "Xếp hạng",
     "unranked": "Chưa xếp hạng"
   },
+  "category": {
+    "not_found": "Không tìm thấy danh mục",
+    "name_required": "Tên tiếng Anh không được để trống",
+    "name_vi_required": "Tên tiếng Việt không được để trống",
+    "slug_required": "Slug tiếng Anh không được để trống",
+    "slug_vi_required": "Slug tiếng Việt không được để trống",
+    "slug_conflict": "Slug tiếng Anh đã được sử dụng",
+    "slug_vi_conflict": "Slug tiếng Việt đã được sử dụng",
+    "name_conflict": "Tên tiếng Anh đã được sử dụng",
+    "name_vi_conflict": "Tên tiếng Việt đã được sử dụng",
+    "image_too_large": "Dung lượng ảnh phải nhỏ hơn 5MB"
+  },
   "comments": {
+    "thread_not_found": "Không tìm thấy chủ đề",
+    "parent_not_found": "Không tìm thấy bình luận cha",
+    "parent_thread_mismatch": "Bình luận cha thuộc về một chủ đề khác",
+    "user_not_found": "Không tìm thấy người dùng",
+    "comment_not_found": "Không tìm thấy bình luận",
+    "forbidden_edit": "Bạn không có quyền chỉnh sửa bình luận này",
+    "cannot_edit_deleted": "Không thể chỉnh sửa bình luận đã bị xóa",
+    "forbidden_delete": "Bạn không có quyền xóa bình luận này",
+    "invalid_user": "Người dùng không hợp lệ",
     "title": "Bình luận",
     "write_placeholder": "Viết bình luận của bạn...",
     "write_reply_placeholder": "Viết phản hồi...",
@@ -1790,6 +2720,15 @@
     "failed_submit": "Gửi tố cáo thất bại",
     "cannot_report_self": "Bạn không thể tố cáo chính mình!",
     "cannot_ban_admin": "Bạn không thể xử lý người dùng này",
+    "report_not_found": "Không tìm thấy tố cáo",
+    "forbidden_view": "Bạn không có quyền xem báo cáo này",
+    "already_processed": "Báo cáo đã được xử lý",
+    "no_reported_user": "Không có người dùng bị tố cáo liên quan đến báo cáo này",
+    "forbidden_admin_only": "Chỉ quản trị viên mới được phép thực hiện hành động này",
+    "file_too_large": "Dung lượng tệp bằng chứng vượt quá giới hạn",
+    "user_not_found": "Không tìm thấy người dùng bị tố cáo",
+    "thread_not_found": "Không tìm thấy chủ đề bị tố cáo",
+    "comment_not_found": "Không tìm thấy bình luận bị tố cáo",
     "max_total_size": "Tổng tối đa 20MB",
     "upload_hint": "Nhấp để tải lên tệp tin bằng chứng (ảnh hoặc video)",
     "comment_content_title": "Nội dung bình luận",

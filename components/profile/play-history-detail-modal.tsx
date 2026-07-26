@@ -228,7 +228,7 @@ export function PlayHistoryDetailModal({
                   <Globe className="h-6 w-6 text-muted-foreground dark:text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground dark:text-white">
+                  <h3 className="text-xl font-bold text-foreground dark:text-white break-all break-words">
                     {detail.lobbyName || "—"}
                   </h3>
                   <p className="text-sm text-muted-foreground dark:text-gray-400 font-mono">

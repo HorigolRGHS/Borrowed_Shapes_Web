@@ -160,7 +160,7 @@ export function WikiInfobox({
                         <li key={slug}>
                           <Link
                             href={`/wiki/${encodeURIComponent(slug)}`}
-                            className="underline hover:no-underline"
+                            className="underline hover:no-underline break-words block"
                           >
                             {lbl}
                           </Link>
@@ -170,7 +170,7 @@ export function WikiInfobox({
                     return (
                       <li
                         key={slug}
-                        className="text-muted-foreground line-through"
+                        className="text-muted-foreground line-through break-words"
                       >
                         {slug}
                       </li>

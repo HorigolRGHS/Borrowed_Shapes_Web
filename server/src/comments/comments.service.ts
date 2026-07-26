@@ -13,17 +13,29 @@ import { ForumThread } from '../entities/ForumThread';
 import { User } from '../entities/User';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { GameProfile } from 'src/entities/GameProfile';
-import { ForumCommentRepository } from './repositories/comments.repository';
+import { GameProfile } from '../entities/GameProfile';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
+import {
+  ForumCommentRepository,
+  ForumCommentVoteRepository,
+} from './repositories/comments.repository';
+import { ForumThreadRepository } from '../forums/repositories/forums.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly commentRepository: ForumCommentRepository) {}
+  constructor(
+    private readonly commentRepository: ForumCommentRepository,
+    private readonly commentVoteRepository: ForumCommentVoteRepository,
+    private readonly threadRepository: ForumThreadRepository,
+    private readonly auditService: AuditService,
+  ) {}
 
   async create(dto: CreateCommentDto, userId: string) {
-    const thread = await this.commentRepository
-      .getEntityManager()
-      .findOne(ForumThread, { id: dto.threadId });
+    const thread = await this.threadRepository.findOne({ id: dto.threadId });
     if (!thread) throw new NotFoundException('comments.thread_not_found');
 
     let parent: ForumComment | null = null;
@@ -44,13 +56,26 @@ export class CommentsService {
     if (!user) throw new BadRequestException('comments.user_not_found');
 
     const comment = this.commentRepository.create({
+      id: randomUUID(),
       threadId: thread,
       authorId: user,
       content: dto.content,
       parentId: parent || undefined,
     });
 
-    await this.commentRepository.getEntityManager().persistAndFlush(comment);
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'ForumComment',
+      entityId: comment.id,
+      newValue: {
+        content: comment.content,
+        threadId: thread.id,
+        parentId: parent?.id,
+      },
+    });
+
+    await this.commentRepository.persistAndFlush(comment);
 
     const gp = await this.commentRepository
       .getEntityManager()
@@ -73,8 +98,8 @@ export class CommentsService {
       author: {
         id: user.id,
         displayName: user.displayName,
-        imgUrl: user.imgUrl,
-        badgeImageUrl,
+        imgUrl: getProxyAvatarUrl(user.imgUrl, user.id, user.updatedAt),
+        badgeImageUrl: getProxyMediaUrl(badgeImageUrl),
       },
       repliesCount: 0,
       hasReplies: false,
@@ -115,7 +140,17 @@ export class CommentsService {
 
     comment.content = dto.content;
     comment.updatedAt = new Date();
-    await this.commentRepository.getEntityManager().flush();
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'ForumComment',
+      entityId: comment.id,
+      newValue: {
+        content: comment.content,
+      },
+    });
+
+    await this.commentRepository.flush();
 
     return comment;
   }
@@ -133,7 +168,21 @@ export class CommentsService {
 
     comment.isDeleted = true;
     comment.content = '';
-    await this.commentRepository.getEntityManager().flush();
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'ForumComment',
+      entityId: comment.id,
+      oldValue: {
+        isDeleted: false,
+      },
+      newValue: {
+        isDeleted: true,
+      },
+    });
+
+    await this.commentRepository.flush();
     return null;
   }
 
@@ -149,53 +198,69 @@ export class CommentsService {
     const voteValue =
       value === 1 ? ForumCommentVoteValue.UP : ForumCommentVoteValue.DOWN;
 
-    const existingRows = await this.commentRepository
-      .getEntityManager()
-      .execute(
-        `select "value" from web."ForumCommentVote" where "userId" = ? and "commentId" = ?`,
-        [userId, commentId],
-      );
-    const existingVote = existingRows?.[0];
-    const existingValue = existingVote ? Number(existingVote.value) : null;
+    const userVote = await this.commentVoteRepository.getUserVote(
+      userId,
+      commentId,
+    );
+    const existingValue = userVote;
 
     if (existingValue === null) {
-      const vote = this.commentRepository
-        .getEntityManager()
-        .create(ForumCommentVote, {
-          commentId: comment,
-          userId: user,
-          value: voteValue,
-        });
+      const vote = this.commentVoteRepository.create({
+        commentId: comment,
+        userId: user,
+        value: voteValue,
+      });
       comment.score = (comment.score || 0) + value;
       await this.commentRepository
         .getEntityManager()
         .persistAndFlush([vote, comment]);
+
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: userId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'ForumComment',
+        entityId: commentId,
+        newValue: { score: comment.score, userVote: value },
+      });
+
       return { result: 'voted', score: comment.score, userVote: value };
     }
 
     if (existingValue === value) {
-      await this.commentRepository
-        .getEntityManager()
-        .execute(
-          `delete from web."ForumCommentVote" where "userId" = ? and "commentId" = ?`,
-          [userId, commentId],
-        );
+      await this.commentVoteRepository.removeUserVote(userId, commentId);
       comment.score = (comment.score || 0) - value;
       await this.commentRepository
         .getEntityManager()
         .persistAndFlush([comment]);
+
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: userId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'ForumComment',
+        entityId: commentId,
+        newValue: { score: comment.score, userVote: null },
+      });
+
       return { result: 'unvoted', score: comment.score, userVote: null };
     } else {
-      await this.commentRepository
-        .getEntityManager()
-        .execute(
-          `update web."ForumCommentVote" set "value" = ? where "userId" = ? and "commentId" = ?`,
-          [voteValue, userId, commentId],
-        );
+      await this.commentVoteRepository.updateUserVote(
+        userId,
+        commentId,
+        voteValue as any,
+      );
       comment.score = (comment.score || 0) + (value - existingValue);
       await this.commentRepository
         .getEntityManager()
         .persistAndFlush([comment]);
+
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: userId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'ForumComment',
+        entityId: commentId,
+        newValue: { score: comment.score, userVote: value },
+      });
+
       return { result: 'changed', score: comment.score, userVote: value };
     }
   }

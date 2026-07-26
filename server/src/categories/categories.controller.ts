@@ -101,9 +101,12 @@ export class CategoryController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
-    @Req() req: Request,
+    @Req() req: any,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.create(createCategoryDto);
+    const data = await this.categoryService.create(
+      createCategoryDto,
+      req.user?.sub,
+    );
     return okResponse('category.create_success', data, 'POST /category');
   }
 
@@ -112,9 +115,13 @@ export class CategoryController {
   async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-    @Req() req: Request,
+    @Req() req: any,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.update(id, updateCategoryDto);
+    const data = await this.categoryService.update(
+      id,
+      updateCategoryDto,
+      req.user?.sub,
+    );
     return okResponse('category.update_success', data, `PATCH /category/${id}`);
   }
 
@@ -122,9 +129,9 @@ export class CategoryController {
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Req() req: Request,
+    @Req() req: any,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.remove(id);
+    const data = await this.categoryService.remove(id, req.user?.sub);
     return okResponse(
       'category.delete_success',
       data,

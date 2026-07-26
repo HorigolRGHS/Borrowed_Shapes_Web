@@ -40,7 +40,7 @@ export class PresenceController {
   @ApiOperation({ summary: 'List all online users (Admin only)' })
   @ApiResponse({ status: 200, type: [PresenceResponseDto] })
   async listAllPresence(): Promise<PresenceResponseDto[]> {
-    return this.presenceService.listAllPresence();
+    return (this.presenceService as any).listAllPresence();
   }
 
   @Get(':userId')
@@ -53,6 +53,6 @@ export class PresenceController {
     if (user.userId !== userId && user.role !== 'ADMIN') {
       throw new ForbiddenException('common.forbidden');
     }
-    return this.presenceService.getUserPresence(userId);
+    return (this.presenceService as any).getUserPresence(userId);
   }
 }

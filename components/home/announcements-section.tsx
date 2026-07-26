@@ -269,7 +269,10 @@ export function AnnouncementsSection() {
                     </span>
                   </div>
 
-                  <h3 className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white mb-3 group-hover:text-amber-500 transition-colors">
+                  <h3 
+                    className="text-2xl sm:text-3xl font-bold text-foreground dark:text-white mb-3 group-hover:text-amber-500 transition-colors line-clamp-2"
+                    title={getTitle(pinnedAnnouncement)}
+                  >
                     {getTitle(pinnedAnnouncement)}
                   </h3>
 
@@ -379,7 +382,10 @@ export function AnnouncementsSection() {
                           </span>
                         </div>
 
-                        <h3 className="font-bold text-foreground dark:text-white mb-2 line-clamp-2 group-hover:text-amber-500 transition-colors leading-snug">
+                        <h3 
+                          className="font-bold text-foreground dark:text-white mb-2 line-clamp-2 group-hover:text-amber-500 transition-colors leading-snug"
+                          title={getTitle(a)}
+                        >
                           {getTitle(a)}
                         </h3>
 
@@ -450,7 +456,7 @@ export function AnnouncementsSection() {
 
                 {/* Content area */}
                 <div className="rounded-b-2xl border border-border dark:border-white/10 border-t-0 bg-card dark:bg-[#0f0f1a] p-6 sm:p-8">
-                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground dark:text-white mb-4 leading-tight">
+                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground dark:text-white mb-4 leading-tight break-words whitespace-pre-wrap">
                     {getTitle(selectedAnnouncement)}
                   </h1>
 
@@ -572,7 +578,10 @@ export function AnnouncementsSection() {
                             >
                               {getTypeLabel(sidebarAnn.type, t)}
                             </span>
-                            <h4 className="text-sm font-semibold text-foreground dark:text-white group-hover:text-amber-500 transition-colors leading-snug line-clamp-2">
+                            <h4 
+                              className="text-sm font-semibold text-foreground dark:text-white group-hover:text-amber-500 transition-colors leading-snug line-clamp-2"
+                              title={getTitle(sidebarAnn)}
+                            >
                               {getTitle(sidebarAnn)}
                             </h4>
                             <span className="text-xs text-muted-foreground dark:text-gray-500">

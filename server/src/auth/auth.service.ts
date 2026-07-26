@@ -16,6 +16,7 @@ import { randomUUID } from 'crypto';
 import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
+import { getProxyMediaUrl } from '../storage/media-utils';
 import { LoginRequestDto, LoginResponseDto } from './dto/login.dto';
 import {
   GoogleExchangeRequestDto,
@@ -36,7 +37,7 @@ import { GameProfileRepository } from '../game/repositories/game-profile.reposit
 import { UserSessionRepository } from '../sessions/repositories/user-session.repository';
 import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
 import { UserSession } from '../entities/UserSession';
-import { AuditLog } from '../entities/AuditLog';
+
 import { ensureAccountActive, getProxyAvatarUrl } from './auth-utils';
 import { GameProfile } from '../entities/GameProfile';
 import { Role } from '../entities/Role';
@@ -44,10 +45,7 @@ import { SessionStatus } from '../entities/SessionStatus';
 import { AuditActionType } from '../entities/AuditActionType';
 import { UserOnlineStatus } from '../entities/UserOnlineStatus';
 import { UserRepository } from './repositories/user.repository';
-import { AuditLogRepository } from './repositories/audit-log.repository';
-import { GameProfileRepository } from '../game/repositories/game-profile.repository';
-import { UserSessionRepository } from '../sessions/repositories/user-session.repository';
-import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
+import { AuditService } from '../audit/audit.service';
 
 const createId = () => randomUUID();
 
@@ -115,7 +113,7 @@ export class AuthService {
     private jwt: JwtService,
     private email: EmailService,
     private userRepository: UserRepository,
-    private auditLogRepository: AuditLogRepository,
+    private auditService: AuditService,
     private gameProfileRepository: GameProfileRepository,
     private userSessionRepository: UserSessionRepository,
     private userOnlineStatusRepository: UserOnlineStatusRepository,
@@ -290,8 +288,8 @@ export class AuthService {
       deviceInfo,
       status: SessionStatus.ACTIVE,
     });
-    const auditLog = this.auditLogRepository.create({
-      userId: user,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: user.id,
       actionType: AuditActionType.LOGIN,
       entityName: 'UserSession',
       entityId: sessionId,
@@ -299,7 +297,6 @@ export class AuthService {
     });
     await this.userRepository.flush();
     void session;
-    void auditLog;
 
     return {
       accessToken,
@@ -338,8 +335,8 @@ export class AuthService {
             user.displayName = dto.displayName ?? email.split('@')[0];
             user.bannedAt = new Date();
 
-            const auditLog = this.auditLogRepository.txCreate(em, {
-              userId: user,
+            this.auditService.recordInTransaction(em, {
+              userId: user.id,
               actionType: AuditActionType.UPDATE,
               entityName: 'User',
               entityId: user.id,
@@ -350,7 +347,6 @@ export class AuthService {
               ipAddress,
             });
             await this.userRepository.txFlush(em);
-            void auditLog;
 
             let gameProfile = await this.gameProfileRepository.txFindOne(em, {
               userId: user.id,
@@ -383,8 +379,8 @@ export class AuthService {
         const gameProfile = this.gameProfileRepository.txCreate(em, {
           userId: created,
         });
-        const auditLog = this.auditLogRepository.txCreate(em, {
-          userId: created,
+        this.auditService.recordInTransaction(em, {
+          userId: created.id,
           actionType: AuditActionType.CREATE,
           entityName: 'User',
           entityId: created.id,
@@ -392,7 +388,6 @@ export class AuthService {
           ipAddress,
         });
         await this.userRepository.txFlush(em);
-        void auditLog;
 
         return {
           user: created,
@@ -412,9 +407,9 @@ export class AuthService {
       const name = result.user.displayName
         ? String(result.user.displayName)
         : email.split('@')[0];
-      const verifyHtml = `
-      <div style="font-family: 'Arial', sans-serif; background-color: #0a0a15; color: #e2e8f0; padding: 40px 20px; border: 1px solid #1e1e3a; border-radius: 12px; max-width: 500px; margin: 0 auto; text-align: center;">
-        <h2 style="color: #22d3ee; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Verify Your Email</h2>
+      const verifyHtml = this.email.renderBaseEmailTemplate(
+        'Verify Your Email',
+        `
         <p style="font-size: 16px; margin-bottom: 20px;">Hello <span style="color: #fbbf24; font-weight: bold;">${name}</span>,</p>
         <p style="font-size: 14px; margin-bottom: 30px; color: #94a3b8; line-height: 1.5;">Thank you for registering to <strong>Borrowed Shapes</strong>. Please verify your email to activate your account:</p>
         <p>
@@ -423,8 +418,9 @@ export class AuthService {
         <p style="font-size: 12px; color: #64748b; margin-top: 30px; line-height: 1.5;">Or copy this link:<br/><a href="${verifyLink}" style="color: #22d3ee; word-break: break-all;">${verifyLink}</a></p>
         <p style="font-size: 12px; color: #64748b;">This link expires in 24 hours.</p>
         <p style="font-size: 12px; color: #64748b; margin-top: 20px;">If you didn't create this account, please safely ignore this email.</p>
-      </div>
-    `;
+        `,
+        true
+      );
 
       await this.email.sendMail(
         email,
@@ -487,7 +483,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('auth.invalid_credentials');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
-    await ensureAccountActive(user, this.em);
+    await ensureAccountActive(user, this.em, this.auditService);
 
     const valid = user.passwordHash
       ? await bcrypt.compare(password, user.passwordHash)
@@ -562,7 +558,7 @@ export class AuthService {
         if (!user.email || String(user.email) !== email) {
           user.email = email as any;
         }
-        if (picture && user.imgUrl !== picture) {
+        if (picture && !user.imgUrl) {
           user.imgUrl = picture;
         }
         if (!user.displayName && name) {
@@ -596,8 +592,8 @@ export class AuthService {
       }
 
       if (created) {
-        const auditLog = this.auditLogRepository.txCreate(em, {
-          userId: user,
+        this.auditService.recordInTransaction(em, {
+          userId: user.id,
           actionType: AuditActionType.CREATE,
           entityName: 'User',
           entityId: user.id,
@@ -609,7 +605,6 @@ export class AuthService {
           ipAddress,
         });
         await this.userRepository.txFlush(em);
-        void auditLog;
       }
 
       return { user, gameProfile };
@@ -648,7 +643,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('auth.user_not_found');
 
     const gameProfile = await this.getOrCreateGameProfile(user);
-    await ensureAccountActive(user, this.em);
+    await ensureAccountActive(user, this.em, this.auditService);
 
     return this.issueLoginTokens(
       user,
@@ -709,7 +704,7 @@ export class AuthService {
     );
     if (!user) throw new UnauthorizedException('auth.unauthorized');
 
-    await ensureAccountActive(user as User, this.em);
+    await ensureAccountActive(user as User, this.em, this.auditService);
 
     const sessionTtl = parseInt(
       this.config.get('SESSION_TTL_SEC', '604800'),
@@ -829,15 +824,14 @@ export class AuthService {
       );
     }
 
-    const auditLog = this.auditLogRepository.create({
-      userId: this.userRepository.getReference(userId),
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId,
       actionType: AuditActionType.LOGOUT,
       entityName: 'UserSession',
       entityId: userId,
       ipAddress,
     });
     await this.userRepository.flush();
-    void auditLog;
   }
 
   public async revokeUserSessions(
@@ -903,6 +897,13 @@ export class AuthService {
         { id: session.id, status: SessionStatus.ACTIVE },
         { status: SessionStatus.REVOKED, logoutTime: now },
       );
+
+      await this.auditService.recordStandalone({
+        userId,
+        actionType: AuditActionType.REVOKE_SESSION,
+        entityName: 'UserSession',
+        entityId: session.id,
+      });
     }
   }
 
@@ -925,6 +926,15 @@ export class AuthService {
     user.bannedAt = undefined;
     user.banReason = undefined;
     user.banExpiresAt = undefined;
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      actionType: AuditActionType.UPDATE,
+      userId: null,
+      entityName: 'User',
+      entityId: user.id,
+      newValue: { operation: 'VERIFY_EMAIL' },
+    });
+
     await this.userRepository.flush();
 
     // Clean up token
@@ -954,9 +964,9 @@ export class AuthService {
     const name = user.displayName
       ? String(user.displayName)
       : String(user.email).split('@')[0];
-    const otpHtml = `
-      <div style="font-family: 'Arial', sans-serif; background-color: #0a0a15; color: #e2e8f0; padding: 40px 20px; border: 1px solid #1e1e3a; border-radius: 12px; max-width: 500px; margin: 0 auto; text-align: center;">
-        <h2 style="color: #22d3ee; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Password Reset Request</h2>
+    const otpHtml = this.email.renderBaseEmailTemplate(
+      'Password Reset Request',
+      `
         <p style="font-size: 16px; margin-bottom: 20px;">Hello <span style="color: #fbbf24; font-weight: bold;">${name}</span>,</p>
         <p style="font-size: 14px; margin-bottom: 10px; color: #94a3b8; line-height: 1.5;">We received a request to reset your password for <strong>Borrowed Shapes</strong>.</p>
         <p style="font-size: 14px; margin-bottom: 30px; color: #94a3b8;">Your Verification Code is:</p>
@@ -965,8 +975,9 @@ export class AuthService {
         </div>
         <p style="font-size: 12px; color: #64748b; margin-top: 30px;">This code expires in ${Math.ceil(otpTtl / 60)} minutes.</p>
         <p style="font-size: 12px; color: #64748b; margin-top: 20px;">If you didn't request this, please safely ignore this email.</p>
-      </div>
-    `;
+      `,
+      true
+    );
 
     await this.email.sendMail(
       String(user.email),
@@ -1004,6 +1015,15 @@ export class AuthService {
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      actionType: AuditActionType.UPDATE,
+      userId: null,
+      entityName: 'User',
+      entityId: user.id,
+      newValue: { operation: 'RESET_PASSWORD' },
+    });
+
     await this.userRepository.flush();
 
     await this.revokeUserSessions(String(user.id));
@@ -1042,6 +1062,15 @@ export class AuthService {
 
     const rounds = parseInt(this.config.get('BCRYPT_ROUNDS', '10'), 10);
     user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      actionType: AuditActionType.UPDATE,
+      userId: userId,
+      entityName: 'User',
+      entityId: user.id,
+      newValue: { operation: 'CHANGE_PASSWORD' },
+    });
+
     await this.userRepository.flush();
 
     await this.revokeUserSessions(userId, { excludePlatform: currentPlatform });
@@ -1092,7 +1121,7 @@ export class AuthService {
         ? {
             id: gameProfile.equippedAchievementId.id,
             name: gameProfile.equippedAchievementId.name,
-            badgeImageUrl: gameProfile.equippedAchievementId.badgeImageUrl,
+            badgeImageUrl: getProxyMediaUrl(gameProfile.equippedAchievementId.badgeImageUrl),
           }
         : null,
     };
@@ -1138,7 +1167,7 @@ export class AuthService {
         return {
           id: r.id,
           name: r.name,
-          badgeImageUrl: r.badgeImageUrl,
+          badgeImageUrl: getProxyMediaUrl(r.badgeImageUrl),
           achievedAt: r.achievedAt,
           isExpired,
         };

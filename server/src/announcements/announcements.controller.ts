@@ -139,9 +139,10 @@ export class AnnouncementController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateAnnouncementDto,
+    @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    const data = await this.announcementService.update(id, dto);
+    const data = await this.announcementService.update(id, dto, user.userId);
     return okResponse(
       'announcements.update_success',
       data,
@@ -155,9 +156,10 @@ export class AnnouncementController {
   @ApiOperation({ summary: 'Delete announcement' })
   async delete(
     @Param('id') id: string,
+    @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.announcementService.delete(id);
+    await this.announcementService.delete(id, user.userId);
     return okResponse(
       'announcements.delete_success',
       null,

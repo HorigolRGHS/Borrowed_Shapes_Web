@@ -22,7 +22,7 @@ const presenceDetailsKey = (sessionId: string) =>
   `user_session_details:${sessionId}`;
 const onlineZsetKey = 'online_users_by_last_active';
 
-import { AuditLogRepository } from '../auth/repositories/audit-log.repository';
+import { AuditService } from '../audit/audit.service';
 import { UserSessionRepository } from './repositories/user-session.repository';
 
 @Injectable()
@@ -30,7 +30,7 @@ export class SessionsService {
   constructor(
     private redis: RedisService,
     private userSessionRepository: UserSessionRepository,
-    private auditLogRepo: AuditLogRepository,
+    private auditService: AuditService,
   ) {}
 
   async getMe(userId: string, platform: string): Promise<SessionMeResponseDto> {
@@ -110,16 +110,12 @@ export class SessionsService {
 
     await this.userSessionRepository.revokeSessionById(dbSessionId);
 
-    const auditLog = this.auditLogRepo.create({
-      userId: this.auditLogRepo
-        .getEntityManager()
-        .getReference(User, requestUserId) as any,
+    await this.auditService.recordStandalone({
+      userId: requestUserId,
       actionType: AuditActionType.REVOKE_SESSION,
       entityName: 'UserSession',
       entityId: dbSessionId,
       ipAddress,
     });
-    await this.auditLogRepo.persistAndFlush(auditLog);
-    void auditLog;
   }
 }

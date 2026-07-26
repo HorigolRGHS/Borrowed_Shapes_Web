@@ -110,4 +110,39 @@ export class PresenceService {
     const onlineIds = Array.from(userMap.keys());
     await this.userOnlineStatusRepository.setOfflineForUsersNotIn(onlineIds);
   }
+
+  async listAllPresence(): Promise<any[]> {
+    const statuses = await this.userOnlineStatusRepository.find(
+      { isOnline: true },
+      { populate: ['userId'] as any },
+    );
+    return statuses.map((s) => ({
+      userId: s.userId.id,
+      email: s.userId.email,
+      displayName: s.userId.displayName,
+      role: s.userId.role,
+      isOnline: s.isOnline,
+      lastOnline: s.lastOnline,
+      onlinePlatforms: s.onlinePlatforms || [],
+    }));
+  }
+
+  async getUserPresence(userId: string): Promise<any> {
+    const status = await this.userOnlineStatusRepository.findOne(
+      { userId: this.em.getReference(User, userId) },
+      { populate: ['userId'] as any },
+    );
+    if (!status) {
+      return { userId, isOnline: false, lastOnline: null, onlinePlatforms: [] };
+    }
+    return {
+      userId: status.userId.id,
+      email: status.userId.email,
+      displayName: status.userId.displayName,
+      role: status.userId.role,
+      isOnline: status.isOnline,
+      lastOnline: status.lastOnline,
+      onlinePlatforms: status.onlinePlatforms || [],
+    };
+  }
 }

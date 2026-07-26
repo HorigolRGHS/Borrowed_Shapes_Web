@@ -11,7 +11,7 @@ import { R2StorageService } from '../storage/r2-storage.service';
 import { FileAssetRepository } from './repositories/file-asset.repository';
 import { DownloadLogRepository } from './repositories/download-log.repository';
 import { DownloadStatsRepository } from './repositories/download-stats.repository';
-import { AuditLogRepository } from '../auth/repositories/audit-log.repository';
+import { AuditService } from '../audit/audit.service';
 import { FileAsset } from '../entities/FileAsset';
 import { DownloadLog } from '../entities/DownloadLog';
 import { DownloadStats } from '../entities/DownloadStats';
@@ -32,7 +32,7 @@ export class DownloadsService {
     private readonly fileAssetRepository: FileAssetRepository,
     private readonly downloadLogRepository: DownloadLogRepository,
     private readonly downloadStatsRepository: DownloadStatsRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditService: AuditService,
     private readonly r2: R2StorageService,
     private readonly configService: ConfigService,
   ) {
@@ -66,10 +66,13 @@ export class DownloadsService {
     const knex = this.fileAssetRepository.getKnex();
 
     // Base query for counting
-    const countQuery = knex('web.FileAsset as f').count('* as total');
+    const countQuery = knex('web.FileAsset as f')
+      .count('* as total')
+      .whereNot('f.fileVersion', 'like', 'wiki/%'); // knex auto-quotes if passed as column argument
 
     // Base query for data
     const dataQuery = knex('web.FileAsset as f')
+      .whereNot('f.fileVersion', 'like', 'wiki/%') // knex auto-quotes if passed as column argument
       .select([
         'f.id',
         'f.fileName',
@@ -140,9 +143,11 @@ export class DownloadsService {
   }
 
   private async getLatestVersionId(): Promise<string | null> {
-    const latest = await this.em
+    const latest = await this.fileAssetRepository
+      .getEntityManager()
       .createQueryBuilder(FileAsset, 'f')
       .select('id')
+      .andWhere('f."fileVersion" NOT LIKE \'wiki/%\'')
       .orderBy({ uploadedAt: 'DESC' })
       .limit(1)
       .getSingleResult();
@@ -155,8 +160,10 @@ export class DownloadsService {
 
     if (!active) {
       // Fallback to latest
-      active = await this.em
+      active = await this.fileAssetRepository
+        .getEntityManager()
         .createQueryBuilder(FileAsset, 'f')
+        .andWhere('f."fileVersion" NOT LIKE \'wiki/%\'')
         .orderBy({ uploadedAt: 'DESC' })
         .limit(1)
         .getSingleResult();
@@ -177,45 +184,52 @@ export class DownloadsService {
   }
 
   async setActiveVersion(id: string, adminUser: { userId: string }) {
-    return await this.em.transactional(async (em) => {
-      const target = await this.fileAssetRepository.txFindOneOrFail(em, { id });
-      const previousActive = await this.fileAssetRepository.txFindOne(em, {
-        isActive: true,
-      });
-
-      if (previousActive?.id !== target.id) {
-        // Set all to false
-        await this.fileAssetRepository.txNativeUpdate(
-          em,
-          {},
-          { isActive: false },
-        );
-
-        // Set target to true
-        target.isActive = true;
-        await this.fileAssetRepository.txPersistAndFlush(em, target);
-
-        // Record AuditLog
-        const log = this.auditLogRepository.txCreate(em, {
-          userId: adminUser.userId,
-          actionType: AuditActionType.UPDATE,
-          entityName: 'FileAsset',
-          entityId: target.id,
-          oldValue: previousActive
-            ? { id: previousActive.id, fileVersion: previousActive.fileVersion }
-            : null,
-          newValue: { id: target.id, fileVersion: target.fileVersion },
+    return await this.fileAssetRepository
+      .getEntityManager()
+      .transactional(async (em) => {
+        const target = await this.fileAssetRepository.txFindOneOrFail(em, {
+          id,
+          fileVersion: { $re: '^((?!wiki/).)*$' }, // fallback to regex for findOne
         });
-        await this.auditLogRepository.txPersistAndFlush(em, log);
-      }
+        const previousActive = await this.fileAssetRepository.txFindOne(em, {
+          isActive: true,
+        });
 
-      return {
-        id: target.id,
-        fileName: target.fileName,
-        fileVersion: target.fileVersion,
-        isActive: target.isActive,
-      };
-    });
+        if (previousActive?.id !== target.id) {
+          // Set all to false
+          await this.fileAssetRepository.txNativeUpdate(
+            em,
+            {},
+            { isActive: false },
+          );
+
+          // Set target to true
+          target.isActive = true;
+          await this.fileAssetRepository.txPersistAndFlush(em, target);
+
+          // Record AuditLog
+          this.auditService.recordInTransaction(em, {
+            userId: adminUser.userId,
+            actionType: AuditActionType.UPDATE,
+            entityName: 'FileAsset',
+            entityId: target.id,
+            oldValue: previousActive
+              ? {
+                  id: previousActive.id,
+                  fileVersion: previousActive.fileVersion,
+                }
+              : undefined,
+            newValue: { id: target.id, fileVersion: target.fileVersion },
+          });
+        }
+
+        return {
+          id: target.id,
+          fileName: target.fileName,
+          fileVersion: target.fileVersion,
+          isActive: target.isActive,
+        };
+      });
   }
 
   // ─── 2. Request download ─────────────────────────────────
@@ -230,7 +244,10 @@ export class DownloadsService {
     userId: string | null,
     clientIp: string,
   ) {
-    const file = await this.fileAssetRepository.findOne({ id: fileAssetId });
+    const file = await this.fileAssetRepository.findOne({ 
+        id: fileAssetId,
+        fileVersion: { $re: '^((?!wiki/).)*$' },
+    });
     if (!file) {
       throw new NotFoundException('downloads.version_not_found');
     }
@@ -247,24 +264,41 @@ export class DownloadsService {
       file.fileName,
     );
 
-    // Record download log (only for authenticated users)
-    if (userId) {
-      const log = this.downloadLogRepository.create({
-        userId: this.em.getReference(User, userId),
-        fileAssetId: this.em.getReference(FileAsset, file.id),
-        // bytesSent = file.fileSize for schema compatibility only.
-        // This is NOT actual streamed bytes — it is the file size snapshot
-        // at the time the signed URL was created.
-        bytesSent: file.fileSize,
-        clientIp,
-      });
-      this.downloadLogRepository.persist(log);
-    }
+    // Record download log (for both Guest and Authenticated users)
+    const log = this.downloadLogRepository.create({
+      userId: userId
+        ? this.fileAssetRepository.getEntityManager().getReference(User, userId)
+        : null,
+      fileAssetId: this.fileAssetRepository
+        .getEntityManager()
+        .getReference(FileAsset, file.id),
+      // bytesSent = file.fileSize for schema compatibility only.
+      // This is NOT actual streamed bytes — it is the file size snapshot
+      // at the time the signed URL was created.
+      bytesSent: file.fileSize,
+      clientIp,
+    });
+    this.downloadLogRepository.persist(log);
 
     // Upsert download stats for today
     await this.upsertDownloadStats(file);
 
+    // Flush to DB to get log.id
     await this.downloadLogRepository.flush();
+
+    // Record AuditLog
+    await this.auditService.recordStandalone({
+      actionType: AuditActionType.CREATE,
+      userId: userId || null,
+      entityName: 'DownloadLog',
+      entityId: log.id,
+      ipAddress: clientIp,
+      newValue: {
+        fileAssetId: file.id,
+        fileVersion: file.fileVersion,
+        fileName: file.fileName,
+      },
+    });
 
     return {
       downloadUrl,
@@ -279,7 +313,9 @@ export class DownloadsService {
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
     const existing = await this.downloadStatsRepository.findOne({
-      fileAssetId: this.em.getReference(FileAsset, file.id),
+      fileAssetId: this.fileAssetRepository
+        .getEntityManager()
+        .getReference(FileAsset, file.id),
       date: today,
     });
 
@@ -290,7 +326,9 @@ export class DownloadsService {
       existing.totalBytesSent = existing.totalBytesSent + file.fileSize;
     } else {
       const stats = this.downloadStatsRepository.create({
-        fileAssetId: this.em.getReference(FileAsset, file.id),
+        fileAssetId: this.fileAssetRepository
+          .getEntityManager()
+          .getReference(FileAsset, file.id),
         date: today,
         downloadCount: 1n,
         totalBytesSent: file.fileSize,
@@ -314,7 +352,11 @@ export class DownloadsService {
 
     const qb = this.downloadLogRepository.createQueryBuilder('dl');
     qb.leftJoinAndSelect('dl.fileAssetId', 'f');
-    qb.andWhere({ userId: this.em.getReference(User, userId) });
+    qb.andWhere({
+      userId: this.fileAssetRepository
+        .getEntityManager()
+        .getReference(User, userId),
+    });
 
     if (search) {
       qb.andWhere({ 'f.fileName': { $ilike: `%${search}%` } });
@@ -437,7 +479,7 @@ export class DownloadsService {
   }
 
   // ─── 5. Confirm upload (Admin) ───────────────────────────
-  async confirmUpload(dto: ConfirmUploadDto) {
+  async confirmUpload(adminId: string, dto: ConfirmUploadDto) {
     const fileVersion = dto.fileVersion?.trim();
     if (!fileVersion) {
       throw new BadRequestException('Invalid version');
@@ -516,6 +558,20 @@ export class DownloadsService {
       throw error;
     }
 
+    // AUDIT LOGGING (After flush because id is database-generated via gen_random_uuid)
+    await this.auditService.recordStandalone({
+      actionType: AuditActionType.CREATE,
+      userId: adminId,
+      entityName: 'FileAsset',
+      entityId: fileAsset.id,
+      newValue: {
+        operation: 'CONFIRM_UPLOAD',
+        version: fileAsset.fileVersion,
+        fileName: fileAsset.fileName,
+        fileSize: Number(fileAsset.fileSize),
+      },
+    });
+
     return {
       id: fileAsset.id,
       fileName: fileAsset.fileName,
@@ -524,5 +580,54 @@ export class DownloadsService {
       mimeType: fileAsset.mimeType,
       uploadedAt: fileAsset.uploadedAt,
     };
+  }
+
+  // ─── 6. Delete Version (Admin) ───────────────────────────
+  async deleteVersion(id: string, adminId: string) {
+    return await this.fileAssetRepository
+      .getEntityManager()
+      .transactional(async (em) => {
+        const fileAsset = await this.fileAssetRepository.txFindOneOrFail(em, {
+          id,
+          fileVersion: { $re: '^((?!wiki/).)*$' },
+        });
+
+        if (fileAsset.isActive) {
+          throw new BadRequestException(
+            'downloads.cannot_delete_active_version',
+          );
+        }
+
+        this.auditService.recordInTransaction(em, {
+          userId: adminId,
+          actionType: AuditActionType.DELETE,
+          entityName: 'FileAsset',
+          entityId: fileAsset.id,
+          oldValue: {
+            fileVersion: fileAsset.fileVersion,
+            fileName: fileAsset.fileName,
+            fileSize: Number(fileAsset.fileSize),
+            filePath: fileAsset.filePath,
+          },
+        });
+
+        // Remove from DB (DownloadStats and DownloadLog will cascade if foreign key is set up correctly)
+        await em.removeAndFlush(fileAsset);
+
+        // Attempt to delete from R2 storage
+        try {
+          await this.r2.deleteObject(fileAsset.filePath);
+        } catch (err) {
+          this.logger.error(
+            `Failed to delete object from R2: ${fileAsset.filePath}`,
+            err,
+          );
+        }
+
+        return {
+          id: fileAsset.id,
+          fileVersion: fileAsset.fileVersion,
+        };
+      });
   }
 }

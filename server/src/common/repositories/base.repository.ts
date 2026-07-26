@@ -65,10 +65,6 @@ export abstract class BaseRepository<
     await em.flush();
   }
 
-  createQueryBuilder(alias: string) {
-    return this.getEntityManager().createQueryBuilder(this.entityName, alias);
-  }
-
   async executeRaw(sql: string, params: any[] = []): Promise<any> {
     return this.getEntityManager().getConnection().execute(sql, params);
   }

@@ -52,7 +52,7 @@ export class CreateForumDto {
     example: 'https://example.com/image.jpg',
   })
   @IsOptional()
-  @IsUrl({}, { message: 'forums.invalid_image_url' })
+  @IsString({ message: 'forums.invalid_image_url' })
   imageUrl?: string;
 
   @ApiPropertyOptional({

@@ -130,6 +130,10 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
       toast.error(t("profile.edit.validation.display_name_too_short"));
       return;
     }
+    if (displayName.trim().length > 50) {
+      toast.error(t("profile.edit.validation.display_name_too_long") || "Name must be under 50 characters");
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -223,16 +227,26 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
 
           {/* Display Name */}
           <div className="grid gap-2">
-            <Label htmlFor="displayName" className="text-foreground dark:text-white font-medium">
-              {t("profile.edit.display_name")}
-            </Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="displayName" className="text-foreground dark:text-white font-medium">
+                {t("profile.edit.display_name")}
+              </Label>
+              <span className={`text-xs ${displayName.length >= 50 ? 'text-red-500 font-bold' : 'text-muted-foreground dark:text-gray-500'}`}>
+                {displayName.length}/50
+              </span>
+            </div>
             <Input
               id="displayName"
               value={displayName}
+              maxLength={50}
               onChange={(e) => setDisplayName(e.target.value)}
               disabled={isSaving}
               placeholder={t("profile.edit.display_name_placeholder")}
-              className="bg-background dark:bg-white/5 border-border dark:border-[#1e1e3a] focus-visible:ring-amber-500/50"
+              className={`bg-background dark:bg-white/5 focus-visible:ring-amber-500/50 transition-colors ${
+                displayName.length >= 50
+                  ? 'border-red-500/50 dark:border-red-500/50 focus-visible:ring-red-500/50'
+                  : 'border-border dark:border-[#1e1e3a]'
+              }`}
             />
           </div>
 

@@ -9,9 +9,14 @@ import { AnnouncementRepository } from './repositories/announcements.repository'
 import { Announcement } from '../entities/Announcement';
 import { User } from '../entities/User';
 import { AuthModule } from '../auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([Announcement, User]), AuthModule],
+  imports: [
+    MikroOrmModule.forFeature([Announcement, User]),
+    AuthModule,
+    AuditModule,
+  ],
   controllers: [AnnouncementController],
   providers: [
     AnnouncementService,

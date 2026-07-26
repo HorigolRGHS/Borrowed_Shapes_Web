@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { okResponse } from '../common/dto/api-response.dto';
+import { randomUUID } from 'node:crypto';
 import { GameProfile } from '../entities/GameProfile';
 import { SeasonTeam } from '../entities/SeasonTeam';
 import { SeasonTeamMember } from '../entities/SeasonTeamMember';
@@ -17,7 +18,10 @@ import { JoinSeasonTeamDto } from './dto/join-season-team.dto';
 import { KickSeasonTeamMemberDto } from './dto/kick-season-team-member.dto';
 import { SeasonTeamResponseDto } from './dto/season-team-response.dto';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 const TEAM_MAX_MEMBERS = 5; // Leader + tối đa 4 người join
 
@@ -27,6 +31,7 @@ export class SeasonTeamService {
     private readonly seasonTeamRepository: SeasonTeamRepository,
     private readonly seasonTeamMemberRepository: SeasonTeamMemberRepository,
     private readonly gameProfileRepository: GameProfileRepository,
+    private readonly auditService: AuditService,
   ) {}
 
   async createTeam(userId: string, dto: CreateSeasonTeamDto, path: string) {
@@ -42,6 +47,7 @@ export class SeasonTeamService {
     }
 
     const team = this.seasonTeamRepository.create({
+      id: randomUUID(),
       seasonMonth,
       name: dto.name?.trim() || undefined,
       leaderId: profile,
@@ -51,6 +57,17 @@ export class SeasonTeamService {
       seasonMonth,
       gameProfileId: profile,
       teamId: team,
+    });
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'SeasonTeam',
+      entityId: team.id,
+      newValue: {
+        name: team.name,
+        seasonMonth: team.seasonMonth,
+      },
     });
 
     await this.seasonTeamRepository.flush();
@@ -97,6 +114,17 @@ export class SeasonTeamService {
       gameProfileId: profile,
       teamId: team,
     });
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'SeasonTeam',
+      entityId: team.id,
+      newValue: {
+        newMemberId: profile.id,
+      },
+    });
+
     await this.seasonTeamRepository.flush();
 
     const payload = await this.buildTeamResponse(team.id, seasonMonth);
@@ -166,6 +194,16 @@ export class SeasonTeamService {
       throw new NotFoundException('season_team.member_not_found');
     }
 
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'SeasonTeam',
+      entityId: team.id,
+      oldValue: {
+        kickedMemberId: dto.gameProfileId,
+      },
+    });
+
     await this.seasonTeamMemberRepository.removeAndFlush(targetMember);
     return okResponse<null>('season_team.kicked_success', null, path);
   }
@@ -184,6 +222,16 @@ export class SeasonTeamService {
       throw new BadRequestException('season_team.leader_cannot_leave');
     }
 
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'SeasonTeam',
+      entityId: myMember.teamId.id,
+      oldValue: {
+        leftMemberId: profile.id,
+      },
+    });
+
     await this.seasonTeamMemberRepository.removeAndFlush(myMember);
     return okResponse<null>('season_team.left_success', null, path);
   }
@@ -201,6 +249,16 @@ export class SeasonTeamService {
     if (team.leaderId.id !== profile.id) {
       throw new ForbiddenException('common.forbidden');
     }
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'SeasonTeam',
+      entityId: team.id,
+      oldValue: {
+        name: team.name,
+      },
+    });
 
     await this.seasonTeamRepository.removeAndFlush(team);
     return okResponse<null>('season_team.deleted_success', null, path);
@@ -280,7 +338,7 @@ export class SeasonTeamService {
           ) {
             return null;
           }
-          return equipped.badgeImageUrl;
+          return getProxyMediaUrl(equipped.badgeImageUrl);
         })(),
         joinedAt: m.joinedAt,
         isLeader: m.gameProfileId.id === team.leaderId.id,

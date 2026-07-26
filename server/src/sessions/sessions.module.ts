@@ -3,9 +3,10 @@ import { SessionsController } from './sessions.controller';
 import { SessionsService } from './sessions.service';
 import { UserSessionRepository } from './repositories/user-session.repository';
 import { AuthModule } from '../auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [forwardRef(() => AuthModule)],
+  imports: [forwardRef(() => AuthModule), AuditModule],
   controllers: [SessionsController],
   providers: [SessionsService, UserSessionRepository],
   exports: [SessionsService, UserSessionRepository],

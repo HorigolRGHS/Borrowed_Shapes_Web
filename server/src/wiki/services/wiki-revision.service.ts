@@ -94,7 +94,7 @@ export class WikiRevisionService {
       throw err;
     }
 
-    await this.audit.log({
+    await this.audit.recordStandalone({
       userId: adminUserId,
       actionType: AuditActionType.CREATE,
       entityName: 'FileAsset',
@@ -189,6 +189,22 @@ export class WikiRevisionService {
         await this.pageRepo.flush();
 
         page.latestRevisionId = revision;
+        this.audit.recordInCurrentUnitOfWork({
+          userId: adminUserId,
+          actionType: AuditActionType.CREATE,
+          entityName: 'WikiPage',
+          entityId: page.id,
+          newValue: {
+            slug: input.slug,
+            slugVi: input.slugVi,
+            title: input.title,
+            titleVi: input.titleVi,
+            firstRevisionId: revision.id,
+            stub: isStub,
+          },
+          ipAddress,
+        });
+
         await this.pageRepo.flush();
 
         return {
@@ -219,22 +235,6 @@ export class WikiRevisionService {
       }
     }
     if (!result) throw new ConflictException('wiki.slug_taken');
-
-    await this.audit.log({
-      userId: adminUserId,
-      actionType: AuditActionType.CREATE,
-      entityName: 'WikiPage',
-      entityId: result.pageId,
-      newValue: {
-        slug: result.slug,
-        slugVi: result.slugVi,
-        title: result.title,
-        titleVi: result.titleVi,
-        firstRevisionId: result.revisionId,
-        stub: isStub,
-      },
-      ipAddress,
-    });
 
     return this.wikiService.getByIdForAdmin(result.pageId);
   }
@@ -349,6 +349,21 @@ export class WikiRevisionService {
         newRevisionId = newRevision.id;
       }
 
+      this.audit.recordInCurrentUnitOfWork({
+        userId: adminUserId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'WikiPage',
+        entityId: page.id,
+        newValue: {
+          fromRevisionId: currentLatestId,
+          toRevisionId: newRevisionId,
+          changedFields: metadataDiff,
+          publishStateChanged: publishStateChanged,
+          forceOverwrite: forceOverwriteApplied,
+        },
+        ipAddress,
+      });
+
       try {
         await this.pageRepo.flush();
       } catch (err) {
@@ -367,23 +382,6 @@ export class WikiRevisionService {
         forceOverwriteApplied,
       };
     });
-
-    if (!result.totalNoop) {
-      await this.audit.log({
-        userId: adminUserId,
-        actionType: AuditActionType.UPDATE,
-        entityName: 'WikiPage',
-        entityId: result.pageId,
-        newValue: {
-          fromRevisionId: result.fromRevisionId,
-          toRevisionId: result.toRevisionId,
-          changedFields: result.metadataDiff,
-          publishStateChanged: result.publishStateChanged,
-          forceOverwrite: result.forceOverwriteApplied,
-        },
-        ipAddress,
-      });
-    }
 
     return this.wikiService.getByIdForAdmin(pageId);
   }
@@ -436,6 +434,21 @@ export class WikiRevisionService {
       await this.pageRepo.flush();
 
       page.latestRevisionId = newRevision;
+
+      this.audit.recordInCurrentUnitOfWork({
+        userId: adminUserId,
+        actionType: AuditActionType.UPDATE,
+        entityName: 'WikiPage',
+        entityId: page.id,
+        newValue: {
+          action: 'rollback',
+          targetRevisionId: target.id,
+          fromRevisionId: currentLatestId,
+          newRevisionId: newRevision.id,
+        },
+        ipAddress,
+      });
+
       try {
         await this.pageRepo.flush();
       } catch (err) {
@@ -452,22 +465,6 @@ export class WikiRevisionService {
         targetRevisionId: target.id,
       };
     });
-
-    if (!result.noop) {
-      await this.audit.log({
-        userId: adminUserId,
-        actionType: AuditActionType.UPDATE,
-        entityName: 'WikiPage',
-        entityId: result.pageId,
-        newValue: {
-          action: 'rollback',
-          targetRevisionId: result.targetRevisionId,
-          fromRevisionId: result.fromRevisionId,
-          newRevisionId: result.newRevisionId,
-        },
-        ipAddress,
-      });
-    }
 
     return this.wikiService.getByIdForAdmin(pageId);
   }
@@ -508,17 +505,16 @@ export class WikiRevisionService {
           : null,
       };
 
-      await this.pageRepo.removeAndFlush(page);
-      return { pageId: page.id, oldValue };
-    });
+      this.audit.recordInCurrentUnitOfWork({
+        userId: adminUserId,
+        actionType: AuditActionType.DELETE,
+        entityName: 'WikiPage',
+        entityId: page.id,
+        oldValue,
+        ipAddress,
+      });
 
-    await this.audit.log({
-      userId: adminUserId,
-      actionType: AuditActionType.DELETE,
-      entityName: 'WikiPage',
-      entityId: snapshot.pageId,
-      oldValue: snapshot.oldValue,
-      ipAddress,
+      await this.pageRepo.removeAndFlush(page);
     });
   }
 
@@ -539,12 +535,8 @@ export class WikiRevisionService {
         throw new BadRequestException('wiki.cannot_publish_empty');
       }
       page.isPublished = true;
-      await this.pageRepo.flush();
-      return { noop: false };
-    });
 
-    if (!result.noop) {
-      await this.audit.log({
+      this.audit.recordInCurrentUnitOfWork({
         userId: adminUserId,
         actionType: AuditActionType.UPDATE,
         entityName: 'WikiPage',
@@ -552,7 +544,10 @@ export class WikiRevisionService {
         newValue: { action: 'publish' },
         ipAddress,
       });
-    }
+
+      await this.pageRepo.flush();
+      return { noop: false };
+    });
 
     return this.wikiService.getByIdForAdmin(pageId);
   }
@@ -567,12 +562,8 @@ export class WikiRevisionService {
       if (!page) throw new NotFoundException('wiki.not_found');
       if (!page.isPublished) return { noop: true };
       page.isPublished = false;
-      await this.pageRepo.flush();
-      return { noop: false };
-    });
 
-    if (!result.noop) {
-      await this.audit.log({
+      this.audit.recordInCurrentUnitOfWork({
         userId: adminUserId,
         actionType: AuditActionType.UPDATE,
         entityName: 'WikiPage',
@@ -580,7 +571,10 @@ export class WikiRevisionService {
         newValue: { action: 'unpublish' },
         ipAddress,
       });
-    }
+
+      await this.pageRepo.flush();
+      return { noop: false };
+    });
 
     return this.wikiService.getByIdForAdmin(pageId);
   }

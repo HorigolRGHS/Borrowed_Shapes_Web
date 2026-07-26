@@ -1,12 +1,13 @@
 import { ForbiddenException } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { User } from '../entities/User';
-import { AuditLog } from '../entities/AuditLog';
+import { AuditService } from '../audit/audit.service';
 import { AuditActionType } from '../entities/AuditActionType';
 
 export async function ensureAccountActive(
   user: User,
   em: EntityManager,
+  auditService: AuditService,
 ): Promise<void> {
   if (user.deletedAt) {
     throw new ForbiddenException({
@@ -31,9 +32,9 @@ export async function ensureAccountActive(
       user.banReason = undefined;
       user.banExpiresAt = undefined;
 
-      const auditLog = em.create(AuditLog, {
-        userId: null,
+      await auditService.recordInCurrentUnitOfWork({
         actionType: AuditActionType.UNBAN_USER,
+        userId: user.id,
         entityName: 'User',
         entityId: user.id,
         oldValue: {
@@ -43,17 +44,15 @@ export async function ensureAccountActive(
           banExpiresAt: oldBanExpiresAt,
         },
         newValue: {
+          operation: 'AUTO_UNBAN',
           isBanned: false,
           bannedAt: null,
           banReason: null,
           banExpiresAt: null,
-          auto: true,
-          reason: 'BAN_EXPIRED_AUTO_UNBAN',
         },
-        ipAddress: null,
+        ipAddress: null, // As there's no IP context available here currently
       });
 
-      em.persist(auditLog);
       await em.flush();
       return;
     }
@@ -90,7 +89,8 @@ export function getProxyAvatarUrl(
     'https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev';
 
   if (imgUrl.startsWith(r2Base) || imgUrl.startsWith('avatars/')) {
-    const version = updatedAt.getTime();
+    const d = typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt;
+    const version = d.getTime();
     return `/api/account/avatar/${userId}?v=${version}`;
   }
 

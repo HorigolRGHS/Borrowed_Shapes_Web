@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
 import { Achievement } from '../entities/Achievement';
+import { getProxyMediaUrl } from '../storage/media-utils';
 import { UserAchievement } from '../entities/UserAchievement';
 import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
@@ -14,6 +15,8 @@ import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'node:crypto';
 import { AchievementRepository } from './repositories/achievements.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 const MIME_EXT_MAP: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -51,6 +54,7 @@ export class AchievementService {
     private readonly achievementRepository: AchievementRepository,
     private readonly r2: R2StorageService,
     private readonly config: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(): Promise<Achievement[]> {
@@ -105,7 +109,7 @@ export class AchievementService {
     return this.achievementRepository.findUserAchievements(gameProfileId);
   }
 
-  async create(dto: CreateAchievementDto): Promise<null> {
+  async create(dto: CreateAchievementDto, authorId?: string): Promise<null> {
     const existing = await this.achievementRepository.findOneByCriteria(
       dto.criteriaCode,
     );
@@ -115,14 +119,30 @@ export class AchievementService {
 
     const achievement = this.achievementRepository.createAchievement({
       ...dto,
-      id: dto.id || undefined,
+      id: dto.id || randomUUID(),
       seasonMonth: dto.seasonMonth ? `${dto.seasonMonth}-01` : null,
     });
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'Achievement',
+      entityId: achievement.id,
+      newValue: {
+        name: achievement.name,
+        criteriaCode: achievement.criteriaCode,
+      },
+    });
+
     await this.achievementRepository.persistAndFlush(achievement);
     return null;
   }
 
-  async update(id: string, dto: UpdateAchievementDto): Promise<null> {
+  async update(
+    id: string,
+    dto: UpdateAchievementDto,
+    authorId?: string,
+  ): Promise<null> {
     const achievement = await this.findOne(id);
     if (dto.criteriaCode) {
       const existing =
@@ -139,11 +159,23 @@ export class AchievementService {
       ...updateData,
       seasonMonth: dto.seasonMonth ? `${dto.seasonMonth}-01` : null,
     });
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'Achievement',
+      entityId: achievement.id,
+      newValue: {
+        name: achievement.name,
+        criteriaCode: achievement.criteriaCode,
+      },
+    });
+
     await this.achievementRepository.flush();
     return null;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, authorId?: string): Promise<void> {
     const achievement = await this.findOne(id);
 
     // Set equippedAchievementId to null for any game profile that equipped it
@@ -166,6 +198,18 @@ export class AchievementService {
         }
       }
     }
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'Achievement',
+      entityId: achievement.id,
+      oldValue: {
+        name: achievement.name,
+        criteriaCode: achievement.criteriaCode,
+      },
+    });
+
     await this.achievementRepository.removeAndFlush(achievement);
   }
 
@@ -195,7 +239,7 @@ export class AchievementService {
     return {
       uploadUrl,
       key,
-      publicUrl: `${publicBaseUrl}/${key}`,
+      publicUrl: getProxyMediaUrl(key) as string,
       method: 'PUT' as const,
       headers: {
         'Content-Type': dto.mimeType,
@@ -311,7 +355,7 @@ export class AchievementService {
         name: row.name,
         description: row.description,
         criteriaCode: row.criteriaCode,
-        badgeImageUrl: row.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(row.badgeImageUrl),
         type: row.type,
         seasonMonth: row.seasonMonth,
         expiresAt: expiresAt,

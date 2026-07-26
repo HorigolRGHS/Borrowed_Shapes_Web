@@ -1,7 +1,10 @@
 import { BaseRepository } from '../../common/repositories/base.repository';
+import { getProxyAvatarUrl } from '../../auth/auth-utils';
+import { getProxyMediaUrl } from '../../storage/media-utils';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { ForumComment } from '../../entities/ForumComment';
+import { ForumCommentVote } from '../../entities/ForumCommentVote';
 
 @Injectable()
 export class ForumCommentRepository extends BaseRepository<ForumComment> {
@@ -27,7 +30,7 @@ export class ForumCommentRepository extends BaseRepository<ForumComment> {
         c."id", c."content", c."parentId", c."score", c."isDeleted",
         c."createdAt", c."updatedAt",
         u."id" AS "authorId", u."displayName" AS "authorName",
-        u."imgUrl" AS "authorImg", u."role" AS "authorRole", u."createdAt" AS "authorCreatedAt",
+        u."imgUrl" AS "authorImg", u."role" AS "authorRole", u."createdAt" AS "authorCreatedAt", u."updatedAt" AS "authorUpdatedAt",
         ach."badgeImageUrl",
         p."content" AS "parentContent",
         (SELECT COUNT(*)::int FROM web."ForumComment" r WHERE r."parentId" = c."id") AS "repliesCount"
@@ -59,8 +62,8 @@ export class ForumCommentRepository extends BaseRepository<ForumComment> {
         : {
             id: row.authorId,
             displayName: row.authorName || 'Deleted User',
-            imgUrl: row.authorImg,
-            badgeImageUrl: row.badgeImageUrl,
+            imgUrl: getProxyAvatarUrl(row.authorImg, row.authorId, row.authorUpdatedAt),
+            badgeImageUrl: getProxyMediaUrl(row.badgeImageUrl),
             role: row.authorRole,
             createdAt: row.authorCreatedAt,
           },
@@ -68,5 +71,38 @@ export class ForumCommentRepository extends BaseRepository<ForumComment> {
       hasReplies: Number(row.repliesCount || 0) > 0,
       userVote: row.userVote ? Number(row.userVote) : null,
     }));
+  }
+}
+
+@Injectable()
+export class ForumCommentVoteRepository extends BaseRepository<ForumCommentVote> {
+  constructor(em: EntityManager) {
+    super(em, ForumCommentVote);
+  }
+
+  async getUserVote(userId: string, commentId: string): Promise<number | null> {
+    const res = await this.em.execute(
+      `select "value" from web."ForumCommentVote" where "userId" = ? and "commentId" = ?`,
+      [userId, commentId],
+    );
+    return res[0]?.value ?? null;
+  }
+
+  async removeUserVote(userId: string, commentId: string): Promise<void> {
+    await this.em.execute(
+      `delete from web."ForumCommentVote" where "userId" = ? and "commentId" = ?`,
+      [userId, commentId],
+    );
+  }
+
+  async updateUserVote(
+    userId: string,
+    commentId: string,
+    value: number | string,
+  ): Promise<void> {
+    await this.em.execute(
+      `update web."ForumCommentVote" set "value" = ? where "userId" = ? and "commentId" = ?`,
+      [value, userId, commentId],
+    );
   }
 }

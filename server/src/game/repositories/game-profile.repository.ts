@@ -13,7 +13,7 @@ export class GameProfileRepository extends BaseRepository<GameProfile> {
     await this.getEntityManager().flush();
   }
 
-  async persist(entity: any): void {
+  async persist(entity: any): Promise<void> {
     this.getEntityManager().persist(entity);
   }
 

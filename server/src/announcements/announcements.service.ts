@@ -16,8 +16,9 @@ import {
   AnnouncementAdminListItemDto,
   AnnouncementAdminDetailDto,
 } from './dto/announcements-response.dto';
-import { escapeLike } from '../common/utils/sql-like';
 import { AnnouncementRepository } from './repositories/announcements.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -34,6 +35,7 @@ function parseLang(raw?: string): Lang {
 export class AnnouncementService {
   constructor(
     private readonly announcementRepository: AnnouncementRepository,
+    private readonly auditService: AuditService,
   ) {}
 
   // --- Public (user-facing) ---
@@ -154,10 +156,27 @@ export class AnnouncementService {
 
     await this.announcementRepository.persistAndFlush(announcement);
 
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'Announcement',
+      entityId: announcement.id,
+      newValue: {
+        title: announcement.title,
+        type: announcement.type,
+      },
+    });
+
+    await this.announcementRepository.flush();
+
     return null;
   }
 
-  async update(id: string, dto: UpdateAnnouncementDto): Promise<null> {
+  async update(
+    id: string,
+    dto: UpdateAnnouncementDto,
+    authorId?: string,
+  ): Promise<null> {
     const announcement = await this.announcementRepository.findOne(
       { id },
       {
@@ -195,16 +214,39 @@ export class AnnouncementService {
       publishedAt,
     });
 
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'Announcement',
+      entityId: announcement.id,
+      newValue: {
+        title: announcement.title,
+        type: announcement.type,
+      },
+    });
+
     await this.announcementRepository.flush();
 
     return null;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, authorId?: string): Promise<void> {
     const announcement = await this.announcementRepository.findOne({ id });
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
     }
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'Announcement',
+      entityId: announcement.id,
+      oldValue: {
+        title: announcement.title,
+        type: announcement.type,
+      },
+    });
+
     await this.announcementRepository.removeAndFlush(announcement);
   }
 

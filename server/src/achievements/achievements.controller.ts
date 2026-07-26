@@ -41,6 +41,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { getProxyMediaUrl } from '../storage/media-utils';
 
 @ApiTags('Achievements')
 @Roles('USER', 'ADMIN')
@@ -85,7 +86,7 @@ export class AchievementController {
         name: a.name,
         description: a.description,
         criteriaCode: a.criteriaCode,
-        badgeImageUrl: a.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(a.badgeImageUrl) ?? '',
         type: a.type,
         seasonMonth: a.seasonMonth,
         expiresAt: a.expiresAt,
@@ -130,7 +131,7 @@ export class AchievementController {
         name: a.name,
         description: a.description,
         criteriaCode: a.criteriaCode,
-        badgeImageUrl: a.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(a.badgeImageUrl) ?? '',
         type: a.type,
         seasonMonth: a.seasonMonth,
         expiresAt: a.expiresAt,
@@ -177,7 +178,7 @@ export class AchievementController {
         name: ua.achievementId.name,
         description: ua.achievementId.description,
         criteriaCode: ua.achievementId.criteriaCode,
-        badgeImageUrl: ua.achievementId.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(ua.achievementId.badgeImageUrl) ?? '',
         type: ua.achievementId.type,
         seasonMonth: ua.achievementId.seasonMonth,
         expiresAt: ua.achievementId.expiresAt,
@@ -248,7 +249,7 @@ export class AchievementController {
       name: achievement.name,
       description: achievement.description,
       criteriaCode: achievement.criteriaCode,
-      badgeImageUrl: achievement.badgeImageUrl,
+      badgeImageUrl: getProxyMediaUrl(achievement.badgeImageUrl) as string,
       type: achievement.type,
       seasonMonth: achievement.seasonMonth,
       expiresAt: achievement.expiresAt,
@@ -336,7 +337,7 @@ export class AchievementController {
     @Body() dto: CreateAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.create(dto);
+    await this.achievementService.create(dto, user.userId);
     return okResponse(
       'achievements.create_success',
       null,
@@ -355,7 +356,7 @@ export class AchievementController {
     @Body() dto: UpdateAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.update(id, dto);
+    await this.achievementService.update(id, dto, user.userId);
     return okResponse(
       'achievements.update_success',
       null,
@@ -372,7 +373,7 @@ export class AchievementController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.delete(id);
+    await this.achievementService.delete(id, user.userId);
     return okResponse(
       'achievements.delete_success',
       null,

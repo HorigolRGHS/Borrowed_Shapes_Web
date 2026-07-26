@@ -7,7 +7,7 @@ import {
 } from '@mikro-orm/postgresql';
 import { Announcement } from '../../entities/Announcement';
 import { User } from '../../entities/User';
-import { ListAnnouncementsQueryDto } from './dto/announcements-response.dto';
+import { ListAnnouncementsQueryDto } from '../dto/announcements-response.dto';
 import { escapeLike } from '../../common/utils/sql-like';
 
 function clamp(n: number, min: number, max: number): number {

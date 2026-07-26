@@ -23,15 +23,25 @@ import {
   ThreadImageUploadResponseDto,
 } from './dto/thread-image-upload.dto';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
-import { ForumThreadRepository } from './repositories/forums.repository';
+import {
+  ForumThreadRepository,
+  ForumThreadVoteRepository,
+} from './repositories/forums.repository';
+import { ForumCategoryRepository } from '../categories/repositories/categories.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 @Injectable()
 export class ForumService {
   constructor(
     private readonly threadRepository: ForumThreadRepository,
+    private readonly categoryRepository: ForumCategoryRepository,
+    private readonly threadVoteRepository: ForumThreadVoteRepository,
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   async list(
@@ -77,13 +87,13 @@ export class ForumService {
         isPinned: row.isPinned,
         postType: row.postType,
         status: row.status,
-        imgUrl: row.imageUrl,
+        imgUrl: getProxyMediaUrl(row.imageUrl),
         id: row.id,
         slug: row.slug,
         author: {
           id: row.authorId,
           displayName: row.authorName,
-          imgUrl: row.authorAvatar,
+          imgUrl: getProxyAvatarUrl(row.authorAvatar, row.authorId, row.authorUpdatedAt),
           role: row.authorRole,
           createdAt: row.authorCreatedAt,
           badgeImageUrl: (() => {
@@ -100,7 +110,7 @@ export class ForumService {
             ) {
               return null;
             }
-            return row.authorBadgeImageUrl;
+            return getProxyMediaUrl(row.authorBadgeImageUrl);
           })(),
         },
         category: {
@@ -171,15 +181,10 @@ export class ForumService {
 
     let userVote: number | null = null;
     if (currentUserId) {
-      const voteRows = await this.threadRepository
-        .getEntityManager()
-        .execute(
-          `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
-          [currentUserId, thread.id],
-        );
-      if (voteRows && voteRows.length > 0) {
-        userVote = Number(voteRows[0].value);
-      }
+      userVote = await this.threadVoteRepository.getUserVote(
+        currentUserId,
+        thread.id,
+      );
     }
 
     const badgeImageUrl =
@@ -191,7 +196,7 @@ export class ForumService {
       title: thread.title,
       slug: thread.slug,
       content: thread.content,
-      imageUrl: thread.imageUrl,
+      imageUrl: getProxyMediaUrl(thread.imageUrl),
       score: thread.score,
       viewCount: thread.viewCount,
       isPinned: thread.isPinned,
@@ -204,8 +209,8 @@ export class ForumService {
       author: {
         id: thread.authorId.id,
         displayName: thread.authorId.displayName,
-        imgUrl: thread.authorId.imgUrl,
-        badgeImageUrl,
+        imgUrl: getProxyAvatarUrl(thread.authorId.imgUrl, thread.authorId.id, thread.authorId.updatedAt),
+        badgeImageUrl: getProxyMediaUrl(badgeImageUrl),
         role: thread.authorId.role,
         createdAt: thread.authorId.createdAt,
       },
@@ -243,9 +248,9 @@ export class ForumService {
       .findOne(User, { id: authorId });
     if (!author) throw new BadRequestException('forums.invalid_author');
 
-    const category = await this.threadRepository
-      .getEntityManager()
-      .findOne(ForumCategory, { id: dto.categoryId });
+    const category = await this.categoryRepository.findOne({
+      id: dto.categoryId,
+    });
     if (!category) throw new BadRequestException('forums.category_not_found');
     if (category.isOfficial && !isAdmin) {
       throw new ForbiddenException('forums.category_official_admin_only');
@@ -277,7 +282,19 @@ export class ForumService {
       updatedAt: now,
     });
 
-    await this.threadRepository.getEntityManager().persistAndFlush(thread);
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'ForumThread',
+      entityId: thread.id,
+      newValue: {
+        title: thread.title,
+        categoryId: category.id,
+        content: thread.content,
+      },
+    });
+
+    await this.threadRepository.persistAndFlush(thread);
     return null;
   }
 
@@ -294,7 +311,7 @@ export class ForumService {
     );
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
-    if (String(thread.authorId.id) !== String(userId)) {
+    if (String(thread.authorId.id) !== String(userId) && !isAdmin) {
       throw new ForbiddenException('forums.forbidden_update');
     }
 
@@ -337,9 +354,9 @@ export class ForumService {
     }
 
     if (dto.categoryId !== undefined) {
-      const category = await this.threadRepository
-        .getEntityManager()
-        .findOne(ForumCategory, { id: dto.categoryId });
+      const category = await this.categoryRepository.findOne({
+        id: dto.categoryId,
+      });
       if (!category) throw new BadRequestException('forums.category_not_found');
       if (category.isOfficial && !isAdmin) {
         throw new ForbiddenException('forums.category_official_admin_only');
@@ -364,7 +381,19 @@ export class ForumService {
 
     thread.updatedAt = new Date();
 
-    await this.threadRepository.getEntityManager().flush();
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'ForumThread',
+      entityId: thread.id,
+      newValue: {
+        title: thread.title,
+        content: thread.content,
+        status: thread.status,
+      },
+    });
+
+    await this.threadRepository.flush();
 
     if (imageToDelete) {
       try {
@@ -394,6 +423,16 @@ export class ForumService {
 
     const imageUrlToDelete = thread.imageUrl;
 
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'ForumThread',
+      entityId: thread.id,
+      oldValue: {
+        title: thread.title,
+      },
+    });
+
     await this.threadRepository.getEntityManager().removeAndFlush(thread);
 
     if (imageUrlToDelete) {
@@ -420,48 +459,32 @@ export class ForumService {
       .findOne(User, { id: userId });
     if (!user) throw new BadRequestException('forums.invalid_user');
 
-    const existingRows = await this.threadRepository
-      .getEntityManager()
-      .execute(
-        `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
-        [userId, threadId],
-      );
-
-    const existingVote = existingRows?.[0];
-    const existingValue = existingVote ? Number(existingVote.value) : null;
+    const userVote = await this.threadVoteRepository.getUserVote(
+      userId,
+      threadId,
+    );
+    const existingValue = userVote;
 
     if (existingValue === null) {
-      const vote = this.threadRepository
-        .getEntityManager()
-        .create(ForumThreadVote, {
-          threadId: thread,
-          userId: user,
-          value: String(value) as any,
-        } as any);
+      const newVote = this.threadVoteRepository.create({
+        userId: user,
+        threadId: thread,
+        value: String(value) as any,
+      });
       thread.score = (thread.score || 0) + value;
       await this.threadRepository
         .getEntityManager()
-        .persistAndFlush([vote, thread]);
+        .persistAndFlush([newVote, thread]);
       return { result: 'voted', score: thread.score, userVote: value };
     }
 
     if (existingValue === value) {
-      await this.threadRepository
-        .getEntityManager()
-        .execute(
-          `delete from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
-          [userId, threadId],
-        );
+      await this.threadVoteRepository.removeUserVote(userId, threadId);
       thread.score = (thread.score || 0) - value;
       await this.threadRepository.getEntityManager().persistAndFlush([thread]);
       return { result: 'unvoted', score: thread.score, userVote: null };
     } else {
-      await this.threadRepository
-        .getEntityManager()
-        .execute(
-          `update web."ForumThreadVote" set "value" = ? where "userId" = ? and "threadId" = ?`,
-          [String(value), userId, threadId],
-        );
+      await this.threadVoteRepository.updateUserVote(userId, threadId, value);
       thread.score = (thread.score || 0) + (value - existingValue);
       await this.threadRepository.getEntityManager().persistAndFlush([thread]);
       return { result: 'changed', score: thread.score, userVote: value };
@@ -513,7 +536,7 @@ export class ForumService {
       uploadUrl,
       method: 'PUT',
       key,
-      publicUrl: `${publicUrlBase}/${key}`,
+      publicUrl: getProxyMediaUrl(key) as string,
       headers: {
         'Content-Type': dto.mimeType,
       },

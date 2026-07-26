@@ -25,7 +25,7 @@ export function WikiPageHeader(props: Props) {
     return (
       <header className="mb-6 space-y-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-4xl font-bold tracking-tight">{props.title}</h1>
+          <h1 className="text-4xl font-bold tracking-tight break-words whitespace-pre-wrap">{props.title}</h1>
           {props.isDraft && (
             <Badge variant="secondary">{props.draftLabel ?? "Draft"}</Badge>
           )}
@@ -34,7 +34,7 @@ export function WikiPageHeader(props: Props) {
           <p className="text-base text-muted-foreground">{props.summary}</p>
         )}
         {props.byline && (
-          <p className="text-sm text-muted-foreground">{props.byline}</p>
+          <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">{props.byline}</p>
         )}
       </header>
     );
@@ -47,7 +47,7 @@ export function WikiPageHeader(props: Props) {
       </div>
       <div>{props.summaryNode}</div>
       {props.byline && (
-        <p className="text-sm text-muted-foreground">{props.byline}</p>
+        <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">{props.byline}</p>
       )}
     </header>
   );

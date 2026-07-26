@@ -39,6 +39,7 @@ function makeContext(authHeader?: string): ExecutionContext {
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
+  const mockAuditService = { recordInCurrentUnitOfWork: jest.fn() };
 
   beforeEach(() => {
     guard = new AuthGuard(
@@ -47,6 +48,7 @@ describe('AuthGuard', () => {
       mockConfig as any,
       mockEm as any,
       mockRedis as any,
+      mockAuditService as any,
     );
     jest.clearAllMocks();
     mockConfig.get.mockReturnValue('test-secret');

@@ -12,7 +12,7 @@ export class DownloadStatsRepository extends BaseRepository<DownloadStats> {
   async flush(): Promise<void> {
     await this.getEntityManager().flush();
   }
-  async persist(entity: any): void {
+  async persist(entity: any): Promise<void> {
     this.getEntityManager().persist(entity);
   }
   async persistAndFlush(entity: any): Promise<void> {

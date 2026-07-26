@@ -12,7 +12,7 @@ export class AnnouncementPublishJob {
     private readonly announcementRepository: AnnouncementRepository,
   ) {}
 
-  @Cron('* * * * *')
+  @Cron('* * * * *', { timeZone: 'Asia/Ho_Chi_Minh' })
   async publishScheduledAnnouncements(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {

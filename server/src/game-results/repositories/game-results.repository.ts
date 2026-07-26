@@ -5,7 +5,7 @@ import { GameRun } from '../../entities/GameRun';
 import {
   ListGameResultsQueryDto,
   LeaderboardQueryDto,
-} from './dto/game-results-response.dto';
+} from '../dto/game-results-response.dto';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -116,8 +116,10 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const sql = `
       SELECT
         grp."gameProfileId",
+        u.id as "userId",
         u."displayName",
         u."imgUrl" as "avatarUrl",
+        u."updatedAt" as "updatedAt",
         grp."isHost",
         grp."joinedAt",
         a."badgeImageUrl" as "badgeImageUrl",
@@ -160,8 +162,10 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const sql = `
       SELECT
         gsp."gameProfileId",
+        u.id as "userId",
         u."displayName",
         u."imgUrl" as "avatarUrl",
+        u."updatedAt" as "updatedAt",
         gsp."isAbsent",
         gsp."leftAt",
         a."badgeImageUrl" as "badgeImageUrl",
@@ -183,8 +187,10 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const profileSql = `
       SELECT
         gp.id as "gameProfileId",
+        u.id as "userId",
         u."displayName",
         u."imgUrl" as "avatarUrl",
+        u."updatedAt" as "updatedAt",
         gp."totalSessions",
         gp."totalWins",
         gp."totalLosses",

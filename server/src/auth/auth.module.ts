@@ -11,13 +11,15 @@ import { GameModule } from '../game/game.module';
 import { PresenceModule } from '../presence/presence.module';
 import { SessionsModule } from '../sessions/sessions.module';
 import { UserRepository } from './repositories/user.repository';
-import { AuditLogRepository } from './repositories/audit-log.repository';
+import { AuditModule } from '../audit/audit.module';
+import { AutoUnbanJob } from './auto-unban.job';
 
 @Module({
   imports: [
     EmailModule,
     GameModule,
     PresenceModule,
+    AuditModule,
     forwardRef(() => SessionsModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -37,14 +39,8 @@ import { AuditLogRepository } from './repositories/audit-log.repository';
     AuthRateLimitGuard,
     { provide: APP_GUARD, useExisting: AuthGuard },
     UserRepository,
-    AuditLogRepository,
+    AutoUnbanJob,
   ],
-  exports: [
-    AuthGuard,
-    JwtModule,
-    AuthService,
-    UserRepository,
-    AuditLogRepository,
-  ],
+  exports: [AuthGuard, JwtModule, AuthService, UserRepository],
 })
 export class AuthModule {}

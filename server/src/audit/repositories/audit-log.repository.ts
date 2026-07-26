@@ -1,7 +1,9 @@
-import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { AuditLog } from '../../entities/AuditLog';
+import { AuditEntryParams } from '../types/audit-entry.type';
+import { User } from '../../entities/User';
 
 @Injectable()
 export class AuditLogRepository extends BaseRepository<AuditLog> {
@@ -9,16 +11,37 @@ export class AuditLogRepository extends BaseRepository<AuditLog> {
     super(em, AuditLog);
   }
 
-  async flush(): Promise<void> {
-    await this.getEntityManager().flush();
+  private createEntity(params: AuditEntryParams, em: EntityManager): AuditLog {
+    const auditLog = new AuditLog();
+    auditLog.actionType = params.actionType as any;
+    auditLog.entityName = params.entityName;
+    auditLog.entityId = params.entityId;
+    auditLog.oldValue = params.oldValue;
+    auditLog.newValue = params.newValue;
+    if (params.ipAddress) {
+      auditLog.ipAddress = params.ipAddress;
+    }
+
+    if (params.userId) {
+      auditLog.userId = em.getReference(User, params.userId);
+    }
+
+    return auditLog;
   }
 
-  async persist(entity: any): void {
-    this.getEntityManager().persist(entity);
+  async persistInCurrentUoW(params: AuditEntryParams): Promise<void> {
+    const log = this.createEntity(params, this.getEntityManager());
+    this.getEntityManager().persist(log);
   }
 
-  async persistAndFlush(entity: any): Promise<void> {
-    await this.getEntityManager().persistAndFlush(entity);
+  async createAndFlush(params: AuditEntryParams): Promise<void> {
+    const log = this.createEntity(params, this.getEntityManager());
+    await this.getEntityManager().persistAndFlush(log);
+  }
+
+  persistInTransaction(em: EntityManager, params: AuditEntryParams): void {
+    const log = this.createEntity(params, em);
+    em.persist(log);
   }
 
   async getAdminUserAuditLogs(id: string, page: number, limit: number) {

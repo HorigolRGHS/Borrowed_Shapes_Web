@@ -13,7 +13,7 @@ export class AchievementsCleanupJob {
     private readonly achievementRepository: AchievementRepository,
   ) {}
 
-  @Cron('0 * * * * *') // Run once every minute
+  @Cron('0 * * * * *', { timeZone: 'Asia/Ho_Chi_Minh' }) // Run once every minute
   async cleanupExpiredAchievements(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {
@@ -32,7 +32,7 @@ export class AchievementsCleanupJob {
               ach.expiresAt,
             );
             if (ach.type === 'SEASONAL' && expiresAt && expiresAt < now) {
-              gp.equippedAchievementId = undefined as any;
+              gp.equippedAchievementId = null as any;
               unequippedCount++;
             }
           }

@@ -2,6 +2,7 @@ import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { ForumCategory } from '../../entities/ForumCategory';
+import { getProxyMediaUrl } from '../../storage/media-utils';
 
 @Injectable()
 export class ForumCategoryRepository extends BaseRepository<ForumCategory> {
@@ -35,6 +36,7 @@ export class ForumCategoryRepository extends BaseRepository<ForumCategory> {
 
     return rows.map((row: any) => ({
       ...row,
+      iconUrl: getProxyMediaUrl(row.iconUrl),
       threadCount: Number(row.threadCount || 0),
     }));
   }
@@ -69,6 +71,7 @@ export class ForumCategoryRepository extends BaseRepository<ForumCategory> {
 
     return rows.map((row: any) => ({
       ...row,
+      iconUrl: getProxyMediaUrl(row.iconUrl),
       threadCount: Number(row.threadCount || 0),
     }));
   }
@@ -103,6 +106,7 @@ export class ForumCategoryRepository extends BaseRepository<ForumCategory> {
     const row = rows[0];
     return {
       ...row,
+      iconUrl: getProxyMediaUrl(row.iconUrl),
       threadCount: Number(row.threadCount || 0),
     };
   }

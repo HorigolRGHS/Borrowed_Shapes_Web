@@ -24,7 +24,11 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { ResolveReportDto } from './dto/resolve-report.dto';
 import { RejectReportDto } from './dto/reject-report.dto';
 import { UploadReportMediaDto } from './dto/upload-report-media.dto';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
 import { ReportRepository } from './repositories/reports.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 @Injectable()
 export class ReportsService {
@@ -35,6 +39,7 @@ export class ReportsService {
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    private readonly auditService: AuditService,
   ) {}
 
   async create(dto: CreateReportDto, reporterId: string) {
@@ -98,6 +103,22 @@ export class ReportsService {
       .getEntityManager()
       .persistAndFlush([report, ...mediaEntities]);
 
+    // AUDIT LOGGING (After flush, report.id is now available)
+    await this.auditService.recordStandalone({
+      actionType: AuditActionType.PROCESS_REPORT,
+      userId: reporterId,
+      entityName: 'Report',
+      entityId: report.id,
+      newValue: {
+        operation: 'CREATE',
+        reportType: dto.reportType,
+        reason: dto.reason,
+        reportedUserId: dto.reportedUserId,
+        threadId: dto.threadId,
+        commentId: dto.commentId,
+      },
+    });
+
     return {
       id: report.id,
       reportType: report.reportType,
@@ -148,7 +169,7 @@ export class ReportsService {
       uploadUrl,
       method: 'PUT',
       key,
-      publicUrl: `${publicUrlBase}/${key}`,
+      publicUrl: getProxyMediaUrl(key) as string,
       headers: {
         'Content-Type': dto.mimeType,
       },
@@ -266,13 +287,13 @@ export class ReportsService {
       reporter: {
         id: report.reporterId.id,
         displayName: report.reporterId.displayName,
-        imgUrl: report.reporterId.imgUrl,
+        imgUrl: getProxyAvatarUrl(report.reporterId.imgUrl, report.reporterId.id, report.reporterId.updatedAt),
       },
       reportedUser: report.reportedUserId
         ? {
             id: report.reportedUserId.id,
             displayName: report.reportedUserId.displayName,
-            imgUrl: report.reportedUserId.imgUrl,
+            imgUrl: getProxyAvatarUrl(report.reportedUserId.imgUrl, report.reportedUserId.id, report.reportedUserId.updatedAt),
           }
         : null,
       thread: report.threadId
@@ -292,7 +313,7 @@ export class ReportsService {
         : null,
       media: mediaList.map((m) => ({
         id: m.id,
-        mediaUrl: m.mediaUrl,
+        mediaUrl: getProxyMediaUrl(m.mediaUrl),
         mediaType: m.mediaType,
         fileSize: m.fileSize ? Number(m.fileSize) : null,
       })),
@@ -377,6 +398,47 @@ export class ReportsService {
             : undefined;
 
         this.reportRepository.getEntityManager().persist(user);
+      }
+    }
+
+    // AUDIT LOGGING (Before flush)
+    await this.auditService.recordInCurrentUnitOfWork({
+      actionType: AuditActionType.PROCESS_REPORT,
+      userId: adminId,
+      entityName: 'Report',
+      entityId: report.id,
+      newValue: {
+        operation: 'RESOLVE',
+        resolutionAction: dto.actionTaken,
+        reportId: report.id,
+        targetUserId: report.reportedUserId?.id,
+      },
+    });
+
+    if (
+      dto.actionTaken === ReportAction.WARNING ||
+      dto.actionTaken === ReportAction.BAN_PERMANENT ||
+      dto.actionTaken === ReportAction.BAN_CUSTOM
+    ) {
+      const isBan =
+        dto.actionTaken === ReportAction.BAN_PERMANENT ||
+        dto.actionTaken === ReportAction.BAN_CUSTOM;
+
+      if (report.reportedUserId) {
+        await this.auditService.recordInCurrentUnitOfWork({
+          actionType: isBan ? AuditActionType.BAN_USER : AuditActionType.UPDATE,
+          userId: adminId,
+          entityName: 'User',
+          entityId: report.reportedUserId.id,
+          newValue: {
+            operation: isBan ? 'BAN_FROM_REPORT' : 'WARNING',
+            reportId: report.id,
+            banExpiresAt:
+              isBan && dto.actionTaken === ReportAction.BAN_CUSTOM
+                ? dto.banExpiresAt
+                : undefined,
+          },
+        });
       }
     }
 
@@ -466,6 +528,19 @@ export class ReportsService {
         actionTaken: ReportAction.NO_ACTION as any,
         isVisibleToReporter: dto.isVisibleToReporter !== false,
       });
+
+    // AUDIT LOGGING (Before flush)
+    await this.auditService.recordInCurrentUnitOfWork({
+      actionType: AuditActionType.PROCESS_REPORT,
+      userId: adminId,
+      entityName: 'Report',
+      entityId: report.id,
+      newValue: {
+        operation: 'REJECT',
+        reportId: report.id,
+        targetUserId: report.reportedUserId?.id,
+      },
+    });
 
     await this.reportRepository
       .getEntityManager()

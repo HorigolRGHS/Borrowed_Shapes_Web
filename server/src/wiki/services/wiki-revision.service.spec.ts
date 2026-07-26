@@ -75,7 +75,10 @@ function repoProviders(em: any) {
 describe('WikiRevisionService.create', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
   let wikiSvc: { getByIdForAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -89,7 +92,10 @@ describe('WikiRevisionService.create', () => {
       transactional: jest.fn(transactionalImpl),
       getReference: jest.fn((_entity, id) => ({ id })),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     wikiSvc = {
       getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any),
     };
@@ -175,7 +181,7 @@ describe('WikiRevisionService.create', () => {
     );
     expect(em.create).toHaveBeenCalled();
     expect(em.flush).toHaveBeenCalled();
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
       expect.objectContaining({
         actionType: 'CREATE',
         entityName: 'WikiPage',
@@ -198,7 +204,7 @@ describe('WikiRevisionService.create', () => {
         '127.0.0.1',
       );
       expect(em.create).toHaveBeenCalled();
-      expect(audit.log).toHaveBeenCalled();
+      expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalled();
     });
 
     it('creates a page with content of 1MB', async () => {
@@ -367,7 +373,10 @@ describe('WikiRevisionService.create', () => {
 describe('WikiRevisionService.create stub mode', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
   let wikiSvc: { getByIdForAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -381,7 +390,10 @@ describe('WikiRevisionService.create stub mode', () => {
       transactional: jest.fn(transactionalImpl),
       getReference: jest.fn((_entity, id) => ({ id })),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     wikiSvc = {
       getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any),
     };
@@ -437,7 +449,10 @@ describe('WikiRevisionService.create stub mode', () => {
 describe('WikiRevisionService.update', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
   let wikiSvc: { getByIdForAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -448,7 +463,10 @@ describe('WikiRevisionService.update', () => {
       transactional: jest.fn(async (cb: any) => cb(em)),
       getReference: jest.fn((_e, id) => ({ id })),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({} as any) };
 
     const moduleRef = await Test.createTestingModule({
@@ -548,7 +566,7 @@ describe('WikiRevisionService.update', () => {
       'admin-1',
       '1.1.1.1',
     );
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
       expect.objectContaining({
         newValue: expect.objectContaining({ forceOverwrite: true }),
       }),
@@ -579,8 +597,8 @@ describe('WikiRevisionService.update', () => {
         contentVi: 'OLDVI',
       }),
     );
-    // page slug changed → audit logged
-    expect(audit.log).toHaveBeenCalled();
+    // page slug changed → audit.recordInCurrentUnitOfWorkged
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalled();
   });
 
   it('detects total no-op and skips flush + audit', async () => {
@@ -601,7 +619,7 @@ describe('WikiRevisionService.update', () => {
     );
     expect(em.create).not.toHaveBeenCalled();
     expect(em.flush).not.toHaveBeenCalled();
-    expect(audit.log).not.toHaveBeenCalled();
+    expect(audit.recordInCurrentUnitOfWork).not.toHaveBeenCalled();
   });
 
   it('rejects publishing with empty content', async () => {
@@ -669,7 +687,7 @@ describe('WikiRevisionService.update', () => {
           contentVi: 'OLDVI',
         }),
       );
-      expect(audit.log).toHaveBeenCalledWith(
+      expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
         expect.objectContaining({
           newValue: expect.objectContaining({
             changedFields: expect.arrayContaining(['metadataJson']),
@@ -734,7 +752,10 @@ describe('WikiRevisionService.update', () => {
 describe('WikiRevisionService.update writes full snapshot', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
   let wikiSvc: { getByIdForAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -746,7 +767,10 @@ describe('WikiRevisionService.update writes full snapshot', () => {
       transactional: jest.fn(transactionalImpl),
       getReference: jest.fn((_e: unknown, id: string) => ({ id })),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     wikiSvc = {
       getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any),
     };
@@ -873,7 +897,10 @@ describe('WikiRevisionService.update writes full snapshot', () => {
 describe('WikiRevisionService.rollback', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
   let wikiSvc: { getByIdForAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -884,7 +911,10 @@ describe('WikiRevisionService.rollback', () => {
       transactional: jest.fn(async (cb: any) => cb(em)),
       getReference: jest.fn((_e, id) => ({ id })),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     wikiSvc = { getByIdForAdmin: jest.fn().mockResolvedValue({} as any) };
 
     const moduleRef = await Test.createTestingModule({
@@ -954,7 +984,7 @@ describe('WikiRevisionService.rollback', () => {
       '1.1.1.1',
     );
     expect(em.create).not.toHaveBeenCalled();
-    expect(audit.log).not.toHaveBeenCalled();
+    expect(audit.recordInCurrentUnitOfWork).not.toHaveBeenCalled();
   });
 
   it('creates new revision copying target content', async () => {
@@ -977,7 +1007,7 @@ describe('WikiRevisionService.rollback', () => {
       '1.1.1.1',
     );
     expect(em.create).toHaveBeenCalled();
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
       expect.objectContaining({
         newValue: expect.objectContaining({
           action: 'rollback',
@@ -1040,7 +1070,10 @@ describe('WikiRevisionService.rollback', () => {
 describe('WikiRevisionService.rollback content restore', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
   let wikiSvc: { getByIdForAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -1052,7 +1085,10 @@ describe('WikiRevisionService.rollback content restore', () => {
       transactional: jest.fn(transactionalImpl),
       getReference: jest.fn((_e: unknown, id: string) => ({ id })),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     wikiSvc = {
       getByIdForAdmin: jest.fn().mockResolvedValue({ id: 'p1' } as any),
     };
@@ -1172,7 +1208,10 @@ describe('WikiRevisionService.rollback content restore', () => {
 describe('WikiRevisionService.delete', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
 
   beforeEach(async () => {
     em = {
@@ -1180,7 +1219,10 @@ describe('WikiRevisionService.delete', () => {
       removeAndFlush: jest.fn().mockResolvedValue(undefined),
       transactional: jest.fn(async (cb: any) => cb(em)),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     const moduleRef = await Test.createTestingModule({
       providers: [
         WikiRevisionService,
@@ -1222,7 +1264,7 @@ describe('WikiRevisionService.delete', () => {
     });
     await service.delete('p1', 'admin-1', '1.1.1.1');
     expect(em.removeAndFlush).toHaveBeenCalled();
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
       expect.objectContaining({
         actionType: 'DELETE',
         oldValue: expect.objectContaining({
@@ -1234,7 +1276,7 @@ describe('WikiRevisionService.delete', () => {
   });
 
   describe('Boundary', () => {
-    it('audit log includes latestRevision=null when page has no revisions', async () => {
+    it('audit.recordInCurrentUnitOfWork includes latestRevision=null when page has no revisions', async () => {
       em.findOne.mockResolvedValueOnce({
         id: 'p1',
         slug: 's',
@@ -1249,7 +1291,7 @@ describe('WikiRevisionService.delete', () => {
       });
       await service.delete('p1', 'admin-1', '1.1.1.1');
       expect(em.removeAndFlush).toHaveBeenCalled();
-      expect(audit.log).toHaveBeenCalledWith(
+      expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
         expect.objectContaining({
           actionType: 'DELETE',
           oldValue: expect.objectContaining({
@@ -1264,7 +1306,10 @@ describe('WikiRevisionService.delete', () => {
 describe('WikiRevisionService.publish/unpublish', () => {
   let service: WikiRevisionService;
   let em: any;
-  let audit: { log: jest.Mock };
+  let audit: {
+    recordStandalone: jest.Mock;
+    recordInCurrentUnitOfWork: jest.Mock;
+  };
 
   beforeEach(async () => {
     em = {
@@ -1272,7 +1317,10 @@ describe('WikiRevisionService.publish/unpublish', () => {
       flush: jest.fn().mockResolvedValue(undefined),
       transactional: jest.fn(async (cb: any) => cb(em)),
     };
-    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    audit = {
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
+      recordInCurrentUnitOfWork: jest.fn(),
+    };
     const moduleRef = await Test.createTestingModule({
       providers: [
         WikiRevisionService,
@@ -1318,7 +1366,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
     em.findOne.mockResolvedValueOnce(page);
     await service.publish('p1', 'admin-1', '1.1.1.1');
     expect(page.isPublished).toBe(true);
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
       expect.objectContaining({
         newValue: expect.objectContaining({ action: 'publish' }),
       }),
@@ -1334,7 +1382,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
     em.findOne.mockResolvedValueOnce(page);
     await service.unpublish('p1', 'admin-1', '1.1.1.1');
     expect(page.isPublished).toBe(false);
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(audit.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
       expect.objectContaining({
         newValue: expect.objectContaining({ action: 'unpublish' }),
       }),
@@ -1350,7 +1398,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
     em.findOne.mockResolvedValueOnce(page);
     await service.publish('p1', 'admin-1', '1.1.1.1');
     expect(em.flush).not.toHaveBeenCalled();
-    expect(audit.log).not.toHaveBeenCalled();
+    expect(audit.recordInCurrentUnitOfWork).not.toHaveBeenCalled();
   });
 
   it('unpublish on already-unpublished page is a no-op (no flush, no audit)', async () => {
@@ -1361,7 +1409,7 @@ describe('WikiRevisionService.publish/unpublish', () => {
     em.findOne.mockResolvedValueOnce(page);
     await service.unpublish('p1', 'admin-1', '1.1.1.1');
     expect(em.flush).not.toHaveBeenCalled();
-    expect(audit.log).not.toHaveBeenCalled();
+    expect(audit.recordInCurrentUnitOfWork).not.toHaveBeenCalled();
   });
 
   it('rejects publish when latestRevisionId is null', async () => {

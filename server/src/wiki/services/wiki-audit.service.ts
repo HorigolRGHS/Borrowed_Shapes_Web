@@ -1,23 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  WikiAuditRepository,
-  WikiAuditLogParams,
-} from '../repositories/wiki-audit.repository';
+import { AuditService } from '../../audit/audit.service';
+import { AuditEntryParams } from '../../audit/types/audit-entry.type';
 
 @Injectable()
 export class WikiAuditService {
   private readonly logger = new Logger(WikiAuditService.name);
 
-  constructor(private readonly auditRepo: WikiAuditRepository) {}
+  constructor(private readonly auditService: AuditService) {}
 
-  async log(params: WikiAuditLogParams): Promise<void> {
-    // Auditing is intentionally non-blocking — failures log a warning, never throw.
-    try {
-      await this.auditRepo.insertForked(params);
-    } catch (err) {
-      this.logger.warn(
-        `Audit log failed for userId=${params.userId} ${params.entityName}:${params.entityId} action=${params.actionType}: ${err}`,
-      );
-    }
+  recordInCurrentUnitOfWork(params: AuditEntryParams): void {
+    this.auditService.recordInCurrentUnitOfWork(params);
+  }
+
+  async recordStandalone(params: AuditEntryParams): Promise<void> {
+    await this.auditService.recordStandalone(params);
   }
 }

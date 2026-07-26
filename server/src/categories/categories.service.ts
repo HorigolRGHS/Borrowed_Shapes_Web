@@ -14,6 +14,9 @@ import {
   CategoryImageUploadResponseDto,
 } from './dto/category-image-upload.dto';
 import { ForumCategoryRepository } from './repositories/categories.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
+import { getProxyMediaUrl } from '../storage/media-utils';
 
 @Injectable()
 export class CategoryService {
@@ -21,6 +24,7 @@ export class CategoryService {
     private readonly categoryRepository: ForumCategoryRepository,
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
@@ -39,7 +43,7 @@ export class CategoryService {
     return category;
   }
 
-  async create(dto: CreateCategoryDto) {
+  async create(dto: CreateCategoryDto, userId?: string) {
     if (!dto.name?.trim())
       throw new BadRequestException('category.name_required');
     if (!dto.nameVi?.trim())
@@ -74,15 +78,15 @@ export class CategoryService {
       throw new BadRequestException('category.name_vi_conflict');
 
     const category = this.categoryRepository.create({
-      id: dto.id || undefined,
+      id: randomUUID(),
       name: dto.name.trim(),
       nameVi: dto.nameVi.trim(),
       slug,
       slugVi,
-      description: dto.description?.trim() ?? null,
-      descriptionVi: dto.descriptionVi?.trim() ?? null,
-      iconUrl: dto.iconUrl ?? null,
-      isOfficial: dto.isOfficial ?? false,
+      description: dto.description?.trim(),
+      descriptionVi: dto.descriptionVi?.trim(),
+      iconUrl: dto.iconUrl,
+      isOfficial: !!dto.isOfficial,
     });
 
     try {
@@ -90,6 +94,19 @@ export class CategoryService {
         .getEntityManager()
         .persist(category)
         .flush();
+
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: userId,
+        actionType: AuditActionType.CREATE,
+        entityName: 'ForumCategory',
+        entityId: category.id,
+        newValue: {
+          name: category.name,
+          slug: category.slug,
+          isOfficial: category.isOfficial,
+        },
+      });
+
       return category;
     } catch (error) {
       console.error('Error creating category:', error);
@@ -97,7 +114,7 @@ export class CategoryService {
     }
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
+  async update(id: string, dto: UpdateCategoryDto, userId?: string) {
     const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
@@ -203,7 +220,18 @@ export class CategoryService {
       category.isOfficial = dto.isOfficial;
     }
 
-    await this.categoryRepository.getEntityManager().flush();
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'ForumCategory',
+      entityId: category.id,
+      newValue: {
+        name: category.name,
+        slug: category.slug,
+      },
+    });
+
+    await this.categoryRepository.flush();
 
     if (iconToDelete) {
       try {
@@ -223,11 +251,22 @@ export class CategoryService {
     return null;
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
     const iconUrlToDelete = category.iconUrl;
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'ForumCategory',
+      entityId: category.id,
+      oldValue: {
+        name: category.name,
+        slug: category.slug,
+      },
+    });
 
     await this.categoryRepository.getEntityManager().removeAndFlush(category);
 
@@ -292,7 +331,7 @@ export class CategoryService {
       uploadUrl,
       method: 'PUT',
       key,
-      publicUrl: `${publicUrlBase}/${key}`,
+      publicUrl: getProxyMediaUrl(key) as string,
       headers: {
         'Content-Type': dto.mimeType,
       },

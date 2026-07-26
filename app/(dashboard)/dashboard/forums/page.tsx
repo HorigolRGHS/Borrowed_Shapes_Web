@@ -376,11 +376,14 @@ export default function DashboardForumsPage() {
                     >
                       {/* Thread Title */}
                       <TableCell className="max-w-[300px]">
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2 min-w-0">
                           {thread.isPinned && (
                             <Star className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0 mt-0.5" />
                           )}
-                          <span className="font-semibold text-foreground truncate hover:text-amber-500 transition-colors">
+                          <span 
+                            className="font-semibold text-foreground truncate hover:text-amber-500 transition-colors block flex-1 min-w-0"
+                            title={thread.title}
+                          >
                             {thread.title}
                           </span>
                         </div>
@@ -389,7 +392,10 @@ export default function DashboardForumsPage() {
                       {/* Category & Author */}
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="text-foreground/90 text-xs font-semibold">
+                          <span 
+                            className="text-foreground/90 text-xs font-semibold truncate max-w-[120px] block"
+                            title={thread.author?.displayName || t("forums.unknown_author") || "Unknown"}
+                          >
                             {thread.author?.displayName || t("forums.unknown_author") || "Unknown"}
                           </span>
                           <span className="text-muted-foreground text-[11px]">

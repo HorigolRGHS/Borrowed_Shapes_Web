@@ -24,7 +24,8 @@ import {
   Flag
 } from "lucide-react";
 import { getUserProfile } from "@/lib/api/api-client";
-import CreateThreadModal from "@/components/forums/create-thread-modal";
+import dynamic from "next/dynamic";
+const CreateThreadModal = dynamic(() => import("@/components/forums/create-thread-modal"), { ssr: false });
 import CommentSection from "@/components/forums/comment-section";
 import ReportModal from "@/components/forums/report-modal";
 import UserProfilePopup from "@/components/forums/user-profile-popup";
@@ -403,7 +404,7 @@ export default function ForumDetailPage() {
             </div>
 
             {/* Thread Title */}
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4 break-all break-words whitespace-pre-wrap">
               {thread.title}
             </h1>
 
@@ -447,7 +448,7 @@ export default function ForumDetailPage() {
                 {/* Main Content & Image */}
                 <div className="flex flex-col md:flex-row gap-6 items-start justify-between mb-4">
                   {/* Content on the left */}
-                  <div className="flex-1 min-w-0 prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed" dangerouslySetInnerHTML={{ __html: thread.content }} />
+                  <div className="flex-1 min-w-0 prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: thread.content }} />
 
                   {/* Thread Image on the right (if any) */}
                   {thread.imageUrl && (

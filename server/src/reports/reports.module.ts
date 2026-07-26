@@ -13,6 +13,7 @@ import { GameProfile } from '../entities/GameProfile';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 import { EmailModule } from '../email/email.module';
+import { AuditModule } from '../audit/audit.module';
 
 import { ReportRepository } from './repositories/reports.repository';
 
@@ -31,6 +32,7 @@ import { ReportRepository } from './repositories/reports.repository';
     StorageModule,
     ConfigModule,
     EmailModule,
+    AuditModule,
   ],
   controllers: [ReportsController],
   providers: [ReportsService, ReportRepository],

@@ -10,12 +10,12 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'crypto';
 import { UserRepository } from './repositories/user.repository';
-import { AuditLogRepository } from './repositories/audit-log.repository';
+import { AuditService } from '../audit/audit.service';
 import { GameProfileRepository } from '../game/repositories/game-profile.repository';
 import { UserSessionRepository } from '../sessions/repositories/user-session.repository';
 import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
 
-const mockEm = {
+const mockEm: any = {
   findOne: jest.fn(),
   findByEmail: jest.fn((email) => mockEm.findOne('User', { email })),
   find: jest.fn(),
@@ -24,6 +24,9 @@ const mockEm = {
   nativeUpdate: jest.fn(),
   getReference: jest.fn((_, id) => ({ id })),
   transactional: jest.fn(),
+  txFindOne: jest.fn(),
+  txCreate: jest.fn((_, data) => data),
+  txFlush: jest.fn().mockResolvedValue(undefined),
 };
 
 const mockRedis = {
@@ -34,6 +37,21 @@ const mockRedis = {
   pipeline: jest.fn().mockResolvedValue(undefined),
   del: jest.fn(),
   zrem: jest.fn(),
+};
+
+const mockAuditService = {
+  recordStandalone: jest.fn().mockResolvedValue(undefined),
+  recordInCurrentUnitOfWork: jest.fn().mockResolvedValue(undefined),
+  recordInTransaction: jest.fn(),
+};
+
+const AuditActionType = {
+  UPDATE: 'UPDATE',
+  CREATE: 'CREATE',
+  LOGOUT: 'LOGOUT',
+  LOGIN: 'LOGIN',
+  BAN_USER: 'BAN_USER',
+  PROCESS_REPORT: 'PROCESS_REPORT',
 };
 
 const sha256 = (value: string) =>
@@ -71,7 +89,7 @@ describe('AuthService', () => {
         { provide: ConfigService, useValue: mockConfig },
         { provide: JwtService, useValue: mockJwt },
         { provide: UserRepository, useValue: mockEm },
-        { provide: AuditLogRepository, useValue: mockEm },
+        { provide: AuditService, useValue: mockAuditService },
         { provide: GameProfileRepository, useValue: mockEm },
         { provide: UserSessionRepository, useValue: mockEm },
         { provide: UserOnlineStatusRepository, useValue: mockEm },
@@ -83,7 +101,7 @@ describe('AuthService', () => {
     mockEm.flush.mockResolvedValue(undefined);
     mockEm.nativeUpdate.mockResolvedValue(1);
     mockEm.find.mockResolvedValue([]);
-    mockEm.create.mockImplementation((_, data) => data);
+    mockEm.create.mockImplementation((_: any, data: any) => data);
     mockRedis.hset.mockResolvedValue(undefined);
     mockRedis.expire.mockResolvedValue(undefined);
     mockEmail.sendMail.mockResolvedValue(undefined);
@@ -101,7 +119,7 @@ describe('AuthService', () => {
         const result = await fn(mockEm);
         return result;
       });
-      mockEm.create.mockImplementationOnce((_, data) => ({
+      mockEm.txCreate.mockImplementationOnce((_: any, data: any) => ({
         ...data,
         id: 'user_1',
       }));
@@ -245,7 +263,6 @@ describe('AuthService', () => {
         ]),
       );
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
-        expect.anything(),
         expect.objectContaining({ sessionId: 'sess_1' }),
         expect.objectContaining({ status: 'LOGGED_OUT' }),
       );
@@ -281,10 +298,45 @@ describe('AuthService', () => {
       );
       expect(mockRedis.del).not.toHaveBeenCalledWith('rt:u1:web');
       expect(mockEm.nativeUpdate).toHaveBeenCalledWith(
-        expect.anything(),
         expect.objectContaining({ id: 's2', status: 'ACTIVE' }),
         expect.objectContaining({ status: 'REVOKED' }),
       );
+
+      expect(mockAuditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(mockAuditService.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionType: AuditActionType.UPDATE,
+          userId: 'u1',
+          entityName: 'User',
+          entityId: 'u1',
+          newValue: { operation: 'CHANGE_PASSWORD' },
+        }),
+      );
+
+      const auditOrder =
+        mockAuditService.recordInCurrentUnitOfWork.mock.invocationCallOrder[0];
+      const flushOrder = mockEm.flush.mock.invocationCallOrder[0];
+      expect(auditOrder).toBeLessThan(flushOrder);
+    });
+
+    it('should propagate audit error and not flush in changePassword', async () => {
+      const hash = await bcrypt.hash('oldPass123!', 4);
+      mockEm.findOne.mockResolvedValue({ id: 'u1', passwordHash: hash });
+      mockAuditService.recordInCurrentUnitOfWork.mockRejectedValueOnce(
+        new Error('Audit DB Down'),
+      );
+
+      await expect(
+        service.changePassword(
+          'u1',
+          { oldPassword: 'oldPass123!', newPassword: 'NewPass123!' } as any,
+          'web',
+        ),
+      ).rejects.toThrow('Audit DB Down');
+
+      expect(mockEm.flush).not.toHaveBeenCalled();
     });
   });
 
@@ -327,6 +379,89 @@ describe('AuthService', () => {
       expect(mockRedis.del).toHaveBeenCalledWith(
         'forgot_otp:player@example.com',
       );
+
+      expect(mockAuditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(mockAuditService.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionType: AuditActionType.UPDATE,
+          userId: null,
+          entityName: 'User',
+          entityId: 'u1',
+          newValue: { operation: 'RESET_PASSWORD' },
+        }),
+      );
+
+      const auditOrder =
+        mockAuditService.recordInCurrentUnitOfWork.mock.invocationCallOrder[0];
+      const flushOrder = mockEm.flush.mock.invocationCallOrder[0];
+      expect(auditOrder).toBeLessThan(flushOrder);
+    });
+
+    it('should propagate audit error and not flush in resetPassword', async () => {
+      const otp = '123456';
+      const otpHash = sha256(otp);
+      mockRedis.hgetall.mockResolvedValue({ userId: 'u1', otpHash });
+      mockEm.findOne.mockResolvedValue({ id: 'u1' });
+      mockAuditService.recordInCurrentUnitOfWork.mockRejectedValueOnce(
+        new Error('Audit DB Down'),
+      );
+
+      await expect(
+        service.resetPassword({
+          email: 'player@example.com',
+          otp,
+          newPassword: 'NewPass123!',
+        } as any),
+      ).rejects.toThrow('Audit DB Down');
+
+      expect(mockEm.flush).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('verifyEmail', () => {
+    it('verifies email, unbans user, audits and flushes', async () => {
+      mockRedis.hgetall.mockResolvedValue({ userId: 'u1' });
+      const user = { id: 'u1', isBanned: true };
+      mockEm.findOne.mockResolvedValue(user);
+      mockRedis.del.mockResolvedValue(undefined);
+
+      await service.verifyEmail({ token: 'abc' });
+
+      expect(user.isBanned).toBe(false);
+
+      expect(mockAuditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(mockAuditService.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionType: AuditActionType.UPDATE,
+          userId: null,
+          entityName: 'User',
+          entityId: 'u1',
+          newValue: { operation: 'VERIFY_EMAIL' },
+        }),
+      );
+
+      const auditOrder =
+        mockAuditService.recordInCurrentUnitOfWork.mock.invocationCallOrder[0];
+      const flushOrder = mockEm.flush.mock.invocationCallOrder[0];
+      expect(auditOrder).toBeLessThan(flushOrder);
+    });
+
+    it('should propagate audit error and not flush in verifyEmail', async () => {
+      mockRedis.hgetall.mockResolvedValue({ userId: 'u1' });
+      mockEm.findOne.mockResolvedValue({ id: 'u1' });
+      mockAuditService.recordInCurrentUnitOfWork.mockRejectedValueOnce(
+        new Error('Audit DB Down'),
+      );
+
+      await expect(service.verifyEmail({ token: 'abc' })).rejects.toThrow(
+        'Audit DB Down',
+      );
+
+      expect(mockEm.flush).not.toHaveBeenCalled();
     });
   });
 
@@ -353,9 +488,9 @@ describe('AuthService', () => {
         equippedAchievementId: achievement,
       };
 
-      mockEm.findOne.mockImplementation(async (entity: any, filter: any) => {
-        if (entity.name === 'User') return user;
-        if (entity.name === 'GameProfile') return gameProfile;
+      mockEm.findOne.mockImplementation(async (filter: any) => {
+        if (filter && filter.id === 'user_1') return user;
+        if (filter && filter.userId === 'user_1') return gameProfile;
         return null;
       });
 
@@ -398,9 +533,9 @@ describe('AuthService', () => {
         equippedAchievementId: achievement,
       };
 
-      mockEm.findOne.mockImplementation(async (entity: any, filter: any) => {
-        if (entity.name === 'User') return user;
-        if (entity.name === 'GameProfile') return gameProfile;
+      mockEm.findOne.mockImplementation(async (filter: any) => {
+        if (filter && filter.id === 'user_1') return user;
+        if (filter && filter.userId === 'user_1') return gameProfile;
         return null;
       });
 
@@ -439,9 +574,9 @@ describe('AuthService', () => {
         equippedAchievementId: achievement,
       };
 
-      mockEm.findOne.mockImplementation(async (entity: any, filter: any) => {
-        if (entity.name === 'User') return user;
-        if (entity.name === 'GameProfile') return gameProfile;
+      mockEm.findOne.mockImplementation(async (filter: any) => {
+        if (filter && filter.id === 'user_1') return user;
+        if (filter && filter.userId === 'user_1') return gameProfile;
         return null;
       });
 

@@ -141,7 +141,12 @@ export default function AdminWikiEditPage({
             Wiki
           </Link>
           <span className="mx-2">›</span>
-          <span className="text-foreground">{detail.title}</span>
+          <span 
+            className="text-foreground truncate max-w-[200px] inline-block align-bottom"
+            title={detail.title}
+          >
+            {detail.title}
+          </span>
         </div>
         <Button asChild variant="outline" size="sm" className="shrink-0">
           <Link href={`/wiki/${encodeURIComponent(detail.slug)}/history`}>

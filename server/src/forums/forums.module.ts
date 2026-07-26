@@ -8,8 +8,13 @@ import { ForumThreadVote } from '../entities/ForumThreadVote';
 import { ForumComment } from '../entities/ForumComment';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
+import { AuditModule } from '../audit/audit.module';
+import { CategoryModule } from '../categories/categories.module';
 
-import { ForumThreadRepository } from './repositories/forums.repository';
+import {
+  ForumThreadRepository,
+  ForumThreadVoteRepository,
+} from './repositories/forums.repository';
 
 @Module({
   imports: [
@@ -21,9 +26,11 @@ import { ForumThreadRepository } from './repositories/forums.repository';
     ]),
     AuthModule,
     StorageModule,
+    AuditModule,
+    CategoryModule,
   ],
   controllers: [ForumController],
-  providers: [ForumService, ForumThreadRepository],
-  exports: [ForumService, ForumThreadRepository],
+  providers: [ForumService, ForumThreadRepository, ForumThreadVoteRepository],
+  exports: [ForumService, ForumThreadRepository, ForumThreadVoteRepository],
 })
 export class ForumModule {}

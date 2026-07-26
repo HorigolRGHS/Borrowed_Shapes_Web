@@ -20,7 +20,7 @@ export class AccountRepository extends BaseRepository<User> {
     await this.getEntityManager().flush();
   }
 
-  async persist(entity: any): void {
+  async persist(entity: any): Promise<void> {
     this.getEntityManager().persist(entity);
   }
 

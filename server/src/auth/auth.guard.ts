@@ -17,6 +17,7 @@ import { Role } from '../entities/Role';
 import { UserSession } from '../entities/UserSession';
 import { SessionStatus } from '../entities/SessionStatus';
 import { ensureAccountActive } from './auth-utils';
+import { AuditService } from '../audit/audit.service';
 
 const rtKey = (userId: string, platform: string) => `rt:${userId}:${platform}`;
 
@@ -28,6 +29,7 @@ export class AuthGuard implements CanActivate {
     private config: ConfigService,
     private em: EntityManager,
     private redis: RedisService,
+    private auditService: AuditService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -123,7 +125,7 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('auth.unauthorized');
       }
 
-      await ensureAccountActive(user as User, this.em);
+      await ensureAccountActive(user as User, this.em, this.auditService);
 
       request.user = {
         userId: user.id,

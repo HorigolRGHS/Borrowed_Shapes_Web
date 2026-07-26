@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -174,9 +175,10 @@ export class DownloadsController {
   })
   async confirmUpload(
     @Body() dto: ConfirmUploadDto,
-    @Req() req: Request,
+    @Req() req: Request & { user: any },
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.downloadsService.confirmUpload(dto);
+    const adminId = req.user?.userId;
+    const data = await this.downloadsService.confirmUpload(adminId, dto);
     return okResponse(
       'downloads.upload_confirmed',
       data,
@@ -204,6 +206,30 @@ export class DownloadsController {
     const data = await this.downloadsService.setActiveVersion(id, user);
     return okResponse(
       'downloads.set_active_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
+  }
+
+  /**
+   * DELETE /downloads/admin/versions/:id
+   * Admin only — Delete a game version
+   */
+  @Roles('ADMIN')
+  @Delete('admin/versions/:id')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Delete a game version (Admin)',
+    description: 'Deletes the file asset from storage and the database.',
+  })
+  async deleteVersion(
+    @Param('id') id: string,
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    const data = await this.downloadsService.deleteVersion(id, user.userId);
+    return okResponse(
+      'downloads.delete_success',
       data,
       `${req.method} ${req.path}`,
     );

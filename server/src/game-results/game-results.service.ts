@@ -17,6 +17,8 @@ import {
   PlayerInfoDto,
   PlayerStatsDto,
 } from './dto/game-results-response.dto';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -152,15 +154,15 @@ export class GameResultService {
         profile.badgeType !== 'SEASONAL' ||
         (expiresAt && expiresAt >= new Date())
       ) {
-        badgeImageUrl = profile.badgeImageUrl;
+        badgeImageUrl = getProxyMediaUrl(profile.badgeImageUrl);
       }
     }
 
     const playerInfo: PlayerInfoDto = {
       gameProfileId: profile.gameProfileId,
       displayName: (profile.displayName as string) ?? '',
-      avatarUrl: profile.avatarUrl ?? undefined,
-      badgeImageUrl,
+      avatarUrl: getProxyAvatarUrl(profile.avatarUrl, profile.userId, profile.updatedAt) ?? undefined,
+      badgeImageUrl: badgeImageUrl ?? undefined,
     };
 
     const playerStats: PlayerStatsDto = {
@@ -269,16 +271,16 @@ export class GameResultService {
           row.badgeType !== 'SEASONAL' ||
           (expiresAt && expiresAt >= new Date())
         ) {
-          badgeImageUrl = row.badgeImageUrl;
+          badgeImageUrl = getProxyMediaUrl(row.badgeImageUrl);
         }
       }
       return {
         gameProfileId: row.gameProfileId,
         displayName: (row.displayName as string) ?? '',
-        avatarUrl: row.avatarUrl ?? undefined,
+        avatarUrl: getProxyAvatarUrl(row.avatarUrl, row.userId, row.updatedAt) ?? undefined,
         isHost: row.isHost,
         joinedAt: row.joinedAt,
-        badgeImageUrl,
+        badgeImageUrl: badgeImageUrl ?? undefined,
       };
     });
   }
@@ -323,16 +325,16 @@ export class GameResultService {
           row.badgeType !== 'SEASONAL' ||
           (expiresAt && expiresAt >= new Date())
         ) {
-          badgeImageUrl = row.badgeImageUrl;
+          badgeImageUrl = getProxyMediaUrl(row.badgeImageUrl);
         }
       }
       return {
         gameProfileId: row.gameProfileId,
         displayName: (row.displayName as string) ?? '',
-        avatarUrl: row.avatarUrl ?? undefined,
+        avatarUrl: getProxyAvatarUrl(row.avatarUrl, row.userId, row.updatedAt) ?? undefined,
         isAbsent: row.isAbsent,
         leftAt: row.leftAt ?? undefined,
-        badgeImageUrl,
+        badgeImageUrl: badgeImageUrl ?? undefined,
       };
     });
   }

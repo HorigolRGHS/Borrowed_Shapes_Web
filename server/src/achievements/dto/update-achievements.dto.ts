@@ -35,7 +35,7 @@ export class UpdateAchievementDto {
 
   @ApiProperty({ example: 'https://example.com/badge.png' })
   @IsNotEmpty({ message: 'achievements.badge_image_url_required' })
-  @IsUrl({}, { message: 'achievements.badge_image_url_invalid' })
+  @IsString({ message: 'achievements.badge_image_url_invalid' })
   badgeImageUrl!: string;
 
   @ApiProperty({ enum: AchievementType, example: AchievementType.PERMANENT })
@@ -53,3 +53,4 @@ export class UpdateAchievementDto {
   @IsDateString({}, { message: 'achievements.invalid_expires_at' })
   expiresAt?: string;
 }
+

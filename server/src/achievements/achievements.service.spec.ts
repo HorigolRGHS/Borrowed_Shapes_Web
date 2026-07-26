@@ -16,6 +16,7 @@ describe('AchievementService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: 'AuditService', useValue: {} },
         AchievementService,
         {
           provide: AchievementRepository,
@@ -136,13 +137,15 @@ describe('AchievementService', () => {
       jest
         .spyOn(repository, 'findOneByCriteriaExcludeId')
         .mockResolvedValue(null);
-      jest.spyOn(repository, 'assign').mockImplementation((entity, data) => {
-        expect(data.id).toBeUndefined(); // Verify ID is excluded!
-        Object.assign(entity, data);
-      });
+      jest
+        .spyOn(repository, 'assign')
+        .mockImplementation((entity: any, data: any): any => {
+          expect(data.id).toBeUndefined(); // Verify ID is excluded!
+          return Object.assign(entity, data);
+        });
       jest.spyOn(repository, 'flush').mockResolvedValue();
 
-      const result = await service.update('ach-123', dto);
+      const result = await service.update('ach-123', dto as any);
       expect(result).toBeNull();
       expect(achievement.name).toBe('New Name');
       expect(repository.flush).toHaveBeenCalled();
@@ -163,7 +166,7 @@ describe('AchievementService', () => {
         .spyOn(repository, 'findOneByCriteriaExcludeId')
         .mockResolvedValue(new Achievement());
 
-      await expect(service.update('ach-123', dto)).rejects.toThrow(
+      await expect(service.update('ach-123', dto as any)).rejects.toThrow(
         'achievements.already_exists',
       );
     });
@@ -171,7 +174,7 @@ describe('AchievementService', () => {
     it('should throw NotFoundException if achievement does not exist (Boundary)', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.update('ach-999', {})).rejects.toThrow(
+      await expect(service.update('ach-999', {} as any)).rejects.toThrow(
         'achievements.not_found',
       );
     });

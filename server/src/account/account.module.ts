@@ -4,6 +4,7 @@ import { PresenceModule } from '../presence/presence.module';
 import { AchievementModule } from '../achievements/achievements.module';
 import { GameModule } from '../game/game.module';
 import { AuthModule } from '../auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { AccountRepository } from './repositories/account.repository';
@@ -27,6 +28,7 @@ import { AuditLog } from '../entities/AuditLog';
     StorageModule,
     EmailModule,
     AuthModule,
+    AuditModule,
     GameModule,
     AchievementModule,
     PresenceModule,

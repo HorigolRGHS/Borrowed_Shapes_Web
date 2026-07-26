@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { StorageModule } from '../storage/storage.module';
 import { AuthModule } from '../auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 import { DownloadsController } from './downloads.controller';
 import { DownloadsService } from './downloads.service';
 import { FileAsset } from '../entities/FileAsset';
@@ -16,6 +17,7 @@ import { DownloadStatsRepository } from './repositories/download-stats.repositor
   imports: [
     StorageModule,
     AuthModule,
+    AuditModule,
     MikroOrmModule.forFeature([FileAsset, DownloadLog, DownloadStats, User]),
   ],
   controllers: [DownloadsController],

@@ -7,7 +7,11 @@ describe('SeasonTeamService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SeasonTeamService, { provide: EntityManager, useValue: {} }],
+      providers: [
+        SeasonTeamService,
+        { provide: 'SeasonTeamRepository', useValue: {} },
+        { provide: 'AuditService', useValue: {} },
+      ],
     }).compile();
 
     service = module.get<SeasonTeamService>(SeasonTeamService);

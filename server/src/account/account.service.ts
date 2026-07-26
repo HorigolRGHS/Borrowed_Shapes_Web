@@ -50,7 +50,7 @@ import { AuthService } from '../auth/auth.service';
 import { Role } from '../entities/Role';
 import { EmailService } from '../email/email.service';
 import { AccountRepository } from './repositories/account.repository';
-import { AuditLogRepository } from '../auth/repositories/audit-log.repository';
+import { AuditService } from '../audit/audit.service';
 import { GameProfileRepository } from '../game/repositories/game-profile.repository';
 import { AchievementRepository } from '../achievements/repositories/achievements.repository';
 import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
@@ -96,7 +96,7 @@ export class AccountService {
 
   constructor(
     private readonly accountRepository: AccountRepository,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly auditService: AuditService,
     private readonly gameProfileRepository: GameProfileRepository,
     private readonly achievementRepository: AchievementRepository,
     private readonly userOnlineStatusRepository: UserOnlineStatusRepository,
@@ -237,7 +237,7 @@ export class AccountService {
 
       if (dto.equippedAchievementId === null) {
         if (oldEquipped) {
-          gameProfile.equippedAchievementId = undefined as any;
+          gameProfile.equippedAchievementId = null as any;
           updated = true;
           oldValues['equippedAchievementId'] = oldEquipped;
         }
@@ -276,8 +276,8 @@ export class AccountService {
     }
 
     if (updated) {
-      const auditLog = this.auditLogRepository.create({
-        userId: user,
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: user.id,
         actionType: AuditActionType.UPDATE,
         entityName: 'User',
         entityId: user.id,
@@ -290,7 +290,6 @@ export class AccountService {
         ipAddress,
       });
       await this.accountRepository.flush();
-      void auditLog;
     }
 
     // After DB save succeeded, cleanup old avatar on R2 if it changed
@@ -392,6 +391,7 @@ export class AccountService {
   // ─── ADMIN ACCOUNT MANAGEMENT ──────────────────────────────
 
   async getAdminUsers(query: AdminAccountQueryDto) {
+    const { page = 1, limit = 20 } = query;
     const [users, total] = await this.accountRepository.getAdminUsers(query);
 
     const userIds = users.map((u) => u.id);
@@ -465,7 +465,7 @@ export class AccountService {
         expiresAt &&
         expiresAt < new Date()
       ) {
-        gameProfile.equippedAchievementId = undefined as any;
+        gameProfile.equippedAchievementId = null as any;
         await this.accountRepository.flush();
       }
     }
@@ -511,14 +511,14 @@ export class AccountService {
 
   async getAdminUserAuditLogs(id: string, query: AdminAuditLogQueryDto) {
     const { page = 1, limit = 20 } = query;
-    const [logs, total] = await this.auditLogRepository.getAdminUserAuditLogs(
+    const [logs, total] = await this.auditService.getAdminUserAuditLogs(
       id,
       page,
       limit,
     );
 
     return {
-      items: logs.map((log) => ({
+      items: logs.map((log: any) => ({
         id: log.id,
         userId: log.userId?.id || null,
         actionType: log.actionType,
@@ -551,11 +551,10 @@ export class AccountService {
       to,
     } = query;
 
-    const [logs, total] =
-      await this.auditLogRepository.getSystemAuditLogs(query);
+    const [logs, total] = await this.auditService.getSystemAuditLogs(query);
 
     return {
-      items: logs.map((log) => {
+      items: logs.map((log: any) => {
         const actor = log.userId
           ? {
               id: log.userId.id,
@@ -632,9 +631,8 @@ export class AccountService {
     if (updated) {
       target.updatedAt = new Date();
 
-      const adminRef = this.accountRepository.getReference(adminId);
-      const auditLog = this.auditLogRepository.create({
-        userId: adminRef,
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: adminId,
         actionType: AuditActionType.UPDATE,
         entityName: 'User',
         entityId: target.id,
@@ -645,7 +643,6 @@ export class AccountService {
         },
         ipAddress: ipAddress || null,
       });
-      this.auditLogRepository.persist(auditLog);
       await this.accountRepository.flush();
     }
 
@@ -706,9 +703,8 @@ export class AccountService {
 
     target.role = dto.role;
 
-    const adminRef = this.accountRepository.getReference(adminId);
-    this.auditLogRepository.create({
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.UPDATE,
       entityName: 'User',
       entityId: targetUserId,
@@ -794,9 +790,8 @@ export class AccountService {
     target.banReason = dto.reason.trim();
     target.banExpiresAt = expiresAt ?? undefined;
 
-    const adminRef = this.accountRepository.getReference(adminId);
-    const auditLog = this.auditLogRepository.create({
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.BAN_USER,
       entityName: 'User',
       entityId: target.id,
@@ -810,14 +805,14 @@ export class AccountService {
       ipAddress: ipAddress || null,
     });
 
-    this.auditLogRepository.persist(auditLog);
-
     // Revoke all active sessions
-    await this.userRepository.nativeUpdate(
-      UserSession,
-      { userId: target.id, status: SessionStatus.ACTIVE },
-      { status: SessionStatus.REVOKED, logoutTime: new Date() },
-    );
+    await this.accountRepository
+      .getEntityManager()
+      .nativeUpdate(
+        UserSession,
+        { userId: target.id, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: new Date() },
+      );
 
     await this.accountRepository.flush();
 
@@ -865,9 +860,8 @@ export class AccountService {
     target.banReason = undefined;
     target.banExpiresAt = undefined;
 
-    const adminRef = this.accountRepository.getReference(adminId);
-    const auditLog = this.auditLogRepository.create({
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.UNBAN_USER,
       entityName: 'User',
       entityId: target.id,
@@ -880,8 +874,6 @@ export class AccountService {
       },
       ipAddress: ipAddress || null,
     });
-
-    this.auditLogRepository.persist(auditLog);
     await this.accountRepository.flush();
 
     if (hasChanged && target.email) {
@@ -924,9 +916,8 @@ export class AccountService {
 
     target.deletedAt = new Date();
 
-    const adminRef = this.accountRepository.getReference(adminId);
-    const auditLog = this.auditLogRepository.create({
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.DELETE,
       entityName: 'User',
       entityId: target.id,
@@ -937,14 +928,14 @@ export class AccountService {
       ipAddress: ipAddress || null,
     });
 
-    this.auditLogRepository.persist(auditLog);
-
     // Revoke all active sessions
-    await this.userRepository.nativeUpdate(
-      UserSession,
-      { userId: target.id, status: SessionStatus.ACTIVE },
-      { status: SessionStatus.REVOKED, logoutTime: new Date() },
-    );
+    await this.accountRepository
+      .getEntityManager()
+      .nativeUpdate(
+        UserSession,
+        { userId: target.id, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: new Date() },
+      );
 
     await this.accountRepository.flush();
 
@@ -990,9 +981,8 @@ export class AccountService {
 
     target.deletedAt = null as any;
 
-    const adminRef = this.accountRepository.getReference(adminId);
-    const auditLog = this.auditLogRepository.create({
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.UPDATE,
       entityName: 'User',
       entityId: target.id,
@@ -1003,8 +993,6 @@ export class AccountService {
       },
       ipAddress: ipAddress || null,
     });
-
-    this.auditLogRepository.persist(auditLog);
     await this.accountRepository.flush();
 
     return this.getAdminUserDetails(targetUserId);
@@ -1029,7 +1017,7 @@ export class AccountService {
       downloadsResult,
       activeFileResult,
     ] = await Promise.all([
-      this.accountRepository.countForumThreads(),
+      this.accountRepository.getEntityManager().count(ForumThread, {}),
       this.accountRepository
         .getEntityManager()
         .count(ForumComment, { isDeleted: false }),
@@ -1041,21 +1029,15 @@ export class AccountService {
       this.accountRepository.count({ deletedAt: null }),
       this.gameProfileRepository.count({}),
       this.accountRepository.count({ isBanned: true }),
-      this.em
-        .getConnection()
-        .execute(
-          `SELECT count(*) as count FROM auth."User" WHERE "createdAt" >= NOW() - INTERVAL '${days} days'`,
-        ),
-      this.em
-        .getConnection()
-        .execute(
-          `SELECT count(*) as total, sum("bytesSent") as bytes FROM web."DownloadLog"`,
-        ),
-      this.em
-        .getConnection()
-        .execute(
-          `SELECT "fileVersion" FROM web."FileAsset" WHERE "isActive" = true LIMIT 1`,
-        ),
+      this.accountRepository.executeRaw(
+        `SELECT count(*) as count FROM auth."User" WHERE "createdAt" >= NOW() - INTERVAL '${days} days'`,
+      ),
+      this.accountRepository.executeRaw(
+        `SELECT count(*) as total, sum("bytesSent") as bytes FROM web."DownloadLog"`,
+      ),
+      this.accountRepository.executeRaw(
+        `SELECT "fileVersion" FROM web."FileAsset" WHERE "isActive" = true LIMIT 1`,
+      ),
     ]);
 
     const totalDownloads = Number(downloadsResult[0]?.total || 0);
@@ -1081,16 +1063,16 @@ export class AccountService {
       userGrowthRes,
       downloadTrendRes,
     ] = await Promise.all([
-      this.em
-        .getConnection()
-        .execute(seriesSql('web."ForumThread"', 'createdAt')),
+      this.accountRepository.executeRaw(
+        seriesSql('web."ForumThread"', 'createdAt'),
+      ),
       this.accountRepository.executeRaw(
         seriesSql('game."GameRun"', 'startedAt'),
       ),
       this.accountRepository.executeRaw(seriesSql('auth."User"', 'createdAt')),
-      this.em
-        .getConnection()
-        .execute(seriesSql('web."DownloadLog"', 'downloadedAt')),
+      this.accountRepository.executeRaw(
+        seriesSql('web."DownloadLog"', 'downloadedAt'),
+      ),
     ]);
 
     // Fill missing days

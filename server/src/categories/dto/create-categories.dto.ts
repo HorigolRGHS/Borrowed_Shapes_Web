@@ -53,7 +53,7 @@ export class CreateCategoryDto {
 
   @ApiPropertyOptional({ example: 'https://example.com/icon.png' })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   iconUrl?: string;
 
   @ApiPropertyOptional({ example: false })

@@ -9,12 +9,14 @@ import { UserAchievement } from '../entities/UserAchievement';
 import { GameProfile } from '../entities/GameProfile';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([Achievement, UserAchievement, GameProfile]),
     AuthModule,
     StorageModule,
+    AuditModule,
   ],
   controllers: [AchievementController],
   providers: [

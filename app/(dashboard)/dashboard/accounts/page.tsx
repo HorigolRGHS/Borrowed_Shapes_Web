@@ -438,7 +438,12 @@ export default function AccountManagementPage() {
     try {
       let expires = null;
       if (banForm.banExpiresAt) {
-        expires = new Date(banForm.banExpiresAt).toISOString();
+        const banDate = new Date(banForm.banExpiresAt);
+        if (banDate <= new Date()) {
+          toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
+          return;
+        }
+        expires = banDate.toISOString();
       }
       await api.patch(`/account/admin/users/${selectedUser?.id}/ban`, {
         reason: stripHtml(banForm.reason), // Ensure we only store plain text to prevent XSS

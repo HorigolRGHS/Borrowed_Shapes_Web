@@ -962,6 +962,7 @@
         "ban_reason_editor_hint": "Mô tả lý do tài khoản này bị cấm.",
         "ban_reason_plain_required": "Lý do cấm không được để trống.",
         "ban_reason_plain_too_long": "Lý do cấm tối đa 500 ký tự.",
+        "ban_date_past": "Thời gian hết hạn cấm phải nằm ở tương lai.",
         "restore_title": "Khôi phục tài khoản",
         "restore_description": "Tài khoản này sẽ được khôi phục và có thể truy cập hệ thống lại nếu không còn bị cấm."
       },

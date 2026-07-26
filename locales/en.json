@@ -966,6 +966,7 @@
         "ban_reason_editor_hint": "Describe why this account is being banned.",
         "ban_reason_plain_required": "Ban reason is required.",
         "ban_reason_plain_too_long": "Ban reason must be at most 500 characters.",
+        "ban_date_past": "Ban expiration date must be in the future.",
         "restore_title": "Restore Account",
         "restore_description": "This account will be restored and can access the system again unless it is still banned."
       },

@@ -4,12 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { okResponse } from '../common/dto/api-response.dto';
 import { randomUUID } from 'node:crypto';
 import { GameProfile } from '../entities/GameProfile';
-import { SeasonTeam } from '../entities/SeasonTeam';
-import { SeasonTeamMember } from '../entities/SeasonTeamMember';
 import { SeasonTeamRepository } from './repositories/season-team.repository';
 import { SeasonTeamMemberRepository } from './repositories/season-team-member.repository';
 import { GameProfileRepository } from '../game/repositories/game-profile.repository';
@@ -38,10 +35,10 @@ export class SeasonTeamService {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
 
-    const existingMember = await this.seasonTeamMemberRepository.findOne({
+    const existingMember = await this.seasonTeamMemberRepository.findByProfileId(
       seasonMonth,
-      gameProfileId: profile.id,
-    });
+      profile.id,
+    );
     if (existingMember) {
       throw new BadRequestException('season_team.already_in_team');
     }
@@ -84,27 +81,27 @@ export class SeasonTeamService {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
 
-    const existingMember = await this.seasonTeamMemberRepository.findOne({
+    const existingMember = await this.seasonTeamMemberRepository.findByProfileId(
       seasonMonth,
-      gameProfileId: profile.id,
-    });
+      profile.id,
+    );
     if (existingMember) {
       throw new BadRequestException('season_team.already_in_team');
     }
 
     const code = dto.code.trim().toUpperCase();
-    const team = await this.seasonTeamRepository.findOne(
-      { seasonMonth, code },
-      { populate: ['leaderId'] },
+    const team = await this.seasonTeamRepository.findByCodeWithLeader(
+      seasonMonth,
+      code,
     );
     if (!team) {
       throw new NotFoundException('season_team.not_found');
     }
 
-    const memberCount = await this.seasonTeamMemberRepository.count({
+    const memberCount = await this.seasonTeamMemberRepository.countTeamMembers(
       seasonMonth,
-      teamId: team.id,
-    });
+      team.id,
+    );
     if (memberCount >= TEAM_MAX_MEMBERS) {
       throw new BadRequestException('season_team.team_full');
     }
@@ -139,9 +136,9 @@ export class SeasonTeamService {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
 
-    const myMember = await this.seasonTeamMemberRepository.findOne(
-      { seasonMonth, gameProfileId: profile.id },
-      { populate: ['teamId'] },
+    const myMember = await this.seasonTeamMemberRepository.findMyMemberWithTeam(
+      seasonMonth,
+      profile.id,
     );
 
     if (!myMember) {
@@ -171,9 +168,10 @@ export class SeasonTeamService {
   ) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const leaderProfile = await this.findGameProfileOrFail(userId);
-    const team = await this.seasonTeamRepository.findOne(
-      { id: teamId, seasonMonth },
-      { populate: ['leaderId'] },
+    
+    const team = await this.seasonTeamRepository.findByIdWithLeader(
+      teamId,
+      seasonMonth,
     );
     if (!team) {
       throw new NotFoundException('season_team.not_found');
@@ -185,11 +183,11 @@ export class SeasonTeamService {
       throw new BadRequestException('season_team.cannot_kick_leader');
     }
 
-    const targetMember = await this.seasonTeamMemberRepository.findOne({
+    const targetMember = await this.seasonTeamMemberRepository.findTargetMember(
       seasonMonth,
-      teamId: team.id,
-      gameProfileId: dto.gameProfileId,
-    });
+      team.id,
+      dto.gameProfileId,
+    );
     if (!targetMember) {
       throw new NotFoundException('season_team.member_not_found');
     }
@@ -211,9 +209,10 @@ export class SeasonTeamService {
   async leaveTeam(userId: string, path: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
-    const myMember = await this.seasonTeamMemberRepository.findOne(
-      { seasonMonth, gameProfileId: profile.id },
-      { populate: ['teamId', 'teamId.leaderId'] },
+    
+    const myMember = await this.seasonTeamMemberRepository.findMyMemberWithTeamAndLeader(
+      seasonMonth,
+      profile.id,
     );
     if (!myMember) {
       throw new BadRequestException('season_team.not_in_team');
@@ -239,9 +238,10 @@ export class SeasonTeamService {
   async deleteTeam(userId: string, teamId: string, path: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
-    const team = await this.seasonTeamRepository.findOne(
-      { id: teamId, seasonMonth },
-      { populate: ['leaderId'] },
+    
+    const team = await this.seasonTeamRepository.findByIdWithLeader(
+      teamId,
+      seasonMonth,
     );
     if (!team) {
       throw new NotFoundException('season_team.not_found');
@@ -283,24 +283,17 @@ export class SeasonTeamService {
     teamId: string,
     seasonMonth: string,
   ): Promise<SeasonTeamResponseDto> {
-    const team = await this.seasonTeamRepository.findOne(
-      { id: teamId, seasonMonth },
-      { populate: ['leaderId'] },
+    const team = await this.seasonTeamRepository.findByIdWithLeader(
+      teamId,
+      seasonMonth,
     );
     if (!team) {
       throw new NotFoundException('season_team.not_found');
     }
 
-    const members = await this.seasonTeamMemberRepository.find(
-      { seasonMonth, teamId: team.id },
-      {
-        populate: [
-          'gameProfileId',
-          'gameProfileId.userId',
-          'gameProfileId.equippedAchievementId',
-        ],
-        orderBy: { joinedAt: 'asc' },
-      },
+    const members = await this.seasonTeamMemberRepository.findTeamMembersDetail(
+      seasonMonth,
+      team.id,
     );
 
     return {

@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class VerifyEmailRequestDto {
@@ -26,9 +33,12 @@ export class ResetPasswordRequestDto {
   @IsString()
   @MinLength(8, { message: 'validation.password_min_8' })
   @MaxLength(72, { message: 'validation.password_max_length' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message: 'validation.password_complex',
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/,
+    {
+      message: 'validation.password_complex',
+    },
+  )
   newPassword!: string;
 }
 export class ChangePasswordRequestDto {
@@ -41,9 +51,11 @@ export class ChangePasswordRequestDto {
   @IsString()
   @MinLength(8, { message: 'validation.password_min_8' })
   @MaxLength(72, { message: 'validation.password_max_length' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message: 'validation.password_complex',
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/,
+    {
+      message: 'validation.password_complex',
+    },
+  )
   newPassword!: string;
 }
-

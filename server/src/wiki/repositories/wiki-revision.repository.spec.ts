@@ -4,7 +4,9 @@ describe('WikiRevisionRepository.countByPageIds', () => {
   function makeRepo(executeImpl: jest.Mock) {
     const em = { execute: executeImpl } as any;
     // Bypass EntityRepository super() DB wiring; we only exercise countByPageIds.
-    const repo = Object.create(WikiRevisionRepository.prototype) as WikiRevisionRepository;
+    const repo = Object.create(
+      WikiRevisionRepository.prototype,
+    ) as WikiRevisionRepository;
     (repo as any).getEntityManager = () => em;
     return repo;
   }

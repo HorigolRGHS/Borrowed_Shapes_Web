@@ -13,7 +13,7 @@ export function DownloadCTA({ user }: { user: any }) {
   const CTA_BG = `${R2_BASE}/LivingRoom.jpeg`;
 
   return (
-    <section className="py-20 bg-background dark:bg-[#0a0a14] w-full transition-colors duration-300">
+    <section className="pb-12 pt-0 -mt-8 md:-mt-16 relative z-10 bg-background dark:bg-[#0a0a14] w-full transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-3xl overflow-hidden border border-border dark:border-violet-500/20 shadow-2xl">
           {/* 1. Background image */}

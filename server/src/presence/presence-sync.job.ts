@@ -12,7 +12,7 @@ export class PresenceSyncJob {
     private presenceService: PresenceService,
   ) {}
 
-  @Cron('*/10 * * * * *')
+  @Cron('*/10 * * * * *', { timeZone: 'Asia/Ho_Chi_Minh' })
   async cleanupExpired(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {
@@ -23,7 +23,7 @@ export class PresenceSyncJob {
     });
   }
 
-  @Cron('*/10 * * * * *')
+  @Cron('*/10 * * * * *', { timeZone: 'Asia/Ho_Chi_Minh' })
   async syncToDb(): Promise<void> {
     await RequestContext.create(this.orm.em, async () => {
       try {

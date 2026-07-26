@@ -2,7 +2,6 @@ import { Entity, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'job_run_details', schema: 'cron' })
 export class JobRunDetails {
-
   [PrimaryKeyProp]?: 'runid';
 
   @Property({ nullable: true })
@@ -34,5 +33,4 @@ export class JobRunDetails {
 
   @Property({ fieldName: 'end_time', nullable: true })
   endTime?: Date;
-
 }

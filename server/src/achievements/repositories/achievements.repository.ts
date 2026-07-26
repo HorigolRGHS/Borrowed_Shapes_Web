@@ -1,11 +1,12 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { Achievement } from '../entities/Achievement';
-import { UserAchievement } from '../entities/UserAchievement';
-import { GameProfile } from '../entities/GameProfile';
+import { Achievement } from '../../entities/Achievement';
+import { UserAchievement } from '../../entities/UserAchievement';
+import { GameProfile } from '../../entities/GameProfile';
 
 @Injectable()
-export class AchievementRepository extends EntityRepository<Achievement> {
+export class AchievementRepository extends BaseRepository<Achievement> {
   constructor(em: EntityManager) {
     super(em, Achievement);
   }
@@ -30,7 +31,10 @@ export class AchievementRepository extends EntityRepository<Achievement> {
     return this.findOne({ criteriaCode });
   }
 
-  async findOneByCriteriaExcludeId(criteriaCode: string, id: string): Promise<Achievement | null> {
+  async findOneByCriteriaExcludeId(
+    criteriaCode: string,
+    id: string,
+  ): Promise<Achievement | null> {
     return this.findOne({ criteriaCode, id: { $ne: id } });
   }
 
@@ -38,12 +42,24 @@ export class AchievementRepository extends EntityRepository<Achievement> {
     return this.em.count(UserAchievement, { achievementId });
   }
 
-  async findUserAchievements(gameProfileId: string): Promise<UserAchievement[]> {
-    return this.em.find(UserAchievement, { gameProfileId }, { populate: ['achievementId'] });
+  async findUserAchievements(
+    gameProfileId: string,
+  ): Promise<UserAchievement[]> {
+    return this.em.find(
+      UserAchievement,
+      { gameProfileId },
+      { populate: ['achievementId'] },
+    );
   }
 
-  async findOneUserAchievement(gameProfileId: string, achievementId: string): Promise<UserAchievement | null> {
-    return this.findOne(UserAchievement as any, { gameProfileId, achievementId } as any) as any;
+  async findOneUserAchievement(
+    gameProfileId: string,
+    achievementId: string,
+  ): Promise<UserAchievement | null> {
+    return this.findOne(
+      UserAchievement as any,
+      { gameProfileId, achievementId } as any,
+    ) as any;
   }
 
   createAchievement(data: any): Achievement {
@@ -83,12 +99,15 @@ export class AchievementRepository extends EntityRepository<Achievement> {
     }
 
     if (query.q && query.q.trim()) {
-      conditions.push('(a.name ILIKE ? OR a.description ILIKE ? OR a."criteriaCode" ILIKE ?)');
+      conditions.push(
+        '(a.name ILIKE ? OR a.description ILIKE ? OR a."criteriaCode" ILIKE ?)',
+      );
       const term = `%${query.q.trim()}%`;
       params.push(term, term, term);
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const orderDir = query.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     let orderBy = `ORDER BY "earnedCount" ${orderDir}`; // default

@@ -1,4 +1,12 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterRequestDto {
@@ -10,9 +18,12 @@ export class RegisterRequestDto {
   @IsString()
   @MinLength(8, { message: 'validation.password_min_8' })
   @MaxLength(72, { message: 'validation.password_max_length' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message: 'validation.password_complex',
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/,
+    {
+      message: 'validation.password_complex',
+    },
+  )
   password: string | undefined;
 
   @ApiPropertyOptional({ example: 'BorrowedPlayer' })
@@ -59,9 +70,12 @@ export class RegisterDto {
   @MinLength(8, { message: 'validation.password_min_8' })
   @MaxLength(72, { message: 'validation.password_max_length' })
   // Must contain: 1 uppercase, 1 lowercase, 1 digit, 1 special character
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/, {
-    message: 'validation.password_complex',
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]).*$/,
+    {
+      message: 'validation.password_complex',
+    },
+  )
   password: string | undefined;
 
   @ApiPropertyOptional({ example: 'BorrowedPlayer' })

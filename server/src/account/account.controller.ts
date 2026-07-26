@@ -1,9 +1,26 @@
-import { Controller, Patch, Post, Get, Delete, Body, Req, Param, Query, HttpCode, HttpStatus, Res, StreamableFile } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Req,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+  Res,
+  StreamableFile,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ApiTags, ApiBody, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { AvatarUploadRequestDto, AvatarUploadResponseDto } from './dto/avatar-upload.dto';
+import {
+  AvatarUploadRequestDto,
+  AvatarUploadResponseDto,
+} from './dto/avatar-upload.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
@@ -31,8 +48,16 @@ export class AccountController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.updateProfile(user.userId, dto, req.ip ?? '');
-    return okResponse('account.profile_updated', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.updateProfile(
+      user.userId,
+      dto,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'account.profile_updated',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Post('avatar-upload-url')
@@ -44,10 +69,13 @@ export class AccountController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<AvatarUploadResponseDto>> {
     const data = await this.accountService.getAvatarUploadUrl(user.userId, dto);
-    return okResponse('account.avatar_upload_url_created', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'account.avatar_upload_url_created',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
-  
   @Public()
   @Get('avatar/:id')
   @ApiOperation({ summary: 'Get user avatar image' })
@@ -56,8 +84,9 @@ export class AccountController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const { stream, contentType, contentLength } = await this.accountService.getAvatarStream(id);
-    
+    const { stream, contentType, contentLength } =
+      await this.accountService.getAvatarStream(id);
+
     req.on('close', () => {
       if (!res.writableEnded) {
         stream.destroy();
@@ -65,7 +94,10 @@ export class AccountController {
     });
 
     stream.on('error', (err: any) => {
-      console.warn(`[AccountController] Stream error for avatar ${id}:`, err?.message || err);
+      console.warn(
+        `[AccountController] Stream error for avatar ${id}:`,
+        err?.message || err,
+      );
     });
 
     res.set({
@@ -73,10 +105,9 @@ export class AccountController {
       'Content-Length': contentLength,
       'Cache-Control': 'private, max-age=300', // Cache for 5 minutes
     });
-    
+
     return new StreamableFile(stream);
   }
-
 
   // ─── ADMIN ENDPOINTS ────────────────────────────────────────────────────────
 
@@ -89,7 +120,11 @@ export class AccountController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.accountService.getAdminUsers(query);
-    return okResponse('admin.account.users_listed', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'admin.account.users_listed',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -101,7 +136,11 @@ export class AccountController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.accountService.getAdminUserDetails(id);
-    return okResponse('admin.account.user_details', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'admin.account.user_details',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -113,7 +152,11 @@ export class AccountController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.accountService.getSystemAuditLogs(query);
-    return okResponse('admin.auditLogs.system_audit_logs', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'admin.auditLogs.system_audit_logs',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -126,7 +169,11 @@ export class AccountController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.accountService.getAdminUserAuditLogs(id, query);
-    return okResponse('admin.account.user_audit_logs', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'admin.account.user_audit_logs',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -138,7 +185,11 @@ export class AccountController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.accountService.getDashboardStatistics(query);
-    return okResponse('admin.dashboard.statistics_loaded', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'admin.dashboard.statistics_loaded',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -151,8 +202,17 @@ export class AccountController {
     @CurrentUser() admin: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.adminUpdateProfile(admin.userId, targetId, dto, req.ip ?? '');
-    return okResponse('admin.account.profile_updated', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.adminUpdateProfile(
+      admin.userId,
+      targetId,
+      dto,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'admin.account.profile_updated',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -165,8 +225,17 @@ export class AccountController {
     @CurrentUser() admin: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.adminUpdateRole(admin.userId, targetId, dto, req.ip ?? '');
-    return okResponse('admin.account.role_updated', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.adminUpdateRole(
+      admin.userId,
+      targetId,
+      dto,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'admin.account.role_updated',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -179,8 +248,17 @@ export class AccountController {
     @CurrentUser() admin: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.adminBanUser(admin.userId, targetId, dto, req.ip ?? '');
-    return okResponse('admin.account.user_banned', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.adminBanUser(
+      admin.userId,
+      targetId,
+      dto,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'admin.account.user_banned',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -192,8 +270,16 @@ export class AccountController {
     @CurrentUser() admin: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.adminUnbanUser(admin.userId, targetId, req.ip ?? '');
-    return okResponse('admin.account.user_unbanned', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.adminUnbanUser(
+      admin.userId,
+      targetId,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'admin.account.user_unbanned',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -205,8 +291,16 @@ export class AccountController {
     @CurrentUser() admin: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.adminDeleteUser(admin.userId, targetId, req.ip ?? '');
-    return okResponse('admin.account.user_deleted', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.adminDeleteUser(
+      admin.userId,
+      targetId,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'admin.account.user_deleted',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -218,7 +312,15 @@ export class AccountController {
     @CurrentUser() admin: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.accountService.adminRestoreUser(admin.userId, targetId, req.ip ?? '');
-    return okResponse('admin.account.messages.restore_success', data, `${req.method} ${req.path}`);
+    const data = await this.accountService.adminRestoreUser(
+      admin.userId,
+      targetId,
+      req.ip ?? '',
+    );
+    return okResponse(
+      'admin.account.messages.restore_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 }

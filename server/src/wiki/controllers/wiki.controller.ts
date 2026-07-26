@@ -117,7 +117,11 @@ export class WikiController {
       throw new BadRequestException('wiki.too_many_related_slugs');
     }
     const data = await this.wikiService.findBySlugs(deduped);
-    return okResponse('wiki.related_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'wiki.related_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('ADMIN')
@@ -174,7 +178,9 @@ export class WikiController {
 
   @Roles('ADMIN')
   @Get('admin/:id')
-  @ApiOperation({ summary: 'Admin: get wiki page by id (any state) for editing' })
+  @ApiOperation({
+    summary: 'Admin: get wiki page by id (any state) for editing',
+  })
   @ApiResponse({ status: 200, type: WikiDetailResponseDto })
   async getById(
     @Param('id') id: string,
@@ -199,7 +205,11 @@ export class WikiController {
       Number(page),
       Number(limit),
     );
-    return okResponse('wiki.history_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'wiki.history_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('USER', 'ADMIN')
@@ -212,7 +222,11 @@ export class WikiController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<unknown>> {
     const data = await this.wikiService.getRevision(id, revisionId);
-    return okResponse('wiki.revision_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'wiki.revision_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Roles('USER', 'ADMIN')
@@ -259,7 +273,9 @@ export class WikiController {
     }),
   )
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Admin: upload an image (jpeg/png/webp/gif, max 5MB)' })
+  @ApiOperation({
+    summary: 'Admin: upload an image (jpeg/png/webp/gif, max 5MB)',
+  })
   @ApiBody({
     schema: {
       type: 'object',

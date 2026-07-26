@@ -1,4 +1,14 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, IsDateString, MaxLength, Matches, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsDateString,
+  MaxLength,
+  Matches,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AchievementType } from '../../entities/Achievement';
 
@@ -30,7 +40,7 @@ export class CreateAchievementDto {
 
   @ApiProperty({ example: 'https://example.com/badge.png' })
   @IsNotEmpty({ message: 'achievements.badge_image_url_required' })
-  @IsUrl({}, { message: 'achievements.badge_image_url_invalid' })
+  @IsString({ message: 'achievements.badge_image_url_invalid' })
   badgeImageUrl!: string;
 
   @ApiProperty({ enum: AchievementType, example: AchievementType.PERMANENT })

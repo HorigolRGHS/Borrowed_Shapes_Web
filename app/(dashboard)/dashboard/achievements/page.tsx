@@ -228,7 +228,6 @@ export default function AchievementsPage() {
         return "";
       case "badgeImageUrl":
         if (!value.trim()) return t("achievements.validation.badge_url_required");
-        if (!/^https?:\/\/.+/.test(value.trim())) return t("achievements.validation.badge_url_invalid");
         return "";
       case "description": {
         const plainText = value.replace(/<[^>]*>/g, "");
@@ -713,12 +712,21 @@ export default function AchievementsPage() {
                                   className="h-full w-full object-cover"
                                 />
                               </div>
-                              <span className="font-medium text-foreground">{achievement.name}</span>
+                              <span 
+                                className="font-medium text-foreground truncate max-w-[120px] sm:max-w-[200px] block"
+                                title={achievement.name}
+                              >
+                                {achievement.name}
+                              </span>
                             </div>
                           </TableCell>
                           {/* Criteria Code */}
                           <TableCell>
-                            <Badge variant="outline" className={`${BADGE_BASE_CLASS} border-amber-500/60 bg-amber-500/10 text-amber-300`}>
+                            <Badge 
+                              variant="outline" 
+                              className={`${BADGE_BASE_CLASS} border-amber-500/60 bg-amber-500/10 text-amber-300 truncate max-w-[120px] sm:max-w-[150px] inline-block align-bottom`}
+                              title={achievement.criteriaCode}
+                            >
                               {achievement.criteriaCode}
                             </Badge>
                           </TableCell>

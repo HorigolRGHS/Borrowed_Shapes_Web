@@ -1,21 +1,41 @@
-import { Entity, Enum, Index, ManyToOne, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Entity,
+  Enum,
+  Index,
+  ManyToOne,
+  type Opt,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { User } from './User';
 import { Web$46AnnouncementType } from './Web$46AnnouncementType';
 
 @Entity({ schema: 'web' })
-@Index({ name: 'Announcement_isPublished_publishedAt_idx', expression: 'CREATE INDEX "Announcement_isPublished_publishedAt_idx" ON web."Announcement" USING btree ("isPublished", "publishedAt" DESC)', properties: ['isPublished', 'publishedAt'] })
+@Index({
+  name: 'Announcement_isPublished_publishedAt_idx',
+  expression:
+    'CREATE INDEX "Announcement_isPublished_publishedAt_idx" ON web."Announcement" USING btree ("isPublished", "publishedAt" DESC)',
+  properties: ['isPublished', 'publishedAt'],
+})
 export class Announcement {
-
   @PrimaryKey({ type: 'text', defaultRaw: `(gen_random_uuid())::text` })
   id!: string & Opt;
 
-  @ManyToOne({ entity: () => User, fieldName: 'authorId', deleteRule: 'set null' })
+  @ManyToOne({
+    entity: () => User,
+    fieldName: 'authorId',
+    deleteRule: 'set null',
+  })
   authorId!: User;
 
   @Property({ type: 'text', unique: 'Announcement_slug_key' })
   slug!: string;
 
-  @Property({ fieldName: 'slug_vi', type: 'text', unique: 'Announcement_slug_vi_key' })
+  @Property({
+    fieldName: 'slug_vi',
+    type: 'text',
+    unique: 'Announcement_slug_vi_key',
+  })
   slugVi!: string;
 
   @Property({ type: 'text' })
@@ -36,7 +56,11 @@ export class Announcement {
   @Property({ fieldName: 'content_vi', type: 'text' })
   contentVi!: string;
 
-  @Enum({ items: () => Web$46AnnouncementType, nativeEnumName: 'web.AnnouncementType', index: 'Announcement_type_idx' })
+  @Enum({
+    items: () => Web$46AnnouncementType,
+    nativeEnumName: 'web.AnnouncementType',
+    index: 'Announcement_type_idx',
+  })
   type: Web$46AnnouncementType & Opt = Web$46AnnouncementType.NEWS;
 
   @Property({ type: 'boolean' })
@@ -53,5 +77,4 @@ export class Announcement {
 
   @Property({ type: 'datetime', defaultRaw: `now()` })
   updatedAt!: Date & Opt;
-
 }

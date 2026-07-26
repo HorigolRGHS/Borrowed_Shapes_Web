@@ -26,6 +26,6 @@ import { LevelRepository } from './repositories/level.repository';
     GameSessionRepository,
     GameSessionPlayerRepository,
     LevelRepository,
-  ]
+  ],
 })
 export class GameModule {}

@@ -1,9 +1,14 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityRepository, FilterQuery } from '@mikro-orm/postgresql';
-import { Announcement } from '../entities/Announcement';
-import { User } from '../entities/User';
-import { ListAnnouncementsQueryDto } from './dto/announcements-response.dto';
-import { escapeLike } from '../common/utils/sql-like';
+import {
+  EntityManager,
+  EntityRepository,
+  FilterQuery,
+} from '@mikro-orm/postgresql';
+import { Announcement } from '../../entities/Announcement';
+import { User } from '../../entities/User';
+import { ListAnnouncementsQueryDto } from '../dto/announcements-response.dto';
+import { escapeLike } from '../../common/utils/sql-like';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -11,7 +16,7 @@ function clamp(n: number, min: number, max: number): number {
 }
 
 @Injectable()
-export class AnnouncementRepository extends EntityRepository<Announcement> {
+export class AnnouncementRepository extends BaseRepository<Announcement> {
   constructor(em: EntityManager) {
     super(em, Announcement);
   }
@@ -76,11 +81,7 @@ export class AnnouncementRepository extends EntityRepository<Announcement> {
 
     return this.findAndCount(where, {
       populate: ['authorId'],
-      orderBy: [
-        { isPinned: 'desc' },
-        { [sortBy]: order },
-        { id: 'desc' },
-      ],
+      orderBy: [{ isPinned: 'desc' }, { [sortBy]: order }, { id: 'desc' }],
       limit,
       offset,
     });
@@ -114,34 +115,27 @@ export class AnnouncementRepository extends EntityRepository<Announcement> {
 
     return this.findAndCount(where, {
       populate: ['authorId'],
-      orderBy: [
-        { isPinned: 'desc' },
-        { [sortBy]: order },
-        { id: 'desc' },
-      ],
+      orderBy: [{ isPinned: 'desc' }, { [sortBy]: order }, { id: 'desc' }],
       limit,
       offset,
     });
   }
 
-  async checkSlugUniqueness(dto: { slug?: string; slugVi?: string }, excludeId?: string): Promise<Announcement | null> {
+  async checkSlugUniqueness(
+    dto: { slug?: string; slugVi?: string },
+    excludeId?: string,
+  ): Promise<Announcement | null> {
     if (excludeId) {
       const conditions: FilterQuery<Announcement>[] = [];
       if (dto.slug) conditions.push({ slug: dto.slug });
       if (dto.slugVi) conditions.push({ slugVi: dto.slugVi });
 
       return this.findOne({
-        $and: [
-          { id: { $ne: excludeId } },
-          { $or: conditions },
-        ],
+        $and: [{ id: { $ne: excludeId } }, { $or: conditions }],
       });
     } else {
       return this.findOne({
-        $or: [
-          { slug: dto.slug },
-          { slugVi: dto.slugVi },
-        ],
+        $or: [{ slug: dto.slug }, { slugVi: dto.slugVi }],
       });
     }
   }

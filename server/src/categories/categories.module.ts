@@ -5,14 +5,16 @@ import { CategoryController } from './categories.controller';
 import { ForumCategory } from '../entities/ForumCategory';
 import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
+import { AuditModule } from '../audit/audit.module';
 
-import { ForumCategoryRepository } from './categories.repository';
+import { ForumCategoryRepository } from './repositories/categories.repository';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([ForumCategory]),
     AuthModule,
     StorageModule,
+    AuditModule,
   ],
   controllers: [CategoryController],
   providers: [CategoryService, ForumCategoryRepository],

@@ -1,10 +1,20 @@
 import { Body, Controller, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  type RequestUser,
+} from '../auth/decorators/current-user.decorator';
 import { GameService } from './game.service';
-import { EndRunRequestDto, InitGameRunRequestDto, RunIdResponseDto } from './dto/game-run.dto';
+import {
+  EndRunRequestDto,
+  InitGameRunRequestDto,
+  RunIdResponseDto,
+} from './dto/game-run.dto';
 import { JoinLobbyRequestDto } from './dto/join-lobby.dto';
-import { StartSessionRequestDto, SessionIdResponseDto } from './dto/start-session.dto';
+import {
+  StartSessionRequestDto,
+  SessionIdResponseDto,
+} from './dto/start-session.dto';
 import { EndSessionRequestDto } from './dto/end-session.dto';
 import { LeaveLobbyParamsRequestDto } from './dto/leave-lobby.dto';
 import { ApiResponseDto } from '../common/dto/api-response.dto';

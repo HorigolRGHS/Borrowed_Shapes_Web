@@ -1,9 +1,11 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { ForumCategory } from '../entities/ForumCategory';
+import { ForumCategory } from '../../entities/ForumCategory';
+import { getProxyMediaUrl } from '../../storage/media-utils';
 
 @Injectable()
-export class ForumCategoryRepository extends EntityRepository<ForumCategory> {
+export class ForumCategoryRepository extends BaseRepository<ForumCategory> {
   constructor(em: EntityManager) {
     super(em, ForumCategory);
   }
@@ -11,7 +13,8 @@ export class ForumCategoryRepository extends EntityRepository<ForumCategory> {
   async findAllCategories(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
     const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
+    const descField =
+      locale === 'vi' ? 'c."description_vi"' : 'c."description"';
     const sortOrder = order === 'desc' ? 'desc' : 'asc';
 
     const rows = await this.em.execute(
@@ -33,14 +36,19 @@ export class ForumCategoryRepository extends EntityRepository<ForumCategory> {
 
     return rows.map((row: any) => ({
       ...row,
+      iconUrl: getProxyMediaUrl(row.iconUrl),
       threadCount: Number(row.threadCount || 0),
     }));
   }
 
-  async findAllUnofficialCategories(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
+  async findAllUnofficialCategories(
+    locale: 'en' | 'vi',
+    order: 'asc' | 'desc' = 'asc',
+  ) {
     const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
+    const descField =
+      locale === 'vi' ? 'c."description_vi"' : 'c."description"';
     const sortOrder = order === 'desc' ? 'desc' : 'asc';
 
     const rows = await this.em.execute(
@@ -63,6 +71,7 @@ export class ForumCategoryRepository extends EntityRepository<ForumCategory> {
 
     return rows.map((row: any) => ({
       ...row,
+      iconUrl: getProxyMediaUrl(row.iconUrl),
       threadCount: Number(row.threadCount || 0),
     }));
   }
@@ -70,7 +79,8 @@ export class ForumCategoryRepository extends EntityRepository<ForumCategory> {
   async findOneCategory(id: string, locale: 'en' | 'vi') {
     const nameField = locale === 'vi' ? 'c."name_vi"' : 'c."name"';
     const slugField = locale === 'vi' ? 'c."slug_vi"' : 'c."slug"';
-    const descField = locale === 'vi' ? 'c."description_vi"' : 'c."description"';
+    const descField =
+      locale === 'vi' ? 'c."description_vi"' : 'c."description"';
 
     const rows = await this.em.execute(
       `
@@ -96,6 +106,7 @@ export class ForumCategoryRepository extends EntityRepository<ForumCategory> {
     const row = rows[0];
     return {
       ...row,
+      iconUrl: getProxyMediaUrl(row.iconUrl),
       threadCount: Number(row.threadCount || 0),
     };
   }

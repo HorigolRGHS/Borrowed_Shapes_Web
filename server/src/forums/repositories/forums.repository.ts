@@ -1,10 +1,12 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { ForumThread } from '../entities/ForumThread';
-import { Locale } from '../common/utils/resolve-locale';
+import { ForumThread } from '../../entities/ForumThread';
+import { ForumThreadVote } from '../../entities/ForumThreadVote';
+import { Locale } from '../../common/utils/resolve-locale';
 
 @Injectable()
-export class ForumThreadRepository extends EntityRepository<ForumThread> {
+export class ForumThreadRepository extends BaseRepository<ForumThread> {
   constructor(em: EntityManager) {
     super(em, ForumThread);
   }
@@ -86,7 +88,7 @@ export class ForumThreadRepository extends EntityRepository<ForumThread> {
              t."viewCount", t."isPinned", t."postType", t."status",
              t."createdAt", t."updatedAt", t."imageUrl",
              u."id" as "authorId", u."displayName" as "authorName", u."imgUrl" as "authorAvatar",
-             u."role" as "authorRole", u."createdAt" as "authorCreatedAt",
+             u."role" as "authorRole", u."createdAt" as "authorCreatedAt", u."updatedAt" as "authorUpdatedAt",
              a."badgeImageUrl" as "authorBadgeImageUrl",
              a."type" as "authorBadgeType",
              a."seasonMonth" as "authorBadgeSeasonMonth",
@@ -115,5 +117,38 @@ export class ForumThreadRepository extends EntityRepository<ForumThread> {
       rows,
       total,
     };
+  }
+}
+
+@Injectable()
+export class ForumThreadVoteRepository extends BaseRepository<ForumThreadVote> {
+  constructor(em: EntityManager) {
+    super(em, ForumThreadVote);
+  }
+
+  async getUserVote(userId: string, threadId: string): Promise<number | null> {
+    const res = await this.em.execute(
+      `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
+      [userId, threadId],
+    );
+    return res[0]?.value ?? null;
+  }
+
+  async removeUserVote(userId: string, threadId: string): Promise<void> {
+    await this.em.execute(
+      `delete from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
+      [userId, threadId],
+    );
+  }
+
+  async updateUserVote(
+    userId: string,
+    threadId: string,
+    value: number | string,
+  ): Promise<void> {
+    await this.em.execute(
+      `update web."ForumThreadVote" set "value" = ? where "userId" = ? and "threadId" = ?`,
+      [value, userId, threadId],
+    );
   }
 }

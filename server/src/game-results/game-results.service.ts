@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
-import { GameResultRepository } from './game-results.repository';
+import { GameResultRepository } from './repositories/game-results.repository';
 import {
   ListGameResultsQueryDto,
   LeaderboardQueryDto,
@@ -17,6 +17,8 @@ import {
   PlayerInfoDto,
   PlayerStatsDto,
 } from './dto/game-results-response.dto';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
 
 function clamp(n: number, min: number, max: number): number {
   if (Number.isNaN(n)) return min;
@@ -25,7 +27,7 @@ function clamp(n: number, min: number, max: number): number {
 
 @Injectable()
 export class GameResultService {
-  constructor(private readonly gameResultRepository: GameResultRepository) { }
+  constructor(private readonly gameResultRepository: GameResultRepository) {}
 
   async findAllPaginated(
     query: ListGameResultsQueryDto,
@@ -51,7 +53,8 @@ export class GameResultService {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
 
-    const { rows, total } = await this.gameResultRepository.findPaginatedRuns(query);
+    const { rows, total } =
+      await this.gameResultRepository.findPaginatedRuns(query);
 
     const items: GameResultResponseDto[] = [];
     for (const row of rows || []) {
@@ -133,7 +136,8 @@ export class GameResultService {
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const limit = clamp(query.limit ?? 10, 1, 50);
 
-    const profile = await this.gameResultRepository.findPlayerProfile(gameProfileId);
+    const profile =
+      await this.gameResultRepository.findPlayerProfile(gameProfileId);
 
     if (!profile) {
       throw new NotFoundException('game_results.player_not_found');
@@ -146,16 +150,19 @@ export class GameResultService {
         profile.badgeSeasonMonth,
         profile.badgeExpiresAt,
       );
-      if (profile.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
-        badgeImageUrl = profile.badgeImageUrl;
+      if (
+        profile.badgeType !== 'SEASONAL' ||
+        (expiresAt && expiresAt >= new Date())
+      ) {
+        badgeImageUrl = getProxyMediaUrl(profile.badgeImageUrl);
       }
     }
 
     const playerInfo: PlayerInfoDto = {
       gameProfileId: profile.gameProfileId,
       displayName: (profile.displayName as string) ?? '',
-      avatarUrl: profile.avatarUrl ?? undefined,
-      badgeImageUrl,
+      avatarUrl: getProxyAvatarUrl(profile.avatarUrl, profile.userId, profile.updatedAt) ?? undefined,
+      badgeImageUrl: badgeImageUrl ?? undefined,
     };
 
     const playerStats: PlayerStatsDto = {
@@ -166,8 +173,12 @@ export class GameResultService {
       totalPlayTimeSec: profile.totalPlayTime ?? 0,
     };
 
-    const total = await this.gameResultRepository.countPlayerRuns(gameProfileId);
-    const rows = await this.gameResultRepository.findRunHistoryForPlayer(gameProfileId, query);
+    const total =
+      await this.gameResultRepository.countPlayerRuns(gameProfileId);
+    const rows = await this.gameResultRepository.findRunHistoryForPlayer(
+      gameProfileId,
+      query,
+    );
 
     const items: PlayerHistoryRunDto[] = [];
     for (const row of rows || []) {
@@ -206,7 +217,8 @@ export class GameResultService {
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
 
-    const { rows, total } = await this.gameResultRepository.getLeaderboardData(query);
+    const { rows, total } =
+      await this.gameResultRepository.getLeaderboardData(query);
 
     const items: LeaderboardEntryDto[] = [];
     for (let index = 0; index < (rows || []).length; index++) {
@@ -255,17 +267,20 @@ export class GameResultService {
           row.badgeSeasonMonth,
           row.badgeExpiresAt,
         );
-        if (row.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
-          badgeImageUrl = row.badgeImageUrl;
+        if (
+          row.badgeType !== 'SEASONAL' ||
+          (expiresAt && expiresAt >= new Date())
+        ) {
+          badgeImageUrl = getProxyMediaUrl(row.badgeImageUrl);
         }
       }
       return {
         gameProfileId: row.gameProfileId,
         displayName: (row.displayName as string) ?? '',
-        avatarUrl: row.avatarUrl ?? undefined,
+        avatarUrl: getProxyAvatarUrl(row.avatarUrl, row.userId, row.updatedAt) ?? undefined,
         isHost: row.isHost,
         joinedAt: row.joinedAt,
-        badgeImageUrl,
+        badgeImageUrl: badgeImageUrl ?? undefined,
       };
     });
   }
@@ -306,17 +321,20 @@ export class GameResultService {
           row.badgeSeasonMonth,
           row.badgeExpiresAt,
         );
-        if (row.badgeType !== 'SEASONAL' || (expiresAt && expiresAt >= new Date())) {
-          badgeImageUrl = row.badgeImageUrl;
+        if (
+          row.badgeType !== 'SEASONAL' ||
+          (expiresAt && expiresAt >= new Date())
+        ) {
+          badgeImageUrl = getProxyMediaUrl(row.badgeImageUrl);
         }
       }
       return {
         gameProfileId: row.gameProfileId,
         displayName: (row.displayName as string) ?? '',
-        avatarUrl: row.avatarUrl ?? undefined,
+        avatarUrl: getProxyAvatarUrl(row.avatarUrl, row.userId, row.updatedAt) ?? undefined,
         isAbsent: row.isAbsent,
         leftAt: row.leftAt ?? undefined,
-        badgeImageUrl,
+        badgeImageUrl: badgeImageUrl ?? undefined,
       };
     });
   }

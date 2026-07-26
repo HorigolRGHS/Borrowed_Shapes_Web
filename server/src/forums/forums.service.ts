@@ -18,38 +18,63 @@ import { resolveLocale, Locale } from '../common/utils/resolve-locale';
 import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'crypto';
-import { ThreadImageUploadRequestDto, ThreadImageUploadResponseDto } from './dto/thread-image-upload.dto';
+import {
+  ThreadImageUploadRequestDto,
+  ThreadImageUploadResponseDto,
+} from './dto/thread-image-upload.dto';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
+import { getProxyMediaUrl } from '../storage/media-utils';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
-import { ForumThreadRepository } from './forums.repository';
+import {
+  ForumThreadRepository,
+  ForumThreadVoteRepository,
+} from './repositories/forums.repository';
+import { ForumCategoryRepository } from '../categories/repositories/categories.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
 
 @Injectable()
 export class ForumService {
   constructor(
     private readonly threadRepository: ForumThreadRepository,
+    private readonly categoryRepository: ForumCategoryRepository,
+    private readonly threadVoteRepository: ForumThreadVoteRepository,
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
-  ) { }
+    private readonly auditService: AuditService,
+  ) {}
 
-  async list({
-    page = 1,
-    limit = 20,
-    q = '',
-    categoryId,
-    sortBy = 'createdAt',
-    order = 'desc',
-    month,
-    year,
-    postType,
-    status,
-  }: any,
+  async list(
+    {
+      page = 1,
+      limit = 20,
+      q = '',
+      categoryId,
+      sortBy = 'createdAt',
+      order = 'desc',
+      month,
+      year,
+      postType,
+      status,
+    }: any,
     user?: { userId?: string; role?: string },
     locale: Locale = 'en',
   ) {
     const { rows, total } = await this.threadRepository.listThreads(
-      { page, limit, q, categoryId, sortBy, order, month, year, postType, status },
+      {
+        page,
+        limit,
+        q,
+        categoryId,
+        sortBy,
+        order,
+        month,
+        year,
+        postType,
+        status,
+      },
       user,
-      locale
+      locale,
     );
 
     const items = (rows || []).map((row: any) => {
@@ -62,13 +87,13 @@ export class ForumService {
         isPinned: row.isPinned,
         postType: row.postType,
         status: row.status,
-        imgUrl: row.imageUrl,
+        imgUrl: getProxyMediaUrl(row.imageUrl),
         id: row.id,
         slug: row.slug,
         author: {
           id: row.authorId,
           displayName: row.authorName,
-          imgUrl: row.authorAvatar,
+          imgUrl: getProxyAvatarUrl(row.authorAvatar, row.authorId, row.authorUpdatedAt),
           role: row.authorRole,
           createdAt: row.authorCreatedAt,
           badgeImageUrl: (() => {
@@ -78,10 +103,14 @@ export class ForumService {
               row.authorBadgeSeasonMonth,
               row.authorBadgeExpiresAt,
             );
-            if (row.authorBadgeType === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+            if (
+              row.authorBadgeType === 'SEASONAL' &&
+              expiresAt &&
+              expiresAt < new Date()
+            ) {
               return null;
             }
-            return row.authorBadgeImageUrl;
+            return getProxyMediaUrl(row.authorBadgeImageUrl);
           })(),
         },
         category: {
@@ -107,13 +136,18 @@ export class ForumService {
     locale: Locale = 'en',
     user?: { userId?: string; role?: string },
   ) {
-    const thread = await this.threadRepository.findOne({ slug }, { populate: ['authorId', 'categoryId'] });
+    const thread = await this.threadRepository.findOne(
+      { slug },
+      { populate: ['authorId', 'categoryId'] },
+    );
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
     if (thread.status === Web$46ForumThreadStatus.ARCHIVED) {
       const isAdmin = user?.role === 'ADMIN';
-      const isAuthor = user?.userId && String(thread.authorId.id) === String(user.userId);
-      if (!isAdmin && !isAuthor) throw new NotFoundException('forums.thread_not_found');
+      const isAuthor =
+        user?.userId && String(thread.authorId.id) === String(user.userId);
+      if (!isAdmin && !isAuthor)
+        throw new NotFoundException('forums.thread_not_found');
     }
 
     thread.viewCount = (Number(thread.viewCount) || 0) + 1;
@@ -123,38 +157,46 @@ export class ForumService {
   }
 
   async findOneById(id: string, locale: Locale = 'en') {
-    const thread = await this.threadRepository.findOne({ id }, { populate: ['authorId', 'categoryId'] });
+    const thread = await this.threadRepository.findOne(
+      { id },
+      { populate: ['authorId', 'categoryId'] },
+    );
     if (!thread) throw new NotFoundException('forums.thread_not_found');
     return await this.mapThreadDetail(thread, locale);
   }
 
-  private async mapThreadDetail(thread: ForumThread, locale: Locale, currentUserId?: string) {
+  private async mapThreadDetail(
+    thread: ForumThread,
+    locale: Locale,
+    currentUserId?: string,
+  ) {
     const category = thread.categoryId;
-    const gp = await this.threadRepository.getEntityManager().findOne(
-      GameProfile,
-      { userId: thread.authorId },
-      { populate: ['equippedAchievementId'] },
-    );
+    const gp = await this.threadRepository
+      .getEntityManager()
+      .findOne(
+        GameProfile,
+        { userId: thread.authorId },
+        { populate: ['equippedAchievementId'] },
+      );
 
     let userVote: number | null = null;
     if (currentUserId) {
-      const voteRows = await this.threadRepository.getEntityManager().execute(
-        `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
-        [currentUserId, thread.id],
+      userVote = await this.threadVoteRepository.getUserVote(
+        currentUserId,
+        thread.id,
       );
-      if (voteRows && voteRows.length > 0) {
-        userVote = Number(voteRows[0].value);
-      }
     }
 
     const badgeImageUrl =
-      gp && (gp as any).equippedAchievementId ? (gp as any).equippedAchievementId.badgeImageUrl : null;
+      gp && (gp as any).equippedAchievementId
+        ? (gp as any).equippedAchievementId.badgeImageUrl
+        : null;
     return {
       id: thread.id,
       title: thread.title,
       slug: thread.slug,
       content: thread.content,
-      imageUrl: thread.imageUrl,
+      imageUrl: getProxyMediaUrl(thread.imageUrl),
       score: thread.score,
       viewCount: thread.viewCount,
       isPinned: thread.isPinned,
@@ -167,23 +209,28 @@ export class ForumService {
       author: {
         id: thread.authorId.id,
         displayName: thread.authorId.displayName,
-        imgUrl: thread.authorId.imgUrl,
-        badgeImageUrl,
+        imgUrl: getProxyAvatarUrl(thread.authorId.imgUrl, thread.authorId.id, thread.authorId.updatedAt),
+        badgeImageUrl: getProxyMediaUrl(badgeImageUrl),
         role: thread.authorId.role,
         createdAt: thread.authorId.createdAt,
       },
       category: category
         ? {
-          id: category.id,
-          name: locale === 'vi' ? category.nameVi : category.name,
-          slug: locale === 'vi' ? category.slugVi : category.slug,
-        }
+            id: category.id,
+            name: locale === 'vi' ? category.nameVi : category.name,
+            slug: locale === 'vi' ? category.slugVi : category.slug,
+          }
         : null,
     };
   }
 
-  async create(dto: CreateForumDto, authorId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
-    if ((dto.isPinned !== undefined) && !isAdmin) {
+  async create(
+    dto: CreateForumDto,
+    authorId: string,
+    isAdmin = false,
+    locale: 'en' | 'vi' = 'en',
+  ) {
+    if (dto.isPinned !== undefined && !isAdmin) {
       throw new ForbiddenException('forums.forbidden_admin_only');
     }
     if (!dto.title || !dto.title.trim()) {
@@ -196,10 +243,14 @@ export class ForumService {
       throw new BadRequestException('forums.category_required');
     }
 
-    const author = await this.threadRepository.getEntityManager().findOne(User, { id: authorId });
+    const author = await this.threadRepository
+      .getEntityManager()
+      .findOne(User, { id: authorId });
     if (!author) throw new BadRequestException('forums.invalid_author');
 
-    const category = await this.threadRepository.getEntityManager().findOne(ForumCategory, { id: dto.categoryId });
+    const category = await this.categoryRepository.findOne({
+      id: dto.categoryId,
+    });
     if (!category) throw new BadRequestException('forums.category_not_found');
     if (category.isOfficial && !isAdmin) {
       throw new ForbiddenException('forums.category_official_admin_only');
@@ -231,15 +282,36 @@ export class ForumService {
       updatedAt: now,
     });
 
-    await this.threadRepository.getEntityManager().persistAndFlush(thread);
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: authorId,
+      actionType: AuditActionType.CREATE,
+      entityName: 'ForumThread',
+      entityId: thread.id,
+      newValue: {
+        title: thread.title,
+        categoryId: category.id,
+        content: thread.content,
+      },
+    });
+
+    await this.threadRepository.persistAndFlush(thread);
     return null;
   }
 
-  async update(id: string, dto: UpdateForumDto, userId: string, isAdmin = false, locale: 'en' | 'vi' = 'en') {
-    const thread = await this.threadRepository.findOne({ id }, { populate: ['authorId'] });
+  async update(
+    id: string,
+    dto: UpdateForumDto,
+    userId: string,
+    isAdmin = false,
+    locale: 'en' | 'vi' = 'en',
+  ) {
+    const thread = await this.threadRepository.findOne(
+      { id },
+      { populate: ['authorId'] },
+    );
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
-    if (String(thread.authorId.id) !== String(userId)) {
+    if (String(thread.authorId.id) !== String(userId) && !isAdmin) {
       throw new ForbiddenException('forums.forbidden_update');
     }
 
@@ -254,10 +326,12 @@ export class ForumService {
       if (!newSlug) throw new BadRequestException('forums.slug_required');
 
       if (newSlug !== thread.slug) {
-        const existingSlug = await this.threadRepository.getEntityManager().execute(
-          `select id from web."ForumThread" where slug = ? and id <> ?`,
-          [newSlug, id],
-        );
+        const existingSlug = await this.threadRepository
+          .getEntityManager()
+          .execute(
+            `select id from web."ForumThread" where slug = ? and id <> ?`,
+            [newSlug, id],
+          );
         if (existingSlug?.length) {
           throw new BadRequestException('forums.slug_conflict');
         }
@@ -280,7 +354,9 @@ export class ForumService {
     }
 
     if (dto.categoryId !== undefined) {
-      const category = await this.threadRepository.getEntityManager().findOne(ForumCategory, { id: dto.categoryId });
+      const category = await this.categoryRepository.findOne({
+        id: dto.categoryId,
+      });
       if (!category) throw new BadRequestException('forums.category_not_found');
       if (category.isOfficial && !isAdmin) {
         throw new ForbiddenException('forums.category_official_admin_only');
@@ -305,7 +381,19 @@ export class ForumService {
 
     thread.updatedAt = new Date();
 
-    await this.threadRepository.getEntityManager().flush();
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'ForumThread',
+      entityId: thread.id,
+      newValue: {
+        title: thread.title,
+        content: thread.content,
+        status: thread.status,
+      },
+    });
+
+    await this.threadRepository.flush();
 
     if (imageToDelete) {
       try {
@@ -323,7 +411,10 @@ export class ForumService {
   }
 
   async remove(id: string, userId: string, isAdmin = false) {
-    const thread = await this.threadRepository.findOne({ id }, { populate: ['authorId'] });
+    const thread = await this.threadRepository.findOne(
+      { id },
+      { populate: ['authorId'] },
+    );
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
     if (!isAdmin && String(thread.authorId.id) !== String(userId)) {
@@ -331,6 +422,16 @@ export class ForumService {
     }
 
     const imageUrlToDelete = thread.imageUrl;
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'ForumThread',
+      entityId: thread.id,
+      oldValue: {
+        title: thread.title,
+      },
+    });
 
     await this.threadRepository.getEntityManager().removeAndFlush(thread);
 
@@ -353,41 +454,37 @@ export class ForumService {
     const thread = await this.threadRepository.findOne({ id: threadId });
     if (!thread) throw new NotFoundException('forums.thread_not_found');
 
-    const user = await this.threadRepository.getEntityManager().findOne(User, { id: userId });
+    const user = await this.threadRepository
+      .getEntityManager()
+      .findOne(User, { id: userId });
     if (!user) throw new BadRequestException('forums.invalid_user');
 
-    const existingRows = await this.threadRepository.getEntityManager().execute(
-      `select "value" from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
-      [userId, threadId],
+    const userVote = await this.threadVoteRepository.getUserVote(
+      userId,
+      threadId,
     );
-
-    const existingVote = existingRows?.[0];
-    const existingValue = existingVote ? Number(existingVote.value) : null;
+    const existingValue = userVote;
 
     if (existingValue === null) {
-      const vote = this.threadRepository.getEntityManager().create(ForumThreadVote, {
-        threadId: thread,
+      const newVote = this.threadVoteRepository.create({
         userId: user,
+        threadId: thread,
         value: String(value) as any,
-      } as any);
+      });
       thread.score = (thread.score || 0) + value;
-      await this.threadRepository.getEntityManager().persistAndFlush([vote, thread]);
+      await this.threadRepository
+        .getEntityManager()
+        .persistAndFlush([newVote, thread]);
       return { result: 'voted', score: thread.score, userVote: value };
     }
 
     if (existingValue === value) {
-      await this.threadRepository.getEntityManager().execute(
-        `delete from web."ForumThreadVote" where "userId" = ? and "threadId" = ?`,
-        [userId, threadId],
-      );
+      await this.threadVoteRepository.removeUserVote(userId, threadId);
       thread.score = (thread.score || 0) - value;
       await this.threadRepository.getEntityManager().persistAndFlush([thread]);
       return { result: 'unvoted', score: thread.score, userVote: null };
     } else {
-      await this.threadRepository.getEntityManager().execute(
-        `update web."ForumThreadVote" set "value" = ? where "userId" = ? and "threadId" = ?`,
-        [String(value), userId, threadId],
-      );
+      await this.threadVoteRepository.updateUserVote(userId, threadId, value);
       thread.score = (thread.score || 0) + (value - existingValue);
       await this.threadRepository.getEntityManager().persistAndFlush([thread]);
       return { result: 'changed', score: thread.score, userVote: value };
@@ -408,7 +505,10 @@ export class ForumService {
     return trimmed.slice(0, 200);
   }
 
-  async uploadThreadImage(dto: ThreadImageUploadRequestDto, userId: string): Promise<ThreadImageUploadResponseDto> {
+  async uploadThreadImage(
+    dto: ThreadImageUploadRequestDto,
+    userId: string,
+  ): Promise<ThreadImageUploadResponseDto> {
     const maxSize = 5 * 1024 * 1024;
     if (dto.fileSize > maxSize) {
       throw new BadRequestException('forums.image_too_large');
@@ -436,7 +536,7 @@ export class ForumService {
       uploadUrl,
       method: 'PUT',
       key,
-      publicUrl: `${publicUrlBase}/${key}`,
+      publicUrl: getProxyMediaUrl(key) as string,
       headers: {
         'Content-Type': dto.mimeType,
       },

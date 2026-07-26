@@ -1,12 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ForumCategory } from '../entities/ForumCategory';
 import { CreateCategoryDto } from './dto/create-categories.dto';
 import { UpdateCategoryDto } from './dto/update-categories.dto';
 import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { randomUUID } from 'crypto';
-import { CategoryImageUploadRequestDto, CategoryImageUploadResponseDto } from './dto/category-image-upload.dto';
-import { ForumCategoryRepository } from './categories.repository';
+import {
+  CategoryImageUploadRequestDto,
+  CategoryImageUploadResponseDto,
+} from './dto/category-image-upload.dto';
+import { ForumCategoryRepository } from './repositories/categories.repository';
+import { AuditService } from '../audit/audit.service';
+import { AuditActionType } from '../entities/AuditActionType';
+import { getProxyMediaUrl } from '../storage/media-utils';
 
 @Injectable()
 export class CategoryService {
@@ -14,7 +24,8 @@ export class CategoryService {
     private readonly categoryRepository: ForumCategoryRepository,
     private readonly storageService: R2StorageService,
     private readonly configService: ConfigService,
-  ) { }
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(locale: 'en' | 'vi', order: 'asc' | 'desc' = 'asc') {
     return this.categoryRepository.findAllCategories(locale, order);
@@ -32,42 +43,70 @@ export class CategoryService {
     return category;
   }
 
-  async create(dto: CreateCategoryDto) {
-    if (!dto.name?.trim()) throw new BadRequestException('category.name_required');
-    if (!dto.nameVi?.trim()) throw new BadRequestException('category.name_vi_required');
+  async create(dto: CreateCategoryDto, userId?: string) {
+    if (!dto.name?.trim())
+      throw new BadRequestException('category.name_required');
+    if (!dto.nameVi?.trim())
+      throw new BadRequestException('category.name_vi_required');
 
     const slug = this.slugify(dto.slug?.trim() || dto.name);
     const slugVi = this.slugify(dto.slugVi?.trim() || dto.nameVi);
 
-    if (!slug) { throw new BadRequestException('category.slug_required'); }
-    if (!slugVi) { throw new BadRequestException('category.slug_vi_required'); }
+    if (!slug) {
+      throw new BadRequestException('category.slug_required');
+    }
+    if (!slugVi) {
+      throw new BadRequestException('category.slug_vi_required');
+    }
 
     const existingSlug = await this.categoryRepository.findOne({ slug });
     if (existingSlug) throw new BadRequestException('category.slug_conflict');
 
     const existingSlugVi = await this.categoryRepository.findOne({ slugVi });
-    if (existingSlugVi) throw new BadRequestException('category.slug_vi_conflict');
+    if (existingSlugVi)
+      throw new BadRequestException('category.slug_vi_conflict');
 
-    const existingName = await this.categoryRepository.findOne({ name: dto.name.trim() });
+    const existingName = await this.categoryRepository.findOne({
+      name: dto.name.trim(),
+    });
     if (existingName) throw new BadRequestException('category.name_conflict');
 
-    const existingNameVi = await this.categoryRepository.findOne({ nameVi: dto.nameVi.trim() });
-    if (existingNameVi) throw new BadRequestException('category.name_vi_conflict');
+    const existingNameVi = await this.categoryRepository.findOne({
+      nameVi: dto.nameVi.trim(),
+    });
+    if (existingNameVi)
+      throw new BadRequestException('category.name_vi_conflict');
 
     const category = this.categoryRepository.create({
-      id: dto.id || undefined,
+      id: randomUUID(),
       name: dto.name.trim(),
       nameVi: dto.nameVi.trim(),
       slug,
       slugVi,
-      description: dto.description?.trim() ?? null,
-      descriptionVi: dto.descriptionVi?.trim() ?? null,
-      iconUrl: dto.iconUrl ?? null,
-      isOfficial: dto.isOfficial ?? false,
+      description: dto.description?.trim(),
+      descriptionVi: dto.descriptionVi?.trim(),
+      iconUrl: dto.iconUrl,
+      isOfficial: !!dto.isOfficial,
     });
 
     try {
-      await this.categoryRepository.getEntityManager().persist(category).flush();
+      await this.categoryRepository
+        .getEntityManager()
+        .persist(category)
+        .flush();
+
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: userId,
+        actionType: AuditActionType.CREATE,
+        entityName: 'ForumCategory',
+        entityId: category.id,
+        newValue: {
+          name: category.name,
+          slug: category.slug,
+          isOfficial: category.isOfficial,
+        },
+      });
+
       return category;
     } catch (error) {
       console.error('Error creating category:', error);
@@ -75,7 +114,7 @@ export class CategoryService {
     }
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
+  async update(id: string, dto: UpdateCategoryDto, userId?: string) {
     const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
@@ -181,7 +220,18 @@ export class CategoryService {
       category.isOfficial = dto.isOfficial;
     }
 
-    await this.categoryRepository.getEntityManager().flush();
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.UPDATE,
+      entityName: 'ForumCategory',
+      entityId: category.id,
+      newValue: {
+        name: category.name,
+        slug: category.slug,
+      },
+    });
+
+    await this.categoryRepository.flush();
 
     if (iconToDelete) {
       try {
@@ -191,18 +241,32 @@ export class CategoryService {
           await this.storageService.deleteObject(key);
         }
       } catch (e: any) {
-        console.error(`Failed to delete old R2 category icon ${iconToDelete}:`, e);
+        console.error(
+          `Failed to delete old R2 category icon ${iconToDelete}:`,
+          e,
+        );
       }
     }
 
     return null;
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
     const iconUrlToDelete = category.iconUrl;
+
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: userId,
+      actionType: AuditActionType.DELETE,
+      entityName: 'ForumCategory',
+      entityId: category.id,
+      oldValue: {
+        name: category.name,
+        slug: category.slug,
+      },
+    });
 
     await this.categoryRepository.getEntityManager().removeAndFlush(category);
 
@@ -214,7 +278,10 @@ export class CategoryService {
           await this.storageService.deleteObject(key);
         }
       } catch (e: any) {
-        console.error(`Failed to delete R2 category icon ${iconUrlToDelete}:`, e);
+        console.error(
+          `Failed to delete R2 category icon ${iconUrlToDelete}:`,
+          e,
+        );
       }
     }
     return null;
@@ -234,7 +301,9 @@ export class CategoryService {
     return trimmed.slice(0, 200);
   }
 
-  async uploadCategoryIcon(dto: CategoryImageUploadRequestDto): Promise<CategoryImageUploadResponseDto> {
+  async uploadCategoryIcon(
+    dto: CategoryImageUploadRequestDto,
+  ): Promise<CategoryImageUploadResponseDto> {
     const maxSize = 5 * 1024 * 1024;
     if (dto.fileSize > maxSize) {
       throw new BadRequestException('category.image_too_large');
@@ -262,7 +331,7 @@ export class CategoryService {
       uploadUrl,
       method: 'PUT',
       key,
-      publicUrl: `${publicUrlBase}/${key}`,
+      publicUrl: getProxyMediaUrl(key) as string,
       headers: {
         'Content-Type': dto.mimeType,
       },

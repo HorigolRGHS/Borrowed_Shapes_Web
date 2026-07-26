@@ -24,17 +24,17 @@ function StatCard({ icon: Icon, value, label, colorClass }: { icon: any, value: 
 
 export function HeroSection() {
   const { t } = useI18n();
-  
+
   const HERO_BG = process.env.NEXT_PUBLIC_HERO_BG_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev/notexthouseright.jpg";
 
   return (
     <section className="relative w-full h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-[#07070f] mt-16">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 opacity-60"
         style={{ backgroundImage: `url(${HERO_BG})` }}
       />
-      
+
       {/* Overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#07070f] via-[#07070f]/60 to-transparent z-10" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#07070f] via-transparent to-transparent z-10" />
@@ -50,7 +50,7 @@ export function HeroSection() {
       {/* Content Container */}
       <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="max-w-2xl">
-          
+
           {/* Title */}
           <h1 className={cn(
             "relative z-40 text-6xl sm:text-7xl lg:text-[96px] leading-[0.9] mb-6 drop-shadow-[0_0_28px_rgba(245,158,11,0.65)]",
@@ -71,16 +71,16 @@ export function HeroSection() {
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row items-center gap-4 mb-12">
-            <Link 
-              href="/download" 
+            <Link
+              href="/download"
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all hover:-translate-y-0.5 animate-pulse-glow"
             >
               <Download className="w-5 h-5" />
               {t("home.hero.play_free_now")}
             </Link>
-            
-            <Link 
-              href="/wiki" 
+
+            <Link
+              href="/wiki"
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-4 rounded-xl font-bold text-lg transition-all backdrop-blur-sm"
             >
               <BookOpen className="w-5 h-5 text-amber-500" />
@@ -90,23 +90,23 @@ export function HeroSection() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <StatCard 
-              icon={Users} 
-              value="50K+" 
-              label={t("home.hero.stats.active_players") || "Active Players"} 
-              colorClass="text-amber-500" 
+            <StatCard
+              icon={Users}
+              value="67+"
+              label={t("home.hero.stats.active_players") || "Active Players"}
+              colorClass="text-amber-500"
             />
-            <StatCard 
-              icon={Star} 
-              value="S2" 
-              label={t("home.hero.stats.current_season") || "Current Season"} 
-              colorClass="text-orange-500" 
+            <StatCard
+              icon={Star}
+              value="S1"
+              label={t("home.hero.stats.current_season") || "Current Season"}
+              colorClass="text-orange-500"
             />
-            <StatCard 
-              icon={Zap} 
-              value="1.4.2" 
-              label={t("home.hero.stats.latest_patch") || "Latest Patch"} 
-              colorClass="text-yellow-500" 
+            <StatCard
+              icon={Zap}
+              value="1.0.0"
+              label={t("home.hero.stats.latest_patch") || "Latest Patch"}
+              colorClass="text-yellow-500"
             />
           </div>
         </div>

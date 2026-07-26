@@ -1,8 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { PresenceModule } from '../presence/presence.module';
+import { AchievementModule } from '../achievements/achievements.module';
+import { GameModule } from '../game/game.module';
 import { AuthModule } from '../auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
+import { AccountRepository } from './repositories/account.repository';
 import { StorageModule } from '../storage/storage.module';
 import { EmailModule } from '../email/email.module';
 import { User } from '../entities/User';
@@ -13,13 +18,23 @@ import { AuditLog } from '../entities/AuditLog';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([User, GameProfile, Achievement, UserAchievement, AuditLog]),
+    MikroOrmModule.forFeature([
+      User,
+      GameProfile,
+      Achievement,
+      UserAchievement,
+      AuditLog,
+    ]),
     StorageModule,
     EmailModule,
     AuthModule,
+    AuditModule,
+    GameModule,
+    AchievementModule,
+    PresenceModule,
   ],
   controllers: [AccountController],
-  providers: [AccountService],
-  exports: [AccountService],
+  providers: [AccountService, AccountRepository],
+  exports: [AccountService, AccountRepository],
 })
 export class AccountModule {}

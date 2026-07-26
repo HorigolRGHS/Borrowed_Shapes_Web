@@ -16,7 +16,10 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentVoteDto } from './dto/vote.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  type RequestUser,
+} from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -24,7 +27,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @ApiTags('Comments')
 @Controller('comments')
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) { }
+  constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -34,7 +37,10 @@ export class CommentsController {
     @Body() createCommentDto: CreateCommentDto,
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.commentsService.create(createCommentDto, user.userId);
+    const data = await this.commentsService.create(
+      createCommentDto,
+      user.userId,
+    );
     return okResponse('comments.create_success', data, 'POST /comments');
   }
 
@@ -48,7 +54,8 @@ export class CommentsController {
     @Query('limit') limit?: string,
     @CurrentUser() user?: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const activeParentId = parentId && parentId.trim() !== '' ? parentId.trim() : null;
+    const activeParentId =
+      parentId && parentId.trim() !== '' ? parentId.trim() : null;
     const pageNum = Math.max(1, Number(page) || 1);
     const limitNum = Math.max(1, Number(limit) || 20);
     const data = await this.commentsService.findComments(
@@ -56,7 +63,7 @@ export class CommentsController {
       activeParentId,
       pageNum,
       limitNum,
-      user?.userId
+      user?.userId,
     );
     return okResponse('comments.list_success', data, 'GET /comments');
   }
@@ -69,7 +76,11 @@ export class CommentsController {
     @Body() updateCommentDto: UpdateCommentDto,
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.commentsService.update(id, updateCommentDto, user.userId);
+    const data = await this.commentsService.update(
+      id,
+      updateCommentDto,
+      user.userId,
+    );
     return okResponse('comments.update_success', data, `PATCH /comments/${id}`);
   }
 
@@ -82,7 +93,11 @@ export class CommentsController {
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
     const data = await this.commentsService.remove(id, user.userId, isAdmin);
-    return okResponse('comments.delete_success', data, `DELETE /comments/${id}`);
+    return okResponse(
+      'comments.delete_success',
+      data,
+      `DELETE /comments/${id}`,
+    );
   }
 
   @Post(':id/vote')
@@ -95,6 +110,10 @@ export class CommentsController {
     @CurrentUser() user: RequestUser,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.commentsService.vote(id, user.userId, dto.value);
-    return okResponse('comments.vote_success', data, `POST /comments/${id}/vote`);
+    return okResponse(
+      'comments.vote_success',
+      data,
+      `POST /comments/${id}/vote`,
+    );
   }
 }

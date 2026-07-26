@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Plus } from "lucide-react";
-import CreateThreadModal from "@/components/forums/create-thread-modal";
+import dynamic from "next/dynamic";
+const CreateThreadModal = dynamic(() => import("@/components/forums/create-thread-modal"), { ssr: false });
 import { getUserProfile } from "@/lib/api/api-client";
 import { toast } from "react-toastify";
 import Link from "next/link";
@@ -287,7 +288,10 @@ export default function ForumsPage() {
                     Forums
                   </Link>
                   <span className="text-slate-300 dark:text-slate-700">/</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[200px]">
+                  <span 
+                    className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[200px]"
+                    title={categories.find(c => c.id === selectedCategory)?.name}
+                  >
                     {categories.find(c => c.id === selectedCategory)?.name}
                   </span>
                 </div>

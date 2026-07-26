@@ -14,7 +14,7 @@ import { R2WikiStorageService } from './services/r2-wiki-storage.service';
 import { WikiController } from './controllers/wiki.controller';
 import { WikiPageRepository } from './repositories/wiki-page.repository';
 import { WikiRevisionRepository } from './repositories/wiki-revision.repository';
-import { WikiAuditRepository } from './repositories/wiki-audit.repository';
+import { AuditModule } from '../audit/audit.module';
 import { WikiAssetRepository } from './repositories/wiki-asset.repository';
 
 @Module({
@@ -27,12 +27,12 @@ import { WikiAssetRepository } from './repositories/wiki-asset.repository';
       User,
     ]),
     StorageModule,
+    AuditModule,
   ],
   controllers: [WikiController],
   providers: [
     WikiPageRepository,
     WikiRevisionRepository,
-    WikiAuditRepository,
     WikiAssetRepository,
     WikiAuditService,
     WikiService,
@@ -45,7 +45,6 @@ import { WikiAssetRepository } from './repositories/wiki-asset.repository';
   exports: [
     WikiPageRepository,
     WikiRevisionRepository,
-    WikiAuditRepository,
     WikiAuditService,
     WikiService,
     WikiRevisionService,

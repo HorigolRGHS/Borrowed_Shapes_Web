@@ -1,9 +1,10 @@
+import { BaseRepository } from '../../common/repositories/base.repository';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { FileAsset } from '../../entities/FileAsset';
 
 @Injectable()
-export class WikiAssetRepository extends EntityRepository<FileAsset> {
+export class WikiAssetRepository extends BaseRepository<FileAsset> {
   constructor(em: EntityManager) {
     super(em, FileAsset);
   }

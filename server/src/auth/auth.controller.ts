@@ -1,4 +1,15 @@
-import { Controller, Post, Delete, Body, Req, HttpCode, HttpStatus, UseGuards, Query, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Body,
+  Req,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Query,
+  Get,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiBody, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -9,19 +20,13 @@ import {
   GoogleCompleteRequestDto,
   GoogleCompleteResponseDto,
 } from './dto/google.dto';
-import {
-  RefreshRequestDto,
-  RefreshResponseDto,
-} from './dto/refresh.dto';
-import {
-  RegisterRequestDto,
-  RegisterResponseDto,
-} from './dto/register.dto';
+import { RefreshRequestDto, RefreshResponseDto } from './dto/refresh.dto';
+import { RegisterRequestDto, RegisterResponseDto } from './dto/register.dto';
 import {
   VerifyEmailRequestDto,
   ForgotPasswordRequestDto,
   ResetPasswordRequestDto,
-  ChangePasswordRequestDto
+  ChangePasswordRequestDto,
 } from './dto/password.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -44,7 +49,11 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RegisterResponseDto>> {
     const data = await this.authService.register(dto, req.ip ?? '');
-    return okResponse('auth.register_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'auth.register_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Public()
@@ -70,7 +79,11 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleExchangeResponseDto>> {
     const data = await this.authService.googleExchange(dto, req.ip ?? '');
-    return okResponse('auth.google_exchange_success', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'auth.google_exchange_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Public()
@@ -103,7 +116,11 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<RefreshResponseDto>> {
     const data = await this.authService.refresh(dto.refreshToken);
-    return okResponse('auth.token_refreshed', data, `${req.method} ${req.path}`);
+    return okResponse(
+      'auth.token_refreshed',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Delete('logout')
@@ -134,11 +151,7 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     await this.authService.verifyEmail({ token });
-    return okResponse(
-      'auth.email_verified',
-      null,
-      `${req.method} ${req.path}`,
-    );
+    return okResponse('auth.email_verified', null, `${req.method} ${req.path}`);
   }
 
   @Public()
@@ -152,7 +165,7 @@ export class AuthController {
     await this.authService.forgotPassword(dto);
     return okResponse(
       'auth.password_reset_link_sent',
-       null,
+      null,
       `${req.method} ${req.path}`,
     );
   }
@@ -200,11 +213,10 @@ export class AuthController {
     return okResponse('auth.current_user', data, `${req.method} ${req.path}`);
   }
 
-
   /// Tesst check role
-   @Get('me-admin')
-   @Roles('ADMIN')
-   @ApiQuery({ name: 'include', required: false, type: String })
+  @Get('me-admin')
+  @Roles('ADMIN')
+  @ApiQuery({ name: 'include', required: false, type: String })
   async meAdmin(
     @CurrentUser() user: RequestUser,
     @Req() req: Request,

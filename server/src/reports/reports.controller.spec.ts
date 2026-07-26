@@ -8,7 +8,14 @@ describe('ReportsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReportsController],
-      providers: [ReportsService],
+      providers: [
+        { provide: 'JwtService', useValue: {} },
+        { provide: 'JwtService', useValue: {} },
+        {
+          provide: ReportsService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     controller = module.get<ReportsController>(ReportsController);

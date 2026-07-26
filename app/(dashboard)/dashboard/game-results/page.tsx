@@ -154,7 +154,7 @@ export default function GameResultsPage() {
     }
   }, [user, activeTab, leaderboardPage, leaderboardScope]);
 
-  // Polling every 10 seconds in the background
+  // Polling every 2 seconds in the background for real-time updates
   useEffect(() => {
     if (!user) return;
 
@@ -164,7 +164,7 @@ export default function GameResultsPage() {
       } else if (activeTab === "leaderboard") {
         fetchLeaderboard(false);
       }
-    }, 10000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [user, activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope]);
@@ -397,11 +397,11 @@ export default function GameResultsPage() {
                             </TableCell>
 
                             {/* Lobby */}
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="font-medium text-foreground">{run.lobbyName || "—"}</span>
+                            <TableCell className="max-w-[200px]">
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium text-foreground truncate block">{run.lobbyName || "—"}</span>
                                 {run.lobbyCode && (
-                                  <span className="text-xs text-muted-foreground">Code: {run.lobbyCode}</span>
+                                  <span className="text-xs text-muted-foreground truncate block">Code: {run.lobbyCode}</span>
                                 )}
                               </div>
                             </TableCell>
@@ -611,7 +611,7 @@ export default function GameResultsPage() {
                             </TableCell>
 
                             {/* Team / Lobby Name */}
-                            <TableCell className="font-medium text-foreground">
+                            <TableCell className="font-medium text-foreground max-w-[200px] truncate">
                               {entry.lobbyName || "—"}
                             </TableCell>
 

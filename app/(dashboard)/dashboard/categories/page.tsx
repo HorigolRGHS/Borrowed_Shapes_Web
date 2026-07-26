@@ -315,7 +315,6 @@ export default function DashboardCategoriesPage() {
   };
 
   const handleOpenEdit = async (cat: Category) => {
-    setLoading(true);
     try {
       const res = await axios.get(`/api/category/id/${cat.id}`);
       const data = res.data?.data;
@@ -342,8 +341,6 @@ export default function DashboardCategoriesPage() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to load category details");
-    } finally {
-      setLoading(false);
     }
   };
 

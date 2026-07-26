@@ -4,7 +4,7 @@ import { Announcement } from '../entities/Announcement';
 import { AnnouncementType } from '../entities/AnnouncementType';
 import { User } from '../entities/User';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { AnnouncementRepository } from './announcements.repository';
+import { AnnouncementRepository } from './repositories/announcements.repository';
 
 describe('AnnouncementService', () => {
   let service: AnnouncementService;
@@ -60,7 +60,9 @@ describe('AnnouncementService', () => {
     } as unknown as Announcement;
 
     it('should return public list with English fields when lang is en (Normal)', async () => {
-      jest.spyOn(repository, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([[mockAnnouncement], 1]);
 
       const result = await service.findAllPublic({ page: 1, limit: 10 }, 'en');
 
@@ -84,7 +86,9 @@ describe('AnnouncementService', () => {
     });
 
     it('should return public list with Vietnamese fields when lang is vi (Normal)', async () => {
-      jest.spyOn(repository, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([[mockAnnouncement], 1]);
 
       const result = await service.findAllPublic({ page: 1, limit: 10 }, 'vi');
 
@@ -94,9 +98,14 @@ describe('AnnouncementService', () => {
     });
 
     it('should clamp invalid negative pagination queries to valid bounds (Boundary)', async () => {
-      jest.spyOn(repository, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([[mockAnnouncement], 1]);
 
-      const result = await service.findAllPublic({ page: -5, limit: -10 }, 'en');
+      const result = await service.findAllPublic(
+        { page: -5, limit: -10 },
+        'en',
+      );
 
       expect(result.page).toBe(1);
       expect(result.limit).toBe(1); // negative limit clamped to min=1
@@ -110,7 +119,9 @@ describe('AnnouncementService', () => {
     });
 
     it('should clamp extremely large limit query to maximum allowed limit (Boundary)', async () => {
-      jest.spyOn(repository, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([[mockAnnouncement], 1]);
 
       const result = await service.findAllPublic({ limit: 100 }, 'en');
 
@@ -146,7 +157,9 @@ describe('AnnouncementService', () => {
     } as unknown as Announcement;
 
     it('should return admin list with both languages and no content (Normal)', async () => {
-      jest.spyOn(repository, 'findAndCount').mockResolvedValue([[mockAnnouncement], 1]);
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([[mockAnnouncement], 1]);
 
       const result = await service.findAllAdmin({ page: 1, limit: 10 });
 
@@ -208,10 +221,7 @@ describe('AnnouncementService', () => {
       expect((result as any).id).toBeUndefined();
       expect(repository.findOne).toHaveBeenCalledWith(
         expect.objectContaining({
-          $or: [
-            { slug: 'test-slug' },
-            { slugVi: 'test-slug' },
-          ],
+          $or: [{ slug: 'test-slug' }, { slugVi: 'test-slug' }],
         }),
         expect.any(Object),
       );
@@ -236,7 +246,10 @@ describe('AnnouncementService', () => {
     });
 
     it('should throw NotFoundException if public tries to view draft/scheduled announcement (Boundary)', async () => {
-      const draftAnnouncement = { ...mockAnnouncement, isPublished: false } as unknown as Announcement;
+      const draftAnnouncement = {
+        ...mockAnnouncement,
+        isPublished: false,
+      } as unknown as Announcement;
       jest.spyOn(repository, 'findOne').mockResolvedValue(draftAnnouncement);
 
       await expect(service.findOnePublic('test-slug', 'en')).rejects.toThrow(
@@ -244,8 +257,14 @@ describe('AnnouncementService', () => {
       );
 
       const futureDate = new Date(Date.now() + 100000);
-      const scheduledAnnouncement = { ...mockAnnouncement, isPublished: true, publishedAt: futureDate } as unknown as Announcement;
-      jest.spyOn(repository, 'findOne').mockResolvedValue(scheduledAnnouncement);
+      const scheduledAnnouncement = {
+        ...mockAnnouncement,
+        isPublished: true,
+        publishedAt: futureDate,
+      } as unknown as Announcement;
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValue(scheduledAnnouncement);
 
       await expect(service.findOnePublic('test-slug', 'en')).rejects.toThrow(
         NotFoundException,
@@ -345,7 +364,9 @@ describe('AnnouncementService', () => {
     });
 
     it('should throw BadRequestException if slug is already taken (Abnormal)', async () => {
-      jest.spyOn(repository, 'findOne').mockResolvedValue({ id: 'existing' } as Announcement);
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValue({ id: 'existing' } as Announcement);
 
       await expect(service.create(dto, 'u1')).rejects.toThrow(
         BadRequestException,
@@ -364,7 +385,10 @@ describe('AnnouncementService', () => {
       jest.spyOn(repository, 'create').mockReturnValue(createdEntity);
       jest.spyOn(repository, 'persistAndFlush').mockResolvedValue();
 
-      const result = await service.create({ ...dto, publishedAt: undefined }, 'u1');
+      const result = await service.create(
+        { ...dto, publishedAt: undefined },
+        'u1',
+      );
 
       expect(result).toBeNull();
       expect(repository.create).toHaveBeenCalledWith(
@@ -389,17 +413,23 @@ describe('AnnouncementService', () => {
     } as unknown as Announcement;
 
     it('should assign, update properties on existing announcement, and return null (Normal)', async () => {
-      jest.spyOn(repository, 'findOne')
+      jest
+        .spyOn(repository, 'findOne')
         .mockResolvedValueOnce(existingAnn) // for checking existence
         .mockResolvedValueOnce(null); // for checking slug collision
 
-      jest.spyOn(repository, 'assign').mockImplementation((entity: any, update: any) => {
-        Object.assign(entity, update);
-        return entity;
-      });
+      jest
+        .spyOn(repository, 'assign')
+        .mockImplementation((entity: any, update: any) => {
+          Object.assign(entity, update);
+          return entity;
+        });
       jest.spyOn(repository, 'flush').mockResolvedValue();
 
-      const result = await service.update('a1', { title: 'Updated Title', isPublished: true });
+      const result = await service.update('a1', {
+        title: 'Updated Title',
+        isPublished: true,
+      });
 
       expect(result).toBeNull();
       expect(repository.flush).toHaveBeenCalled();
@@ -408,19 +438,20 @@ describe('AnnouncementService', () => {
     it('should throw NotFoundException when updating non-existent announcement (Abnormal)', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.update('missing', { title: 'Test' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update('missing', { title: 'Test' }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException if update targets a slug collision (Boundary)', async () => {
-      jest.spyOn(repository, 'findOne')
+      jest
+        .spyOn(repository, 'findOne')
         .mockResolvedValueOnce(existingAnn) // first lookup
         .mockResolvedValueOnce({ id: 'other' } as Announcement); // collision check
 
-      await expect(service.update('a1', { slug: 'other-slug' })).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.update('a1', { slug: 'other-slug' }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

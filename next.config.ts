@@ -28,6 +28,10 @@ const nextConfig: NextConfig = {
         source: "/api/account/avatar/:path*",
         destination: "/api/cdn/account/avatar/:path*",
       },
+      {
+        source: "/api/media/:path*",
+        destination: "/api/cdn/storage/media/:path*",
+      },
     ];
   },
 };

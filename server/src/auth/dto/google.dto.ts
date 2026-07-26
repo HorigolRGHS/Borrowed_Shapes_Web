@@ -5,7 +5,8 @@ import { LoginResponseDto } from './login.dto';
 
 export class GoogleExchangeRequestDto {
   @ApiProperty({
-    description: 'Authorization code returned by Google (OAuth2 authorization code flow)',
+    description:
+      'Authorization code returned by Google (OAuth2 authorization code flow)',
   })
   @IsString()
   code!: string;
@@ -36,7 +37,8 @@ export class GoogleExchangeRequestDto {
 
 export class GoogleExchangeResponseDto {
   @ApiProperty({
-    description: 'One-time login code to be exchanged for tokens from the game client',
+    description:
+      'One-time login code to be exchanged for tokens from the game client',
     example: 'h1p4z6q3f0k1j2l3m4n5o6p7',
   })
   loginCode!: string;
@@ -46,7 +48,9 @@ export class GoogleExchangeResponseDto {
 }
 
 export class GoogleCompleteRequestDto {
-  @ApiProperty({ description: 'One-time login code returned by /auth/google/exchange' })
+  @ApiProperty({
+    description: 'One-time login code returned by /auth/google/exchange',
+  })
   @IsString()
   loginCode!: string;
 

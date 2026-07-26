@@ -103,6 +103,15 @@ export default function AdminReportDetailPage() {
       return;
     }
 
+    if (actionType === "BAN_CUSTOM" && banDuration) {
+      // Ensure the selected date is in the future
+      const banDate = new Date(banDuration);
+      if (banDate <= new Date()) {
+        toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       if (actionType === "REJECT") {

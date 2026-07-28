@@ -4,10 +4,8 @@ import { useI18n } from "@/lib/i18/i18n-context";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
-import { LegalPolicy } from "@/lib/legal/parser";
-
 interface PolicyContentProps {
-  policy: LegalPolicy;
+  policy: any;
 }
 
 export default function PolicyContent({ policy }: PolicyContentProps) {
@@ -30,7 +28,7 @@ export default function PolicyContent({ policy }: PolicyContentProps) {
       </div>
 
       <div className="space-y-6">
-        {policy.sections.map((section, idx) => (
+        {policy?.sections?.map((section: any, idx: number) => (
           <section key={idx} className="bg-card/30 rounded-2xl p-6 border border-border/50 hover:border-border transition-colors">
             <h2 className="text-xl font-semibold text-foreground mt-0 mb-4">{section.title}</h2>
             <div className="prose dark:prose-invert prose-sm sm:prose-base max-w-none text-muted-foreground">

@@ -47,6 +47,8 @@ export default function DashboardLayout({
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const logoUrl = "/icon.jpg";
 
   useEffect(() => {
     const profile = getUserProfile() as UserProfile | null;
@@ -110,48 +112,36 @@ export default function DashboardLayout({
           const active = isActive(item.href);
           
           const LinkContent = (
-            <Link href={item.href} className={cn("flex items-center", collapsed ? "justify-center" : "gap-3 w-full")}>
-              <Icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+            <Link href={item.href} className="flex items-center w-full h-full overflow-hidden">
+              <div className="w-5 flex justify-center shrink-0">
+                <Icon className="h-5 w-5" />
+              </div>
+              <span className={cn("transition-all duration-300 whitespace-nowrap", collapsed ? "opacity-0 w-0 ml-0" : "opacity-100 w-full ml-3")}>
+                {item.label}
+              </span>
             </Link>
           );
 
-          if (collapsed) {
-            return (
-              <Tooltip key={item.href}>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant={active ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-10 h-10 p-0 flex justify-center items-center mx-auto",
-                      active && "bg-secondary text-secondary-foreground font-medium"
-                    )}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {LinkContent}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="ml-2 font-medium z-[100]">
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          }
-
           return (
-            <Button
-              key={item.href}
-              asChild
-              variant={active ? "secondary" : "ghost"}
-              className={cn(
-                "w-full justify-start px-3",
-                active && "bg-secondary text-secondary-foreground font-medium"
-              )}
-              onClick={() => setMobileOpen(false)}
-            >
-              {LinkContent}
-            </Button>
+            <Tooltip key={item.href}>
+              <TooltipTrigger asChild>
+                <Button
+                  asChild
+                  variant={active ? "secondary" : "ghost"}
+                  className={cn(
+                    "h-10 w-full justify-start overflow-hidden transition-all duration-300",
+                    active ? "bg-secondary text-secondary-foreground font-medium" : "text-muted-foreground",
+                    collapsed ? "px-[14px]" : "px-3"
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {LinkContent}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className={cn("ml-2 font-medium z-[100]", !collapsed && "hidden")}>
+                {item.label}
+              </TooltipContent>
+            </Tooltip>
           );
         })}
       </nav>
@@ -162,21 +152,31 @@ export default function DashboardLayout({
     <div className="min-h-screen flex bg-muted/40">
       <aside 
         className={cn(
-          "hidden md:flex flex-col border-r bg-card p-4 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out shrink-0",
+          "hidden md:flex flex-col border-r bg-card p-4 sticky top-0 h-screen overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out shrink-0",
           isCollapsed ? "w-20" : "w-64"
         )}
       >
-        <div className={cn("flex items-center mb-6", isCollapsed ? "justify-center" : "justify-between")}>
-          {!isCollapsed && (
-            <h2 className="text-xl font-bold px-2 hover:opacity-80 transition-opacity whitespace-nowrap overflow-hidden text-ellipsis">
-              <Link href="/">Admin Panel</Link>
-            </h2>
-          )}
+          <div className="relative flex items-center h-10 mb-6 w-full">
+            <Link href="/dashboard" className={cn("absolute left-0 flex items-center gap-2 group overflow-hidden transition-all duration-300", isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-48 opacity-100")}>
+              {!imgError ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0">
+                  <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+                </div>
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] shrink-0">
+                  B
+                </div>
+              )}
+              <span className="font-extrabold tracking-tight flex flex-col justify-center leading-none text-sm ml-1 shrink-0">
+                <span className="text-foreground dark:text-white">BORROWED</span>
+                <span className="text-amber-500 dark:text-amber-400 mt-0.5">SHAPES</span>
+              </span>
+            </Link>
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar}
-            className="shrink-0"
+            className={cn("absolute shrink-0 transition-all duration-300", isCollapsed ? "left-[4px]" : "right-0")}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
@@ -200,8 +200,22 @@ export default function DashboardLayout({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-4">
-                <SheetTitle className="text-xl font-bold mb-6 hover:opacity-80 transition-opacity text-left">
-                  <Link href="/">Admin Panel</Link>
+                <SheetTitle className="text-left mb-6">
+                  <Link href="/dashboard" className="flex items-center gap-2 group inline-flex">
+                    {!imgError ? (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] overflow-hidden shrink-0">
+                        <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+                      </div>
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] shrink-0">
+                        B
+                      </div>
+                    )}
+                    <span className="font-extrabold tracking-tight flex flex-col justify-center leading-none text-sm ml-1">
+                      <span className="text-foreground dark:text-white">BORROWED</span>
+                      <span className="text-amber-500 dark:text-amber-400 mt-0.5">SHAPES</span>
+                    </span>
+                  </Link>
                 </SheetTitle>
                 {renderNavItems(false)}
               </SheetContent>

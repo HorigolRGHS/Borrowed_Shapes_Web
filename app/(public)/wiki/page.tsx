@@ -5,7 +5,7 @@ import { WikiPublicList, WikiPublicListSkeleton } from "@/components/wiki/wiki-p
 import type { WikiListResponse } from "@/models/dtos/wiki.dto";
 import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 
-export const metadata: Metadata = { title: "Wiki" };
+export const metadata: Metadata = { title: "Wiki | Borrowed Shapes" };
 export const dynamic = "force-dynamic";
 
 export default async function WikiListPage({

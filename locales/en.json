@@ -2542,7 +2542,8 @@
       "select_post_type": "Select Post Type",
       "content": "Content",
       "cancel": "Cancel",
-      "submit": "Post Thread"
+      "submit": "Post Thread",
+      "no_categories": "No categories available"
     },
     "dashboard": {
       "title": "Forum Thread Management",
@@ -2834,5 +2835,8 @@
       "error_action": "Failed to apply action",
       "success_action": "Report handled successfully!"
     }
+  },
+  "nav": {
+    "dashboard": "Dashboard"
   }
 }

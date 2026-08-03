@@ -1,9 +1,9 @@
 "use client";
 
 import { useI18n } from "@/lib/i18/i18n-context";
-import { getUserProfile } from "@/lib/api/api-client";
+
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Search, Pencil, Trash2, AlertTriangle, ChevronDown, Eye } from "lucide-react";
@@ -120,8 +120,6 @@ function getStatus(a: Announcement): "Published" | "Scheduled" {
 
 export default function AnnouncementsPage() {
   const { t, locale } = useI18n();
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   // const [searchQuery, setSearchQuery] = useState("");
@@ -248,14 +246,8 @@ export default function AnnouncementsPage() {
   };
 
   useEffect(() => {
-    const profile = getUserProfile();
-    if (!profile || profile.role !== "ADMIN") {
-      router.push("/");
-    } else {
-      setUser(profile);
-      fetchAnnouncements();
-    }
-  }, [router, typeFilter, sortBy, currentPage]);
+    fetchAnnouncements();
+  }, [typeFilter, sortBy, currentPage]);
 
   const fetchAnnouncements = async () => {
     try {
@@ -528,7 +520,7 @@ export default function AnnouncementsPage() {
     });
   };
 
-  if (!user) return null;
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">

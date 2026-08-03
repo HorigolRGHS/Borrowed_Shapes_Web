@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18/i18n-context";
-import { getUserProfile } from "@/lib/api/api-client";
+
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -96,7 +96,7 @@ export default function AchievementsPage() {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [user, setUser] = useState<any>(null);
+
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -284,14 +284,8 @@ export default function AchievementsPage() {
   };
 
   useEffect(() => {
-    const profile = getUserProfile();
-    if (!profile || profile.role !== "ADMIN") {
-      router.push("/");
-    } else {
-      setUser(profile);
-      fetchAchievements();
-    }
-  }, [router, typeFilter, sortBy, sortOrder, currentPage]);
+    fetchAchievements();
+  }, [typeFilter, sortBy, sortOrder, currentPage]);
 
   // Handle edit query param from view-detail page
   useEffect(() => {
@@ -600,7 +594,7 @@ export default function AchievementsPage() {
     });
   };
 
-  if (!user) return null;
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">

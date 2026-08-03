@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18/i18n-context";
-import { getUserProfile } from "@/lib/api/api-client";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -112,7 +112,7 @@ function formatDate(dateStr?: string): string {
 export default function GameResultsPage() {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+
   const [activeTab, setActiveTab] = useState<Tab>("runs");
 
   // Runs state
@@ -131,33 +131,22 @@ export default function GameResultsPage() {
   const [leaderboardTotalPages, setLeaderboardTotalPages] = useState(1);
   const [leaderboardScope, setLeaderboardScope] = useState<"all-time" | "seasonal">("all-time");
 
-  useEffect(() => {
-    const profile = getUserProfile();
-    if (!profile || (profile as any).role !== "ADMIN") {
-      router.push("/");
-    } else {
-      setUser(profile);
-    }
-  }, [router]);
+
 
   useEffect(() => {
-    if (!user) return;
     if (activeTab === "runs") {
       fetchRuns(true);
     }
-  }, [user, activeTab, runsPage, statusFilter, visibilityFilter]);
+  }, [activeTab, runsPage, statusFilter, visibilityFilter]);
 
   useEffect(() => {
-    if (!user) return;
     if (activeTab === "leaderboard") {
       fetchLeaderboard(true);
     }
-  }, [user, activeTab, leaderboardPage, leaderboardScope]);
+  }, [activeTab, leaderboardPage, leaderboardScope]);
 
   // Polling every 10 seconds in the background
   useEffect(() => {
-    if (!user) return;
-
     const interval = setInterval(() => {
       if (activeTab === "runs") {
         fetchRuns(false);
@@ -167,7 +156,7 @@ export default function GameResultsPage() {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [user, activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope]);
+  }, [activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope]);
 
   const fetchRuns = async (showLoading = true) => {
     try {
@@ -293,7 +282,7 @@ export default function GameResultsPage() {
     return "bg-slate-600 text-white";
   };
 
-  if (!user) return null;
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">

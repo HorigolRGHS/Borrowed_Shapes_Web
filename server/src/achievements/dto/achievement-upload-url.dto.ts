@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsNumber, Min, IsIn } from 'class-validator';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
 
 export class AchievementUploadUrlDto {
   @ApiProperty({ description: 'Original file name', example: 'badge.png' })
@@ -9,7 +14,10 @@ export class AchievementUploadUrlDto {
   @IsString({ message: 'achievements.file_name_must_be_string' })
   fileName!: string;
 
-  @ApiProperty({ description: 'Achievement ID for folder structure', example: 'ach-123' })
+  @ApiProperty({
+    description: 'Achievement ID for folder structure',
+    example: 'ach-123',
+  })
   @IsNotEmpty({ message: 'achievements.id_required' })
   @IsString({ message: 'achievements.id_must_be_string' })
   achievementId!: string;

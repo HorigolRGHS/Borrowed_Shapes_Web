@@ -24,7 +24,10 @@ export class I18nService implements OnModuleInit {
         for (const file of files) {
           if (file.endsWith('.json')) {
             const lang = file.replace('.json', '');
-            const content = fs.readFileSync(path.join(localesPath, file), 'utf8');
+            const content = fs.readFileSync(
+              path.join(localesPath, file),
+              'utf8',
+            );
             this.translations[lang] = JSON.parse(content);
           }
         }
@@ -34,8 +37,12 @@ export class I18nService implements OnModuleInit {
   }
 
   t(key: string, lang: string = this.defaultLang): string {
-    const targetLang = lang?.split(',')[0].split('-')[0].toLowerCase() || this.defaultLang;
-    const locale = this.translations[targetLang] || this.translations[this.defaultLang] || {};
+    const targetLang =
+      lang?.split(',')[0].split('-')[0].toLowerCase() || this.defaultLang;
+    const locale =
+      this.translations[targetLang] ||
+      this.translations[this.defaultLang] ||
+      {};
     const keys = key.split('.');
     let result = locale;
 

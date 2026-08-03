@@ -720,7 +720,7 @@ export default function GameResultDetailPage() {
                                       ? run.id.slice(0, 12)
                                       : run.id}
                                   </TableCell>
-                                  <TableCell className="font-medium text-foreground">
+                                  <TableCell className="font-medium text-foreground max-w-[200px] truncate">
                                     {run.lobbyName || "—"}
                                   </TableCell>
                                   <TableCell>
@@ -801,7 +801,7 @@ function InfoBox({
         <div className="mt-1">{badge}</div>
       ) : (
         <div
-          className={`text-sm font-semibold ${
+          className={`text-sm font-semibold break-words break-all whitespace-pre-wrap ${
             highlight ? "text-amber-400" : "text-foreground"
           } ${mono ? "font-mono" : ""}`}
         >

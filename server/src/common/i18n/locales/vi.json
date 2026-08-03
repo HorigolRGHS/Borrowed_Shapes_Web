@@ -206,6 +206,30 @@
     "invalid_sort_field": "Trường sort phải là một trong: score, createdAt, updatedAt",
     "invalid_sort_order": "Sort order phải là asc hoặc desc"
   },
+  "comments": {
+    "thread_not_found": "Không tìm thấy chủ đề",
+    "parent_not_found": "Không tìm thấy bình luận cha",
+    "parent_thread_mismatch": "Bình luận cha thuộc về một chủ đề khác",
+    "user_not_found": "Không tìm thấy người dùng",
+    "comment_not_found": "Không tìm thấy bình luận",
+    "forbidden_edit": "Bạn không có quyền chỉnh sửa bình luận này",
+    "cannot_edit_deleted": "Không thể chỉnh sửa bình luận đã bị xóa",
+    "forbidden_delete": "Bạn không có quyền xóa bình luận này",
+    "invalid_user": "Người dùng không hợp lệ"
+  },
+  "reports": {
+    "cannot_report_self": "Bạn không thể tố cáo chính mình",
+    "cannot_ban_admin": "Bạn không thể xử lý người dùng này",
+    "report_not_found": "Không tìm thấy tố cáo",
+    "forbidden_view": "Bạn không có quyền xem báo cáo này",
+    "already_processed": "Báo cáo đã được xử lý",
+    "no_reported_user": "Không có người dùng bị tố cáo liên quan đến báo cáo này",
+    "forbidden_admin_only": "Chỉ quản trị viên mới được phép thực hiện hành động này",
+    "file_too_large": "Dung lượng tệp bằng chứng vượt quá giới hạn",
+    "user_not_found": "Không tìm thấy người dùng bị tố cáo",
+    "thread_not_found": "Không tìm thấy chủ đề bị tố cáo",
+    "comment_not_found": "Không tìm thấy bình luận bị tố cáo"
+  },
   "category": {
     "list_success": "Lấy danh sách danh mục thành công",
     "detail_success": "Lấy chi tiết danh mục thành công",

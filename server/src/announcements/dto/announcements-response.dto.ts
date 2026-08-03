@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsString, IsIn, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+  IsIn,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { AnnouncementType } from '../../entities/AnnouncementType';
 
@@ -29,7 +37,10 @@ export class ListAnnouncementsQueryDto {
   @IsEnum(AnnouncementType)
   type?: AnnouncementType;
 
-  @ApiPropertyOptional({ enum: ['createdAt', 'publishedAt', 'updatedAt', 'title'], default: 'publishedAt' })
+  @ApiPropertyOptional({
+    enum: ['createdAt', 'publishedAt', 'updatedAt', 'title'],
+    default: 'publishedAt',
+  })
   @IsOptional()
   @IsIn(['createdAt', 'publishedAt', 'updatedAt', 'title'])
   sortBy?: 'createdAt' | 'publishedAt' | 'updatedAt' | 'title' = 'publishedAt';

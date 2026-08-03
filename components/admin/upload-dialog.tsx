@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { api } from "@/lib/api/api-client";
 import { UploadCloud, File as FileIcon, X } from "lucide-react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,11 +40,14 @@ export function UploadDialog({ onUploadSuccess }: { onUploadSuccess?: () => void
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [version, setVersion] = useState("1.0.0");
 
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const resetForm = () => {
     setSelectedFile(null);
     setVersion("1.0.0");
     setError(null);
     setSuccess(null);
+    setUploadProgress(0);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -86,20 +90,20 @@ export function UploadDialog({ onUploadSuccess }: { onUploadSuccess?: () => void
 
       const { uploadUrl, key, method, headers } = uploadUrlData.data;
 
+      setUploadProgress(0);
+
       // 2. Upload file directly to R2 (bypassing api-client to prevent sending Authorization token)
-      const putRes = await fetch(uploadUrl, {
-        method: method || "PUT",
+      await axios.put(uploadUrl, selectedFile, {
         headers: headers || {
           "Content-Type": uploadMimeType,
         },
-        body: selectedFile,
-        credentials: "omit",
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        },
       });
-
-      if (!putRes.ok) {
-        const errorText = await putRes.text().catch(() => "");
-        throw new Error(`R2 upload failed: ${putRes.status} ${errorText}`);
-      }
 
       // 3. Confirm upload
       const confirmData = await api.post("/downloads/admin/confirm-upload", {
@@ -199,6 +203,20 @@ export function UploadDialog({ onUploadSuccess }: { onUploadSuccess?: () => void
                 <span className="text-[10px] italic mt-1">
                   {t("admin.download.upload_dialog.test_file_note") || "Test files such as .txt will be uploaded as application/octet-stream."}
                 </span>
+                
+                {loading && (
+                  <div className="mt-2">
+                    <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div 
+                        className="bg-violet-600 h-2.5 rounded-full transition-all duration-300" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-right text-[10px] text-muted-foreground mt-1 font-medium">
+                      {uploadProgress}% {uploadProgress === 100 ? "- Processing..." : ""}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

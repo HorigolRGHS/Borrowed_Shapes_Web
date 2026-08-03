@@ -195,6 +195,30 @@ export default function AccountManagementPage() {
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [viewingDetail, setViewingDetail] = useState(false);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (viewingDetail) {
+        setViewingDetail(false);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [viewingDetail]);
+
+  const openDetail = useCallback((u: UserItem) => {
+    setSelectedUser(u);
+    setViewingDetail(true);
+    window.history.pushState({ detailView: true }, "");
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    if (window.history.state?.detailView) {
+      window.history.back();
+    } else {
+      setViewingDetail(false);
+    }
+  }, []);
+
   // Modals
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [banModalOpen, setBanModalOpen] = useState(false);
@@ -226,9 +250,9 @@ export default function AccountManagementPage() {
   }, []);
 
   // API Call: Fetch list
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchUsers = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
+    if (!isBackground) setError(null);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -246,9 +270,9 @@ export default function AccountManagementPage() {
       setTotalPages(data.pagination?.totalPages || 1);
       setTotal(data.pagination?.total || data.items?.length || 0);
     } catch (err: any) {
-      setError(err.message || t("admin.account.messages.generic_error"));
+      if (!isBackground) setError(err.message || t("admin.account.messages.generic_error"));
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, [page, searchTrigger, roleFilter, statusFilter, sortBy, sort]);
 
@@ -275,29 +299,14 @@ export default function AccountManagementPage() {
     fetchUsers().then(() => fetchPresenceData());
   }, [fetchUsers, fetchPresenceData]);
 
-  // Polling presence
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchPresenceData();
-    };
 
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        fetchPresenceData();
-      }
-    }, 15000); // 15s heartbeat check
-
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [fetchPresenceData]);
 
   // API Call: Fetch details
-  const fetchUserSessions = async (id: string) => {
-    setSessionsLoading(true);
-    setSessionsChecked(false);
+  const fetchUserSessions = useCallback(async (id: string, isBackground = false) => {
+    if (!isBackground) {
+      setSessionsLoading(true);
+      setSessionsChecked(false);
+    }
     console.log("[RevokeSession] fetching sessions", id);
     try {
       const res = await api.get(`/sessions/admin/users/${id}`);
@@ -305,12 +314,24 @@ export default function AccountManagementPage() {
       setSessions(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error("[RevokeSession] failed to fetch sessions", err);
-      setSessions([]);
+      if (!isBackground) setSessions([]);
     } finally {
-      setSessionsLoading(false);
-      setSessionsChecked(true);
+      if (!isBackground) {
+        setSessionsLoading(false);
+        setSessionsChecked(true);
+      }
     }
-  };
+  }, []);
+
+  const fetchUserDetails = useCallback(async (id: string, isBackground = false) => {
+    try {
+      const res = await api.get(`/account/admin/users/${id}`);
+      setSelectedUser(res.data || res);
+      fetchUserSessions(id, isBackground);
+    } catch (err: any) {
+      console.error(err);
+    }
+  }, [fetchUserSessions]);
 
   useEffect(() => {
     if (viewingDetail && selectedUser?.id) {
@@ -320,17 +341,34 @@ export default function AccountManagementPage() {
       setSessions([]);
       setSessionsChecked(false);
     }
-  }, [viewingDetail, selectedUser?.id]);
+  }, [viewingDetail, selectedUser?.id, fetchUserSessions]);
 
-  const fetchUserDetails = async (id: string) => {
-    try {
-      const res = await api.get(`/account/admin/users/${id}`);
-      setSelectedUser(res.data || res);
-      fetchUserSessions(id);
-    } catch (err: any) {
-      console.error(err);
-    }
-  };
+  // Polling presence and lists
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchPresenceData();
+      fetchUsers(true);
+      if (viewingDetail && selectedUser?.id) {
+        fetchUserDetails(selectedUser.id, true);
+      }
+    };
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchPresenceData();
+        fetchUsers(true);
+        if (viewingDetail && selectedUser?.id) {
+          fetchUserDetails(selectedUser.id, true);
+        }
+      }
+    }, 15000); // 15s heartbeat check
+
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchPresenceData, fetchUsers, fetchUserDetails, viewingDetail, selectedUser?.id]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -424,7 +462,12 @@ export default function AccountManagementPage() {
     try {
       let expires = null;
       if (banForm.banExpiresAt) {
-        expires = new Date(banForm.banExpiresAt).toISOString();
+        const banDate = new Date(banForm.banExpiresAt);
+        if (banDate <= new Date()) {
+          toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
+          return;
+        }
+        expires = banDate.toISOString();
       }
       await api.patch(`/account/admin/users/${selectedUser?.id}/ban`, {
         reason: stripHtml(banForm.reason), // Ensure we only store plain text to prevent XSS
@@ -453,7 +496,7 @@ export default function AccountManagementPage() {
     try {
       await api.delete(`/account/admin/users/${selectedUser?.id}`);
       setDeleteModalOpen(false);
-      setViewingDetail(false);
+      closeDetail();
       fetchUsers();
     } catch (err: any) {
       alert(err.message || t("admin.account.messages.generic_error"));
@@ -561,9 +604,9 @@ export default function AccountManagementPage() {
 
     return (
       <div className="p-4 md:p-8 space-y-6">
-        <div>
-          <Button variant="ghost" onClick={() => setViewingDetail(false)} className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+        <div className="p-6">
+          <Button variant="ghost" onClick={closeDetail} className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
             {t("admin.account.actions.back") || "Back"}
           </Button>
           <h1 className="text-3xl font-bold">{t("admin.account.detail.title") || "Account Detail"}</h1>
@@ -1119,7 +1162,7 @@ export default function AccountManagementPage() {
                   <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">{t("admin.account.empty.no_users") || "No users found"}</TableCell></TableRow>
                 ) : (
                   users.map((u) => (
-                    <TableRow key={u.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setSelectedUser(u); setViewingDetail(true); }}>
+                    <TableRow key={u.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetail(u)}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
@@ -1136,7 +1179,7 @@ export default function AccountManagementPage() {
                       <TableCell>{renderOnlineStatus(u)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedUser(u); setViewingDetail(true); }}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openDetail(u); }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>

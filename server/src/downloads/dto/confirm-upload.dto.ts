@@ -2,7 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsNumber, Min } from 'class-validator';
 
 export class ConfirmUploadDto {
-  @ApiProperty({ description: 'Original file name', example: 'BorrowedShapes-1.4.2.exe' })
+  @ApiProperty({
+    description: 'Original file name',
+    example: 'BorrowedShapes-1.4.2.exe',
+  })
   @IsNotEmpty({ message: 'downloads.file_name_required' })
   @IsString()
   fileName!: string;
@@ -26,7 +29,10 @@ export class ConfirmUploadDto {
   @Min(1, { message: 'downloads.file_size_invalid' })
   fileSize!: number;
 
-  @ApiProperty({ description: 'MIME type', example: 'application/octet-stream' })
+  @ApiProperty({
+    description: 'MIME type',
+    example: 'application/octet-stream',
+  })
   @IsNotEmpty({ message: 'downloads.mime_type_required' })
   @IsString()
   mimeType!: string;

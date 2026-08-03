@@ -15,7 +15,7 @@ const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" });
 const rajdhani = Rajdhani({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-rajdhani" });
 
 export const metadata: Metadata = {
-  title: "Borrowed Shapes Wiki",
+  title: "Borrowed Shapes",
   description: "Wiki for Borrowed Shapes game",
 };
 

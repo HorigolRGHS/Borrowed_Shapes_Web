@@ -337,9 +337,9 @@ export function AdminWikiListClient() {
                   : "—";
                 return (
                   <TableRow key={item.id}>
-                    <TableCell>
-                      <div className="font-medium">{title}</div>
-                      <div className="text-xs text-muted-foreground font-mono">
+                    <TableCell className="max-w-[300px]">
+                      <div className="font-medium truncate break-words break-all" title={title}>{title}</div>
+                      <div className="text-xs text-muted-foreground font-mono truncate break-words break-all" title={`/${item.slug}`}>
                         /{item.slug}
                       </div>
                     </TableCell>

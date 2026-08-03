@@ -26,23 +26,28 @@ import {
 import { AchievementService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
-import { AchievementResponseDto, AchievementUploadResponseDto } from './dto/achievements-response.dto';
+import {
+  AchievementResponseDto,
+  AchievementUploadResponseDto,
+} from './dto/achievements-response.dto';
 import { UserAchievementResponseDto } from './dto/user-achievements-response.dto';
-import { UnlockAchievementDto, UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
+import {
+  UnlockAchievementDto,
+  UnlockAchievementResponseDto,
+} from './dto/unlock-achievement.dto';
 import { AchievementUploadUrlDto } from './dto/achievement-upload-url.dto';
 import { AchievementConfirmUploadDto } from './dto/achievement-confirm-upload.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { getProxyMediaUrl } from '../storage/media-utils';
 
 @ApiTags('Achievements')
 @Roles('USER', 'ADMIN')
 @Controller('achievements')
 export class AchievementController {
-  constructor(
-    private readonly achievementService: AchievementService,
-  ) { }
+  constructor(private readonly achievementService: AchievementService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all achievements (paginated)' })
@@ -51,7 +56,12 @@ export class AchievementController {
   @ApiQuery({ name: 'type', required: false, example: 'PERMANENT' })
   @ApiQuery({ name: 'q', required: false, example: 'win' })
   @ApiQuery({ name: 'sortBy', required: false, example: 'name' })
-  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], example: 'desc' })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    enum: ['asc', 'desc'],
+    example: 'desc',
+  })
   async findAll(
     @Req() req: Request,
     @Query('page') page?: number,
@@ -76,7 +86,7 @@ export class AchievementController {
         name: a.name,
         description: a.description,
         criteriaCode: a.criteriaCode,
-        badgeImageUrl: a.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(a.badgeImageUrl) ?? '',
         type: a.type,
         seasonMonth: a.seasonMonth,
         expiresAt: a.expiresAt,
@@ -121,7 +131,7 @@ export class AchievementController {
         name: a.name,
         description: a.description,
         criteriaCode: a.criteriaCode,
-        badgeImageUrl: a.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(a.badgeImageUrl) ?? '',
         type: a.type,
         seasonMonth: a.seasonMonth,
         expiresAt: a.expiresAt,
@@ -158,10 +168,9 @@ export class AchievementController {
       );
     }
 
-    const userAchievements =
-      await this.achievementService.findByUser(
-        user.gameProfileId,
-      );
+    const userAchievements = await this.achievementService.findByUser(
+      user.gameProfileId,
+    );
 
     const data = userAchievements.map((ua) => ({
       achievement: {
@@ -169,7 +178,7 @@ export class AchievementController {
         name: ua.achievementId.name,
         description: ua.achievementId.description,
         criteriaCode: ua.achievementId.criteriaCode,
-        badgeImageUrl: ua.achievementId.badgeImageUrl,
+        badgeImageUrl: getProxyMediaUrl(ua.achievementId.badgeImageUrl) ?? '',
         type: ua.achievementId.type,
         seasonMonth: ua.achievementId.seasonMonth,
         expiresAt: ua.achievementId.expiresAt,
@@ -185,20 +194,25 @@ export class AchievementController {
   }
 
   @Get('user/me/showcase')
-  @ApiOperation({ summary: 'Get achievement showcase for current user profile' })
-  async findShowcase(
-    @CurrentUser() user: RequestUser,
-    @Req() req: Request,
-  ) {
+  @ApiOperation({
+    summary: 'Get achievement showcase for current user profile',
+  })
+  async findShowcase(@CurrentUser() user: RequestUser, @Req() req: Request) {
     if (!user.gameProfileId) {
       return okResponse(
         'achievements.showcase_success',
-        { permanent: [], seasonal: [], stats: { totalEarned: 0, permanentEarned: 0, seasonalEarned: 0 } },
+        {
+          permanent: [],
+          seasonal: [],
+          stats: { totalEarned: 0, permanentEarned: 0, seasonalEarned: 0 },
+        },
         `${req.method} ${req.path}`,
       );
     }
 
-    const data = await this.achievementService.findShowcaseForUser(user.gameProfileId);
+    const data = await this.achievementService.findShowcaseForUser(
+      user.gameProfileId,
+    );
 
     return okResponse(
       'achievements.showcase_success',
@@ -208,12 +222,8 @@ export class AchievementController {
   }
 
   @Get(':id/users')
-  async findUsersByAchievement(
-    @Param('id') id: string,
-    @Req() req: Request,
-  ) {
-    const users =
-      await this.achievementService.findUsersByAchievement(id);
+  async findUsersByAchievement(@Param('id') id: string, @Req() req: Request) {
+    const users = await this.achievementService.findUsersByAchievement(id);
 
     return okResponse(
       'achievements.users_success',
@@ -239,7 +249,7 @@ export class AchievementController {
       name: achievement.name,
       description: achievement.description,
       criteriaCode: achievement.criteriaCode,
-      badgeImageUrl: achievement.badgeImageUrl,
+      badgeImageUrl: getProxyMediaUrl(achievement.badgeImageUrl) as string,
       type: achievement.type,
       seasonMonth: achievement.seasonMonth,
       expiresAt: achievement.expiresAt,
@@ -269,13 +279,22 @@ export class AchievementController {
     if (!user.gameProfileId) {
       throw new BadRequestException('User does not have a game profile');
     }
-    const data = await this.achievementService.unlock(user.gameProfileId, dto.criteriaCode);
-    return okResponse('achievements.unlocked_success', data, `${req.method} ${req.path}`);
+    const data = await this.achievementService.unlock(
+      user.gameProfileId,
+      dto.criteriaCode,
+    );
+    return okResponse(
+      'achievements.unlocked_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
   }
 
   @Post('admin/upload-url')
   @Roles('ADMIN')
-  @ApiOperation({ summary: 'Admin: create a presigned upload URL for achievement badge' })
+  @ApiOperation({
+    summary: 'Admin: create a presigned upload URL for achievement badge',
+  })
   @ApiBody({ type: AchievementUploadUrlDto })
   async createUploadUrl(
     @Body() dto: AchievementUploadUrlDto,
@@ -291,7 +310,9 @@ export class AchievementController {
 
   @Post('admin/confirm-upload')
   @Roles('ADMIN')
-  @ApiOperation({ summary: 'Admin: confirm badge image upload and update achievement' })
+  @ApiOperation({
+    summary: 'Admin: confirm badge image upload and update achievement',
+  })
   @ApiBody({ type: AchievementConfirmUploadDto })
   @ApiResponse({ status: 200, type: AchievementUploadResponseDto })
   async confirmUpload(
@@ -316,7 +337,7 @@ export class AchievementController {
     @Body() dto: CreateAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.create(dto);
+    await this.achievementService.create(dto, user.userId);
     return okResponse(
       'achievements.create_success',
       null,
@@ -335,7 +356,7 @@ export class AchievementController {
     @Body() dto: UpdateAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.update(id, dto);
+    await this.achievementService.update(id, dto, user.userId);
     return okResponse(
       'achievements.update_success',
       null,
@@ -352,7 +373,7 @@ export class AchievementController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.delete(id);
+    await this.achievementService.delete(id, user.userId);
     return okResponse(
       'achievements.delete_success',
       null,

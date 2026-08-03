@@ -57,6 +57,8 @@ export function AuthCard({ logo, title, description, children, footer, className
   );
 }
 
+import Link from "next/link";
+
 export function AuthLogo() {
   const [imgError, setImgError] = useState(false);
   
@@ -64,7 +66,7 @@ export function AuthLogo() {
   const logoUrl = `${R2_BASE}/Logo.jpg`;
 
   return (
-    <div className="flex items-center gap-2">
+    <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
       {!imgError ? (
         <div className="w-9 h-9 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)] overflow-hidden shrink-0">
           <img src={logoUrl} alt="Borrowed Shapes Logo" className="w-full h-full object-cover" onError={() => setImgError(true)} />
@@ -77,6 +79,6 @@ export function AuthLogo() {
       <span className="text-foreground font-orbitron text-[11px] tracking-[0.08em]">
         BORROWED<span className="text-cyan-500"> SHAPES</span>
       </span>
-    </div>
+    </Link>
   );
 }

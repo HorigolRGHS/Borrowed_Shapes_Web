@@ -417,37 +417,43 @@ export default function CreateThreadModal({
 
                 {catDropdownOpen && (
                   <div className="absolute z-50 w-full mt-2 bg-slate-300 dark:bg-slate-700 border border-slate-700 rounded-xl overflow-hidden shadow-xl max-h-60 overflow-y-auto">
-                    {categories.map((cat) => (
-                      <button
-                        type="button"
-                        key={cat.id}
-                        onClick={() => {
-                          setForm((prev) => ({ ...prev, categoryId: cat.id }));
-                          setCatDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 dark:hover:bg-slate-500 hover:bg-slate-400 text-left transition-colors ${form.categoryId === cat.id ? "bg-violet-300 text-slate-700 dark:bg-violet-500 dark:text-white" : "text-slate-700 dark:text-slate-300"
-                          }`}
-                      >
-                        {cat.iconUrl && !brokenImages[cat.id] ? (
-                          <img
-                            src={cat.iconUrl}
-                            alt={cat.name}
-                            className="w-6 h-6 rounded-lg object-cover"
-                            onError={() =>
-                              setBrokenImages((prev) => ({
-                                ...prev,
-                                [cat.id]: true,
-                              }))
-                            }
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-lg bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-200">
-                            {cat.name[0]}
-                          </div>
-                        )}
-                        <span>{cat.name}</span>
-                      </button>
-                    ))}
+                    {categories.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 text-center">
+                        {t("forums.modal.no_categories") || "No categories available"}
+                      </div>
+                    ) : (
+                      categories.map((cat) => (
+                        <button
+                          type="button"
+                          key={cat.id}
+                          onClick={() => {
+                            setForm((prev) => ({ ...prev, categoryId: cat.id }));
+                            setCatDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 dark:hover:bg-slate-500 hover:bg-slate-400 text-left transition-colors ${form.categoryId === cat.id ? "bg-violet-300 text-slate-700 dark:bg-violet-500 dark:text-white" : "text-slate-700 dark:text-slate-300"
+                            }`}
+                        >
+                          {cat.iconUrl && !brokenImages[cat.id] ? (
+                            <img
+                              src={cat.iconUrl}
+                              alt={cat.name}
+                              className="w-6 h-6 rounded-lg object-cover"
+                              onError={() =>
+                                setBrokenImages((prev) => ({
+                                  ...prev,
+                                  [cat.id]: true,
+                                }))
+                              }
+                            />
+                          ) : (
+                            <div className="w-6 h-6 rounded-lg bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-200">
+                              {cat.name[0]}
+                            </div>
+                          )}
+                          <span>{cat.name}</span>
+                        </button>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

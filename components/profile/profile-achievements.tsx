@@ -151,11 +151,18 @@ function AchievementCard({
   const isExpiredOwned = achievement.owned && !achievement.equippable && achievement.type === "SEASONAL";
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       className={`
-        group relative flex flex-col rounded-xl border-2 p-4 text-left transition-all duration-300
+        cursor-pointer group relative flex flex-col min-w-0 rounded-xl border-2 p-4 text-left transition-all duration-300
         ${isEquipped
           ? "border-amber-500 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
           : achievement.owned && !isExpiredOwned
@@ -205,8 +212,10 @@ function AchievementCard({
       </div>
 
       {/* Name */}
-      <h4 className={`
-        text-sm font-semibold leading-tight line-clamp-2
+      <h4 
+        title={achievement.name}
+        className={`
+        text-sm font-semibold leading-tight h-[35px] overflow-hidden break-all whitespace-normal w-full min-w-0
         ${!achievement.owned
           ? "text-muted-foreground/50 dark:text-gray-600"
           : isExpiredOwned
@@ -256,7 +265,7 @@ function AchievementCard({
           {formatDate(achievement.achievedAt)}
         </p>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -332,14 +341,14 @@ function AchievementDetailModal({
             />
           </div>
 
-          <DialogTitle className={`mt-4 text-center text-xl font-bold ${
+          <DialogTitle className={`mt-4 text-center text-xl font-bold break-all whitespace-normal ${
             !achievement.owned ? "text-muted-foreground" : "text-foreground dark:text-white"
           }`}>
             {achievement.name}
           </DialogTitle>
 
           {achievement.description && (
-            <p className="mt-1.5 text-center text-sm text-muted-foreground dark:text-gray-400 leading-relaxed"
+            <p className="mt-1.5 text-center text-sm text-muted-foreground dark:text-gray-400 leading-relaxed break-words whitespace-pre-wrap"
               dangerouslySetInnerHTML={{ __html: achievement.description }}
             />
           )}
@@ -644,11 +653,16 @@ export function ProfileAchievements({ equippedAchievementId }: { equippedAchieve
                   className="pointer-events-none absolute inset-0 z-10 w-full h-full object-contain"
                 />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-500 font-semibold">
                   ⭐ {t("profile.achievements.equipped_badge")}
                 </p>
-                <p className="text-sm font-medium text-foreground dark:text-white">{equippedAchievement.name}</p>
+                  <p 
+                    className="text-sm font-medium text-foreground dark:text-white h-[40px] overflow-hidden break-all whitespace-normal"
+                    title={equippedAchievement.name}
+                  >
+                  {equippedAchievement.name}
+                </p>
               </div>
             </div>
           </>

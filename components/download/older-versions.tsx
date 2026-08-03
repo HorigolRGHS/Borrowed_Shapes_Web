@@ -56,7 +56,7 @@ export function OlderVersions({ versions, onDownload, loadingId }: OlderVersions
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">{v.mimeType === "application/octet-stream" ? "Binary / Executable" : "Archive"}</td>
+                    <td className="px-6 py-4">{v.mimeType === "application/octet-stream" ? "Game Archive (RAR/ZIP)" : "Archive"}</td>
                     <td className="px-6 py-4">{new Date(v.uploadedAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-right">
                       <Button

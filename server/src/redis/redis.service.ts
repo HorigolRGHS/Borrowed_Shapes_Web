@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -10,7 +15,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor(private config: ConfigService) {}
 
   onModuleInit() {
-    this.client = new Redis(this.config.get<string>('REDIS_URL', 'redis://localhost:6379'));
+    this.client = new Redis(
+      this.config.get<string>('REDIS_URL', 'redis://localhost:6379'),
+    );
     this.client.on('error', (err) => this.logger.error('Redis error', err));
   }
 
@@ -32,7 +39,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   /** Batch hgetall in a single pipeline — returns results in same order as keys. */
-  async hgetallMany(keys: string[]): Promise<(Record<string, string> | null)[]> {
+  async hgetallMany(
+    keys: string[],
+  ): Promise<(Record<string, string> | null)[]> {
     if (keys.length === 0) return [];
     const pipe = this.client.pipeline();
     for (const key of keys) pipe.hgetall(key);
@@ -70,7 +79,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.zrem(key, member);
   }
 
-  async zrangebyscore(key: string, min: number, max: number): Promise<string[]> {
+  async zrangebyscore(
+    key: string,
+    min: number,
+    max: number,
+  ): Promise<string[]> {
     return this.client.zrangebyscore(key, min, max);
   }
 
@@ -94,7 +107,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const keys: string[] = [];
     let cursor = '0';
     do {
-      const [nextCursor, found] = await this.client.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+      const [nextCursor, found] = await this.client.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        100,
+      );
       cursor = nextCursor;
       keys.push(...found);
     } while (cursor !== '0');

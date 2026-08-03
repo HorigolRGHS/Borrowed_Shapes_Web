@@ -469,7 +469,7 @@ export default function AchievementViewDetailPage() {
           {t("achievements.back_to_achievements")}
         </Button>
         <h1 className="text-3xl font-bold tracking-tight">{t("achievements.detail_page_title")}</h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-2 break-words whitespace-pre-wrap">
           {t("achievements.detail_page_subtitle")}{achievement.name}
         </p>
       </div>
@@ -492,7 +492,7 @@ export default function AchievementViewDetailPage() {
             </div>
 
             {/* Name + type badge */}
-            <h3 className="mt-4 text-center text-xl font-bold text-foreground">
+            <h3 className="mt-4 text-center text-xl font-bold text-foreground break-words break-all whitespace-pre-wrap w-full">
               {achievement.name}
             </h3>
             <div className="mt-3 flex justify-center">
@@ -560,7 +560,7 @@ export default function AchievementViewDetailPage() {
                 <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   {t("achievements.description_label")}
                 </div>
-                <div className="mt-1 text-sm leading-6 text-slate-200">
+                <div className="mt-1 text-sm leading-6 text-slate-200 break-words whitespace-pre-wrap">
                   {achievement.description
                     ? achievement.description.replace(/<[^>]*>/g, "")
                     : t("achievements.no_description")}
@@ -610,7 +610,12 @@ export default function AchievementViewDetailPage() {
               <div className="pt-2 space-y-1.5 text-sm">
                 <div className="text-muted-foreground">
                   {t("achievements.delete_name_label")}{" "}
-                  <span className="font-bold text-foreground">{achievement.name}</span>
+                  <span 
+                    className="font-bold text-foreground line-clamp-2 break-words inline-block align-top"
+                    title={achievement.name}
+                  >
+                    {achievement.name}
+                  </span>
                 </div>
                 <div className="text-muted-foreground">
                   {t("achievements.delete_code_label")}{" "}
@@ -664,7 +669,7 @@ export default function AchievementViewDetailPage() {
                   </div>
                 )}
                 <div>
-                  <DialogTitle>
+                  <DialogTitle className="break-words whitespace-pre-wrap">
                     {t("achievements.users_with")}{" "}
                     <span className="text-amber-300">
                       &quot;{achievement.name}&quot;

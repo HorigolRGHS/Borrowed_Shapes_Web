@@ -1,4 +1,13 @@
-import { IsOptional, IsInt, Min, Max, IsString, IsUUID, IsIn, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+  IsString,
+  IsUUID,
+  IsIn,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ForumPostType } from '../../entities/ForumPostType';
@@ -46,7 +55,9 @@ export class ListForumsDto {
   })
   @IsOptional()
   @IsString()
-  @IsIn(['score', 'createdAt', 'updatedAt'], { message: 'forums.invalid_sort_field' })
+  @IsIn(['score', 'createdAt', 'updatedAt'], {
+    message: 'forums.invalid_sort_field',
+  })
   sortBy?: 'score' | 'createdAt' | 'updatedAt' = 'createdAt';
 
   @ApiPropertyOptional({

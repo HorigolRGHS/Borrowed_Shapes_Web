@@ -47,17 +47,26 @@ export class AdminAccountQueryDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ enum: AccountFilterRole, default: AccountFilterRole.ALL })
+  @ApiPropertyOptional({
+    enum: AccountFilterRole,
+    default: AccountFilterRole.ALL,
+  })
   @IsOptional()
   @IsEnum(AccountFilterRole)
   role?: AccountFilterRole = AccountFilterRole.ALL;
 
-  @ApiPropertyOptional({ enum: AccountFilterStatus, default: AccountFilterStatus.ALL })
+  @ApiPropertyOptional({
+    enum: AccountFilterStatus,
+    default: AccountFilterStatus.ALL,
+  })
   @IsOptional()
   @IsEnum(AccountFilterStatus)
   status?: AccountFilterStatus = AccountFilterStatus.ALL;
 
-  @ApiPropertyOptional({ enum: AccountSortBy, default: AccountSortBy.CREATED_AT })
+  @ApiPropertyOptional({
+    enum: AccountSortBy,
+    default: AccountSortBy.CREATED_AT,
+  })
   @IsOptional()
   @IsEnum(AccountSortBy)
   sortBy?: AccountSortBy = AccountSortBy.CREATED_AT;

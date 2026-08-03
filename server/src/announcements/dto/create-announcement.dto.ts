@@ -38,13 +38,19 @@ export class CreateAnnouncementDto {
   @Matches(/^[a-z0-9-]+$/, { message: 'announcements.invalid_slug_vi' })
   slugVi!: string;
 
-  @ApiPropertyOptional({ maxLength: 500, example: 'A brief summary of the announcement' })
+  @ApiPropertyOptional({
+    maxLength: 500,
+    example: 'A brief summary of the announcement',
+  })
   @IsOptional()
   @IsString({ message: 'announcements.summary_must_be_string' })
   @MaxLength(500, { message: 'announcements.summary_max_length' })
   summary?: string;
 
-  @ApiPropertyOptional({ maxLength: 500, example: 'Tóm tắt ngắn gọn về thông báo' })
+  @ApiPropertyOptional({
+    maxLength: 500,
+    example: 'Tóm tắt ngắn gọn về thông báo',
+  })
   @IsOptional()
   @IsString({ message: 'announcements.summary_vi_must_be_string' })
   @MaxLength(500, { message: 'announcements.summary_vi_max_length' })
@@ -60,7 +66,11 @@ export class CreateAnnouncementDto {
   @IsString({ message: 'announcements.content_vi_must_be_string' })
   contentVi!: string;
 
-  @ApiPropertyOptional({ enum: AnnouncementType, default: AnnouncementType.NEWS, example: 'NEWS' })
+  @ApiPropertyOptional({
+    enum: AnnouncementType,
+    default: AnnouncementType.NEWS,
+    example: 'NEWS',
+  })
   @IsOptional()
   @IsEnum(AnnouncementType, { message: 'announcements.invalid_type' })
   type?: AnnouncementType;
@@ -70,12 +80,21 @@ export class CreateAnnouncementDto {
   @IsBoolean({ message: 'announcements.is_pinned_must_be_boolean' })
   isPinned?: boolean;
 
-  @ApiPropertyOptional({ default: false, example: true, description: 'If true, publishedAt defaults to now. If false with a future publishedAt, it will be auto-published at that time.' })
+  @ApiPropertyOptional({
+    default: false,
+    example: true,
+    description:
+      'If true, publishedAt defaults to now. If false with a future publishedAt, it will be auto-published at that time.',
+  })
   @IsOptional()
   @IsBoolean({ message: 'announcements.is_published_must_be_boolean' })
   isPublished?: boolean;
 
-  @ApiPropertyOptional({ example: '2026-06-10T09:00:00.000Z', description: 'Scheduled publish date. If isPublished is false, set a future date to auto-publish.' })
+  @ApiPropertyOptional({
+    example: '2026-06-10T09:00:00.000Z',
+    description:
+      'Scheduled publish date. If isPublished is false, set a future date to auto-publish.',
+  })
   @IsOptional()
   @IsDateString({}, { message: 'announcements.invalid_published_at' })
   publishedAt?: string;

@@ -31,7 +31,7 @@ export default function Home() {
       <GameIntroSection />
       <KnowledgeBaseSection />
 
-      <main className="flex-1 flex flex-col items-center justify-center pt-16 pb-16 px-4">
+      <main className="w-full">
         {/* New Download CTA Section */}
         <DownloadCTA user={user} />
       </main>

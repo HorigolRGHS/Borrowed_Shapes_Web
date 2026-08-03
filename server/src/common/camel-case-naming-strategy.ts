@@ -18,10 +18,19 @@ export class CamelCaseNamingStrategy extends AbstractNamingStrategy {
 
   joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
     const col = referencedColumnName ?? 'id';
-    return entityName.charAt(0).toLowerCase() + entityName.slice(1) + col.charAt(0).toUpperCase() + col.slice(1);
+    return (
+      entityName.charAt(0).toLowerCase() +
+      entityName.slice(1) +
+      col.charAt(0).toUpperCase() +
+      col.slice(1)
+    );
   }
 
-  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
+  joinTableName(
+    sourceEntity: string,
+    targetEntity: string,
+    propertyName: string,
+  ): string {
     return propertyName;
   }
 

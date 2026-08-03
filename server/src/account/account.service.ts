@@ -5,7 +5,6 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { raw } from '@mikro-orm/core';
 import { User } from '../entities/User';
 import { GameProfile } from '../entities/GameProfile';
@@ -26,7 +25,10 @@ import { randomUUID } from 'crypto';
 import { UserSession } from '../entities/UserSession';
 import { SessionStatus } from '../entities/SessionStatus';
 import { getProxyAvatarUrl } from '../auth/auth-utils';
-import { AdminDashboardStatisticsQueryDto, DashboardRange } from './dto/admin-dashboard-statistics-query.dto';
+import {
+  AdminDashboardStatisticsQueryDto,
+  DashboardRange,
+} from './dto/admin-dashboard-statistics-query.dto';
 import { GameRun } from '../entities/GameRun';
 import { GameSession } from '../entities/GameSession';
 import { ForumThread } from '../entities/ForumThread';
@@ -47,6 +49,11 @@ import { AdminSystemAuditLogQueryDto } from './dto/admin-system-audit-log-query.
 import { AuthService } from '../auth/auth.service';
 import { Role } from '../entities/Role';
 import { EmailService } from '../email/email.service';
+import { AccountRepository } from './repositories/account.repository';
+import { AuditService } from '../audit/audit.service';
+import { GameProfileRepository } from '../game/repositories/game-profile.repository';
+import { AchievementRepository } from '../achievements/repositories/achievements.repository';
+import { UserOnlineStatusRepository } from '../presence/repositories/user-online-status.repository';
 
 function maskSensitiveData(obj: any): any {
   if (obj === null || obj === undefined) return obj;
@@ -88,12 +95,16 @@ export class AccountService {
   private readonly logger = new Logger(AccountService.name);
 
   constructor(
-    private em: EntityManager,
+    private readonly accountRepository: AccountRepository,
+    private readonly auditService: AuditService,
+    private readonly gameProfileRepository: GameProfileRepository,
+    private readonly achievementRepository: AchievementRepository,
+    private readonly userOnlineStatusRepository: UserOnlineStatusRepository,
     private storageService: R2StorageService,
     private configService: ConfigService,
     private authService: AuthService,
     private emailService: EmailService,
-  ) { }
+  ) {}
 
   private getPublicBaseUrl(): string {
     return this.configService
@@ -155,7 +166,7 @@ export class AccountService {
     if (userId === 'me') {
       throw new BadRequestException('Invalid userId');
     } else {
-      user = await this.em.findOne(User, { id: userId });
+      user = await this.accountRepository.findOne({ id: userId });
     }
 
     if (!user || !user.imgUrl) {
@@ -184,7 +195,7 @@ export class AccountService {
     dto: UpdateProfileDto,
     ipAddress: string,
   ) {
-    const user = await this.em.findOne(User, { id: userId });
+    const user = await this.accountRepository.findOne({ id: userId });
     if (!user) throw new NotFoundException('User not found');
 
     const oldImgUrl: string | null = user.imgUrl ?? null;
@@ -213,39 +224,48 @@ export class AccountService {
       updated = true;
     }
 
-    let gameProfile = await this.em.findOne(GameProfile, { userId });
+    let gameProfile = await this.gameProfileRepository.findOne({ userId });
 
     // Check equipped achievement if requested
     if (dto.equippedAchievementId !== undefined) {
       if (!gameProfile) {
-        gameProfile = this.em.create(GameProfile, { userId: user });
-        await this.em.persistAndFlush(gameProfile);
+        gameProfile = this.gameProfileRepository.create({ userId: user });
+        await this.gameProfileRepository.persistAndFlush(gameProfile);
       }
 
       const oldEquipped = gameProfile.equippedAchievementId?.id;
 
       if (dto.equippedAchievementId === null) {
         if (oldEquipped) {
-          gameProfile.equippedAchievementId = undefined as any;
+          gameProfile.equippedAchievementId = null as any;
           updated = true;
           oldValues['equippedAchievementId'] = oldEquipped;
         }
       } else {
         if (dto.equippedAchievementId !== oldEquipped) {
-          const unlocked = await this.em.findOne(UserAchievement, {
-            gameProfileId: gameProfile.id,
-            achievementId: dto.equippedAchievementId,
-          });
+          const unlocked =
+            await this.achievementRepository.findOneUserAchievement(
+              gameProfile.id,
+              dto.equippedAchievementId,
+            );
           if (!unlocked) {
             throw new ForbiddenException(
               'Achievement not unlocked or does not exist',
             );
           }
-          const achievement = await this.em.findOne(Achievement, {
+          const achievement = await this.achievementRepository.findOne({
             id: dto.equippedAchievementId,
           });
-          const expiresAt = getEffectiveExpiresAt(achievement?.type ?? '', achievement?.seasonMonth, achievement?.expiresAt);
-          if (achievement?.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+          const expiresAt = getEffectiveExpiresAt(
+            achievement?.type ?? '',
+            achievement?.seasonMonth,
+            achievement?.expiresAt,
+          );
+          if (
+            achievement?.type === 'SEASONAL' &&
+            expiresAt &&
+            expiresAt < new Date()
+          ) {
             throw new ForbiddenException('Achievement season has expired');
           }
           gameProfile.equippedAchievementId = achievement as any;
@@ -256,8 +276,8 @@ export class AccountService {
     }
 
     if (updated) {
-      const auditLog = this.em.create(AuditLog, {
-        userId: user,
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: user.id,
         actionType: AuditActionType.UPDATE,
         entityName: 'User',
         entityId: user.id,
@@ -269,8 +289,7 @@ export class AccountService {
         },
         ipAddress,
       });
-      await this.em.flush();
-      void auditLog;
+      await this.accountRepository.flush();
     }
 
     // After DB save succeeded, cleanup old avatar on R2 if it changed
@@ -286,8 +305,7 @@ export class AccountService {
       }
     }
 
-    const updatedGameProfile = await this.em.findOne(
-      GameProfile,
+    const updatedGameProfile = await this.gameProfileRepository.findOne(
       { userId: user.id },
       { populate: ['equippedAchievementId'] },
     );
@@ -299,9 +317,13 @@ export class AccountService {
         achievement.seasonMonth,
         achievement.expiresAt,
       );
-      if (achievement.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
+      if (
+        achievement.type === 'SEASONAL' &&
+        expiresAt &&
+        expiresAt < new Date()
+      ) {
         updatedGameProfile.equippedAchievementId = undefined as any;
-        await this.em.flush();
+        await this.accountRepository.flush();
       }
     }
 
@@ -317,12 +339,12 @@ export class AccountService {
         updatedGameProfile?.equippedAchievementId?.id ?? null,
       equippedAchievement: updatedGameProfile?.equippedAchievementId
         ? {
-          id: updatedGameProfile.equippedAchievementId.id,
-          name: updatedGameProfile.equippedAchievementId.name,
-          badgeImageUrl:
-            updatedGameProfile.equippedAchievementId.badgeImageUrl,
-          type: updatedGameProfile.equippedAchievementId.type,
-        }
+            id: updatedGameProfile.equippedAchievementId.id,
+            name: updatedGameProfile.equippedAchievementId.name,
+            badgeImageUrl:
+              updatedGameProfile.equippedAchievementId.badgeImageUrl,
+            type: updatedGameProfile.equippedAchievementId.type,
+          }
         : null,
     };
   }
@@ -369,57 +391,15 @@ export class AccountService {
   // ─── ADMIN ACCOUNT MANAGEMENT ──────────────────────────────
 
   async getAdminUsers(query: AdminAccountQueryDto) {
-    const { page = 1, limit = 10, search, role, status, sortBy = AccountSortBy.CREATED_AT, sort = SortOrder.DESC } = query;
-    const qb = this.em.createQueryBuilder(User, 'u');
-
-    if (search) {
-      qb.andWhere({
-        $or: [
-          { id: { $ilike: `%${search}%` } },
-          { email: { $ilike: `%${search}%` } },
-          { displayName: { $ilike: `%${search}%` } },
-        ],
-      });
-    }
-
-    if (role && role !== AccountFilterRole.ALL) {
-      qb.andWhere({ role });
-    }
-
-    if (status && status !== AccountFilterStatus.ALL) {
-      if (status === AccountFilterStatus.ACTIVE) {
-        qb.andWhere({ deletedAt: null, isBanned: false });
-      } else if (status === AccountFilterStatus.BANNED) {
-        qb.andWhere({ deletedAt: null, isBanned: true });
-      } else if (status === AccountFilterStatus.DELETED) {
-        qb.andWhere({ deletedAt: { $ne: null } });
-      }
-    }
-
-    if (sortBy === AccountSortBy.ROLE) {
-      qb.orderBy({ role: sort, createdAt: 'DESC' });
-    } else if (sortBy === AccountSortBy.STATUS) {
-      qb.orderBy({
-        [raw('CASE WHEN u."deletedAt" IS NOT NULL THEN 3 WHEN u."isBanned" = true THEN 2 ELSE 1 END')]: sort,
-        createdAt: 'DESC'
-      });
-    } else if (sortBy === AccountSortBy.ONLINE_STATUS) {
-      qb.orderBy({
-        [raw('COALESCE((SELECT "isOnline" FROM auth."UserOnlineStatus" os WHERE os."userId" = u.id), false)')]: sort,
-        createdAt: 'DESC'
-      });
-    } else {
-      qb.orderBy({ createdAt: sort });
-    }
-
-    qb.limit(limit).offset((page - 1) * limit);
-
-    const [users, total] = await qb.getResultAndCount();
+    const { page = 1, limit = 20 } = query;
+    const [users, total] = await this.accountRepository.getAdminUsers(query);
 
     const userIds = users.map((u) => u.id);
     const onlineStatuses =
       userIds.length > 0
-        ? await this.em.find(UserOnlineStatus, { userId: { $in: userIds } })
+        ? await this.userOnlineStatusRepository.find({
+            userId: { $in: userIds },
+          })
         : [];
     const statusMap = new Map(onlineStatuses.map((s) => [s.userId.id, s]));
 
@@ -465,11 +445,10 @@ export class AccountService {
   }
 
   async getAdminUserDetails(id: string) {
-    const user = await this.em.findOne(User, { id });
+    const user = await this.accountRepository.findOne({ id });
     if (!user) throw new NotFoundException('User not found');
 
-    const gameProfile = await this.em.findOne(
-      GameProfile,
+    const gameProfile = await this.gameProfileRepository.findOne(
       { userId: id },
       { populate: ['equippedAchievementId'] },
     );
@@ -481,9 +460,13 @@ export class AccountService {
         achievement.seasonMonth,
         achievement.expiresAt,
       );
-      if (achievement.type === 'SEASONAL' && expiresAt && expiresAt < new Date()) {
-        gameProfile.equippedAchievementId = undefined as any;
-        await this.em.flush();
+      if (
+        achievement.type === 'SEASONAL' &&
+        expiresAt &&
+        expiresAt < new Date()
+      ) {
+        gameProfile.equippedAchievementId = null as any;
+        await this.accountRepository.flush();
       }
     }
 
@@ -512,33 +495,30 @@ export class AccountService {
       updatedAt: user.updatedAt,
       gameProfile: gameProfile
         ? {
-          id: gameProfile.id,
-          totalPlayTime: Number(gameProfile.totalPlayTime || 0),
-          totalSessions: gameProfile.totalSessions,
-          totalWins: gameProfile.totalWins,
-          totalLosses: gameProfile.totalLosses,
-          totalAbandoned: gameProfile.totalAbandoned,
-          equippedAchievementId:
-            gameProfile.equippedAchievementId?.id || null,
-          equippedAchievement,
-        }
+            id: gameProfile.id,
+            totalPlayTime: Number(gameProfile.totalPlayTime || 0),
+            totalSessions: gameProfile.totalSessions,
+            totalWins: gameProfile.totalWins,
+            totalLosses: gameProfile.totalLosses,
+            totalAbandoned: gameProfile.totalAbandoned,
+            equippedAchievementId:
+              gameProfile.equippedAchievementId?.id || null,
+            equippedAchievement,
+          }
         : null,
     };
   }
 
   async getAdminUserAuditLogs(id: string, query: AdminAuditLogQueryDto) {
     const { page = 1, limit = 20 } = query;
-    const qb = this.em.createQueryBuilder(AuditLog, 'a');
-    qb.where({ userId: id })
-      .orWhere({ entityName: 'User', entityId: id })
-      .orderBy({ timestamp: 'DESC' })
-      .limit(limit)
-      .offset((page - 1) * limit);
-
-    const [logs, total] = await qb.getResultAndCount();
+    const [logs, total] = await this.auditService.getAdminUserAuditLogs(
+      id,
+      page,
+      limit,
+    );
 
     return {
-      items: logs.map((log) => ({
+      items: logs.map((log: any) => ({
         id: log.id,
         userId: log.userId?.id || null,
         actionType: log.actionType,
@@ -571,57 +551,21 @@ export class AccountService {
       to,
     } = query;
 
-    const qb = this.em.createQueryBuilder(AuditLog, 'a');
-    qb.leftJoinAndSelect('a.userId', 'u');
-
-    if (actionType) {
-      qb.andWhere({ actionType });
-    }
-    if (entityName) {
-      qb.andWhere({ entityName });
-    }
-    if (entityId) {
-      qb.andWhere({ entityId });
-    }
-    if (userId) {
-      qb.andWhere({ userId });
-    }
-    if (from) {
-      qb.andWhere({ timestamp: { $gte: new Date(from) } });
-    }
-    if (to) {
-      qb.andWhere({ timestamp: { $lte: new Date(to) } });
-    }
-    if (search) {
-      qb.andWhere({
-        $or: [
-          { 'u.email': { $ilike: `%${search}%` } },
-          { 'u.displayName': { $ilike: `%${search}%` } },
-          { entityName: { $ilike: `%${search}%` } },
-          { entityId: { $ilike: `%${search}%` } },
-        ],
-      });
-    }
-
-    qb.orderBy({ timestamp: 'DESC' })
-      .limit(limit)
-      .offset((page - 1) * limit);
-
-    const [logs, total] = await qb.getResultAndCount();
+    const [logs, total] = await this.auditService.getSystemAuditLogs(query);
 
     return {
-      items: logs.map((log) => {
+      items: logs.map((log: any) => {
         const actor = log.userId
           ? {
-            id: log.userId.id,
-            email: String(log.userId.email),
-            displayName: String(log.userId.displayName),
-            imgUrl: getProxyAvatarUrl(
-              log.userId.imgUrl,
-              log.userId.id,
-              log.userId.updatedAt || new Date(),
-            ),
-          }
+              id: log.userId.id,
+              email: String(log.userId.email),
+              displayName: String(log.userId.displayName),
+              imgUrl: getProxyAvatarUrl(
+                log.userId.imgUrl,
+                log.userId.id,
+                log.userId.updatedAt || new Date(),
+              ),
+            }
           : null;
 
         return {
@@ -651,7 +595,7 @@ export class AccountService {
     dto: AdminUpdateAccountProfileDto,
     ipAddress: string,
   ) {
-    const target = await this.em.findOne(User, { id: targetUserId });
+    const target = await this.accountRepository.findOne({ id: targetUserId });
     if (!target) throw new NotFoundException('User not found');
 
     const oldValues: Record<string, any> = {
@@ -687,9 +631,8 @@ export class AccountService {
     if (updated) {
       target.updatedAt = new Date();
 
-      const adminRef = this.em.getReference(User, adminId);
-      const auditLog = this.em.create(AuditLog, {
-        userId: adminRef,
+      await this.auditService.recordInCurrentUnitOfWork({
+        userId: adminId,
         actionType: AuditActionType.UPDATE,
         entityName: 'User',
         entityId: target.id,
@@ -700,8 +643,7 @@ export class AccountService {
         },
         ipAddress: ipAddress || null,
       });
-      this.em.persist(auditLog);
-      await this.em.flush();
+      await this.accountRepository.flush();
     }
 
     return this.getAdminUserDetails(targetUserId);
@@ -713,7 +655,7 @@ export class AccountService {
     dto: AdminUpdateAccountRoleDto,
     ipAddress: string,
   ) {
-    const target = await this.em.findOne(User, { id: targetUserId });
+    const target = await this.accountRepository.findOne({ id: targetUserId });
     if (!target) throw new NotFoundException('User not found');
     if (target.deletedAt)
       throw new BadRequestException('Cannot update role for a deleted user');
@@ -750,7 +692,7 @@ export class AccountService {
     }
 
     if (oldRole === Role.ADMIN && dto.role === Role.USER) {
-      const adminCount = await this.em.count(User, {
+      const adminCount = await this.accountRepository.count({
         role: Role.ADMIN,
         deletedAt: null,
       });
@@ -761,9 +703,8 @@ export class AccountService {
 
     target.role = dto.role;
 
-    const adminRef = this.em.getReference(User, adminId);
-    this.em.create(AuditLog, {
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.UPDATE,
       entityName: 'User',
       entityId: targetUserId,
@@ -772,7 +713,7 @@ export class AccountService {
       ipAddress,
     });
 
-    await this.em.flush();
+    await this.accountRepository.flush();
 
     // Revoke all active sessions so the user gets the new role upon next login
     try {
@@ -813,7 +754,7 @@ export class AccountService {
       throw new ForbiddenException('Cannot ban yourself');
     }
 
-    const target = await this.em.findOne(User, { id: targetUserId });
+    const target = await this.accountRepository.findOne({ id: targetUserId });
     if (!target) throw new NotFoundException('User not found');
 
     if (target.deletedAt) {
@@ -839,16 +780,18 @@ export class AccountService {
       banExpiresAt: target.banExpiresAt,
     };
 
-    const hasChanged = !target.isBanned || target.banReason !== dto.reason.trim() || target.banExpiresAt?.getTime() !== expiresAt?.getTime();
+    const hasChanged =
+      !target.isBanned ||
+      target.banReason !== dto.reason.trim() ||
+      target.banExpiresAt?.getTime() !== expiresAt?.getTime();
 
     target.isBanned = true;
     target.bannedAt = new Date();
     target.banReason = dto.reason.trim();
     target.banExpiresAt = expiresAt ?? undefined;
 
-    const adminRef = this.em.getReference(User, adminId);
-    const auditLog = this.em.create(AuditLog, {
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.BAN_USER,
       entityName: 'User',
       entityId: target.id,
@@ -862,16 +805,16 @@ export class AccountService {
       ipAddress: ipAddress || null,
     });
 
-    this.em.persist(auditLog);
-
     // Revoke all active sessions
-    await this.em.nativeUpdate(
-      UserSession,
-      { userId: target.id, status: SessionStatus.ACTIVE },
-      { status: SessionStatus.REVOKED, logoutTime: new Date() },
-    );
+    await this.accountRepository
+      .getEntityManager()
+      .nativeUpdate(
+        UserSession,
+        { userId: target.id, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: new Date() },
+      );
 
-    await this.em.flush();
+    await this.accountRepository.flush();
 
     if (hasChanged && target.email) {
       try {
@@ -882,7 +825,9 @@ export class AccountService {
           banExpiresAt: expiresAt,
         });
       } catch (error) {
-        this.logger.warn(`Failed to send ban notification email to user ${target.id}`);
+        this.logger.warn(
+          `Failed to send ban notification email to user ${target.id}`,
+        );
       }
     }
 
@@ -894,7 +839,7 @@ export class AccountService {
     targetUserId: string,
     ipAddress: string,
   ) {
-    const target = await this.em.findOne(User, { id: targetUserId });
+    const target = await this.accountRepository.findOne({ id: targetUserId });
     if (!target) throw new NotFoundException('User not found');
 
     if (target.deletedAt) {
@@ -915,9 +860,8 @@ export class AccountService {
     target.banReason = undefined;
     target.banExpiresAt = undefined;
 
-    const adminRef = this.em.getReference(User, adminId);
-    const auditLog = this.em.create(AuditLog, {
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.UNBAN_USER,
       entityName: 'User',
       entityId: target.id,
@@ -930,9 +874,7 @@ export class AccountService {
       },
       ipAddress: ipAddress || null,
     });
-
-    this.em.persist(auditLog);
-    await this.em.flush();
+    await this.accountRepository.flush();
 
     if (hasChanged && target.email) {
       try {
@@ -941,7 +883,9 @@ export class AccountService {
           displayName: target.displayName,
         });
       } catch (error) {
-        this.logger.warn(`Failed to send unban notification email to user ${target.id}`);
+        this.logger.warn(
+          `Failed to send unban notification email to user ${target.id}`,
+        );
       }
     }
 
@@ -957,7 +901,7 @@ export class AccountService {
       throw new ForbiddenException('Cannot delete yourself');
     }
 
-    const target = await this.em.findOne(User, { id: targetUserId });
+    const target = await this.accountRepository.findOne({ id: targetUserId });
     if (!target) throw new NotFoundException('User not found');
 
     if (target.role === 'ADMIN') {
@@ -972,9 +916,8 @@ export class AccountService {
 
     target.deletedAt = new Date();
 
-    const adminRef = this.em.getReference(User, adminId);
-    const auditLog = this.em.create(AuditLog, {
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.DELETE,
       entityName: 'User',
       entityId: target.id,
@@ -985,16 +928,16 @@ export class AccountService {
       ipAddress: ipAddress || null,
     });
 
-    this.em.persist(auditLog);
-
     // Revoke all active sessions
-    await this.em.nativeUpdate(
-      UserSession,
-      { userId: target.id, status: SessionStatus.ACTIVE },
-      { status: SessionStatus.REVOKED, logoutTime: new Date() },
-    );
+    await this.accountRepository
+      .getEntityManager()
+      .nativeUpdate(
+        UserSession,
+        { userId: target.id, status: SessionStatus.ACTIVE },
+        { status: SessionStatus.REVOKED, logoutTime: new Date() },
+      );
 
-    await this.em.flush();
+    await this.accountRepository.flush();
 
     if (hasChanged && target.email) {
       try {
@@ -1003,7 +946,9 @@ export class AccountService {
           displayName: target.displayName,
         });
       } catch (error) {
-        this.logger.warn(`Failed to send deactivation notification email to user ${target.id}`);
+        this.logger.warn(
+          `Failed to send deactivation notification email to user ${target.id}`,
+        );
       }
     }
 
@@ -1019,7 +964,7 @@ export class AccountService {
       throw new ForbiddenException('Cannot restore yourself');
     }
 
-    const target = await this.em.findOne(User, { id: targetUserId });
+    const target = await this.accountRepository.findOne({ id: targetUserId });
     if (!target) throw new NotFoundException('User not found');
 
     if (!target.deletedAt) {
@@ -1036,9 +981,8 @@ export class AccountService {
 
     target.deletedAt = null as any;
 
-    const adminRef = this.em.getReference(User, adminId);
-    const auditLog = this.em.create(AuditLog, {
-      userId: adminRef,
+    await this.auditService.recordInCurrentUnitOfWork({
+      userId: adminId,
       actionType: AuditActionType.UPDATE,
       entityName: 'User',
       entityId: target.id,
@@ -1049,9 +993,7 @@ export class AccountService {
       },
       ipAddress: ipAddress || null,
     });
-
-    this.em.persist(auditLog);
-    await this.em.flush();
+    await this.accountRepository.flush();
 
     return this.getAdminUserDetails(targetUserId);
   }
@@ -1060,7 +1002,6 @@ export class AccountService {
     let days = 30;
     if (query.range === DashboardRange.DAYS_7) days = 7;
     else if (query.range === DashboardRange.DAYS_90) days = 90;
-
 
     // Summary
     const [
@@ -1074,19 +1015,29 @@ export class AccountService {
       bannedUsers,
       newUsersInRange,
       downloadsResult,
-      activeFileResult
+      activeFileResult,
     ] = await Promise.all([
-      this.em.count(ForumThread, {}),
-      this.em.count(ForumComment, { isDeleted: false }),
-      this.em.count(GameRun, {}),
-      this.em.count(GameSession, {}),
-      this.em.count(GameRun, { isCompleted: true }),
-      this.em.count(User, { deletedAt: null }),
-      this.em.count(GameProfile, {}),
-      this.em.count(User, { isBanned: true }),
-      this.em.getConnection().execute(`SELECT count(*) as count FROM auth."User" WHERE "createdAt" >= NOW() - INTERVAL '${days} days'`),
-      this.em.getConnection().execute(`SELECT count(*) as total, sum("bytesSent") as bytes FROM web."DownloadLog"`),
-      this.em.getConnection().execute(`SELECT "fileVersion" FROM web."FileAsset" WHERE "isActive" = true LIMIT 1`)
+      this.accountRepository.getEntityManager().count(ForumThread, {}),
+      this.accountRepository
+        .getEntityManager()
+        .count(ForumComment, { isDeleted: false }),
+      this.accountRepository.getEntityManager().count(GameRun, {}),
+      this.accountRepository.getEntityManager().count(GameSession, {}),
+      this.accountRepository
+        .getEntityManager()
+        .count(GameRun, { isCompleted: true }),
+      this.accountRepository.count({ deletedAt: null }),
+      this.gameProfileRepository.count({}),
+      this.accountRepository.count({ isBanned: true }),
+      this.accountRepository.executeRaw(
+        `SELECT count(*) as count FROM auth."User" WHERE "createdAt" >= NOW() - INTERVAL '${days} days'`,
+      ),
+      this.accountRepository.executeRaw(
+        `SELECT count(*) as total, sum("bytesSent") as bytes FROM web."DownloadLog"`,
+      ),
+      this.accountRepository.executeRaw(
+        `SELECT "fileVersion" FROM web."FileAsset" WHERE "isActive" = true LIMIT 1`,
+      ),
     ]);
 
     const totalDownloads = Number(downloadsResult[0]?.total || 0);
@@ -1094,7 +1045,11 @@ export class AccountService {
     const activeFileVersion = activeFileResult[0]?.fileVersion || null;
 
     // Series queries
-    const seriesSql = (table: string, dateCol: string, countCol: string = '*') => `
+    const seriesSql = (
+      table: string,
+      dateCol: string,
+      countCol: string = '*',
+    ) => `
       SELECT date_trunc('day', "${dateCol}") as date, count(${countCol}) as count
       FROM ${table}
       WHERE "${dateCol}" >= NOW() - INTERVAL '${days} days'
@@ -1102,27 +1057,46 @@ export class AccountService {
       ORDER BY date ASC
     `;
 
-    const [forumActivityRes, gameplayActivityRes, userGrowthRes, downloadTrendRes] = await Promise.all([
-      this.em.getConnection().execute(seriesSql('web."ForumThread"', 'createdAt')),
-      this.em.getConnection().execute(seriesSql('game."GameRun"', 'startedAt')),
-      this.em.getConnection().execute(seriesSql('auth."User"', 'createdAt')),
-      this.em.getConnection().execute(seriesSql('web."DownloadLog"', 'downloadedAt'))
+    const [
+      forumActivityRes,
+      gameplayActivityRes,
+      userGrowthRes,
+      downloadTrendRes,
+    ] = await Promise.all([
+      this.accountRepository.executeRaw(
+        seriesSql('web."ForumThread"', 'createdAt'),
+      ),
+      this.accountRepository.executeRaw(
+        seriesSql('game."GameRun"', 'startedAt'),
+      ),
+      this.accountRepository.executeRaw(seriesSql('auth."User"', 'createdAt')),
+      this.accountRepository.executeRaw(
+        seriesSql('web."DownloadLog"', 'downloadedAt'),
+      ),
     ]);
 
     // Fill missing days
     const generateSeries = (rawRes: any[]) => {
-      const map = new Map(rawRes.map(r => [new Date(r.date).toISOString().split('T')[0], Number(r.count)]));
+      const map = new Map(
+        rawRes.map((r) => [
+          new Date(r.date).toISOString().split('T')[0],
+          Number(r.count),
+        ]),
+      );
       const series = [];
       const now = new Date();
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
         const dateStr = d.toISOString().split('T')[0];
-        const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const label = d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
         series.push({
           label,
           date: dateStr,
-          value: map.get(dateStr) || 0
+          value: map.get(dateStr) || 0,
         });
       }
       return series;
@@ -1149,14 +1123,14 @@ export class AccountService {
           totalDownloads,
           totalBytesSent,
           activeFileVersion,
-        }
+        },
       },
       series: {
         forumActivity: generateSeries(forumActivityRes),
         gameplayActivity: generateSeries(gameplayActivityRes),
         userGrowth: generateSeries(userGrowthRes),
         downloadTrend: generateSeries(downloadTrendRes),
-      }
+      },
     };
   }
 }

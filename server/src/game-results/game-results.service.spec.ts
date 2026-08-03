@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { GameResultService } from './game-results.service';
 import { GameRun } from '../entities/GameRun';
-import { GameResultRepository } from './game-results.repository';
+import { GameResultRepository } from './repositories/game-results.repository';
 
 describe('GameResultService', () => {
   let service: GameResultService;
@@ -92,8 +92,12 @@ describe('GameResultService', () => {
 
   describe('findAllPaginated', () => {
     it('should_return_paginated_runs_when_valid_query (Normal)', async () => {
-      jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
       jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       const result = await service.findAllPaginated({ page: 1, limit: 10 });
@@ -109,7 +113,9 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_list_when_no_runs_exist (Boundary)', async () => {
-      jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [], total: 0 });
+      jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.findAllPaginated({ page: 1, limit: 10 });
 
@@ -119,37 +125,57 @@ describe('GameResultService', () => {
     });
 
     it('should_filter_by_isCompleted_when_provided (Normal)', async () => {
-      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      const spy = jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
       jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       await service.findAllPaginated({ isCompleted: true });
 
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ isCompleted: true }));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ isCompleted: true }),
+      );
     });
 
     it('should_filter_by_search_when_provided (Normal)', async () => {
-      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      const spy = jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
       jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       await service.findAllPaginated({ search: 'Test' });
 
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ search: 'Test' }));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'Test' }),
+      );
     });
 
     it('should_filter_by_isPrivate_when_provided (Normal)', async () => {
-      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [mockRunRow], total: 1 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      const spy = jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [mockRunRow], total: 1 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
       jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
 
       await service.findAllPaginated({ isPrivate: false });
 
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: false }));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ isPrivate: false }),
+      );
     });
 
     it('should_filter_by_date_range_when_provided (Normal)', async () => {
-      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [], total: 0 });
+      const spy = jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [], total: 0 });
 
       await service.findAllPaginated({
         startFrom: '2026-01-01T00:00:00Z',
@@ -165,7 +191,9 @@ describe('GameResultService', () => {
     });
 
     it('should_clamp_page_to_minimum_1_when_invalid (Boundary)', async () => {
-      const spy = jest.spyOn(repository, 'findPaginatedRuns').mockResolvedValue({ rows: [], total: 0 });
+      const spy = jest
+        .spyOn(repository, 'findPaginatedRuns')
+        .mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.findAllPaginated({ page: -5, limit: 10 });
       expect(result.page).toBe(1);
@@ -175,9 +203,15 @@ describe('GameResultService', () => {
   describe('findOne', () => {
     it('should_return_run_details_when_found (Normal)', async () => {
       jest.spyOn(repository, 'findRunById').mockResolvedValue(mockRunRow);
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
-      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([mockSessionRow]);
-      jest.spyOn(repository, 'getSessionPlayers').mockResolvedValue([mockSessionPlayerRow]);
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
+      jest
+        .spyOn(repository, 'getRunSessions')
+        .mockResolvedValue([mockSessionRow]);
+      jest
+        .spyOn(repository, 'getSessionPlayers')
+        .mockResolvedValue([mockSessionPlayerRow]);
 
       const result = await service.findOne('run-1');
 
@@ -216,10 +250,16 @@ describe('GameResultService', () => {
         isHost: true,
       };
 
-      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(mockProfileRow);
+      jest
+        .spyOn(repository, 'findPlayerProfile')
+        .mockResolvedValue(mockProfileRow);
       jest.spyOn(repository, 'countPlayerRuns').mockResolvedValue(1);
-      jest.spyOn(repository, 'findRunHistoryForPlayer').mockResolvedValue([mockHistoryRun]);
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest
+        .spyOn(repository, 'findRunHistoryForPlayer')
+        .mockResolvedValue([mockHistoryRun]);
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
 
       const result = await service.findPlayerHistory('gp-1', {
         page: 1,
@@ -255,10 +295,16 @@ describe('GameResultService', () => {
         isHost: false,
       };
 
-      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(mockProfileRow);
+      jest
+        .spyOn(repository, 'findPlayerProfile')
+        .mockResolvedValue(mockProfileRow);
       jest.spyOn(repository, 'countPlayerRuns').mockResolvedValue(1);
-      jest.spyOn(repository, 'findRunHistoryForPlayer').mockResolvedValue([mockNonHostRun]);
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest
+        .spyOn(repository, 'findRunHistoryForPlayer')
+        .mockResolvedValue([mockNonHostRun]);
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
 
       const result = await service.findPlayerHistory('gp-1', {
         page: 1,
@@ -269,9 +315,13 @@ describe('GameResultService', () => {
     });
 
     it('should_sort_by_totalTimeSec_asc_when_requested (Normal)', async () => {
-      jest.spyOn(repository, 'findPlayerProfile').mockResolvedValue(mockProfileRow);
+      jest
+        .spyOn(repository, 'findPlayerProfile')
+        .mockResolvedValue(mockProfileRow);
       jest.spyOn(repository, 'countPlayerRuns').mockResolvedValue(1);
-      const spy = jest.spyOn(repository, 'findRunHistoryForPlayer').mockResolvedValue([]);
+      const spy = jest
+        .spyOn(repository, 'findRunHistoryForPlayer')
+        .mockResolvedValue([]);
 
       await service.findPlayerHistory('gp-1', {
         page: 1,
@@ -300,8 +350,12 @@ describe('GameResultService', () => {
         totalPlayers: 4,
       };
 
-      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [leaderboardRow], total: 1 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest
+        .spyOn(repository, 'getLeaderboardData')
+        .mockResolvedValue({ rows: [leaderboardRow], total: 1 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
 
       const result = await service.getLeaderboard({ page: 1, limit: 10 });
 
@@ -315,7 +369,9 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_leaderboard_when_no_completed_runs (Boundary)', async () => {
-      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [], total: 0 });
+      jest
+        .spyOn(repository, 'getLeaderboardData')
+        .mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.getLeaderboard({ page: 1, limit: 10 });
 
@@ -334,8 +390,12 @@ describe('GameResultService', () => {
         },
       ];
 
-      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: rows, total: 11 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      jest
+        .spyOn(repository, 'getLeaderboardData')
+        .mockResolvedValue({ rows: rows, total: 11 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
 
       const result = await service.getLeaderboard({ page: 2, limit: 10 });
 
@@ -352,8 +412,12 @@ describe('GameResultService', () => {
         totalPlayers: 2,
       };
 
-      const spy = jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [leaderboardRow], total: 1 });
-      jest.spyOn(repository, 'getRunPlayers').mockResolvedValue([mockPlayerRow]);
+      const spy = jest
+        .spyOn(repository, 'getLeaderboardData')
+        .mockResolvedValue({ rows: [leaderboardRow], total: 1 });
+      jest
+        .spyOn(repository, 'getRunPlayers')
+        .mockResolvedValue([mockPlayerRow]);
 
       const result = await service.getLeaderboard({
         scope: 'seasonal',
@@ -373,7 +437,9 @@ describe('GameResultService', () => {
     });
 
     it('should_default_to_current_month_when_seasonal_has_invalid_month_format (Abnormal)', async () => {
-      const spy = jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [], total: 0 });
+      const spy = jest
+        .spyOn(repository, 'getLeaderboardData')
+        .mockResolvedValue({ rows: [], total: 0 });
 
       await service.getLeaderboard({
         scope: 'seasonal',
@@ -389,7 +455,9 @@ describe('GameResultService', () => {
     });
 
     it('should_return_empty_seasonal_leaderboard_when_no_runs_in_month (Boundary)', async () => {
-      jest.spyOn(repository, 'getLeaderboardData').mockResolvedValue({ rows: [], total: 0 });
+      jest
+        .spyOn(repository, 'getLeaderboardData')
+        .mockResolvedValue({ rows: [], total: 0 });
 
       const result = await service.getLeaderboard({
         scope: 'seasonal',

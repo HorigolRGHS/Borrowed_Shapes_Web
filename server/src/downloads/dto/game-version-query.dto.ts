@@ -30,7 +30,8 @@ export class GameVersionQueryDto {
   })
   @IsOptional()
   @IsIn(['uploadedAt', 'fileVersion', 'fileSize', 'downloadCount'])
-  sortBy?: 'uploadedAt' | 'fileVersion' | 'fileSize' | 'downloadCount' = 'uploadedAt';
+  sortBy?: 'uploadedAt' | 'fileVersion' | 'fileSize' | 'downloadCount' =
+    'uploadedAt';
 
   @ApiPropertyOptional({
     description: 'Sort order',

@@ -75,10 +75,12 @@ export default function SystemAuditLogsPage() {
 
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  const fetchLogs = useCallback(async (pageToFetch: number = 1) => {
+  const fetchLogs = useCallback(async (pageToFetch: number = 1, silent: boolean = false) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      if (!silent) {
+        setIsLoading(true);
+        setError(null);
+      }
       
       const query = new URLSearchParams();
       query.append("page", pageToFetch.toString());
@@ -103,15 +105,47 @@ export default function SystemAuditLogsPage() {
       setLogs(res.data.items);
       setPagination(res.data.pagination);
     } catch (err: any) {
-      setError(err?.response?.data?.message || t("admin.auditLogs.loadFailed") || "Failed to load audit logs.");
+      if (!silent) {
+        setError(err?.response?.data?.message || t("admin.auditLogs.loadFailed") || "Failed to load audit logs.");
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, [actionType, entityName, entityId, search, from, to, limit, t]);
 
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
+
+  useEffect(() => {
+    const STATISTICS_REFRESH_INTERVAL_MS = 30_000;
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchLogs(pagination.page, true);
+      }
+    }, STATISTICS_REFRESH_INTERVAL_MS);
+
+    const handleFocus = () => {
+      fetchLogs(pagination.page, true);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchLogs(pagination.page, true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [fetchLogs, pagination.page]);
 
   const handleResetFilters = () => {
     setActionType("");
@@ -127,6 +161,7 @@ export default function SystemAuditLogsPage() {
       case "CREATE": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "UPDATE": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "DELETE": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case "PROCESS_REPORT": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "BAN_USER": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       case "UNBAN_USER": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "REVOKE_SESSION": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
@@ -204,10 +239,6 @@ export default function SystemAuditLogsPage() {
             {t("admin.auditLogs.description") || "View system-wide activity and administrative actions."}
           </p>
         </div>
-        <Button onClick={() => fetchLogs(1)} disabled={isLoading} variant="outline" size="sm">
-          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
       </div>
 
       <Card>
@@ -323,9 +354,28 @@ export default function SystemAuditLogsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={getActionColor(log.actionType)}>
-                        {t(`admin.auditLogs.actions.${log.actionType}`) || log.actionType}
-                      </Badge>
+                      {(() => {
+                        let displayType = log.actionType;
+                        let color = getActionColor(log.actionType);
+                        if (log.actionType === "PROCESS_REPORT" && log.newValue?.operation) {
+                          const op = log.newValue.operation;
+                          if (op === "CREATE") {
+                            displayType = "CREATE_REPORT";
+                            color = "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+                          } else if (op === "RESOLVE") {
+                            displayType = "RESOLVE_REPORT";
+                            color = "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+                          } else if (op === "REJECT") {
+                            displayType = "REJECT_REPORT";
+                            color = "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+                          }
+                        }
+                        return (
+                          <Badge variant="secondary" className={color}>
+                            {t(`admin.auditLogs.actions.${displayType}`) || displayType}
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
@@ -361,7 +411,18 @@ export default function SystemAuditLogsPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-muted/30 p-4 rounded-lg">
                 <div>
                   <div className="text-xs text-muted-foreground">{t("admin.auditLogs.actionType") || "Action"}</div>
-                  <div className="font-semibold">{t(`admin.auditLogs.actions.${selectedLog.actionType}`) || selectedLog.actionType}</div>
+                  <div className="font-semibold">
+                    {(() => {
+                      let displayType = selectedLog.actionType;
+                      if (selectedLog.actionType === "PROCESS_REPORT" && selectedLog.newValue?.operation) {
+                        const op = selectedLog.newValue.operation;
+                        if (op === "CREATE") displayType = "CREATE_REPORT";
+                        else if (op === "RESOLVE") displayType = "RESOLVE_REPORT";
+                        else if (op === "REJECT") displayType = "REJECT_REPORT";
+                      }
+                      return t(`admin.auditLogs.actions.${displayType}`) || displayType;
+                    })()}
+                  </div>
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">{t("admin.auditLogs.timestamp") || "Time"}</div>

@@ -72,7 +72,10 @@ export function ForumCard({ item }: { item: any }) {
               )}
             </div>
 
-            <h3 className="text-slate-800 dark:text-gray-200 group-hover:text-violet-600 font-bold mb-1.5 line-clamp-1 text-base">
+            <h3 
+              className="text-slate-800 dark:text-gray-200 group-hover:text-violet-600 font-bold mb-1.5 line-clamp-1 text-base break-words break-all"
+              title={item.title}
+            >
               {item.title}
             </h3>
 
@@ -82,7 +85,12 @@ export function ForumCard({ item }: { item: any }) {
             />
 
             <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium">
-              <span className="text-slate-800 dark:text-slate-200">{item.author?.displayName ?? "Unknown"}</span>
+              <span 
+                className="text-slate-800 dark:text-slate-200 truncate max-w-[120px]"
+                title={item.author?.displayName ?? "Unknown"}
+              >
+                {item.author?.displayName ?? "Unknown"}
+              </span>
               <span className={`font-bold ${(item.score ?? 0) > 0 ? "text-green-500" : (item.score ?? 0) < 0 ? "text-red-500" : "text-slate-500"}`}>
                 {t("forums.score")}: {item.score ?? 0}
               </span>

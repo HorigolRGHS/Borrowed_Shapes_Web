@@ -285,7 +285,7 @@ export function PlayHistory() {
 
                   {/* Lobby */}
                   <div>
-                    <div className="font-semibold text-sm text-foreground dark:text-white">
+                    <div className="font-semibold text-sm text-foreground dark:text-white h-[40px] overflow-hidden break-all whitespace-normal">
                       {run.lobbyName || "—"}
                     </div>
                     {run.lobbyCode && (

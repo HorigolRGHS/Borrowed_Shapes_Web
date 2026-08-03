@@ -2,7 +2,6 @@ import { Entity, Enum, type Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ schema: 'game' })
 export class Achievement {
-
   @PrimaryKey({ type: 'text', defaultRaw: `(gen_random_uuid())::text` })
   id!: string & Opt;
 
@@ -26,7 +25,6 @@ export class Achievement {
 
   @Property({ nullable: true })
   expiresAt?: Date;
-
 }
 
 export enum AchievementType {

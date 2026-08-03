@@ -38,9 +38,10 @@ function isStandardShape(value: unknown): value is StandardShape<unknown> {
 }
 
 @Injectable()
-export class StandardApiResponseInterceptor<T>
-  implements NestInterceptor<T, ApiResponseDto<T>>
-{
+export class StandardApiResponseInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponseDto<T>
+> {
   private readonly logger = new Logger(StandardApiResponseInterceptor.name);
 
   constructor(private readonly i18n: I18nService) {}
@@ -73,7 +74,10 @@ export class StandardApiResponseInterceptor<T>
         return new ApiResponseDto<T>(
           statusCode,
           success,
-          this.i18n.t(success ? 'common.request_successful' : 'common.request_failed', lang),
+          this.i18n.t(
+            success ? 'common.request_successful' : 'common.request_failed',
+            lang,
+          ),
           (data ?? null) as T,
           path,
           new Date().toISOString(),
@@ -82,7 +86,9 @@ export class StandardApiResponseInterceptor<T>
       tap((result) => {
         if (result instanceof StreamableFile) {
           const durationMs = Date.now() - startedAt;
-          this.logger.log(`${request.method} ${request.originalUrl ?? request.url} duration=${durationMs}ms [StreamableFile]`);
+          this.logger.log(
+            `${request.method} ${request.originalUrl ?? request.url} duration=${durationMs}ms [StreamableFile]`,
+          );
           return;
         }
 

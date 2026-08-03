@@ -620,8 +620,16 @@ export default function AnnouncementsPage() {
                             {/* Title + Author */}
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="font-medium text-foreground truncate max-w-[280px]">{locale === "vi" ? a.titleVi : a.title}</span>
-                                <span className="text-xs text-muted-foreground">
+                                <span 
+                                  className="font-medium text-foreground truncate max-w-[280px] block"
+                                  title={locale === "vi" ? a.titleVi : a.title}
+                                >
+                                  {locale === "vi" ? a.titleVi : a.title}
+                                </span>
+                                <span 
+                                  className="text-xs text-muted-foreground truncate max-w-[280px] block"
+                                  title={`${t("announcements.by_author")} ${a.author?.displayName || "Unknown"}`}
+                                >
                                   {t("announcements.by_author")} {a.author?.displayName || "Unknown"}
                                 </span>
                               </div>

@@ -17,7 +17,9 @@ describe('SeasonTeamController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SeasonTeamController],
-      providers: [{ provide: SeasonTeamService, useValue: mockSeasonTeamService }],
+      providers: [
+        { provide: SeasonTeamService, useValue: mockSeasonTeamService },
+      ],
     }).compile();
 
     controller = module.get<SeasonTeamController>(SeasonTeamController);

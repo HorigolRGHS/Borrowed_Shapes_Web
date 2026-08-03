@@ -49,6 +49,14 @@ import { getProxyMediaUrl } from '../storage/media-utils';
 export class AchievementController {
   constructor(private readonly achievementService: AchievementService) {}
 
+  @Get('admin/check-next-month')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Check if top 5 achievements for next month are created' })
+  async checkNextMonthTopAchievements(@Req() req: Request) {
+    const hasAll = await this.achievementService.checkNextMonthTopAchievements();
+    return okResponse('Checked achievements', { hasAll }, req.url);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all achievements (paginated)' })
   @ApiQuery({ name: 'page', required: false, example: 1 })

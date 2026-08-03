@@ -708,7 +708,8 @@
       "category_label": "Loại",
       "close": "Đóng",
       "equipped_badge": "ĐANG DÙNG",
-      "error_loading": "Không thể tải thành tựu."
+      "error_loading": "Không thể tải thành tựu.",
+      "reminder_toast": "Hệ thống: Vui lòng tạo đủ 5 Achievement TOP cho tháng sau!"
     }
   },
   "header": {
@@ -810,6 +811,9 @@
     }
   },
   "admin": {
+    "achievements": {
+      "reminder_toast": "Hệ thống: Vui lòng tạo đủ 5 Achievement TOP cho tháng sau!"
+    },
     "dashboard": {
       "statistics": {
         "title": "Bảng thống kê",

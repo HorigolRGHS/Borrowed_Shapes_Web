@@ -712,7 +712,8 @@
       "category_label": "Type",
       "close": "Close",
       "equipped_badge": "EQUIPPED",
-      "error_loading": "Failed to load achievements."
+      "error_loading": "Failed to load achievements.",
+      "reminder_toast": "System: Please create exactly 5 TOP Achievements for the next month!"
     }
   },
   "header": {
@@ -814,6 +815,9 @@
     }
   },
   "admin": {
+    "achievements": {
+      "reminder_toast": "System: Please create exactly 5 TOP Achievements for the next month!"
+    },
     "dashboard": {
       "statistics": {
         "title": "Statistics Dashboard",

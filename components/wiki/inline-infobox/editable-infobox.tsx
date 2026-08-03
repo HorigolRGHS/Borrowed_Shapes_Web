@@ -38,7 +38,10 @@ export function EditableInfobox({ locale, excludeSlug, wikiId }: Props) {
       dict.wiki.metadata.category[
         c as keyof typeof dict.wiki.metadata.category
       ],
-    statsLabel: dict.wiki.metadata.stats,
+    statsLabel:
+      locale === "vi"
+        ? dict.wiki.metadata.stats_vi
+        : dict.wiki.metadata.stats_en,
     locationLabel:
       locale === "vi"
         ? dict.wiki.metadata.location_vi
@@ -60,7 +63,7 @@ export function EditableInfobox({ locale, excludeSlug, wikiId }: Props) {
       editSlots={{
         image: <EditableImageField wikiId={wikiId} />,
         category: <EditableCategoryField />,
-        stats: <EditableStatsField />,
+        stats: <EditableStatsField locale={locale} />,
         location: (
           <EditableLocationField
             locale={locale}

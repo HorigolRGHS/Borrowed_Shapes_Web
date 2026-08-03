@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -153,112 +154,304 @@ html {
 }
 
 /* =========================
-   CKEDITOR OVERRIDES
+   CKEDITOR OVERRIDES & DARK MODE
 ========================= */
-@layer components {
-  /* Token-based: tu dong doi theo light/dark, khong can selector .dark rieng.
-     !important + @layer components de thang style mac dinh (unlayered) cua CKEditor. */
+:root {
+  --ck-color-base-background: hsl(var(--background));
+  --ck-color-base-foreground: hsl(var(--foreground));
+  --ck-color-base-border: hsl(var(--border));
+  --ck-color-base-text: hsl(var(--foreground));
+  --ck-color-base-action: hsl(var(--primary));
+  --ck-color-base-focus: hsl(var(--ring));
 
-  /* --- Editable surface + toolbar (UI) --- */
-  .ck-editor__editable,
-  .ck.ck-editor__editable_inline {
-    min-height: 100px;
-    background: hsl(var(--background)) !important;
-    color: hsl(var(--foreground)) !important;
-    border-color: hsl(var(--border)) !important;
-  }
+  --ck-color-text: hsl(var(--foreground));
+  --ck-color-shadow-drop: transparent;
+  --ck-color-shadow-inner: transparent;
 
-  .ck-editor__editable p,
-  .ck-editor__editable span,
-  .ck-editor__editable li {
-    color: hsl(var(--foreground)) !important;
-  }
+  /* Toolbar */
+  --ck-color-toolbar-background: hsl(var(--muted));
+  --ck-color-toolbar-border: hsl(var(--border));
 
-  .ck.ck-editor__editable_inline.ck-placeholder::before {
-    color: hsl(var(--muted-foreground)) !important;
-  }
+  /* Dropdown & List & Panels */
+  --ck-color-dropdown-panel-background: hsl(var(--popover));
+  --ck-color-dropdown-panel-border: hsl(var(--border));
+  --ck-color-panel-background: hsl(var(--popover));
+  --ck-color-panel-border: hsl(var(--border));
+  --ck-color-list-background: hsl(var(--popover));
 
-  .ck.ck-toolbar {
-    background: hsl(var(--muted)) !important;
-    border-color: hsl(var(--border)) !important;
-  }
+  /* Buttons */
+  --ck-color-button-default-background: transparent;
+  --ck-color-button-default-hover-background: hsl(var(--accent));
+  --ck-color-button-default-active-background: hsl(var(--accent));
+  --ck-color-button-on-background: hsl(var(--accent));
+  --ck-color-button-on-hover-background: hsl(var(--accent));
+  --ck-color-button-on-color: hsl(var(--accent-foreground));
 
-  .ck.ck-button,
-  .ck.ck-icon {
-    color: hsl(var(--foreground)) !important;
-  }
+  /* Inputs */
+  --ck-color-input-background: hsl(var(--background));
+  --ck-color-input-border: hsl(var(--border));
+  --ck-color-input-text: hsl(var(--foreground));
 
-  .ck.ck-button:hover {
-    background: hsl(var(--accent)) !important;
-  }
+  /* Focus ring + radius */
+  --ck-color-focus-border: hsl(var(--ring));
+  --ck-border-radius: var(--radius);
+}
 
-  .ck.ck-dropdown__panel,
-  .ck.ck-list {
-    background: hsl(var(--popover)) !important;
-    border-color: hsl(var(--border)) !important;
-  }
+/* --- Editable surface + toolbar (UI) --- */
+.ck-editor__editable,
+.ck.ck-editor__editable_inline {
+  min-height: 100px;
+  background: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
 
-  /* --- Content (.ck-content) elements: CKEditor hardcode mau sang, khong theo theme --- */
+.ck-editor__editable p,
+.ck-editor__editable span,
+.ck-editor__editable li,
+.ck-editor__editable div {
+  color: hsl(var(--foreground)) !important;
+}
 
-  /* Headings + links */
-  .ck-content h1,
-  .ck-content h2,
-  .ck-content h3,
-  .ck-content h4 {
-    color: hsl(var(--foreground)) !important;
-  }
-  .ck-content a {
-    color: hsl(var(--primary)) !important;
-  }
+.ck.ck-editor__editable_inline.ck-placeholder::before {
+  color: hsl(var(--muted-foreground)) !important;
+}
 
-  /* Tables: vien #b3b3b3/#bfbfbf, header bg #0000000d.
-     CKEditor boc table trong <figure class="table"><table> — the <table>
-     KHONG co class .table, figure moi co. Nen target qua figure.table table. */
-  .ck-content .table table,
-  .ck-content .table table td,
-  .ck-content .table table th,
-  .ck-content table {
-    border-color: hsl(var(--border)) !important;
-    color: hsl(var(--foreground)) !important;
-  }
-  .ck-content .table table td,
-  .ck-content table td {
-    background: hsl(var(--background)) !important;
-  }
-  .ck-content .table table th,
-  .ck-content table th {
-    background: hsl(var(--muted)) !important;
-  }
+.ck.ck-toolbar {
+  background: hsl(var(--muted)) !important;
+  border-color: hsl(var(--border)) !important;
+}
 
-  /* Caption (table + image): bg #f7f7f7 / text #333 */
-  .ck-content .table > figcaption,
-  .ck-content figure.table > table > caption,
-  .ck-content .image > figcaption,
-  .ck-content figure.image > figcaption {
-    background: hsl(var(--muted)) !important;
-    color: hsl(var(--muted-foreground)) !important;
-  }
+.ck.ck-button,
+.ck.ck-icon {
+  color: hsl(var(--foreground)) !important;
+}
 
-  /* Blockquote: vien #ccc / text #353535 */
-  .ck-content blockquote {
-    border-left-color: hsl(var(--border)) !important;
-    color: hsl(var(--muted-foreground)) !important;
-  }
+.ck.ck-button:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
 
-  /* Inline code + code block: bg #c7c7c74d / vien #c4c4c4 */
-  .ck-content code,
-  .ck-content pre,
-  .ck-content pre code {
-    background: hsl(var(--muted)) !important;
-    border-color: hsl(var(--border)) !important;
-    color: hsl(var(--foreground)) !important;
-  }
+.ck.ck-button.ck-on {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
 
-  /* Horizontal line: bg #dedede */
-  .ck-content hr {
-    background: hsl(var(--border)) !important;
-    border-color: hsl(var(--border)) !important;
-  }
+/* Dropdowns, lists, balloon panels, popovers */
+.ck.ck-dropdown__panel,
+.ck.ck-balloon-panel,
+.ck.ck-panel,
+.ck.ck-list {
+  background: hsl(var(--popover)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+}
+
+.ck.ck-list__item {
+  background: transparent !important;
+}
+
+.ck.ck-list__item .ck-button {
+  background: transparent !important;
+  color: hsl(var(--popover-foreground)) !important;
+  width: 100%;
+}
+
+.ck.ck-list__item .ck-button:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.ck.ck-list__item .ck-button.ck-on {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* Heading & dropdown labels inside dropdown list */
+.ck.ck-list__item .ck-button .ck-button__label,
+.ck.ck-dropdown__panel .ck-button .ck-button__label,
+.ck-heading_paragraph,
+.ck-heading_heading1,
+.ck-heading_heading2,
+.ck-heading_heading3,
+.ck-heading_heading4 {
+  color: hsl(var(--popover-foreground)) !important;
+}
+
+.ck-heading_heading1 .ck-button__label {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+}
+.ck-heading_heading2 .ck-button__label {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+}
+.ck-heading_heading3 .ck-button__label {
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+}
+.ck-heading_heading4 .ck-button__label {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+}
+.ck-heading_paragraph .ck-button__label {
+  font-size: 0.95rem !important;
+  font-weight: 400 !important;
+}
+
+.ck.ck-list__item .ck-button:hover .ck-button__label,
+.ck.ck-list__item .ck-button.ck-on .ck-button__label {
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* Inputs inside balloon / floating panels */
+.ck.ck-input,
+.ck.ck-input-text {
+  background: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.ck.ck-input:focus {
+  border-color: hsl(var(--ring)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2) !important;
+}
+
+/* --- Content (.ck-content) & Editable elements --- */
+.ck-content h1,
+.ck-editor__editable h1 {
+  font-size: 1.875rem !important; /* 30px */
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.ck-content h2,
+.ck-editor__editable h2 {
+  font-size: 1.5rem !important; /* 24px */
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.ck-content h3,
+.ck-editor__editable h3 {
+  font-size: 1.25rem !important; /* 20px */
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.ck-content h4,
+.ck-editor__editable h4 {
+  font-size: 1.125rem !important; /* 18px */
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.25rem !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* List formatting in editable canvas */
+.ck-content ul,
+.ck-editor__editable ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.ck-content ol,
+.ck-editor__editable ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.ck-content li,
+.ck-editor__editable li {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.ck-content a {
+  color: hsl(var(--primary)) !important;
+}
+
+.ck-content .table table,
+.ck-content .table table td,
+.ck-content .table table th,
+.ck-content table {
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.ck-content .table table td,
+.ck-content table td {
+  background: hsl(var(--background)) !important;
+}
+
+.ck-content .table table th,
+.ck-content table th {
+  background: hsl(var(--muted)) !important;
+}
+
+.ck-content .table > figcaption,
+.ck-content figure.table > table > caption,
+.ck-content .image > figcaption,
+.ck-content figure.image > figcaption {
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.ck-content blockquote,
+.ck-editor__editable blockquote {
+  border-left: 4px solid hsl(var(--primary)) !important;
+  padding-left: 1rem !important;
+  font-style: italic !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.75rem !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.ck-content code,
+.ck-editor__editable code {
+  background: hsl(var(--muted)) !important;
+  padding: 0.2rem 0.4rem !important;
+  border-radius: 0.25rem !important;
+  font-family: monospace !important;
+  font-size: 0.875em !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.ck-content pre,
+.ck-editor__editable pre {
+  background: hsl(var(--muted)) !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.5rem !important;
+  overflow-x: auto !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.ck-content pre code,
+.ck-editor__editable pre code {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.ck-content hr,
+.ck-editor__editable hr {
+  background: hsl(var(--border)) !important;
+  border-color: hsl(var(--border)) !important;
 }
 
 /* =========================

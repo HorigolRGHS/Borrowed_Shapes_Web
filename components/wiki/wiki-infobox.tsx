@@ -51,6 +51,13 @@ function pickLocation(m: WikiMetadata, locale: "en" | "vi"): string | undefined 
   return m.location;
 }
 
+function pickStats(m: WikiMetadata, locale: "en" | "vi"): Record<string, number> {
+  if (locale === "vi" && m.stats_vi && Object.keys(m.stats_vi).length > 0) {
+    return m.stats_vi;
+  }
+  return m.stats;
+}
+
 export function WikiInfobox({
   metadata,
   title,
@@ -81,7 +88,7 @@ export function WikiInfobox({
 
   const tags = pickTags(m, locale);
   const location = pickLocation(m, locale);
-  const statEntries = Object.entries(m.stats);
+  const statEntries = Object.entries(pickStats(m, locale));
   const related = m.relatedPages;
   const hasKVTable = !!m.category || statEntries.length > 0 || !!location;
 

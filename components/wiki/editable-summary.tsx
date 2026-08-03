@@ -19,9 +19,10 @@ export function EditableSummary({ fieldName, placeholder }: Props) {
   useEffect(() => {
     if (editing && taRef.current) {
       taRef.current.focus();
-      taRef.current.setSelectionRange(value.length, value.length);
+      const len = taRef.current.value.length;
+      taRef.current.setSelectionRange(len, len);
     }
-  }, [editing, value]);
+  }, [editing]);
 
   if (editing) {
     return (

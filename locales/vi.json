@@ -306,6 +306,8 @@
       "tag_placeholder": "Gõ tag và nhấn Enter",
       "tag_max": "Tối đa 20 tag",
       "stats": "Chỉ số",
+      "stats_en": "Chỉ số (Tiếng Anh)",
+      "stats_vi": "Chỉ số (Tiếng Việt)",
       "stat_key_placeholder": "Tên chỉ số (vd. stamina)",
       "stat_value_placeholder": "Giá trị",
       "add_stat": "Thêm chỉ số",

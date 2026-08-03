@@ -307,6 +307,8 @@
       "tag_placeholder": "Type a tag and press Enter",
       "tag_max": "Maximum 20 tags",
       "stats": "Stats",
+      "stats_en": "Stats (English)",
+      "stats_vi": "Stats (Vietnamese)",
       "stat_key_placeholder": "Stat name (e.g. stamina)",
       "stat_value_placeholder": "Value",
       "add_stat": "Add stat",

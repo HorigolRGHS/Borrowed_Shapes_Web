@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PublicHeader } from "@/components/layout/public-header";
-import { PublicFooter } from "@/components/layout/public-footer";
 import Link from "next/link";
 import {
   ThumbsUp,
@@ -315,34 +313,29 @@ export default function ForumDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
-        <PublicHeader />
-        <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full flex items-center justify-center">
+      <div className="flex-1 flex flex-col w-full">
+                <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full flex items-center justify-center">
           <div className="text-center text-sm text-muted-foreground">{t("common.loading")}</div>
         </main>
-        <PublicFooter />
-      </div>
+              </div>
     );
   }
 
   if (!thread) {
     return (
-      <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
-        <PublicHeader />
-        <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full flex items-center justify-center">
+      <div className="flex-1 flex flex-col w-full">
+                <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full flex items-center justify-center">
           <div className="text-red-500 font-medium text-center">{message || t("forums.thread_not_found")}</div>
         </main>
-        <PublicFooter />
-      </div>
+              </div>
     );
   }
 
   const isAuthor = user && (String(user.id) === String(thread.author?.id) || user.role === 'ADMIN');
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
-      <PublicHeader />
-      <main className="max-w-6xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex-1 w-full">
+    <div className="flex-1 flex flex-col w-full">
+            <main className="max-w-6xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex-1 w-full">
         {/* Breadcrumb Path */}
         <div className="flex items-center gap-2 mb-6 text-sm text-slate-500 dark:text-slate-400">
           <Link href="/forums" className="hover:text-violet-500 dark:hover:text-violet-400 transition-colors font-medium">
@@ -650,7 +643,6 @@ export default function ForumDetailPage() {
         />
       )}
 
-      <PublicFooter />
-    </div>
+          </div>
   );
 }

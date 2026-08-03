@@ -33,7 +33,7 @@ export async function generateMetadata({
   try {
     const detail = await fetchWikiBySlug(slug);
     return {
-      title: detail.title,
+      title: `${detail.title} | Borrowed Shapes`,
       description: detail.latestRevision.summary ?? undefined,
       alternates: {
         canonical: `/wiki/${detail.matchedSlugLocale === "en" ? detail.slug : detail.slugVi}`,
@@ -44,7 +44,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: "Wiki" };
+    return { title: "Wiki | Borrowed Shapes" };
   }
 }
 

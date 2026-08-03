@@ -23,11 +23,13 @@
   --ck-color-button-on-hover-background: hsl(var(--accent));
   --ck-color-button-on-color: hsl(var(--accent-foreground));
 
-  /* Dropdown / panel / popover */
+  /* Dropdown / panel / popover / list */
   --ck-color-dropdown-panel-background: hsl(var(--popover));
   --ck-color-dropdown-panel-border: hsl(var(--border));
   --ck-color-panel-background: hsl(var(--popover));
   --ck-color-panel-border: hsl(var(--border));
+  --ck-color-list-background: hsl(var(--popover));
+  --ck-color-list-button-hover-background: hsl(var(--accent));
 
   /* Inputs */
   --ck-color-input-background: hsl(var(--background));

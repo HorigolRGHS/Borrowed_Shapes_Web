@@ -306,6 +306,8 @@
       "tag_placeholder": "Gõ tag và nhấn Enter",
       "tag_max": "Tối đa 20 tag",
       "stats": "Chỉ số",
+      "stats_en": "Chỉ số (Tiếng Anh)",
+      "stats_vi": "Chỉ số (Tiếng Việt)",
       "stat_key_placeholder": "Tên chỉ số (vd. stamina)",
       "stat_value_placeholder": "Giá trị",
       "add_stat": "Thêm chỉ số",
@@ -706,7 +708,8 @@
       "category_label": "Loại",
       "close": "Đóng",
       "equipped_badge": "ĐANG DÙNG",
-      "error_loading": "Không thể tải thành tựu."
+      "error_loading": "Không thể tải thành tựu.",
+      "reminder_toast": "Hệ thống: Vui lòng tạo đủ 5 Achievement TOP cho tháng sau!"
     }
   },
   "header": {
@@ -808,6 +811,9 @@
     }
   },
   "admin": {
+    "achievements": {
+      "reminder_toast": "Hệ thống: Vui lòng tạo đủ 5 Achievement TOP cho tháng sau!"
+    },
     "dashboard": {
       "statistics": {
         "title": "Bảng thống kê",

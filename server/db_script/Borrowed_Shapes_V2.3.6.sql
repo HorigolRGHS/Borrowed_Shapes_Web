@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════
 --  Database Schema - Game Unity + Web Wiki/Forum
---  Version: 2.3.4
+--  Version: 2.3.6
 -- ═══════════════════════════════════════
 
 SET TIMEZONE = 'Asia/Ho_Chi_Minh';

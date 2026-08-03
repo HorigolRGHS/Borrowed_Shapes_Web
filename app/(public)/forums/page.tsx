@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import { useI18n } from "@/lib/i18/i18n-context";
-import { PublicHeader } from "@/components/layout/public-header";
-import { PublicFooter } from "@/components/layout/public-footer";
 
 import { ForumList } from "@/components/forums/forum-list";
 import ForumSidebar from "@/components/forums/forum-sidebar";
@@ -221,9 +219,8 @@ export default function ForumsPage() {
 
   if (!selectedCategory) {
     return (
-      <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
-        <PublicHeader />
-        <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full">
+      <div className="flex-1 flex flex-col w-full">
+                <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full">
           <div className="text-center mb-12">
             <p className="uppercase tracking-[0.5em] text-violet-500 dark:text-violet-400">
               {t("forums.community_hub") || "COMMUNITY HUB"}
@@ -265,15 +262,13 @@ export default function ForumsPage() {
           }}
           onSubmit={handleCreate}
         />
-        <PublicFooter />
-      </div>
+              </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#07070f] flex flex-col font-sans transition-colors duration-300">
-      <PublicHeader />
-      <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full">
+    <div className="flex-1 flex flex-col w-full">
+            <main className="max-w-7xl mx-auto py-20 px-5 flex-1 w-full">
         <div className="grid grid-cols-12 gap-8">
           <div className="col-span-8">
             <div className="flex justify-between items-center mb-8">
@@ -349,7 +344,6 @@ export default function ForumsPage() {
         }}
         onSubmit={handleCreate}
       />
-      <PublicFooter />
-    </div>
+          </div>
   );
 }

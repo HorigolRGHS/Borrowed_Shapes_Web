@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Lock, LogOut, User, Download } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Lock, LogOut, User, Download, LayoutDashboard, Home } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ interface Props {
 
 export function UserMenu({ displayName, role, imgUrl }: Props) {
   const { t } = useI18n();
+  const pathname = usePathname();
   const [imgError, setImgError] = useState(false);
   const initials = displayName
     ? displayName.substring(0, 2).toUpperCase()
@@ -79,6 +81,24 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-border dark:bg-[#1e1e3a]" />
+
+        {role === "ADMIN" && (
+          pathname?.startsWith("/dashboard") ? (
+            <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mt-1">
+              <Link href="/" className="flex items-center gap-3">
+                <Home className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                {t("common.home") || "Home"}
+              </Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mt-1">
+              <Link href="/dashboard" className="flex items-center gap-3">
+                <LayoutDashboard className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                {t("nav.dashboard") || "Dashboard"}
+              </Link>
+            </DropdownMenuItem>
+          )
+        )}
 
         <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent focus:text-accent-foreground dark:focus:bg-white/5 dark:focus:text-white rounded-lg px-3 py-2.5 mt-1">
           <Link href="/profile" className="flex items-center gap-3">

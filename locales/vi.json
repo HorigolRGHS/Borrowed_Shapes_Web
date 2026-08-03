@@ -2539,7 +2539,8 @@
       "select_post_type": "Chọn loại chủ đề",
       "content": "Nội dung",
       "cancel": "Hủy",
-      "submit": "Đăng chủ đề"
+      "submit": "Đăng chủ đề",
+      "no_categories": "Không có danh mục nào"
     },
     "dashboard": {
       "title": "Quản lý chủ đề diễn đàn",
@@ -2831,5 +2832,8 @@
       "error_action": "Xử lý đơn thất bại",
       "success_action": "Đã xử lý đơn tố cáo thành công!"
     }
+  },
+  "nav": {
+    "dashboard": "Bảng điều khiển"
   }
 }

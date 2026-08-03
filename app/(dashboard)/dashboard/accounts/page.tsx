@@ -195,6 +195,30 @@ export default function AccountManagementPage() {
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [viewingDetail, setViewingDetail] = useState(false);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (viewingDetail) {
+        setViewingDetail(false);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [viewingDetail]);
+
+  const openDetail = useCallback((u: UserItem) => {
+    setSelectedUser(u);
+    setViewingDetail(true);
+    window.history.pushState({ detailView: true }, "");
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    if (window.history.state?.detailView) {
+      window.history.back();
+    } else {
+      setViewingDetail(false);
+    }
+  }, []);
+
   // Modals
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [banModalOpen, setBanModalOpen] = useState(false);
@@ -472,7 +496,7 @@ export default function AccountManagementPage() {
     try {
       await api.delete(`/account/admin/users/${selectedUser?.id}`);
       setDeleteModalOpen(false);
-      setViewingDetail(false);
+      closeDetail();
       fetchUsers();
     } catch (err: any) {
       alert(err.message || t("admin.account.messages.generic_error"));
@@ -580,9 +604,9 @@ export default function AccountManagementPage() {
 
     return (
       <div className="p-4 md:p-8 space-y-6">
-        <div>
-          <Button variant="ghost" onClick={() => setViewingDetail(false)} className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+        <div className="p-6">
+          <Button variant="ghost" onClick={closeDetail} className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
             {t("admin.account.actions.back") || "Back"}
           </Button>
           <h1 className="text-3xl font-bold">{t("admin.account.detail.title") || "Account Detail"}</h1>
@@ -1138,7 +1162,7 @@ export default function AccountManagementPage() {
                   <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">{t("admin.account.empty.no_users") || "No users found"}</TableCell></TableRow>
                 ) : (
                   users.map((u) => (
-                    <TableRow key={u.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setSelectedUser(u); setViewingDetail(true); }}>
+                    <TableRow key={u.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetail(u)}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
@@ -1155,7 +1179,7 @@ export default function AccountManagementPage() {
                       <TableCell>{renderOnlineStatus(u)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedUser(u); setViewingDetail(true); }}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openDetail(u); }}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>

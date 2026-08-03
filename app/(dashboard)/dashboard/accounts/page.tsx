@@ -740,15 +740,17 @@ export default function AccountManagementPage() {
                     <Edit className="mr-2 h-4 w-4"/> {t("admin.account.actions.edit_account")}
                   </Button>
                   
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    onClick={openRoleModal}
-                    disabled={!!selectedUser.deletedAt || isSelf}
-                    title={isSelf ? t("admin.account.role.selfDemoteBlocked") || "Cannot change your own role" : undefined}
-                  >
-                    <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.role.changeRole") || "Change Role"}
-                  </Button>
+                  {false && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start" 
+                      onClick={openRoleModal}
+                      disabled={!!selectedUser.deletedAt || isSelf}
+                      title={isSelf ? t("admin.account.role.selfDemoteBlocked") || "Cannot change your own role" : undefined}
+                    >
+                      <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.role.changeRole") || "Change Role"}
+                    </Button>
+                  )}
 
                   <Button 
                     variant="outline" 

@@ -28,8 +28,8 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
 
   if (variant === "default") {
     return (
-      <Link href={linkHref} className="block group">
-        <Card className="h-full transition hover:border-primary/40 hover:shadow-sm">
+      <Link href={linkHref} className="block group h-full">
+        <Card className="h-full flex flex-col justify-between transition hover:border-primary/40 hover:shadow-sm">
           <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
             <h3 
               className="text-lg font-semibold line-clamp-2 group-hover:text-primary flex-1 min-w-0 break-words break-all"
@@ -43,12 +43,12 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
               </Badge>
             )}
           </CardHeader>
-          {defaultSummary && (
-            <CardContent>
+          <CardContent className="flex-1">
+            {defaultSummary && (
               <p className="text-sm text-muted-foreground line-clamp-3">{defaultSummary}</p>
-            </CardContent>
-          )}
-          <CardFooter className="text-xs text-muted-foreground">
+            )}
+          </CardContent>
+          <CardFooter className="text-xs text-muted-foreground mt-auto">
             {item.latestRevision?.author?.displayName && (
               <span>{item.latestRevision.author.displayName} · </span>
             )}
@@ -63,7 +63,7 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
     <Link href={linkHref} className="block h-full group">
       <Card
         className={cn(
-          "h-full overflow-hidden rounded-xl border border-border bg-card text-foreground shadow-sm transition duration-200 dark:border-[#252541] dark:bg-[#11111d] dark:text-slate-100 dark:shadow-none",
+          "h-full flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card text-foreground shadow-sm transition duration-200 dark:border-[#252541] dark:bg-[#11111d] dark:text-slate-100 dark:shadow-none",
           "hover:border-amber-500/80 hover:shadow-[0_0_30px_rgba(245,158,11,0.16)]",
         )}
       >
@@ -80,12 +80,12 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
             </Badge>
           )}
         </CardHeader>
-        {publicSummary && (
-          <CardContent className="min-h-[96px] border-b border-border px-5 py-5 dark:border-[#252541]">
+        <CardContent className="flex-1 min-h-[96px] border-b border-border px-5 py-5 dark:border-[#252541]">
+          {publicSummary && (
             <p className="text-sm leading-6 text-muted-foreground line-clamp-3 dark:text-sky-200/80">{publicSummary}</p>
-          </CardContent>
-        )}
-        <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-muted-foreground dark:text-slate-500">
+          )}
+        </CardContent>
+        <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-muted-foreground dark:text-slate-500 mt-auto">
           {item.latestRevision?.author?.displayName && (
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <UserRound className="h-3.5 w-3.5 shrink-0" />

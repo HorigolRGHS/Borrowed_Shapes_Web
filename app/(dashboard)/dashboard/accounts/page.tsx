@@ -735,20 +735,22 @@ export default function AccountManagementPage() {
                     variant="outline" 
                     className="w-full justify-start" 
                     onClick={openEditModal}
-                    disabled={!!selectedUser.deletedAt}
+                    disabled={!!selectedUser?.deletedAt}
                   >
                     <Edit className="mr-2 h-4 w-4"/> {t("admin.account.actions.edit_account")}
                   </Button>
                   
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    onClick={openRoleModal}
-                    disabled={!!selectedUser.deletedAt || isSelf}
-                    title={isSelf ? t("admin.account.role.selfDemoteBlocked") || "Cannot change your own role" : undefined}
-                  >
-                    <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.role.changeRole") || "Change Role"}
-                  </Button>
+                  {false && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start" 
+                      onClick={openRoleModal}
+                      disabled={!!selectedUser?.deletedAt || isSelf}
+                      title={isSelf ? t("admin.account.role.selfDemoteBlocked") || "Cannot change your own role" : undefined}
+                    >
+                      <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.role.changeRole") || "Change Role"}
+                    </Button>
+                  )}
 
                   <Button 
                     variant="outline" 
@@ -758,7 +760,7 @@ export default function AccountManagementPage() {
                     <FileText className="mr-2 h-4 w-4"/> {t("admin.account.actions.view_audit_log")}
                   </Button>
 
-                  {selectedUser.isBanned && !selectedUser.deletedAt ? (
+                  {selectedUser?.isBanned && !selectedUser?.deletedAt ? (
                     <Button 
                       variant="secondary" 
                       className="w-full justify-start" 
@@ -766,43 +768,43 @@ export default function AccountManagementPage() {
                     >
                       <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.actions.unban_account")}
                     </Button>
-                  ) : !selectedUser.deletedAt ? (
+                  ) : !selectedUser?.deletedAt ? (
                     <Button 
                       variant="destructive" 
                       className="w-full justify-start" 
                       onClick={() => setBanModalOpen(true)}
-                      disabled={isSelf || selectedUser.role === 'ADMIN'}
-                      title={isSelf ? "Cannot ban yourself" : selectedUser.role === 'ADMIN' ? "Cannot ban an ADMIN" : undefined}
+                      disabled={isSelf || selectedUser?.role === 'ADMIN'}
+                      title={isSelf ? "Cannot ban yourself" : selectedUser?.role === 'ADMIN' ? "Cannot ban an ADMIN" : undefined}
                     >
                       <ShieldAlert className="mr-2 h-4 w-4"/> {t("admin.account.actions.ban_account")}
                     </Button>
                   ) : null}
 
-                  {!selectedUser.deletedAt && (
+                  {!selectedUser?.deletedAt && (
                     <Button 
                       variant="destructive" 
                       className="w-full justify-start" 
                       onClick={() => setDeleteModalOpen(true)}
-                      disabled={isSelf || selectedUser.role === 'ADMIN'}
-                      title={isSelf ? "Cannot delete yourself" : selectedUser.role === 'ADMIN' ? "Cannot delete an ADMIN" : undefined}
+                      disabled={isSelf || selectedUser?.role === 'ADMIN'}
+                      title={isSelf ? "Cannot delete yourself" : selectedUser?.role === 'ADMIN' ? "Cannot delete an ADMIN" : undefined}
                     >
                       <Trash2 className="mr-2 h-4 w-4"/> {t("admin.account.actions.delete_account")}
                     </Button>
                   )}
 
 
-                  {selectedUser.deletedAt && (
+                  {selectedUser?.deletedAt && (
                     <Button 
                       variant="outline" 
                       className="w-full justify-start text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-600" 
                       onClick={() => setRestoreModalOpen(true)}
-                      disabled={isSelf || selectedUser.role === 'ADMIN'}
+                      disabled={isSelf || selectedUser?.role === 'ADMIN'}
                     >
                       <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.actions.restore_account") || "Restore Account"}
                     </Button>
                   )}
 
-                  {!selectedUser.deletedAt && (
+                  {!selectedUser?.deletedAt && (
                     <Button 
                       variant="destructive" 
                       className="w-full justify-start relative pr-32" 
@@ -945,7 +947,7 @@ export default function AccountManagementPage() {
             <DialogHeader>
               <DialogTitle className="text-red-500">{t("admin.account.modal.ban_title")}</DialogTitle>
               <DialogDescription>
-                {(t("admin.account.modal.ban_description") || "Are you sure you want to ban {name}?").replace("{name}", selectedUser.displayName)}
+                {(t("admin.account.modal.ban_description") || "Are you sure you want to ban {name}?").replace("{name}", selectedUser?.displayName || "")}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -1033,7 +1035,7 @@ export default function AccountManagementPage() {
         <Dialog open={auditModalOpen} onOpenChange={setAuditModalOpen}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto custom-scroll">
             <DialogHeader>
-              <DialogTitle>{(t("admin.account.modal.audit_title") || "Audit logs").replace("{name}", selectedUser.displayName)}</DialogTitle>
+              <DialogTitle>{(t("admin.account.modal.audit_title") || "Audit logs").replace("{name}", selectedUser?.displayName || "")}</DialogTitle>
             </DialogHeader>
             <div className="mt-4">
               {auditLoading ? <div className="py-8 text-center text-muted-foreground">Loading...</div> : auditLogs.length === 0 ? <div className="py-8 text-center text-muted-foreground">{t("admin.account.empty.no_audit_logs")}</div> : (

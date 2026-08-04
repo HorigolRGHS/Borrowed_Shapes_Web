@@ -35,7 +35,7 @@ export function WikiToc({ markdown }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <nav className="hidden lg:block w-60 shrink-0 sticky top-24 self-start text-sm">
+    <nav className="text-sm">
       <p className="font-semibold text-foreground mb-2">{t("wiki.toc_title")}</p>
       <ul className="space-y-1 border-l border-border">
         {items.map((it) => (

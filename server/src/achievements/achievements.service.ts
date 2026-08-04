@@ -109,6 +109,19 @@ export class AchievementService {
     return this.achievementRepository.findUserAchievements(gameProfileId);
   }
 
+  async checkNextMonthTopAchievements(): Promise<boolean> {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const seasonMonthString = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`;
+
+    const count = await this.achievementRepository.count({
+      seasonMonth: seasonMonthString,
+      criteriaCode: { $like: 'SEASON_TOP_%' },
+    });
+    
+    return count >= 5;
+  }
+
   async create(dto: CreateAchievementDto, authorId?: string): Promise<null> {
     const existing = await this.achievementRepository.findOneByCriteria(
       dto.criteriaCode,

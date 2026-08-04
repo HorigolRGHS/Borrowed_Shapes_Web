@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18/i18n-context";
 
 interface Row {
+  id: string;
   key: string;
   value: string;
 }
@@ -17,8 +18,14 @@ interface Props {
   className?: string;
 }
 
+let rowCounter = 0;
+function genRowId(): string {
+  return `row-${++rowCounter}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
 function rowsFromValue(v: Record<string, number>): Row[] {
   return Object.entries(v).map(([key, value]) => ({
+    id: genRowId(),
     key,
     value: String(value),
   }));
@@ -42,17 +49,11 @@ export function StatsInput({ value, onChange, className }: Props) {
   const [rows, setRows] = React.useState<Row[]>(() => rowsFromValue(value));
 
   React.useEffect(() => {
-    const externalKeys = Object.keys(value).sort().join("|");
-    const internalKeys = rows
-      .map((r) => r.key.trim())
-      .filter(Boolean)
-      .sort()
-      .join("|");
-    if (externalKeys !== internalKeys) {
-      setRows(rowsFromValue(value));
+    const currentVal = rowsToValue(rows);
+    if (JSON.stringify(value ?? {}) !== JSON.stringify(currentVal)) {
+      setRows(rowsFromValue(value ?? {}));
     }
-    // Intentionally only depends on `value`: resync from external state
-    // only when the parent's key set diverges, not on every internal edit.
+    // Intentionally sync from external value when parent state diverges
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
@@ -67,7 +68,7 @@ export function StatsInput({ value, onChange, className }: Props) {
     update(next);
   };
 
-  const addRow = () => update([...rows, { key: "", value: "" }]);
+  const addRow = () => update([...rows, { id: genRowId(), key: "", value: "" }]);
   const removeRow = (i: number) => {
     const next = [...rows];
     next.splice(i, 1);
@@ -92,7 +93,7 @@ export function StatsInput({ value, onChange, className }: Props) {
             const k = row.key.trim().toLowerCase();
             const dup = !!k && seenKeys.get(k) !== i;
             return (
-              <div key={i} className="flex items-center gap-2">
+              <div key={row.id} className="flex items-center gap-2">
                 <Input
                   value={row.key}
                   onChange={(e) => updateRow(i, { key: e.target.value })}

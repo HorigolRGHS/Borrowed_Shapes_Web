@@ -51,6 +51,7 @@ export const wikiMetadataSchema = z
     tags_vi: tagArray,
     infoboxImage: optionalUrl,
     stats: wikiStatsSchema,
+    stats_vi: wikiStatsSchema.optional(),
     location: optionalShortText,
     location_vi: optionalShortText,
     relatedPages: z.array(z.string().trim().min(1).max(120)).max(30),
@@ -68,6 +69,7 @@ export const emptyWikiMetadata: WikiMetadata = {
   tags: [],
   tags_vi: [],
   stats: {},
+  stats_vi: {},
   relatedPages: [],
 };
 
@@ -79,6 +81,7 @@ export function normalizeWikiFormMetadata(
     tags: metadata?.tags ?? [],
     tags_vi: metadata?.tags_vi ?? [],
     stats: metadata?.stats ?? {},
+    stats_vi: metadata?.stats_vi ?? {},
     relatedPages: metadata?.relatedPages ?? [],
   };
 }
@@ -90,6 +93,7 @@ export function isWikiMetadataEmpty(m: WikiMetadata): boolean {
     m.tags.length === 0 &&
     m.tags_vi.length === 0 &&
     Object.keys(m.stats).length === 0 &&
+    (!m.stats_vi || Object.keys(m.stats_vi).length === 0) &&
     !m.location &&
     !m.location_vi &&
     m.relatedPages.length === 0
@@ -99,7 +103,7 @@ export function isWikiMetadataEmpty(m: WikiMetadata): boolean {
 /**
  * Drops fields that should not be persisted to JSONB:
  * - empty arrays (tags, tags_vi, relatedPages)
- * - empty stats object
+ * - empty stats objects (stats, stats_vi)
  * - undefined optional scalars (category, infoboxImage, location, location_vi)
  *
  * Returns null if the result has no remaining keys, so the column stores
@@ -115,6 +119,9 @@ export function compactMetadata(
   if (meta.tags_vi && meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
   if (meta.infoboxImage) out.infoboxImage = meta.infoboxImage;
   if (meta.stats && Object.keys(meta.stats).length > 0) out.stats = meta.stats;
+  if (meta.stats_vi && Object.keys(meta.stats_vi).length > 0) {
+    out.stats_vi = meta.stats_vi;
+  }
   if (meta.location) out.location = meta.location;
   if (meta.location_vi) out.location_vi = meta.location_vi;
   if (meta.relatedPages && meta.relatedPages.length > 0) {

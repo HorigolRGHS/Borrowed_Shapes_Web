@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18/i18n-context";
-
+import { getUserProfile } from "@/lib/api/api-client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -112,7 +112,7 @@ function formatDate(dateStr?: string): string {
 export default function GameResultsPage() {
   const { t, locale } = useI18n();
   const router = useRouter();
-
+  const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<Tab>("runs");
 
   // Runs state
@@ -131,22 +131,53 @@ export default function GameResultsPage() {
   const [leaderboardTotalPages, setLeaderboardTotalPages] = useState(1);
   const [leaderboardScope, setLeaderboardScope] = useState<"all-time" | "seasonal">("all-time");
 
-
+  const currentMonthStr = new Date().toISOString().slice(0, 7);
+  const [selectedLeaderboardSeason, setSelectedLeaderboardSeason] = useState<string>(currentMonthStr);
+  const [availableLeaderboardSeasons, setAvailableLeaderboardSeasons] = useState<{ seasonMonth: string; label: string }[]>([]);
 
   useEffect(() => {
+    const profile = getUserProfile();
+    if (!profile || (profile as any).role !== "ADMIN") {
+      router.push("/");
+    } else {
+      setUser(profile);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const response = await axios.get("/api/game-results/leaderboard/seasons");
+        const data = response.data?.data || response.data || [];
+        if (Array.isArray(data) && data.length > 0) {
+          setAvailableLeaderboardSeasons(data);
+          setSelectedLeaderboardSeason(data[0].seasonMonth);
+        }
+      } catch (err) {
+        console.error("Failed to fetch available seasons:", err);
+      }
+    };
+    fetchSeasons();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
     if (activeTab === "runs") {
       fetchRuns(true);
     }
-  }, [activeTab, runsPage, statusFilter, visibilityFilter]);
+  }, [user, activeTab, runsPage, statusFilter, visibilityFilter]);
 
   useEffect(() => {
+    if (!user) return;
     if (activeTab === "leaderboard") {
       fetchLeaderboard(true);
     }
-  }, [activeTab, leaderboardPage, leaderboardScope]);
+  }, [user, activeTab, leaderboardPage, leaderboardScope, selectedLeaderboardSeason]);
 
   // Polling every 2 seconds in the background for real-time updates
   useEffect(() => {
+    if (!user) return;
+
     const interval = setInterval(() => {
       if (activeTab === "runs") {
         fetchRuns(false);
@@ -156,7 +187,7 @@ export default function GameResultsPage() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope]);
+  }, [user, activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope, selectedLeaderboardSeason]);
 
   const fetchRuns = async (showLoading = true) => {
     try {
@@ -187,13 +218,16 @@ export default function GameResultsPage() {
   const fetchLeaderboard = async (showLoading = true) => {
     try {
       if (showLoading) setLeaderboardLoading(true);
-      const response = await axios.get("/api/game-results/leaderboard", {
-        params: {
-          page: leaderboardPage,
-          limit: ITEMS_PER_PAGE,
-          scope: leaderboardScope,
-        },
-      });
+      const params: Record<string, any> = {
+        page: leaderboardPage,
+        limit: ITEMS_PER_PAGE,
+        scope: leaderboardScope,
+      };
+      if (leaderboardScope === "seasonal" && selectedLeaderboardSeason) {
+        params.seasonMonth = selectedLeaderboardSeason;
+      }
+
+      const response = await axios.get("/api/game-results/leaderboard", { params });
 
       if (response.data?.success) {
         const payload = response.data.data;
@@ -282,7 +316,7 @@ export default function GameResultsPage() {
     return "bg-slate-600 text-white";
   };
 
-
+  if (!user) return null;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -541,7 +575,7 @@ export default function GameResultsPage() {
               </div>
 
               {/* Leaderboard Scope Selector */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => {
                     setLeaderboardScope("all-time");
@@ -566,8 +600,38 @@ export default function GameResultsPage() {
                       : "bg-transparent border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t("leaderboard.tab_seasonal")} ({new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short", year: "numeric" })})
+                  {t("leaderboard.tab_seasonal")}
                 </button>
+
+                {leaderboardScope === "seasonal" && (
+                  <div className="relative inline-flex items-center">
+                    <div className="absolute left-2.5 pointer-events-none text-amber-500 flex items-center">
+                      <Calendar size={13} />
+                    </div>
+                    <select
+                      value={selectedLeaderboardSeason}
+                      onChange={(e) => {
+                        setSelectedLeaderboardSeason(e.target.value);
+                        setLeaderboardPage(1);
+                      }}
+                      className="pl-8 pr-8 py-1.5 rounded-xl text-xs font-bold bg-card border border-amber-500/30 text-amber-500 shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500/50 cursor-pointer appearance-none"
+                    >
+                      {(availableLeaderboardSeasons.length > 0
+                        ? availableLeaderboardSeasons
+                        : [{ seasonMonth: currentMonthStr, label: `Tháng ${parseInt(currentMonthStr.split('-')[1], 10)}/${currentMonthStr.split('-')[0]}` }]
+                      ).map((s) => (
+                        <option
+                          key={s.seasonMonth}
+                          value={s.seasonMonth}
+                          className="bg-background text-foreground"
+                        >
+                          {s.label} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-amber-500 absolute right-2.5 pointer-events-none" />
+                  </div>
+                )}
               </div>
             </div>
 

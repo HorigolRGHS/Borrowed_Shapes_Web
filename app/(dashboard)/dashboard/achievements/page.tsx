@@ -8,6 +8,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle, ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
 import { AchievementDescriptionEditor } from "@/components/achievements/achievement-description-editor";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,8 +89,10 @@ interface Achievement {
 }
 interface AchievementUser {
   id: string;
+  profileId?: string;
   displayName: string;
   avatarUrl?: string;
+  equippedFrameUrl?: string;
   earnedAt?: string;
 }
 export default function AchievementsPage() {
@@ -1129,8 +1132,11 @@ export default function AchievementsPage() {
           <DialogHeader>
             <div className="flex items-center gap-3">
               {selectedAchievement?.badgeImageUrl && (
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
-                  <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                <div className="relative h-12 w-12 shrink-0">
+                  <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/20 to-orange-500/10 shadow-lg shadow-amber-500/10">
+                    <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                  </div>
+                  <div className="absolute -inset-[1px] rounded-xl ring-1 ring-amber-400/30 pointer-events-none" />
                 </div>
               )}
               <div>
@@ -1192,14 +1198,17 @@ export default function AchievementsPage() {
                           <TableRow key={u.id} className="border-border hover:bg-muted/50">
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/80 text-sm font-bold text-white">
-                                  {initials}
-                                </div>
+                                <AvatarWithFrame
+                                  displayName={u.displayName}
+                                  avatarUrl={u.avatarUrl}
+                                  badgeImageUrl={u.equippedFrameUrl}
+                                  size="sm"
+                                />
                                 <span className="font-medium text-foreground">{u.displayName}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm text-muted-foreground">{u.id}</div>
+                              <div className="text-sm text-muted-foreground font-mono">{u.profileId ?? u.id}</div>
                             </TableCell>
                             <TableCell className="text-muted-foreground text-sm">
                               {u.earnedAt

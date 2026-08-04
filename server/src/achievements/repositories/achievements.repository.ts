@@ -182,9 +182,11 @@ export class AchievementRepository extends BaseRepository<Achievement> {
     const rows = await this.execute(
       `
     select
-      gp."id" as "id",
+      gp."id" as "gameProfileId",
+      u."id" as "userId",
       u."displayName" as "displayName",
       u."imgUrl" as "avatarUrl",
+      u."updatedAt" as "updatedAt",
       ua."achievedAt" as "earnedAt"
 
     from game."UserAchievement" ua

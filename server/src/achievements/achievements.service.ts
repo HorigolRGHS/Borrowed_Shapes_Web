@@ -6,6 +6,7 @@ import {
 import { UnlockAchievementResponseDto } from './dto/unlock-achievement.dto';
 import { Achievement } from '../entities/Achievement';
 import { getProxyMediaUrl } from '../storage/media-utils';
+import { getProxyAvatarUrl } from '../auth/auth-utils';
 import { UserAchievement } from '../entities/UserAchievement';
 import { CreateAchievementDto } from './dto/create-achievements.dto';
 import { UpdateAchievementDto } from './dto/update-achievements.dto';
@@ -322,8 +323,12 @@ export class AchievementService {
       await this.achievementRepository.findUsersByAchievementDetailed(
         achievementId,
       );
-    console.log(rows);
-    return rows;
+    return (rows || []).map((row: any) => ({
+      id: row.gameProfileId,
+      displayName: row.displayName,
+      avatarUrl: getProxyAvatarUrl(row.avatarUrl, row.userId, row.updatedAt) ?? undefined,
+      earnedAt: row.earnedAt,
+    }));
   }
 
   async findShowcaseForUser(gameProfileId: string) {

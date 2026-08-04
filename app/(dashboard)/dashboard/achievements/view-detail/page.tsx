@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AchievementDescriptionEditor } from "@/components/achievements/achievement-description-editor";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 import {
   Table,
   TableBody,
@@ -73,8 +74,10 @@ interface Achievement {
 
 interface AchievementUser {
   id: string;
+  profileId?: string;
   displayName: string;
   avatarUrl?: string;
+  equippedFrameUrl?: string;
   earnedAt?: string;
 }
 
@@ -727,14 +730,17 @@ export default function AchievementViewDetailPage() {
                             <TableRow key={u.id} className="border-border hover:bg-muted/50">
                               <TableCell>
                                 <div className="flex items-center gap-3">
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/80 text-sm font-bold text-white">
-                                    {initials}
-                                  </div>
+                                  <AvatarWithFrame
+                                    displayName={u.displayName}
+                                    avatarUrl={u.avatarUrl}
+                                    badgeImageUrl={u.equippedFrameUrl}
+                                    size="sm"
+                                  />
                                   <span className="font-medium text-foreground">{u.displayName}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="text-sm text-muted-foreground">{u.id}</div>
+                                <div className="text-sm text-muted-foreground font-mono">{u.profileId ?? u.id}</div>
                               </TableCell>
                               <TableCell className="text-muted-foreground text-sm">
                                 {u.earnedAt

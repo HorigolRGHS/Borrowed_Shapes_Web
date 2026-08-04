@@ -327,6 +327,7 @@ export class AchievementService {
       id: row.gameProfileId,
       displayName: row.displayName,
       avatarUrl: getProxyAvatarUrl(row.avatarUrl, row.userId, row.updatedAt) ?? undefined,
+      equippedFrameUrl: row.equippedFrameUrl ? getProxyMediaUrl(row.equippedFrameUrl) ?? undefined : undefined,
       earnedAt: row.earnedAt,
     }));
   }

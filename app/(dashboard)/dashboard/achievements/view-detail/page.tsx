@@ -77,6 +77,7 @@ interface AchievementUser {
   profileId?: string;
   displayName: string;
   avatarUrl?: string;
+  equippedFrameUrl?: string;
   earnedAt?: string;
 }
 
@@ -732,7 +733,7 @@ export default function AchievementViewDetailPage() {
                                   <AvatarWithFrame
                                     displayName={u.displayName}
                                     avatarUrl={u.avatarUrl}
-                                    badgeImageUrl={achievement.badgeImageUrl}
+                                    badgeImageUrl={u.equippedFrameUrl}
                                     size="sm"
                                   />
                                   <span className="font-medium text-foreground">{u.displayName}</span>

@@ -187,7 +187,8 @@ export class AchievementRepository extends BaseRepository<Achievement> {
       u."displayName" as "displayName",
       u."imgUrl" as "avatarUrl",
       u."updatedAt" as "updatedAt",
-      ua."achievedAt" as "earnedAt"
+      ua."achievedAt" as "earnedAt",
+      eq."badgeImageUrl" as "equippedFrameUrl"
 
     from game."UserAchievement" ua
 
@@ -196,6 +197,9 @@ export class AchievementRepository extends BaseRepository<Achievement> {
 
     inner join auth."User" u
       on u."id" = gp."userId"
+
+    left join game."Achievement" eq
+      on eq."id" = gp."equippedAchievementId"
 
     where ua."achievementId" = ?
 

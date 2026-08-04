@@ -303,7 +303,11 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         SELECT
           tr.*,
           ROW_NUMBER() OVER (
-            PARTITION BY COALESCE(NULLIF(UPPER(TRIM(tr."lobbyCode")), ''), tr."teamSignature")
+            PARTITION BY COALESCE(
+              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
+              tr."teamSignature"
+            )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr
@@ -331,7 +335,11 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         SELECT
           tr.*,
           ROW_NUMBER() OVER (
-            PARTITION BY COALESCE(NULLIF(UPPER(TRIM(tr."lobbyCode")), ''), tr."teamSignature")
+            PARTITION BY COALESCE(
+              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
+              tr."teamSignature"
+            )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr

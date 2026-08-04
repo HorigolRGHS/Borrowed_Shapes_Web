@@ -2645,7 +2645,9 @@
     "modal_players": "Người Chơi",
     "modal_close": "Đóng",
     "ranked": "Xếp hạng",
-    "unranked": "Chưa xếp hạng"
+    "unranked": "Chưa xếp hạng",
+    "current_season": "Hiện tại",
+    "select_season": "Chọn mùa giải"
   },
   "category": {
     "not_found": "Không tìm thấy danh mục",

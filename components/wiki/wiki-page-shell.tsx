@@ -16,9 +16,9 @@ export function WikiPageShell({ header, body, infobox, toc }: Props) {
         {body}
       </div>
       {(infobox || toc) && (
-        <aside className="hidden w-72 shrink-0 lg:block">
-          {infobox && <div className="sticky top-24 space-y-4">{infobox}</div>}
-          {toc && <div className="mt-4">{toc}</div>}
+        <aside className="hidden w-72 shrink-0 lg:block sticky top-24 self-start space-y-6 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1">
+          {infobox}
+          {toc}
         </aside>
       )}
     </div>

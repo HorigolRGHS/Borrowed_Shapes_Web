@@ -77,6 +77,7 @@ describe('GameResultService', () => {
             countPlayerRuns: jest.fn(),
             findRunHistoryForPlayer: jest.fn(),
             getLeaderboardData: jest.fn(),
+            getAvailableSeasons: jest.fn(),
           },
         },
       ],
@@ -466,6 +467,21 @@ describe('GameResultService', () => {
 
       expect(result.items).toHaveLength(0);
       expect(result.total).toBe(0);
+    });
+  });
+
+  describe('getAvailableSeasons', () => {
+    it('should_return_available_seasons (Normal)', async () => {
+      const mockSeasons = [
+        { seasonMonth: '2026-08', label: 'Tháng 8/2026' },
+        { seasonMonth: '2026-07', label: 'Tháng 7/2026' },
+      ];
+      jest.spyOn(repository, 'getAvailableSeasons').mockResolvedValue(mockSeasons);
+
+      const result = await service.getAvailableSeasons();
+
+      expect(result).toHaveLength(2);
+      expect(result[0].seasonMonth).toBe('2026-08');
     });
   });
 

@@ -79,7 +79,7 @@ export function WikiContentRenderer({ markdown }: Props) {
     <article className="prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-img:rounded-lg">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSlug, rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+        rehypePlugins={[rehypeRaw, rehypeSlug, [rehypeSanitize, sanitizeSchema]]}
         components={components}
       >
         {markdown}

@@ -56,10 +56,10 @@ export class AchievementRepository extends BaseRepository<Achievement> {
     gameProfileId: string,
     achievementId: string,
   ): Promise<UserAchievement | null> {
-    return this.findOne(
-      UserAchievement as any,
-      { gameProfileId, achievementId } as any,
-    ) as any;
+    return this.em.findOne(
+      UserAchievement,
+      { gameProfileId, achievementId }
+    );
   }
 
   createAchievement(data: any): Achievement {

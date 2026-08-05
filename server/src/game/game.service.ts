@@ -348,7 +348,8 @@ export class GameService {
         0,
       );
 
-      run.isCompleted = true;
+      // Explicitly set isCompleted based on whether the game was won
+      run.isCompleted = (dto.isWin !== false);
       run.completedAt = new Date();
       run.totalTimeSec = totalTimeSec;
 

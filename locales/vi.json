@@ -657,6 +657,7 @@
       "col_time": "THỜI GIAN",
       "status_completed": "Hoàn thành",
       "status_incomplete": "Chưa hoàn thành",
+      "status_abandoned": "Bỏ cuộc",
       "view_details": "Xem chi tiết",
       "no_runs": "Không tìm thấy lịch sử chơi.",
       "loading": "Đang tải lịch sử chơi...",

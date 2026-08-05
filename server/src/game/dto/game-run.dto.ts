@@ -56,4 +56,7 @@ export class EndRunRequestDto {
   @ApiProperty({ example: 'run_123' })
   @IsString()
   runId!: string;
+
+  @ApiProperty({ example: true, required: false })
+  isWin?: boolean;
 }

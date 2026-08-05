@@ -1334,6 +1334,7 @@
     "levels": "Màn chơi",
     "status_completed": "Hoàn thành",
     "status_in_progress": "Đang chơi",
+    "status_abandoned": "Bỏ cuộc",
     "type_public": "Công khai",
     "type_private": "Riêng tư",
     "start": "Bắt đầu",

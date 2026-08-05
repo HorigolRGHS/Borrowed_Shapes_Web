@@ -1341,6 +1341,7 @@
     "levels": "Levels",
     "status_completed": "Completed",
     "status_in_progress": "In Progress",
+    "status_abandoned": "Abandoned",
     "type_public": "Public",
     "type_private": "Private",
     "start": "Start",

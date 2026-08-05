@@ -1,4 +1,8 @@
-import slugifyLib from 'slugify';
+// Must stay byte-identical to the ids rehype-slug injects into the rendered
+// HTML, otherwise the TOC anchors point at nothing. rehype-slug uses
+// github-slugger, which keeps diacritics ("Tổng quan" -> "tổng-quan");
+// slugify would strip them ("tong-quan") and break every non-ASCII heading.
+import GithubSlugger from 'github-slugger';
 
 export interface TocItem {
   level: 1 | 2 | 3;
@@ -12,17 +16,14 @@ export function extractToc(markdown: string): TocItem[] {
   if (!markdown) return [];
   const lines = markdown.split('\n');
   const items: TocItem[] = [];
-  const idCounts = new Map<string, number>();
+  const slugger = new GithubSlugger();
   let inFence = false;
 
   const addItem = (level: 1 | 2 | 3, rawText: string) => {
     const text = rawText.replace(/<[^>]*>/g, '').trim();
     if (!text) return;
-    const baseId = slugifyLib(text, { lower: true, strict: true, trim: true }) || 'section';
-    const count = (idCounts.get(baseId) ?? 0) + 1;
-    idCounts.set(baseId, count);
-    const id = count === 1 ? baseId : `${baseId}-${count}`;
-    items.push({ level, text, id });
+    // slugger dedupes repeats itself (foo, foo-1, ...) exactly like rehype-slug.
+    items.push({ level, text, id: slugger.slug(text) });
   };
 
   for (const line of lines) {

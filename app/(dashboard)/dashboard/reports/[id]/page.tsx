@@ -105,7 +105,8 @@ export default function AdminReportDetailPage() {
 
     if (actionType === "BAN_CUSTOM" && banDuration) {
       // Ensure the selected date is in the future
-      const banDate = new Date(banDuration);
+      const [year, month, day] = banDuration.split("-").map(Number);
+      const banDate = new Date(year, month - 1, day, 23, 59, 59, 999);
       if (banDate <= new Date()) {
         toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
         return;
@@ -129,10 +130,16 @@ export default function AdminReportDetailPage() {
           toast.error(errMsg ? t(errMsg) : t("reports.dashboard.error_action"));
         }
       } else {
+        let customExpires: string | undefined = undefined;
+        if (actionType === "BAN_CUSTOM" && banDuration) {
+          const [year, month, day] = banDuration.split("-").map(Number);
+          customExpires = new Date(year, month - 1, day, 23, 59, 59, 999).toISOString();
+        }
+
         const res = await axios.post(`/api/reports/${id}/resolve`, {
           actionTaken: actionType,
           message: adminMessage.trim(),
-          banExpiresAt: actionType === "BAN_CUSTOM" ? new Date(banDuration).toISOString() : undefined,
+          banExpiresAt: customExpires,
           isVisibleToReporter,
         });
 

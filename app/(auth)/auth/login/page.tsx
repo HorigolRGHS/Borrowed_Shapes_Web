@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <p className="text-sm font-mono text-foreground">
                   {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
                     ? t("auth.status.permanent") || "Permanent"
-                    : new Date(statusError.ban?.banExpiresAt).toLocaleString()}
+                    : new Date(statusError.ban?.banExpiresAt).toLocaleDateString()}
                 </p>
               </div>
             </>

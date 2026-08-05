@@ -4,6 +4,22 @@ import { LobbyIdRequestDto } from './lobby.dto';
 
 export class InitGameRunRequestDto extends LobbyIdRequestDto {
   @ApiProperty({
+    example: 'A1B2C3',
+    description: 'The code of the lobby',
+    required: false,
+  })
+  @IsString()
+  lobbyCode?: string;
+
+  @ApiProperty({
+    example: 'My Lobby',
+    description: 'The name of the lobby',
+    required: false,
+  })
+  @IsString()
+  lobbyName?: string;
+
+  @ApiProperty({
     example: 8,
     minimum: 1,
     description: 'Total number of levels in the run',

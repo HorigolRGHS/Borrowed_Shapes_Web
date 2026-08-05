@@ -69,6 +69,8 @@ export class GameService {
       // Create a new game run (table: game.GameRun)
       const run = this.gameRunRepo.txCreate(em, {
         lobbyId: dto.lobbyId,
+        lobbyCode: dto.lobbyCode,
+        lobbyName: dto.lobbyName,
         totalLevels: dto.totalLevels,
         isCompleted: false,
         startedAt: new Date(),

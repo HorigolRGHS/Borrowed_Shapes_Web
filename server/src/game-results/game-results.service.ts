@@ -70,9 +70,10 @@ export class GameResultService {
           derivedCompletedAt = lastSession.endedAt || lastSession.startedAt;
         } else {
           // If no session ended, but it's been more than 12 hours, treat as abandoned
-          const hoursElapsed = (new Date().getTime() - row.startedAt.getTime()) / (1000 * 60 * 60);
+          const startedAtDate = new Date(row.startedAt);
+          const hoursElapsed = (new Date().getTime() - startedAtDate.getTime()) / (1000 * 60 * 60);
           if (hoursElapsed > 12) {
-            derivedCompletedAt = new Date(row.startedAt.getTime() + 2 * 60 * 60 * 1000); // Fallback to 2 hours after start
+            derivedCompletedAt = new Date(startedAtDate.getTime() + 2 * 60 * 60 * 1000); // Fallback to 2 hours after start
           }
         }
       }
@@ -120,9 +121,10 @@ export class GameResultService {
       if (lastSession && (lastSession.status === 'ABANDONED' || lastSession.status === 'FINISHED' || lastSession.endedAt)) {
         derivedCompletedAt = lastSession.endedAt || lastSession.startedAt;
       } else {
-        const hoursElapsed = (new Date().getTime() - row.startedAt.getTime()) / (1000 * 60 * 60);
+        const startedAtDate = new Date(row.startedAt);
+        const hoursElapsed = (new Date().getTime() - startedAtDate.getTime()) / (1000 * 60 * 60);
         if (hoursElapsed > 12) {
-          derivedCompletedAt = new Date(row.startedAt.getTime() + 2 * 60 * 60 * 1000);
+          derivedCompletedAt = new Date(startedAtDate.getTime() + 2 * 60 * 60 * 1000);
         }
       }
     }

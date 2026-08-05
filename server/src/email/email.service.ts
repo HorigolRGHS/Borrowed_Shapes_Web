@@ -204,9 +204,8 @@ export class EmailService {
         const d = new Date(params.banExpiresAt);
         durationText = `Until ${new Intl.DateTimeFormat('en-US', {
           dateStyle: 'long',
-          timeStyle: 'short',
           timeZone: 'Asia/Ho_Chi_Minh',
-        }).format(d)} (GMT+7)`;
+        }).format(d)}`;
       } catch (e) {
         durationText = String(params.banExpiresAt);
       }

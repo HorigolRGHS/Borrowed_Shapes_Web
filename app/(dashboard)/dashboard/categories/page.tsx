@@ -576,7 +576,7 @@ export default function DashboardCategoriesPage() {
                           {cat.description ? (
                             <div className="space-y-1">
                               <div
-                                className={isExpanded ? "" : "line-clamp-2"}
+                                className={isExpanded ? "" : "line-clamp-1"}
                                 dangerouslySetInnerHTML={{ __html: cat.description }}
                               />
                               <span className="text-[11px] text-amber-500 font-semibold uppercase tracking-wider block">

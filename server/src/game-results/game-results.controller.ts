@@ -110,6 +110,20 @@ export class GameResultController {
     );
   }
 
+  @Get('leaderboard/seasons')
+  @Public()
+  @ApiOperation({ summary: 'Get available leaderboard season months' })
+  async getAvailableSeasons(
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<{ seasonMonth: string; label: string }[]>> {
+    const data = await this.gameResultService.getAvailableSeasons();
+    return okResponse(
+      'game_results.seasons_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
+  }
+
   @Get('leaderboard')
   @Public()
   @ApiOperation({ summary: 'View leaderboard (fastest completed runs)' })

@@ -15,6 +15,16 @@ export function extractToc(markdown: string): TocItem[] {
   const idCounts = new Map<string, number>();
   let inFence = false;
 
+  const addItem = (level: 1 | 2 | 3, rawText: string) => {
+    const text = rawText.replace(/<[^>]*>/g, '').trim();
+    if (!text) return;
+    const baseId = slugifyLib(text, { lower: true, strict: true, trim: true }) || 'section';
+    const count = (idCounts.get(baseId) ?? 0) + 1;
+    idCounts.set(baseId, count);
+    const id = count === 1 ? baseId : `${baseId}-${count}`;
+    items.push({ level, text, id });
+  };
+
   for (const line of lines) {
     const fenceMatch = line.match(/^```/);
     if (fenceMatch) {
@@ -23,17 +33,18 @@ export function extractToc(markdown: string): TocItem[] {
     }
     if (inFence) continue;
 
-    const m = line.match(/^(#{1,3})\s+(.+?)\s*#*\s*$/);
-    if (!m) continue;
+    const mdMatch = line.match(/^(#{1,3})\s+(.+?)\s*#*\s*$/);
+    if (mdMatch) {
+      const level = mdMatch[1].length as 1 | 2 | 3;
+      addItem(level, mdMatch[2]);
+      continue;
+    }
 
-    const level = m[1].length as 1 | 2 | 3;
-    const text = m[2].trim();
-    const baseId = slugifyLib(text, { lower: true, strict: true, trim: true }) || 'section';
-    const count = (idCounts.get(baseId) ?? 0) + 1;
-    idCounts.set(baseId, count);
-    const id = count === 1 ? baseId : `${baseId}-${count}`;
-
-    items.push({ level, text, id });
+    const htmlMatches = line.matchAll(/<h([1-3])\b[^>]*>([\s\S]*?)<\/h\1>/gi);
+    for (const htmlMatch of htmlMatches) {
+      const level = parseInt(htmlMatch[1], 10) as 1 | 2 | 3;
+      addItem(level, htmlMatch[2]);
+    }
   }
 
   return items;

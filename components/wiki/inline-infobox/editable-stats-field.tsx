@@ -4,16 +4,21 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { StatsInput } from "@/components/wiki/metadata/stats-input";
 import type { WikiFormValue } from "@/models/dtos/wiki-form.dto";
 
-export function EditableStatsField() {
+interface Props {
+  locale: "en" | "vi";
+}
+
+export function EditableStatsField({ locale }: Props) {
   const form = useFormContext<WikiFormValue>();
-  const stats =
-    useWatch({ control: form.control, name: "metadata.stats" }) ?? {};
+  const fieldName = locale === "vi" ? "metadata.stats_vi" : "metadata.stats";
+  const stats = useWatch({ control: form.control, name: fieldName }) ?? {};
 
   return (
     <StatsInput
+      key={fieldName}
       value={stats as Record<string, number>}
       onChange={(next) =>
-        form.setValue("metadata.stats", next, { shouldDirty: true })
+        form.setValue(fieldName, next, { shouldDirty: true })
       }
     />
   );

@@ -307,6 +307,8 @@
       "tag_placeholder": "Type a tag and press Enter",
       "tag_max": "Maximum 20 tags",
       "stats": "Stats",
+      "stats_en": "Stats (English)",
+      "stats_vi": "Stats (Vietnamese)",
       "stat_key_placeholder": "Stat name (e.g. stamina)",
       "stat_value_placeholder": "Value",
       "add_stat": "Add stat",
@@ -2601,7 +2603,7 @@
       "col_cat_name": "Category Name",
       "col_slug": "Slug",
       "col_description": "Description",
-      "col_icon": "Icon URL",
+      "col_icon": "Icon",
       "col_official": "Official",
       "col_thread_count": "Threads Count",
       "label_name_en": "Category Name (EN)",
@@ -2610,7 +2612,7 @@
       "label_slug_vi": "Slug (VI)",
       "label_desc_en": "Description (EN)",
       "label_desc_vi": "Description (VI)",
-      "label_icon_url": "Icon URL (optional)",
+      "label_icon_url": "Icon (optional)",
       "label_is_official": "Is Official",
       "toast_cat_created": "Category created successfully",
       "toast_cat_updated": "Category updated successfully",
@@ -2646,7 +2648,9 @@
     "modal_players": "Players",
     "modal_close": "Close",
     "ranked": "Ranked",
-    "unranked": "Unranked"
+    "unranked": "Unranked",
+    "current_season": "Current",
+    "select_season": "Select Season"
   },
   "category": {
     "not_found": "Category not found",

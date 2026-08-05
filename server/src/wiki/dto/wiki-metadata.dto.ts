@@ -108,6 +108,12 @@ export class WikiMetadataDto {
   @Validate(FiniteNumberStatsConstraint)
   stats?: Record<string, number>;
 
+  @ApiPropertyOptional({ type: Object })
+  @IsOptional()
+  @IsObject()
+  @Validate(FiniteNumberStatsConstraint)
+  stats_vi?: Record<string, number>;
+
   @ApiPropertyOptional({ maxLength: 120 })
   @IsOptional()
   @IsString()
@@ -146,7 +152,7 @@ export class RelatedPageDto {
 /**
  * Drops fields that should not be persisted to JSONB:
  * - empty arrays (tags, tags_vi, relatedPages)
- * - empty stats object
+ * - empty stats objects (stats, stats_vi)
  * - undefined optional scalars
  *
  * Returns null if the result has no remaining keys, so the column stores
@@ -167,6 +173,9 @@ export function compactMetadata(
   if (meta.tags_vi && meta.tags_vi.length > 0) out.tags_vi = meta.tags_vi;
   if (meta.infoboxImage) out.infoboxImage = meta.infoboxImage;
   if (meta.stats && Object.keys(meta.stats).length > 0) out.stats = meta.stats;
+  if (meta.stats_vi && Object.keys(meta.stats_vi).length > 0) {
+    out.stats_vi = meta.stats_vi;
+  }
   if (meta.location) out.location = meta.location;
   if (meta.location_vi) out.location_vi = meta.location_vi;
   if (meta.relatedPages && meta.relatedPages.length > 0) {

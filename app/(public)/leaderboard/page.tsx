@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Star, Trophy } from "lucide-react";
+import { Users, Star, Trophy, ChevronDown, Calendar } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { api, getUserProfile } from "@/lib/api/api-client";
 import { LeaderboardPodium, LeaderboardEntry } from "@/components/leaderboard/leaderboard-podium";
@@ -15,27 +15,53 @@ export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [top3Entries, setTop3Entries] = useState<LeaderboardEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
   
+  const currentMonthStr = new Date().toISOString().slice(0, 7);
+  const [selectedSeason, setSelectedSeason] = useState<string>(currentMonthStr);
+  const [availableSeasons, setAvailableSeasons] = useState<{ seasonMonth: string; label: string }[]>([]);
+
   const [user, setUser] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setUser(getUserProfile());
     setMounted(true);
+    
+    // Fetch available seasons
+    const fetchSeasons = async () => {
+      try {
+        const res = await api.get("/game-results/leaderboard/seasons");
+        const data = res?.data || res || [];
+        if (Array.isArray(data) && data.length > 0) {
+          setAvailableSeasons(data);
+          setSelectedSeason(data[0].seasonMonth);
+        }
+      } catch (err) {
+        console.error("Failed to fetch available seasons:", err);
+      }
+    };
+    fetchSeasons();
   }, []);
 
   const fetchLeaderboard = async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
     try {
-      const queryParams = new URLSearchParams({
+      const paramsObj: Record<string, string> = {
         scope: activeTab,
         page: String(page),
         limit: String(limit),
-      });
+      };
+
+      if (activeTab === "seasonal" && selectedSeason) {
+        paramsObj.seasonMonth = selectedSeason;
+      }
+
+      const queryParams = new URLSearchParams(paramsObj);
 
       const res = await api.get(`/game-results/leaderboard?${queryParams.toString()}`);
       
@@ -43,6 +69,11 @@ export default function LeaderboardPage() {
       const data = res?.data || res || {};
       const items = data.items || [];
       setEntries(items);
+      // Keep top3 in sync only when fetching page 1 so the podium
+      // stays visible when the user navigates to subsequent pages.
+      if (page === 1) {
+        setTop3Entries(items.filter((e: LeaderboardEntry) => e.rank <= 3));
+      }
       setTotal(data.total || 0);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
@@ -55,11 +86,11 @@ export default function LeaderboardPage() {
     }
   };
 
-  // Fetch leaderboard data when tab or page changes
+  // Fetch leaderboard data when tab, page or season changes
   useEffect(() => {
     if (!mounted) return;
     fetchLeaderboard(true);
-  }, [activeTab, page, limit, mounted]);
+  }, [activeTab, page, limit, selectedSeason, mounted]);
 
   // Polling every 10 seconds in the background
   useEffect(() => {
@@ -70,18 +101,12 @@ export default function LeaderboardPage() {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [activeTab, page, limit, mounted]);
+  }, [activeTab, page, limit, selectedSeason, mounted]);
 
   const handleTabChange = (tab: "all-time" | "seasonal") => {
     setActiveTab(tab);
     setPage(1); // Reset to page 1 on tab switch
-  };
-
-  const getSeasonalMonthLabel = () => {
-    return new Date().toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
-      month: "long",
-      year: "numeric",
-    });
+    setTop3Entries([]); // Clear podium so it re-fetches for the new tab
   };
 
   // Find if logged-in user has a run in the current list
@@ -125,7 +150,7 @@ export default function LeaderboardPage() {
         
         {/* Tabs & Live indicator */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => handleTabChange("all-time")}
               className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
@@ -144,8 +169,39 @@ export default function LeaderboardPage() {
                   : "bg-transparent border-border dark:border-[#1e1e3a] text-muted-foreground hover:text-foreground dark:text-gray-500 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-600"
               }`}
             >
-              {t("leaderboard.tab_seasonal")} ({getSeasonalMonthLabel()})
+              {t("leaderboard.tab_seasonal")}
             </button>
+
+            {/* Previous season selector dropdown */}
+            {activeTab === "seasonal" && (
+              <div className="relative inline-flex items-center">
+                <div className="absolute left-3 pointer-events-none text-amber-600 dark:text-amber-400 flex items-center">
+                  <Calendar size={15} />
+                </div>
+                <select
+                  value={selectedSeason}
+                  onChange={(e) => {
+                    setSelectedSeason(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 pr-9 py-2.5 rounded-xl text-sm font-bold bg-card dark:bg-[#121225] border border-amber-500/30 text-amber-700 dark:text-amber-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer appearance-none"
+                >
+                  {(availableSeasons.length > 0
+                    ? availableSeasons
+                    : [{ seasonMonth: currentMonthStr, label: `Tháng ${parseInt(currentMonthStr.split('-')[1], 10)}/${currentMonthStr.split('-')[0]}` }]
+                  ).map((s) => (
+                    <option
+                      key={s.seasonMonth}
+                      value={s.seasonMonth}
+                      className="bg-background text-foreground dark:bg-[#0f0f1a] dark:text-white"
+                    >
+                      {s.label} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-amber-600 dark:text-amber-400 absolute right-3 pointer-events-none" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -170,9 +226,10 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* Podium (Top 3 Cards) */}
-        {!isLoading && entries.length > 0 && (
-          <LeaderboardPodium entries={entries} onSelectEntry={setSelectedEntry} />
+        {/* Podium (Top 3 Cards) — always uses top3Entries so it stays
+            visible when the user navigates to pages beyond page 1. */}
+        {top3Entries.length > 0 && (
+          <LeaderboardPodium entries={top3Entries} onSelectEntry={setSelectedEntry} />
         )}
 
         {/* Full Rankings Table */}

@@ -248,6 +248,10 @@ export class GameResultService {
     };
   }
 
+  async getAvailableSeasons(): Promise<{ seasonMonth: string; label: string }[]> {
+    return this.gameResultRepository.getAvailableSeasons();
+  }
+
   async delete(id: string): Promise<void> {
     const run = await this.gameResultRepository.findOne(id);
     if (!run) {

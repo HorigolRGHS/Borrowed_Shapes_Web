@@ -277,33 +277,82 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       conditions.push('gr."completedAt" < ?');
       params.push(startOfTarget, startOfNext);
 
-      const seasonMonthDateStr = `${year}-${String(monthNum).padStart(2, '0')}-01`;
       conditions.push(
-        'gr."lobbyCode" IN (SELECT st.code FROM game."SeasonTeam" st WHERE st."seasonMonth" = ?)',
+        '(UPPER(TRIM(gr."lobbyCode")) IN (SELECT UPPER(TRIM(st.code)) FROM game."SeasonTeam" st WHERE TO_CHAR(st."seasonMonth", \'YYYY-MM\') = ?) OR gr.id IN (SELECT grp."runId" FROM game."GameRunPlayer" grp JOIN game."SeasonTeamMember" stm ON stm."gameProfileId" = grp."gameProfileId" WHERE TO_CHAR(stm."seasonMonth", \'YYYY-MM\') = ?))',
       );
-      params.push(seasonMonthDateStr);
+      params.push(month, month);
     }
 
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
     const countSql = `
-      SELECT COUNT(*) as count
-      FROM game."GameRun" gr
-      ${whereClause}
+      WITH team_runs AS (
+        SELECT
+          gr.id as "runId",
+          gr."lobbyName",
+          gr."lobbyCode",
+          gr."totalTimeSec",
+          gr."completedAt",
+          STRING_AGG(grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature"
+        FROM game."GameRun" gr
+        LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+        ${whereClause}
+        GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
+      ),
+      ranked_team_runs AS (
+        SELECT
+          tr.*,
+          ROW_NUMBER() OVER (
+            PARTITION BY COALESCE(
+              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
+              tr."teamSignature"
+            )
+            ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
+          ) as rn
+        FROM team_runs tr
+      )
+      SELECT COUNT(*) as count FROM ranked_team_runs WHERE rn = 1
     `;
     const countResult = await this.execute(countSql, params);
     const total = Number(countResult[0]?.count || 0);
 
     const dataSql = `
+      WITH team_runs AS (
+        SELECT
+          gr.id as "runId",
+          gr."lobbyName",
+          gr."lobbyCode",
+          gr."totalTimeSec",
+          gr."completedAt",
+          STRING_AGG(grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature"
+        FROM game."GameRun" gr
+        LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+        ${whereClause}
+        GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
+      ),
+      ranked_team_runs AS (
+        SELECT
+          tr.*,
+          ROW_NUMBER() OVER (
+            PARTITION BY COALESCE(
+              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
+              tr."teamSignature"
+            )
+            ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
+          ) as rn
+        FROM team_runs tr
+      )
       SELECT
-        gr.id as "runId",
-        gr."lobbyName",
-        gr."totalTimeSec",
-        gr."completedAt",
-        (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = gr.id) as "totalPlayers"
-      FROM game."GameRun" gr
-      ${whereClause}
-      ORDER BY gr."totalTimeSec" ASC, gr."completedAt" ASC
+        r."runId",
+        r."lobbyName",
+        r."totalTimeSec",
+        r."completedAt",
+        (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = r."runId") as "totalPlayers"
+      FROM ranked_team_runs r
+      WHERE r.rn = 1
+      ORDER BY r."totalTimeSec" ASC, r."completedAt" ASC
       LIMIT ? OFFSET ?
     `;
     const dataParams = [...params, limit, offset];
@@ -311,4 +360,48 @@ export class GameResultRepository extends BaseRepository<GameRun> {
 
     return { rows: rows || [], total };
   }
+
+  async getAvailableSeasons(): Promise<{ seasonMonth: string; label: string }[]> {
+    const sql = `
+      SELECT DISTINCT s."seasonMonth"
+      FROM (
+        SELECT TO_CHAR(stm."seasonMonth", 'YYYY-MM') as "seasonMonth"
+        FROM game."SeasonTeamMember" stm
+        WHERE stm."seasonMonth" IS NOT NULL
+        UNION
+        SELECT TO_CHAR(gr."completedAt", 'YYYY-MM') as "seasonMonth"
+        FROM game."GameRun" gr
+        JOIN game."SeasonTeam" st ON UPPER(TRIM(gr."lobbyCode")) = UPPER(TRIM(st.code))
+        WHERE gr."isCompleted" = true
+          AND gr."totalTimeSec" IS NOT NULL
+          AND gr."completedAt" IS NOT NULL
+      ) s
+      WHERE s."seasonMonth" IS NOT NULL
+      ORDER BY s."seasonMonth" DESC
+    `;
+    const rows = await this.execute(sql);
+    const monthSet = new Set<string>();
+
+    for (const r of rows || []) {
+      if (r?.seasonMonth && /^\d{4}-\d{2}$/.test(r.seasonMonth)) {
+        monthSet.add(r.seasonMonth);
+      }
+    }
+
+    // Fallback to current month if no seasons with players exist yet
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    if (monthSet.size === 0) {
+      monthSet.add(currentMonth);
+    }
+
+    const sorted = Array.from(monthSet).sort().reverse();
+    return sorted.map((m) => {
+      const [year, month] = m.split('-');
+      return {
+        seasonMonth: m,
+        label: `Tháng ${parseInt(month, 10)}/${year}`,
+      };
+    });
+  }
 }
+

@@ -660,6 +660,7 @@
       "col_status": "STATUS",
       "col_time": "TIME",
       "status_completed": "Completed",
+      "status_abandoned": "Abandoned",
       "status_incomplete": "Incomplete",
       "view_details": "View Details",
       "no_runs": "No play history found.",

@@ -199,6 +199,15 @@ export class GameService {
       });
 
       if (!session) {
+        // Before creating a new session, ensure any previous IN_PROGRESS sessions (e.g. Lobby) are closed
+        await em.getConnection().execute(
+          `UPDATE game."GameSession"
+           SET status = 'FINISHED', "endedAt" = NOW(),
+               "completionTimeSec" = GREATEST(0, EXTRACT(EPOCH FROM (NOW() - "startedAt"))::int)
+           WHERE "runId" = ? AND status = 'IN_PROGRESS'`,
+          [run.id],
+        );
+
         const lobbySession = await this.gameSessionRepo.txFindOne(em, {
           runId: run.id,
           levelId: 'lobby',

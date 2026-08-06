@@ -55,6 +55,16 @@ import {
 const BADGE_BASE_CLASS = "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
 const ITEMS_PER_PAGE = 10;
 
+function formatSeasonMonth(seasonMonth: string, locale: string): string {
+  const [year, month] = seasonMonth.split('-');
+  const monthNum = parseInt(month, 10);
+  if (locale === 'vi') {
+    return `Tháng ${monthNum}/${year}`;
+  }
+  const date = new Date(parseInt(year, 10), monthNum - 1, 1);
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+}
+
 type Tab = "runs" | "leaderboard";
 
 interface GameResultPlayer {
@@ -618,14 +628,14 @@ export default function GameResultsPage() {
                     >
                       {(availableLeaderboardSeasons.length > 0
                         ? availableLeaderboardSeasons
-                        : [{ seasonMonth: currentMonthStr, label: `Tháng ${parseInt(currentMonthStr.split('-')[1], 10)}/${currentMonthStr.split('-')[0]}` }]
+                        : [{ seasonMonth: currentMonthStr }]
                       ).map((s) => (
                         <option
                           key={s.seasonMonth}
                           value={s.seasonMonth}
                           className="bg-background text-foreground"
                         >
-                          {s.label} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
+                          {formatSeasonMonth(s.seasonMonth, locale)} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
                         </option>
                       ))}
                     </select>

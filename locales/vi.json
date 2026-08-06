@@ -1312,6 +1312,7 @@
     "filter_all_status": "Tất cả trạng thái",
     "filter_completed": "Hoàn thành",
     "filter_in_progress": "Đang chơi",
+    "filter_abandoned": "Bỏ cuộc",
     "filter_all_visibility": "Công khai & Riêng tư",
     "filter_public": "Công khai",
     "filter_private": "Riêng tư",

@@ -237,6 +237,7 @@ export default function GameResultsPage() {
       };
       if (statusFilter === "completed") params.isCompleted = "true";
       if (statusFilter === "in_progress") params.isCompleted = "false";
+      if (statusFilter === "abandoned") params.isAbandoned = "true";
       if (visibilityFilter === "public") params.isPrivate = "false";
       if (visibilityFilter === "private") params.isPrivate = "true";
 
@@ -436,6 +437,9 @@ export default function GameResultsPage() {
                   </SelectItem>
                   <SelectItem value="in_progress">
                     {t("gameResults.filter_in_progress")}
+                  </SelectItem>
+                  <SelectItem value="abandoned">
+                    {t("gameResults.filter_abandoned")}
                   </SelectItem>
                 </SelectContent>
               </Select>

@@ -1316,6 +1316,7 @@
     "filter_all_status": "All Status",
     "filter_completed": "Completed",
     "filter_in_progress": "In Progress",
+    "filter_abandoned": "Abandoned",
     "filter_all_visibility": "Public & Private",
     "filter_public": "Public",
     "filter_private": "Private",

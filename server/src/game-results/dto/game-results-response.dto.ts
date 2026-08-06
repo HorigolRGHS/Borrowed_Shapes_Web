@@ -34,10 +34,11 @@ export class ListGameResultsQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by completion status' })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') return undefined;
-    if (value === 'true' || value === true) return true;
-    if (value === 'false' || value === false) return false;
+  @Transform(({ obj, key }) => {
+    const raw = obj?.[key];
+    if (raw === undefined || raw === null || raw === '') return undefined;
+    if (raw === 'true' || raw === true) return true;
+    if (raw === 'false' || raw === false) return false;
     return undefined;
   })
   @IsBoolean()
@@ -45,10 +46,11 @@ export class ListGameResultsQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter abandoned runs (not completed, but ended)' })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') return undefined;
-    if (value === 'true' || value === true) return true;
-    if (value === 'false' || value === false) return false;
+  @Transform(({ obj, key }) => {
+    const raw = obj?.[key];
+    if (raw === undefined || raw === null || raw === '') return undefined;
+    if (raw === 'true' || raw === true) return true;
+    if (raw === 'false' || raw === false) return false;
     return undefined;
   })
   @IsBoolean()
@@ -63,10 +65,11 @@ export class ListGameResultsQueryDto {
 
   @ApiPropertyOptional({ description: 'Filter by visibility' })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') return undefined;
-    if (value === 'true' || value === true) return true;
-    if (value === 'false' || value === false) return false;
+  @Transform(({ obj, key }) => {
+    const raw = obj?.[key];
+    if (raw === undefined || raw === null || raw === '') return undefined;
+    if (raw === 'true' || raw === true) return true;
+    if (raw === 'false' || raw === false) return false;
     return undefined;
   })
   @IsBoolean()

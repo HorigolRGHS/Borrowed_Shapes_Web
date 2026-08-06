@@ -1392,8 +1392,10 @@
     "session_status_in_progress": "Đang chơi",
     "session_status_abandoned": "Bỏ cuộc",
     "session_result_win": "Thắng",
-    "session_result_abandoned": "Bỏ cuộc",
+    "session_result_lose": "Thua",
     "session_result_loss": "Thua",
+    "session_result_abandoned": "Bỏ cuộc",
+    "session_result_none": "—",
     "level_names": {
       "Lobby": "Sảnh",
       "Kitchen": "Nhà bếp",

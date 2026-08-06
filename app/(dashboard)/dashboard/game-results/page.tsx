@@ -117,9 +117,25 @@ interface LeaderboardEntry {
 
 function formatTime(totalSec?: number): string {
   if (!totalSec) return "—";
-  const minutes = Math.floor(totalSec / 60);
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
-  return `${minutes}m ${seconds}s`;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+}
+
+function formatLeaderboardTime(totalSec?: number): string {
+  if (!totalSec) return "—";
+  const hrs = Math.floor(totalSec / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  const pad = (num: number) => String(num).padStart(2, "0");
+  if (hrs > 0) {
+    return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+  }
+  return `${pad(mins)}:${pad(secs)}`;
 }
 
 function formatDate(dateStr?: string): string {
@@ -549,8 +565,8 @@ export default function GameResultsPage() {
                                         const latest =
                                           run.sessions[run.sessions.length - 1];
                                         return latest.levelOrder === 0
-                                          ? "Lobby"
-                                          : `Level ${latest.levelOrder}`;
+                                          ? t("gameResults.lobby_label")
+                                          : `${t("gameResults.level_label")} ${latest.levelOrder}`;
                                       })()}
                                     </span>
                                   ) : (
@@ -849,7 +865,7 @@ export default function GameResultsPage() {
                             {/* Total Time */}
                             <TableCell>
                               <span className="text-amber-400 font-bold font-mono">
-                                {formatTime(entry.totalTimeSec)}
+                                {formatLeaderboardTime(entry.totalTimeSec)}
                               </span>
                             </TableCell>
 

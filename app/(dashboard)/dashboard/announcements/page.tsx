@@ -637,7 +637,7 @@ export default function AnnouncementsPage() {
                             {/* Type */}
                             <TableCell>
                               <Badge variant="outline" className={TYPE_BADGE_STYLES[a.type] || BADGE_BASE_CLASS}>
-                                {a.type}
+                                {t(`announcements.filter_type_${a.type.toLowerCase()}`)}
                               </Badge>
                             </TableCell>
                             {/* Status */}

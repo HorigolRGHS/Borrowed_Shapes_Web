@@ -1386,7 +1386,24 @@
     "history_col_role": "Vai trò",
     "history_col_total_time": "Tổng thời gian",
     "history_col_played_date": "Ngày chơi",
-    "close": "Đóng"
+    "close": "Đóng",
+    "session_status_finished": "Hoàn thành",
+    "session_status_completed": "Hoàn thành",
+    "session_status_in_progress": "Đang chơi",
+    "session_status_abandoned": "Bỏ cuộc",
+    "session_result_win": "Thắng",
+    "session_result_abandoned": "Bỏ cuộc",
+    "session_result_loss": "Thua",
+    "level_names": {
+      "Lobby": "Sảnh",
+      "Kitchen": "Nhà bếp",
+      "Bedroom": "Phòng ngủ",
+      "Bathroom": "Phòng tắm",
+      "Basement": "Tầng hầm",
+      "Living Room": "Phòng khách"
+    },
+    "level_label": "Màn",
+    "lobby_label": "Sảnh"
   },
   "legal": {
     "sidebar": {

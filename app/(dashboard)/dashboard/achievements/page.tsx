@@ -731,7 +731,9 @@ export default function AchievementsPage() {
                           <TableCell>
                             <div className="flex flex-col items-start gap-1">
                               <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
-                                {achievement.type}
+                                {achievement.type === "PERMANENT"
+                                  ? t("achievements.permanent")
+                                  : t("achievements.seasonal")}
                               </Badge>
                               {achievement.type === "SEASONAL" && achievement.seasonMonth && (
                                 <span className="text-xs text-muted-foreground w-28 text-center">

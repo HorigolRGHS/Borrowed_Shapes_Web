@@ -500,7 +500,9 @@ export default function AchievementViewDetailPage() {
             </h3>
             <div className="mt-3 flex justify-center">
               <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
-                {achievement.type}
+                {achievement.type === "PERMANENT"
+                  ? t("achievements.permanent")
+                  : t("achievements.seasonal")}
               </Badge>
             </div>
 
@@ -575,7 +577,9 @@ export default function AchievementViewDetailPage() {
                   {t("achievements.type_label")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-200">
-                  {achievement.type}
+                  {achievement.type === "PERMANENT"
+                    ? t("achievements.permanent")
+                    : t("achievements.seasonal")}
                 </div>
               </div>
               <div>

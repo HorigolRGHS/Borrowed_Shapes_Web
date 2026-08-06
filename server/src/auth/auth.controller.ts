@@ -41,7 +41,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  // @UseGuards(AuthRateLimitGuard)
+  @UseGuards(AuthRateLimitGuard)
   @Post('register')
   @ApiBody({ type: RegisterRequestDto })
   async register(

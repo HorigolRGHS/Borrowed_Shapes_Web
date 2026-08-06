@@ -59,6 +59,11 @@ import {
 } from "@/components/ui/dialog";
 
 type FilterMode = "all" | "published" | "draft";
+type SortOption =
+  | "updated_desc"
+  | "updated_asc"
+  | "title_asc"
+  | "title_desc";
 
 export function AdminWikiListClient() {
   const { t, locale } = useI18n();
@@ -73,6 +78,7 @@ export function AdminWikiListClient() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<"All" | WikiCategory>("All");
+  const [sortBy, setSortBy] = useState<SortOption>("updated_desc");
   const [pendingDelete, setPendingDelete] = useState<WikiListItem | null>(null);
   const [confirmInput, setConfirmInput] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -141,8 +147,28 @@ export function AdminWikiListClient() {
       );
     }
 
-    return items;
-  }, [data, filter, categoryFilter, searchText]);
+    const sorted = [...items].sort((a, b) => {
+      if (sortBy === "updated_desc") {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+      if (sortBy === "updated_asc") {
+        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+      }
+      if (sortBy === "title_asc") {
+        const titleA = locale === "vi" ? (a.titleVi || a.title) : (a.title || a.titleVi);
+        const titleB = locale === "vi" ? (b.titleVi || b.title) : (b.title || b.titleVi);
+        return titleA.localeCompare(titleB, locale);
+      }
+      if (sortBy === "title_desc") {
+        const titleA = locale === "vi" ? (a.titleVi || a.title) : (a.title || a.titleVi);
+        const titleB = locale === "vi" ? (b.titleVi || b.title) : (b.title || b.titleVi);
+        return titleB.localeCompare(titleA, locale);
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [data, filter, categoryFilter, searchText, sortBy, locale]);
 
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
@@ -253,13 +279,27 @@ export function AdminWikiListClient() {
           })}
         </div>
 
-        {/* Sort (cosmetic) */}
-        <Select defaultValue="updated">
-          <SelectTrigger className="w-[180px] h-8 text-xs">
+        {/* Sort */}
+        <Select
+          value={sortBy}
+          onValueChange={(val) => setSortBy(val as SortOption)}
+        >
+          <SelectTrigger className="w-[190px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="updated">{t("wiki.sort_by_updated")}</SelectItem>
+            <SelectItem value="updated_desc">
+              {t("wiki.sort_recently_updated")}
+            </SelectItem>
+            <SelectItem value="updated_asc">
+              {t("wiki.sort_oldest_updated")}
+            </SelectItem>
+            <SelectItem value="title_asc">
+              {t("wiki.sort_title_asc")}
+            </SelectItem>
+            <SelectItem value="title_desc">
+              {t("wiki.sort_title_desc")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -32,7 +32,7 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
         <Card className="h-full flex flex-col justify-between transition hover:border-primary/40 hover:shadow-sm">
           <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
             <h3 
-              className="text-lg font-semibold line-clamp-2 group-hover:text-primary flex-1 min-w-0 break-words break-all"
+              className="text-lg font-semibold line-clamp-2 group-hover:text-primary flex-1 min-w-0 break-words"
               title={item.title}
             >
               {item.title}
@@ -69,7 +69,7 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
       >
         <CardHeader className="flex min-h-[58px] flex-row items-start justify-between gap-2 border-b border-border px-5 py-4 dark:border-[#252541]">
           <h3 
-            className="font-serif text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400 flex-1 min-w-0 break-words break-all"
+            className="font-sans text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400 flex-1 min-w-0 break-words"
             title={item.title}
           >
             {item.title}

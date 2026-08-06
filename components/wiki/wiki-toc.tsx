@@ -32,6 +32,22 @@ export function WikiToc({ markdown }: Props) {
     return () => observer.disconnect();
   }, [items]);
 
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      const topOffset = 100;
+      const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+      const offsetPosition = elementPosition - topOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+      setActiveId(id);
+      window.history.pushState(null, "", `#${id}`);
+    }
+  };
+
   if (items.length === 0) return null;
 
   return (
@@ -42,8 +58,9 @@ export function WikiToc({ markdown }: Props) {
           <li key={it.id} style={{ paddingLeft: `${(it.level - 1) * 12}px` }}>
             <a
               href={`#${it.id}`}
+              onClick={(e) => handleClick(e, it.id)}
               className={cn(
-                "block px-3 py-1 -ml-px border-l-2 transition",
+                "block px-3 py-1 -ml-px border-l-2 transition cursor-pointer",
                 it.id === activeId
                   ? "border-primary text-primary font-medium"
                   : "border-transparent text-muted-foreground hover:text-foreground",

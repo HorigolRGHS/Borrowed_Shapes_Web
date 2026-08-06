@@ -348,10 +348,27 @@ export class GameService {
         0,
       );
 
-      // Explicitly set isCompleted based on whether the game was won
-      run.isCompleted = (dto.isWin !== false);
+      // isCompleted = true only when the caller explicitly passes isWin: true
+      run.isCompleted = dto.isWin === true;
       run.completedAt = new Date();
       run.totalTimeSec = totalTimeSec;
+
+      // Close the lobby session so it doesn't remain IN_PROGRESS indefinitely
+      const lobbySession = await this.gameSessionRepo.txFindOne(em, {
+        runId: run.id,
+        levelId: 'lobby',
+        status: GameSessionStatus.IN_PROGRESS,
+      });
+      if (lobbySession) {
+        lobbySession.status = GameSessionStatus.FINISHED;
+        lobbySession.endedAt = run.completedAt;
+        lobbySession.completionTimeSec = Math.max(
+          0,
+          Math.floor(
+            (lobbySession.endedAt.getTime() - lobbySession.startedAt.getTime()) / 1000,
+          ),
+        );
+      }
 
       await this.gameSessionRepo.txFlush(em);
     });

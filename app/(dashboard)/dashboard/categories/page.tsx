@@ -146,6 +146,18 @@ export default function DashboardCategoriesPage() {
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile]);
 
+  useEffect(() => {
+    if (!isImageOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsImageOpen(false);
+        setZoomedImageUrl(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isImageOpen]);
+
   const [slugsManuallyEdited, setSlugsManuallyEdited] = useState({
     slug: false,
     slugVi: false,
@@ -649,7 +661,22 @@ export default function DashboardCategoriesPage() {
 
       {/* Create Modal */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-3xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-3xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto"
+          onPointerDownOutside={(e) => {
+            if (isImageOpen) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (isImageOpen) e.preventDefault();
+          }}
+          onEscapeKeyDown={(e) => {
+            if (isImageOpen) {
+              e.preventDefault();
+              setIsImageOpen(false);
+              setZoomedImageUrl(null);
+            }
+          }}
+        >
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 to-orange-400" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
@@ -725,7 +752,8 @@ export default function DashboardCategoriesPage() {
                 {/* Preview */}
                 {(previewUrl || form.iconUrl) && (
                   <div
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setZoomedImageUrl(previewUrl || form.iconUrl || null);
                       setIsImageOpen(true);
                     }}
@@ -860,7 +888,22 @@ export default function DashboardCategoriesPage() {
 
       {/* Edit Modal */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-3xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-3xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto"
+          onPointerDownOutside={(e) => {
+            if (isImageOpen) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (isImageOpen) e.preventDefault();
+          }}
+          onEscapeKeyDown={(e) => {
+            if (isImageOpen) {
+              e.preventDefault();
+              setIsImageOpen(false);
+              setZoomedImageUrl(null);
+            }
+          }}
+        >
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 to-orange-400" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
@@ -936,7 +979,8 @@ export default function DashboardCategoriesPage() {
                 {/* Preview */}
                 {(previewUrl || form.iconUrl) && (
                   <div
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setZoomedImageUrl(previewUrl || form.iconUrl || null);
                       setIsImageOpen(true);
                     }}
@@ -1132,16 +1176,34 @@ export default function DashboardCategoriesPage() {
       {/* Full Image Lightbox */}
       {mounted && isImageOpen && zoomedImageUrl && createPortal(
         <div
-          onClick={() => {
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
             setIsImageOpen(false);
             setZoomedImageUrl(null);
           }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center cursor-zoom-out"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center cursor-zoom-out p-4 select-none"
         >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsImageOpen(false);
+              setZoomedImageUrl(null);
+            }}
+            className="absolute top-4 right-4 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white transition-colors cursor-pointer z-[101]"
+            aria-label="Close preview"
+          >
+            <X className="w-6 h-6" />
+          </button>
           <img
             src={zoomedImageUrl}
             alt="Zoomed Icon"
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl animate-fade-in"
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl animate-fade-in cursor-default"
           />
         </div>,
         document.body

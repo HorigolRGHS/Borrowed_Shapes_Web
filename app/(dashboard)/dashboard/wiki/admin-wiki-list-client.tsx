@@ -13,6 +13,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { fetchAdminWikiList, fetchAdminWikiStats, deleteWiki } from "@/lib/wiki/api";
 import type { WikiListResponse, WikiListItem, WikiAdminStats } from "@/models/dtos/wiki.dto";
@@ -164,8 +165,11 @@ export function AdminWikiListClient() {
       setPendingDelete(null);
       setConfirmInput("");
       setDeleteError(null);
+      toast.success(t("wiki.delete_success"));
     } catch (e) {
-      setDeleteError(getApiErrorMessage(e as ApiError, "Delete failed"));
+      const msg = getApiErrorMessage(e as ApiError, t("wiki.delete_failed"));
+      setDeleteError(msg);
+      toast.error(msg);
     } finally {
       setDeleting(false);
     }

@@ -96,15 +96,9 @@ export default async function WikiDetailPage({
     categoryName: (c: keyof typeof dict.wiki.metadata.category) =>
       dict.wiki.metadata.category[c],
     statsLabel: dict.wiki.metadata.stats,
-    locationLabel:
-      uiLocale === "vi"
-        ? dict.wiki.metadata.location_vi
-        : dict.wiki.metadata.location_en,
+    locationLabel: dict.wiki.metadata.location,
     relatedLabel: dict.wiki.metadata.related_pages,
-    tagsLabel:
-      uiLocale === "vi"
-        ? dict.wiki.metadata.tags_vi
-        : dict.wiki.metadata.tags_en,
+    tagsLabel: dict.wiki.metadata.tags,
   };
 
   return (

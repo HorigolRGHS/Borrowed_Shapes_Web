@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/lib/wiki/use-user-role";
+import { toast } from "react-toastify";
 import { rollbackWiki } from "@/lib/wiki/api";
 import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 import type { WikiHistoryItem } from "@/models/dtos/wiki.dto";
@@ -73,9 +74,10 @@ export function WikiHistoryList({
         targetRevisionId: revisionId,
         expectedLatestRevisionId,
       });
+      toast.success(t("wiki.rollback_success"));
       window.location.href = `/wiki/${encodeURIComponent(slug)}`;
     } catch (err) {
-      alert(getApiErrorMessage(err as ApiError, "Rollback failed"));
+      toast.error(getApiErrorMessage(err as ApiError, t("wiki.rollback_failed")));
     } finally {
       setBusy(null);
     }

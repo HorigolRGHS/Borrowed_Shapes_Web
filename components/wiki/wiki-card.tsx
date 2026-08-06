@@ -17,14 +17,19 @@ interface Props {
 
 export function WikiCard({ item, showDraftBadge = false, href, variant = "default" }: Props) {
   const { t, locale } = useI18n();
-  const defaultSlug = locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi);
-  const defaultSummary =
+
+  const title =
     locale === "vi"
-      ? item.latestRevision?.summaryVi
-      : item.latestRevision?.summary;
-  const publicSlug = item.slug;
-  const publicSummary = item.latestRevision?.summary;
-  const linkHref = href ?? `/wiki/${encodeURIComponent(variant === "public" ? publicSlug : defaultSlug)}`;
+      ? (item.titleVi || item.title)
+      : (item.title || item.titleVi);
+
+  const summary =
+    locale === "vi"
+      ? (item.latestRevision?.summaryVi || item.latestRevision?.summary)
+      : (item.latestRevision?.summary || item.latestRevision?.summaryVi);
+
+  const slug = locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi);
+  const linkHref = href ?? `/wiki/${encodeURIComponent(slug)}`;
 
   if (variant === "default") {
     return (
@@ -33,9 +38,9 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
           <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
             <h3 
               className="text-lg font-semibold line-clamp-2 group-hover:text-primary flex-1 min-w-0 break-words"
-              title={item.title}
+              title={title}
             >
-              {item.title}
+              {title}
             </h3>
             {showDraftBadge && !item.isPublished && (
               <Badge variant="secondary" className="shrink-0">
@@ -43,9 +48,9 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
               </Badge>
             )}
           </CardHeader>
-          <CardContent className="flex-1">
-            {defaultSummary && (
-              <p className="text-sm text-muted-foreground line-clamp-3">{defaultSummary}</p>
+          <CardContent className="flex-1 min-h-[72px]">
+            {summary && (
+              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">{summary}</p>
             )}
           </CardContent>
           <CardFooter className="text-xs text-muted-foreground mt-auto">
@@ -70,9 +75,9 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
         <CardHeader className="flex min-h-[58px] flex-row items-start justify-between gap-2 border-b border-border px-5 py-4 dark:border-[#252541]">
           <h3 
             className="font-sans text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400 flex-1 min-w-0 break-words"
-            title={item.title}
+            title={title}
           >
-            {item.title}
+            {title}
           </h3>
           {showDraftBadge && !item.isPublished && (
             <Badge variant="secondary" className="shrink-0">
@@ -81,8 +86,8 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
           )}
         </CardHeader>
         <CardContent className="flex-1 min-h-[96px] border-b border-border px-5 py-5 dark:border-[#252541]">
-          {publicSummary && (
-            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 dark:text-sky-200/80">{publicSummary}</p>
+          {summary && (
+            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 dark:text-sky-200/80">{summary}</p>
           )}
         </CardContent>
         <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-muted-foreground dark:text-slate-500 mt-auto">

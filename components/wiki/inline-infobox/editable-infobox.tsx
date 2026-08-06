@@ -38,19 +38,10 @@ export function EditableInfobox({ locale, excludeSlug, wikiId }: Props) {
       dict.wiki.metadata.category[
         c as keyof typeof dict.wiki.metadata.category
       ],
-    statsLabel:
-      locale === "vi"
-        ? dict.wiki.metadata.stats_vi
-        : dict.wiki.metadata.stats_en,
-    locationLabel:
-      locale === "vi"
-        ? dict.wiki.metadata.location_vi
-        : dict.wiki.metadata.location_en,
+    statsLabel: dict.wiki.metadata.stats,
+    locationLabel: dict.wiki.metadata.location,
     relatedLabel: dict.wiki.metadata.related_pages,
-    tagsLabel:
-      locale === "vi"
-        ? dict.wiki.metadata.tags_vi
-        : dict.wiki.metadata.tags_en,
+    tagsLabel: dict.wiki.metadata.tags,
   };
 
   return (
@@ -67,11 +58,7 @@ export function EditableInfobox({ locale, excludeSlug, wikiId }: Props) {
         location: (
           <EditableLocationField
             locale={locale}
-            placeholder={
-              locale === "vi"
-                ? dict.wiki.metadata.location_vi
-                : dict.wiki.metadata.location_en
-            }
+            placeholder={dict.wiki.metadata.location}
           />
         ),
         tags: <EditableTagsField locale={locale} />,

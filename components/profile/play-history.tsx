@@ -64,8 +64,12 @@ const TOTAL_LEVELS = 5;
 
 function formatTime(totalSec?: number): string {
   if (!totalSec) return "—";
-  const minutes = Math.floor(totalSec / 60);
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
   return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 

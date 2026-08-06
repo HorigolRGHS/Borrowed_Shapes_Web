@@ -1,13 +1,14 @@
 "use client";
 
 import { useI18n } from "@/lib/i18/i18n-context";
-import { getUserProfile } from "@/lib/api/api-client";
+
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Search, Eye, Users, Pencil, Trash2, AlertTriangle, ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
 import { AchievementDescriptionEditor } from "@/components/achievements/achievement-description-editor";
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,15 +89,17 @@ interface Achievement {
 }
 interface AchievementUser {
   id: string;
+  profileId?: string;
   displayName: string;
   avatarUrl?: string;
+  equippedFrameUrl?: string;
   earnedAt?: string;
 }
 export default function AchievementsPage() {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [user, setUser] = useState<any>(null);
+
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -283,14 +286,8 @@ export default function AchievementsPage() {
   };
 
   useEffect(() => {
-    const profile = getUserProfile();
-    if (!profile || profile.role !== "ADMIN") {
-      router.push("/");
-    } else {
-      setUser(profile);
-      fetchAchievements();
-    }
-  }, [router, typeFilter, sortBy, sortOrder, currentPage]);
+    fetchAchievements();
+  }, [typeFilter, sortBy, sortOrder, currentPage]);
 
   // Handle edit query param from view-detail page
   useEffect(() => {
@@ -599,7 +596,7 @@ export default function AchievementsPage() {
     });
   };
 
-  if (!user) return null;
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -734,7 +731,9 @@ export default function AchievementsPage() {
                           <TableCell>
                             <div className="flex flex-col items-start gap-1">
                               <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
-                                {achievement.type}
+                                {achievement.type === "PERMANENT"
+                                  ? t("achievements.permanent")
+                                  : t("achievements.seasonal")}
                               </Badge>
                               {achievement.type === "SEASONAL" && achievement.seasonMonth && (
                                 <span className="text-xs text-muted-foreground w-28 text-center">
@@ -1135,8 +1134,11 @@ export default function AchievementsPage() {
           <DialogHeader>
             <div className="flex items-center gap-3">
               {selectedAchievement?.badgeImageUrl && (
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
-                  <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                <div className="relative h-12 w-12 shrink-0">
+                  <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/20 to-orange-500/10 shadow-lg shadow-amber-500/10">
+                    <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                  </div>
+                  <div className="absolute -inset-[1px] rounded-xl ring-1 ring-amber-400/30 pointer-events-none" />
                 </div>
               )}
               <div>
@@ -1198,14 +1200,17 @@ export default function AchievementsPage() {
                           <TableRow key={u.id} className="border-border hover:bg-muted/50">
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/80 text-sm font-bold text-white">
-                                  {initials}
-                                </div>
+                                <AvatarWithFrame
+                                  displayName={u.displayName}
+                                  avatarUrl={u.avatarUrl}
+                                  badgeImageUrl={u.equippedFrameUrl}
+                                  size="sm"
+                                />
                                 <span className="font-medium text-foreground">{u.displayName}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm text-muted-foreground">{u.id}</div>
+                              <div className="text-sm text-muted-foreground font-mono">{u.profileId ?? u.id}</div>
                             </TableCell>
                             <TableCell className="text-muted-foreground text-sm">
                               {u.earnedAt

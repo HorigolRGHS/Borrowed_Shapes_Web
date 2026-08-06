@@ -7,11 +7,13 @@ import { GameRunPlayerRepository } from './repositories/game-run-player.reposito
 import { GameSessionRepository } from './repositories/game-session.repository';
 import { GameSessionPlayerRepository } from './repositories/game-session-player.repository';
 import { LevelRepository } from './repositories/level.repository';
+import { GameCleanupJob } from './game-cleanup.job';
 
 @Module({
   controllers: [GameController],
   providers: [
     GameService,
+    GameCleanupJob,
     GameProfileRepository,
     GameRunRepository,
     GameRunPlayerRepository,

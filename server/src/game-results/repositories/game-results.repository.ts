@@ -44,9 +44,15 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const conditions: string[] = [];
     const params: any[] = [];
 
-    if (query.isCompleted !== undefined) {
+    if (query.isAbandoned) {
+      conditions.push('gr."isCompleted" = false');
+      conditions.push('gr."completedAt" IS NOT NULL');
+    } else if (query.isCompleted !== undefined) {
       conditions.push('gr."isCompleted" = ?');
       params.push(query.isCompleted);
+      if (query.isCompleted === false) {
+        conditions.push('gr."completedAt" IS NULL');
+      }
     }
 
     if (query.gameProfileId) {
@@ -303,7 +309,11 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         SELECT
           tr.*,
           ROW_NUMBER() OVER (
-            PARTITION BY COALESCE(NULLIF(UPPER(TRIM(tr."lobbyCode")), ''), tr."teamSignature")
+            PARTITION BY COALESCE(
+              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
+              tr."teamSignature"
+            )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr
@@ -331,7 +341,11 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         SELECT
           tr.*,
           ROW_NUMBER() OVER (
-            PARTITION BY COALESCE(NULLIF(UPPER(TRIM(tr."lobbyCode")), ''), tr."teamSignature")
+            PARTITION BY COALESCE(
+              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
+              tr."teamSignature"
+            )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr

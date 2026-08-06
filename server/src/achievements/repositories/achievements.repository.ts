@@ -56,10 +56,10 @@ export class AchievementRepository extends BaseRepository<Achievement> {
     gameProfileId: string,
     achievementId: string,
   ): Promise<UserAchievement | null> {
-    return this.findOne(
-      UserAchievement as any,
-      { gameProfileId, achievementId } as any,
-    ) as any;
+    return this.em.findOne(
+      UserAchievement,
+      { gameProfileId, achievementId }
+    );
   }
 
   createAchievement(data: any): Achievement {
@@ -182,10 +182,13 @@ export class AchievementRepository extends BaseRepository<Achievement> {
     const rows = await this.execute(
       `
     select
-      gp."id" as "id",
+      gp."id" as "gameProfileId",
+      u."id" as "userId",
       u."displayName" as "displayName",
       u."imgUrl" as "avatarUrl",
-      ua."achievedAt" as "earnedAt"
+      u."updatedAt" as "updatedAt",
+      ua."achievedAt" as "earnedAt",
+      eq."badgeImageUrl" as "equippedFrameUrl"
 
     from game."UserAchievement" ua
 
@@ -194,6 +197,9 @@ export class AchievementRepository extends BaseRepository<Achievement> {
 
     inner join auth."User" u
       on u."id" = gp."userId"
+
+    left join game."Achievement" eq
+      on eq."id" = gp."equippedAchievementId"
 
     where ua."achievementId" = ?
 

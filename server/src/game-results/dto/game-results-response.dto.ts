@@ -38,6 +38,12 @@ export class ListGameResultsQueryDto {
   @IsBoolean()
   isCompleted?: boolean;
 
+  @ApiPropertyOptional({ description: 'Filter abandoned runs (not completed, but ended)' })
+  @IsOptional()
+  @Transform(({ obj, key }) => obj[key] === 'true' || obj[key] === true)
+  @IsBoolean()
+  isAbandoned?: boolean;
+
   @ApiPropertyOptional({
     description: 'Search by lobby name or code (case-insensitive)',
   })

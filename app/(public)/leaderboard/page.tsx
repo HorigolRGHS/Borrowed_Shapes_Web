@@ -9,12 +9,23 @@ import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import { LeaderboardRunModal } from "@/components/leaderboard/leaderboard-run-modal";
 import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
+function formatSeasonMonth(seasonMonth: string, locale: string): string {
+  const [year, month] = seasonMonth.split('-');
+  const monthNum = parseInt(month, 10);
+  if (locale === 'vi') {
+    return `Tháng ${monthNum}/${year}`;
+  }
+  const date = new Date(parseInt(year, 10), monthNum - 1, 1);
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+}
+
 export default function LeaderboardPage() {
   const { t, locale } = useI18n();
   const [activeTab, setActiveTab] = useState<"all-time" | "seasonal">("all-time");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [top3Entries, setTop3Entries] = useState<LeaderboardEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +79,11 @@ export default function LeaderboardPage() {
       const data = res?.data || res || {};
       const items = data.items || [];
       setEntries(items);
+      // Keep top3 in sync only when fetching page 1 so the podium
+      // stays visible when the user navigates to subsequent pages.
+      if (page === 1) {
+        setTop3Entries(items.filter((e: LeaderboardEntry) => e.rank <= 3));
+      }
       setTotal(data.total || 0);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
@@ -100,6 +116,7 @@ export default function LeaderboardPage() {
   const handleTabChange = (tab: "all-time" | "seasonal") => {
     setActiveTab(tab);
     setPage(1); // Reset to page 1 on tab switch
+    setTop3Entries([]); // Clear podium so it re-fetches for the new tab
   };
 
   // Find if logged-in user has a run in the current list
@@ -181,14 +198,14 @@ export default function LeaderboardPage() {
                 >
                   {(availableSeasons.length > 0
                     ? availableSeasons
-                    : [{ seasonMonth: currentMonthStr, label: `Tháng ${parseInt(currentMonthStr.split('-')[1], 10)}/${currentMonthStr.split('-')[0]}` }]
+                    : [{ seasonMonth: currentMonthStr }]
                   ).map((s) => (
                     <option
                       key={s.seasonMonth}
                       value={s.seasonMonth}
                       className="bg-background text-foreground dark:bg-[#0f0f1a] dark:text-white"
                     >
-                      {s.label} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
+                      {formatSeasonMonth(s.seasonMonth, locale)} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
                     </option>
                   ))}
                 </select>
@@ -219,9 +236,10 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* Podium (Top 3 Cards) */}
-        {!isLoading && entries.length > 0 && (
-          <LeaderboardPodium entries={entries} onSelectEntry={setSelectedEntry} />
+        {/* Podium (Top 3 Cards) — always uses top3Entries so it stays
+            visible when the user navigates to pages beyond page 1. */}
+        {top3Entries.length > 0 && (
+          <LeaderboardPodium entries={top3Entries} onSelectEntry={setSelectedEntry} />
         )}
 
         {/* Full Rankings Table */}

@@ -69,6 +69,8 @@ export class GameService {
       // Create a new game run (table: game.GameRun)
       const run = this.gameRunRepo.txCreate(em, {
         lobbyId: dto.lobbyId,
+        lobbyCode: dto.lobbyCode,
+        lobbyName: dto.lobbyName,
         totalLevels: dto.totalLevels,
         isCompleted: false,
         startedAt: new Date(),
@@ -187,6 +189,9 @@ export class GameService {
         throw new NotFoundException('game.level_not_found');
       }
 
+      // Check if this is the first non-lobby map BEFORE we create the new session
+      const isFirstMap = level.id !== 'lobby' && !(await this.gameSessionRepo.isRunLocked(em, run.id));
+
       let session = await this.gameSessionRepo.txFindOne(em, {
         runId: run.id,
         levelId: level.id,
@@ -213,33 +218,27 @@ export class GameService {
       }
 
       // If leaving lobby for the first time, lock in the roster by saving active players to GameRunPlayer
-      if (level.id !== 'lobby') {
-        const isFirstMap = !(await this.gameSessionRepo.isRunLocked(
-          em,
-          run.id,
-        ));
-        if (isFirstMap) {
-          const lobbySession = await this.gameSessionRepo.txFindOne(em, {
-            runId: run.id,
-            levelId: 'lobby',
+      if (isFirstMap) {
+        const lobbySession = await this.gameSessionRepo.txFindOne(em, {
+          runId: run.id,
+          levelId: 'lobby',
+        });
+        if (lobbySession) {
+          const lobbyPlayers = await this.gameSessionPlayerRepo.txFind(em, {
+            sessionId: lobbySession.id,
+            isAbsent: false,
           });
-          if (lobbySession) {
-            const lobbyPlayers = await this.gameSessionPlayerRepo.txFind(em, {
-              sessionId: lobbySession.id,
-              isAbsent: false,
+          for (const lp of lobbyPlayers) {
+            const exists = await this.gameRunPlayerRepo.txFindOne(em, {
+              runId: run.id,
+              gameProfileId: lp.gameProfileId,
             });
-            for (const lp of lobbyPlayers) {
-              const exists = await this.gameRunPlayerRepo.txFindOne(em, {
-                runId: run.id,
+            if (!exists) {
+              this.gameRunPlayerRepo.txCreate(em, {
+                runId: run,
                 gameProfileId: lp.gameProfileId,
+                isHost: false, // The host was already added in initRun and will be caught by `exists`
               });
-              if (!exists) {
-                this.gameRunPlayerRepo.txCreate(em, {
-                  runId: run,
-                  gameProfileId: lp.gameProfileId,
-                  isHost: false, // The host was already added in initRun and will be caught by `exists`
-                });
-              }
             }
           }
         }
@@ -349,7 +348,8 @@ export class GameService {
         0,
       );
 
-      run.isCompleted = true;
+      // Explicitly set isCompleted based on whether the game was won
+      run.isCompleted = (dto.isWin !== false);
       run.completedAt = new Date();
       run.totalTimeSec = totalTimeSec;
 

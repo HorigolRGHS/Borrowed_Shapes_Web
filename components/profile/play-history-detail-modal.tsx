@@ -100,8 +100,12 @@ function getAvatarColor(name: string): string {
 
 function formatTime(totalSec?: number): string {
   if (!totalSec) return "—";
-  const minutes = Math.floor(totalSec / 60);
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
   return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 
@@ -109,10 +113,11 @@ function formatDateTime(dateStr?: string): string {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleString(undefined, {
     year: "numeric",
-    month: "short",
+    month: "numeric",
     day: "numeric",
     hour: "numeric",
-    minute: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: true,
   });
 }
@@ -379,7 +384,11 @@ export function PlayHistoryDetailModal({
                         {/* Level info */}
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-sm text-foreground dark:text-white">
-                            {session.levelName}
+                            {(() => {
+                              const key = `gameResults.level_names.${session.levelName}`;
+                              const translated = t(key);
+                              return translated !== key ? translated : session.levelName;
+                            })()}
                           </div>
                           <div className="flex items-center gap-3 mt-0.5 text-xs">
                             {/* Result */}

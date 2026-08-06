@@ -60,6 +60,24 @@ export class GameResultService {
     for (const row of rows || []) {
       const players = await this.getRunPlayers(row.id);
       const sessions = await this.getRunSessions(row.id);
+      
+      let derivedCompletedAt = row.completedAt ?? undefined;
+      let derivedIsCompleted = row.isCompleted;
+      
+      if (!row.isCompleted && !row.completedAt) {
+        const lastSession = sessions[sessions.length - 1];
+        if (lastSession && (lastSession.status === 'ABANDONED' || lastSession.status === 'FINISHED' || lastSession.endedAt)) {
+          derivedCompletedAt = lastSession.endedAt || lastSession.startedAt;
+        } else {
+          // If no session ended, but it's been more than 12 hours, treat as abandoned
+          const startedAtDate = new Date(row.startedAt);
+          const hoursElapsed = (new Date().getTime() - startedAtDate.getTime()) / (1000 * 60 * 60);
+          if (hoursElapsed > 12) {
+            derivedCompletedAt = new Date(startedAtDate.getTime() + 2 * 60 * 60 * 1000); // Fallback to 2 hours after start
+          }
+        }
+      }
+
       items.push({
         id: row.id,
         lobbyCode: row.lobbyCode ?? undefined,
@@ -67,10 +85,10 @@ export class GameResultService {
         isPrivate: row.isPrivate,
         totalLevels: row.totalLevels,
         totalSessions: row.totalLevels + 1,
-        isCompleted: row.isCompleted,
+        isCompleted: derivedIsCompleted,
         totalTimeSec: row.totalTimeSec ?? undefined,
         startedAt: row.startedAt,
-        completedAt: row.completedAt ?? undefined,
+        completedAt: derivedCompletedAt,
         players,
         sessions,
       });
@@ -95,6 +113,22 @@ export class GameResultService {
     const players = await this.getRunPlayers(id);
     const sessions = await this.getRunSessions(id);
 
+    let derivedCompletedAt = row.completedAt ?? undefined;
+    let derivedIsCompleted = row.isCompleted;
+    
+    if (!row.isCompleted && !row.completedAt) {
+      const lastSession = sessions[sessions.length - 1];
+      if (lastSession && (lastSession.status === 'ABANDONED' || lastSession.status === 'FINISHED' || lastSession.endedAt)) {
+        derivedCompletedAt = lastSession.endedAt || lastSession.startedAt;
+      } else {
+        const startedAtDate = new Date(row.startedAt);
+        const hoursElapsed = (new Date().getTime() - startedAtDate.getTime()) / (1000 * 60 * 60);
+        if (hoursElapsed > 12) {
+          derivedCompletedAt = new Date(startedAtDate.getTime() + 2 * 60 * 60 * 1000);
+        }
+      }
+    }
+
     return {
       id: row.id,
       lobbyCode: row.lobbyCode ?? undefined,
@@ -102,10 +136,10 @@ export class GameResultService {
       isPrivate: row.isPrivate,
       totalLevels: row.totalLevels,
       totalSessions: row.totalLevels + 1,
-      isCompleted: row.isCompleted,
+      isCompleted: derivedIsCompleted,
       totalTimeSec: row.totalTimeSec ?? undefined,
       startedAt: row.startedAt,
-      completedAt: row.completedAt ?? undefined,
+      completedAt: derivedCompletedAt,
       players,
       sessions,
     };

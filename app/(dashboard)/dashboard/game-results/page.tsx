@@ -705,7 +705,9 @@ export default function GameResultsPage() {
                               ? "pointer-events-none opacity-40"
                               : ""
                           }
-                        />
+                        >
+                          {t("pagination.previous")}
+                        </PaginationPrevious>
                       </PaginationItem>
                       {renderPaginationItems(
                         runsPage,
@@ -725,7 +727,9 @@ export default function GameResultsPage() {
                               ? "pointer-events-none opacity-40"
                               : ""
                           }
-                        />
+                        >
+                          {t("pagination.next")}
+                        </PaginationNext>
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
@@ -905,7 +909,9 @@ export default function GameResultsPage() {
                               ? "pointer-events-none opacity-40"
                               : ""
                           }
-                        />
+                        >
+                          {t("pagination.previous")}
+                        </PaginationPrevious>
                       </PaginationItem>
                       {renderPaginationItems(
                         leaderboardPage,
@@ -925,7 +931,9 @@ export default function GameResultsPage() {
                               ? "pointer-events-none opacity-40"
                               : ""
                           }
-                        />
+                        >
+                          {t("pagination.next")}
+                        </PaginationNext>
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>

@@ -20,7 +20,7 @@ export class GameCleanupJob {
       await this.em.fork().transactional(async (em) => {
         const runs = await em.find(
           GameRun,
-          { isCompleted: false, completedAt: null }
+          { isCompleted: false, $or: [{ completedAt: null }, { totalTimeSec: null }] }
         );
 
         let updatedCount = 0;

@@ -12,6 +12,7 @@ interface LeaderboardRunModalProps {
 const medals = ["🥇", "🥈", "🥉"];
 
 function formatTime(totalSeconds: number): string {
+  if (!totalSeconds) return "—";
   const hrs = Math.floor(totalSeconds / 3600);
   const mins = Math.floor((totalSeconds % 3600) / 60);
   const secs = totalSeconds % 60;
@@ -26,13 +27,16 @@ function formatTime(totalSeconds: number): string {
 function formatDate(dateInput: string | Date, locale: string): string {
   const date = new Date(dateInput);
   if (isNaN(date.getTime())) return "";
-  return date.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  const time = date.toLocaleTimeString(undefined, {
+    hour: "numeric",
     minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
   });
+  return `${mm}/${dd}/${yyyy}, ${time}`;
 }
 
 export const LeaderboardRunModal: React.FC<LeaderboardRunModalProps> = ({

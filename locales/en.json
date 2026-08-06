@@ -1168,7 +1168,7 @@
       "subtitle": "Meet the creators, builders, testers, and storytellers behind Borrowed Shapes."
     },
     "stats": {
-      "members": "6 Members",
+      "members": "5 Members",
       "adventure": "1 Co-op Adventure",
       "scrum": "Scrum Team",
       "platform": "Game + Web Platform"
@@ -1181,24 +1181,21 @@
         "tl": "Technical Leader",
         "doc": "Document Lead",
         "dl": "Diagram Lead",
-        "qa": "Quality Assurance",
-        "des": "Designer Lead"
+        "qa": "Quality Assurance"
       },
       "specialties": {
         "sm": "Sprint Guardian",
         "tl": "System Architect",
         "doc": "Documentation Keeper",
         "dl": "Diagram Crafter",
-        "qa": "Bug Hunter",
-        "des": "Visual Shapeshifter"
+        "qa": "Bug Hunter"
       },
       "descriptions": {
         "sm": "Manage Scrum activities, coordinate Sprint planning and reviews, monitor project progress, manage Product Backlog priorities, communicate with stakeholders, and ensure the project follows Scrum practices throughout development.",
         "tl": "Design technical architecture for web systems and gameplay mechanics, manage database and networking structures, review technical implementation, and maintain overall system stability and code quality.",
         "doc": "Prepare, maintain, organize, and standardize project reports, technical documentation, formatting guidelines, and document version control.",
         "dl": "Design and maintain technical diagrams including class diagrams, sequence diagrams, activity diagrams, use case diagrams, workflows, database relationship diagrams, and system architecture visualizations to support analysis and development activities.",
-        "qa": "Execute testing activities, validate Sprint deliverables, track defects, verify gameplay and system quality, and ensure completed features satisfy the Definition of Done (DoD).",
-        "des": "Design UI/UX layouts, gameplay visuals, interaction flows, visual assets, and maintain visual consistency across game and web systems."
+        "qa": "Execute testing activities, validate Sprint deliverables, track defects, verify gameplay and system quality, and ensure completed features satisfy the Definition of Done (DoD)."
       }
     },
     "closing": {
@@ -1319,6 +1316,7 @@
     "filter_all_status": "All Status",
     "filter_completed": "Completed",
     "filter_in_progress": "In Progress",
+    "filter_abandoned": "Abandoned",
     "filter_all_visibility": "Public & Private",
     "filter_public": "Public",
     "filter_private": "Private",
@@ -1393,13 +1391,25 @@
     "history_col_total_time": "Total Time",
     "history_col_played_date": "Played Date",
     "close": "Close",
-    "session_status_in_progress": "In Progress",
     "session_status_finished": "Finished",
+    "session_status_completed": "Finished",
+    "session_status_in_progress": "In Progress",
     "session_status_abandoned": "Abandoned",
     "session_result_win": "Win",
     "session_result_lose": "Lose",
+    "session_result_loss": "Lose",
     "session_result_abandoned": "Abandoned",
-    "session_result_none": "—"
+    "session_result_none": "\u2014",
+    "level_names": {
+      "Lobby": "Lobby",
+      "Kitchen": "Kitchen",
+      "Bedroom": "Bedroom",
+      "Bathroom": "Bathroom",
+      "Basement": "Basement",
+      "Living Room": "Living Room"
+    },
+    "level_label": "Level",
+    "lobby_label": "Lobby"
   },
   "legal": {
     "sidebar": {
@@ -1410,7 +1420,38 @@
     },
     "common": {
       "lastUpdated": "Last Updated",
-      "contactPage": "Contact Support"
+      "contactPage": "Contact Support",
+      "policies": "Policies",
+      "comingSoon": "Coming Soon"
+    },
+    "contact": {
+      "badge": "Contact & Support",
+      "title": "Contact & Support Center",
+      "description": "We are always ready to listen to your feedback, answer inquiries, and assist players throughout their gaming experience.",
+      "intro": "For any account inquiries, technical support, terms of service questions, or general feedback for Borrowed Shapes, please contact us directly via email below.",
+      "methods": {
+        "facebook": {
+          "title": "Official Facebook Page",
+          "description": "Follow the official Borrowed Shapes fanpage for the latest news, announcements, events, and game updates."
+        },
+        "email": {
+          "title": "Email Support",
+          "description": "Send an email directly to the development team at borrowedshapes09@gmail.com for prompt assistance and inquiries."
+        },
+        "community": {
+          "title": "Player Community",
+          "description": "Join our community group to connect with fellow players, find teammates, share gameplay tips, and give feedback."
+        },
+        "project": {
+          "title": "Project Information",
+          "description": "Learn more about the SEP490 - Borrowed Shapes capstone project, development roadmap, and related technical resources."
+        }
+      },
+      "openGmail": "Open in Gmail",
+      "copyEmail": "Copy Email",
+      "copied": "Copied!",
+      "noteTitle": "Important Note",
+      "note": "The Borrowed Shapes team strives to respond to inquiries within 24 to 48 business hours. For urgent issues, account security, or legal inquiries, please contact us directly at borrowedshapes09@gmail.com."
     },
     "terms": {
       "title": "Terms of Service",

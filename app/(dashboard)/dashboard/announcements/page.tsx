@@ -637,7 +637,7 @@ export default function AnnouncementsPage() {
                             {/* Type */}
                             <TableCell>
                               <Badge variant="outline" className={TYPE_BADGE_STYLES[a.type] || BADGE_BASE_CLASS}>
-                                {a.type}
+                                {t(`announcements.filter_type_${a.type.toLowerCase()}`)}
                               </Badge>
                             </TableCell>
                             {/* Status */}
@@ -659,11 +659,14 @@ export default function AnnouncementsPage() {
                             {/* Published At */}
                             <TableCell className="text-muted-foreground">
                               {a.publishedAt
-                                ? new Date(a.publishedAt).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })
+                                ? (() => {
+                                    const d = new Date(a.publishedAt);
+                                    if (isNaN(d.getTime())) return "—";
+                                    const mm = String(d.getMonth() + 1).padStart(2, "0");
+                                    const dd = String(d.getDate()).padStart(2, "0");
+                                    const yyyy = d.getFullYear();
+                                    return `${mm}/${dd}/${yyyy}`;
+                                  })()
                                 : "—"}
                             </TableCell>
                             {/* Actions */}
@@ -737,7 +740,9 @@ export default function AnnouncementsPage() {
                           if (currentPage > 1) setCurrentPage(currentPage - 1);
                         }}
                         className={currentPage <= 1 ? "pointer-events-none opacity-40" : ""}
-                      />
+                      >
+                        {t("pagination.previous")}
+                      </PaginationPrevious>
                     </PaginationItem>
                     {renderPaginationItems()}
                     <PaginationItem>
@@ -748,7 +753,9 @@ export default function AnnouncementsPage() {
                           if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                         }}
                         className={currentPage >= totalPages ? "pointer-events-none opacity-40" : ""}
-                      />
+                      >
+                        {t("pagination.next")}
+                      </PaginationNext>
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>

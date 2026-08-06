@@ -500,7 +500,9 @@ export default function AchievementViewDetailPage() {
             </h3>
             <div className="mt-3 flex justify-center">
               <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
-                {achievement.type}
+                {achievement.type === "PERMANENT"
+                  ? t("achievements.permanent")
+                  : t("achievements.seasonal")}
               </Badge>
             </div>
 
@@ -575,7 +577,9 @@ export default function AchievementViewDetailPage() {
                   {t("achievements.type_label")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-200">
-                  {achievement.type}
+                  {achievement.type === "PERMANENT"
+                    ? t("achievements.permanent")
+                    : t("achievements.seasonal")}
                 </div>
               </div>
               <div>
@@ -668,7 +672,14 @@ export default function AchievementViewDetailPage() {
               <div className="flex items-center gap-3">
                 {achievement.badgeImageUrl && (
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
-                    <img src={achievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={achievement.badgeImageUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+                      }}
+                    />
                   </div>
                 )}
                 <div>

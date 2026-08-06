@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ subsets: ["latin", "vietnamese"], variable: "--font-sans" });
 const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" });
 const rajdhani = Rajdhani({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-rajdhani" });
 

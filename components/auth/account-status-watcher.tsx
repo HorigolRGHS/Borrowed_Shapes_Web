@@ -120,7 +120,7 @@ export function AccountStatusWatcher() {
                   <p className="text-sm font-mono text-foreground">
                     {banInfo?.isPermanent || !banInfo?.banExpiresAt
                       ? t("auth.status.permanent") || "Permanent"
-                      : new Date(banInfo?.banExpiresAt).toLocaleString()}
+                      : new Date(banInfo?.banExpiresAt).toLocaleDateString()}
                   </p>
                 </div>
               </>

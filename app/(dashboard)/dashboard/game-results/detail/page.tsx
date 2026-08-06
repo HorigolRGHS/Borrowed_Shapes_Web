@@ -119,9 +119,13 @@ interface PlayerHistoryData {
 
 function formatTime(totalSec?: number): string {
   if (!totalSec) return "—";
-  const minutes = Math.floor(totalSec / 60);
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
-  return `${minutes}m ${seconds}s`;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 
 function formatDateTime(dateStr?: string): string {
@@ -131,18 +135,18 @@ function formatDateTime(dateStr?: string): string {
     month: "numeric",
     day: "numeric",
     hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: true,
   });
 }
 
 function formatTimeOnly(dateStr?: string): string {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString(undefined, {
+  return new Date(dateStr).toLocaleTimeString(undefined, {
     hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: true,
   });
 }
@@ -503,19 +507,21 @@ export default function GameResultDetailPage() {
                       className="border-border hover:bg-muted/50"
                     >
                       <TableCell className="font-medium text-foreground">
-                        {session.levelName}
+                        {(() => {
+                          const key = `gameResults.level_names.${session.levelName}`;
+                          const translated = t(key);
+                          return translated !== key ? translated : session.levelName;
+                        })()}
                       </TableCell>
                       <TableCell>
-                        <SessionStatusBadge status={session.status} />
+                        <SessionStatusBadge status={session.status} t={t} />
                       </TableCell>
                       <TableCell>
-                        <SessionResultBadge result={session.result} />
+                        <SessionResultBadge result={session.result} t={t} />
                       </TableCell>
                       <TableCell>
                         <span className="text-amber-400 font-bold font-mono">
-                          {session.completionTimeSec
-                            ? `${session.completionTimeSec}s`
-                            : "—"}
+                          {formatTime(session.completionTimeSec)}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -805,11 +811,14 @@ function StatBox({
   );
 }
 
-function SessionStatusBadge({ status }: { status: string }) {
-  const { t } = useI18n();
+// t passed as prop so these components work both inside and outside a useI18n context.
+// Color logic from HEAD; prop signature + dynamic key lookup from origin/dev.
+function SessionStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
   const normalized = status?.toUpperCase();
   const isFinished = normalized === "FINISHED" || normalized === "COMPLETED";
   const isAbandoned = normalized === "ABANDONED";
+  const label =
+    t(`gameResults.session_status_${status.toLowerCase()}`) || status;
   return (
     <Badge
       variant="outline"
@@ -821,22 +830,19 @@ function SessionStatusBadge({ status }: { status: string }) {
             : "border-amber-500/70 bg-amber-500/10 text-amber-300"
       }`}
     >
-      {isFinished
-        ? t("gameResults.session_status_finished")
-        : isAbandoned
-          ? t("gameResults.session_status_abandoned")
-          : t("gameResults.session_status_in_progress")}
+      {label}
     </Badge>
   );
 }
 
-function SessionResultBadge({ result }: { result?: string }) {
-  const { t } = useI18n();
+function SessionResultBadge({ result, t }: { result?: string; t: (key: string) => string }) {
   if (!result) return <span className="text-muted-foreground">—</span>;
   const normalized = result?.toUpperCase();
   const isWin = normalized === "WIN";
   const isLose = normalized === "LOSE";
   const isAbandoned = normalized === "ABANDONED";
+  const label =
+    t(`gameResults.session_result_${result.toLowerCase()}`) || result;
   return (
     <Badge
       variant="outline"
@@ -850,13 +856,7 @@ function SessionResultBadge({ result }: { result?: string }) {
               : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
       }`}
     >
-      {isWin
-        ? t("gameResults.session_result_win")
-        : isLose
-          ? t("gameResults.session_result_lose")
-          : isAbandoned
-            ? t("gameResults.session_result_abandoned")
-            : t("gameResults.session_result_none")}
+      {label}
     </Badge>
   );
 }

@@ -462,7 +462,8 @@ export default function AccountManagementPage() {
     try {
       let expires = null;
       if (banForm.banExpiresAt) {
-        const banDate = new Date(banForm.banExpiresAt);
+        const [year, month, day] = banForm.banExpiresAt.split("-").map(Number);
+        const banDate = new Date(year, month - 1, day, 23, 59, 59, 999);
         if (banDate <= new Date()) {
           toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
           return;
@@ -684,7 +685,7 @@ export default function AccountManagementPage() {
                   </div>
                   <div className="flex justify-between border-b border-red-500/20 pb-2">
                     <span className="text-muted-foreground">{t("admin.account.detail.expiration_date") || "Expiration Date"}:</span>
-                    <span className="text-foreground">{selectedUser.banExpiresAt ? new Date(selectedUser.banExpiresAt).toLocaleString() : t("admin.account.detail.permanent") || "Permanent"}</span>
+                    <span className="text-foreground">{selectedUser.banExpiresAt ? new Date(selectedUser.banExpiresAt).toLocaleDateString() : t("admin.account.detail.permanent") || "Permanent"}</span>
                   </div>
                   <div className="pt-2">
                     <span className="text-muted-foreground block mb-1">{t("admin.account.detail.ban_reason") || "Ban Reason"}:</span>
@@ -973,7 +974,12 @@ export default function AccountManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.ban_expiration")}</Label>
-                <Input type="datetime-local" value={banForm.banExpiresAt} onChange={e => setBanForm({...banForm, banExpiresAt: e.target.value})} />
+                <Input 
+                  type="date" 
+                  min={new Date().toISOString().split("T")[0]} 
+                  value={banForm.banExpiresAt} 
+                  onChange={e => setBanForm({...banForm, banExpiresAt: e.target.value})} 
+                />
               </div>
             </div>
             <DialogFooter>

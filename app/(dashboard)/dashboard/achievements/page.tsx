@@ -704,9 +704,12 @@ export default function AchievementsPage() {
                             <div className="flex items-center gap-3">
                               <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
                                 <img
-                                  src={achievement.badgeImageUrl}
-                                  alt={achievement.name}
+                                  src={achievement.badgeImageUrl || "https://placehold.co/100x100?text=No+Image"}
+                                  alt=""
                                   className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+                                  }}
                                 />
                               </div>
                               <span 
@@ -731,7 +734,9 @@ export default function AchievementsPage() {
                           <TableCell>
                             <div className="flex flex-col items-start gap-1">
                               <Badge variant="outline" className={getTypeBadgeClass(achievement.type)}>
-                                {achievement.type}
+                                {achievement.type === "PERMANENT"
+                                  ? t("achievements.permanent")
+                                  : t("achievements.seasonal")}
                               </Badge>
                               {achievement.type === "SEASONAL" && achievement.seasonMonth && (
                                 <span className="text-xs text-muted-foreground w-28 text-center">
@@ -814,7 +819,9 @@ export default function AchievementsPage() {
                           if (currentPage > 1) setCurrentPage(currentPage - 1);
                         }}
                         className={currentPage <= 1 ? "pointer-events-none opacity-40" : ""}
-                      />
+                      >
+                        {t("pagination.previous")}
+                      </PaginationPrevious>
                     </PaginationItem>
 
                     {renderPaginationItems()}
@@ -827,7 +834,9 @@ export default function AchievementsPage() {
                           if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                         }}
                         className={currentPage >= totalPages ? "pointer-events-none opacity-40" : ""}
-                      />
+                      >
+                        {t("pagination.next")}
+                      </PaginationNext>
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
@@ -1134,7 +1143,14 @@ export default function AchievementsPage() {
               {selectedAchievement?.badgeImageUrl && (
                 <div className="relative h-12 w-12 shrink-0">
                   <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/20 to-orange-500/10 shadow-lg shadow-amber-500/10">
-                    <img src={selectedAchievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={selectedAchievement.badgeImageUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+                      }}
+                    />
                   </div>
                   <div className="absolute -inset-[1px] rounded-xl ring-1 ring-amber-400/30 pointer-events-none" />
                 </div>

@@ -98,11 +98,12 @@ function getTypeConfig(type: string) {
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
   } catch {
     return "";
   }
@@ -151,7 +152,10 @@ export function AnnouncementsSection() {
   };
 
   const openAnnouncement = async (slug: string) => {
-    setDetailLoading(true);
+    const existing = announcements.find((a) => a.slug === slug || a.slugVi === slug);
+    if (existing) {
+      setSelectedAnnouncement(existing);
+    }
     try {
       const response = await axios.get(`/api/announcements/detail/${slug}`);
       if (response.data?.success) {
@@ -159,8 +163,6 @@ export function AnnouncementsSection() {
       }
     } catch (error) {
       console.error("Failed to fetch announcement detail:", error);
-    } finally {
-      setDetailLoading(false);
     }
   };
 
@@ -424,11 +426,11 @@ export function AnnouncementsSection() {
           />
           
           {/* Modal Container */}
-          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl bg-transparent shadow-2xl p-0 animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col rounded-2xl bg-transparent shadow-2xl p-0 animate-in fade-in zoom-in-95 duration-200 z-10">
             {/* Close Button */}
             <button
               onClick={closeAnnouncement}
-              className="absolute top-4 right-4 p-2 rounded-full bg-background/50 dark:bg-white/5 hover:bg-card dark:hover:bg-white/10 text-foreground/80 dark:text-white hover:text-foreground transition-all z-50 cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-full bg-background/80 dark:bg-[#07070f]/80 hover:bg-card dark:hover:bg-white/10 text-foreground/80 dark:text-white hover:text-foreground backdrop-blur-md border border-border/40 dark:border-white/10 shadow-md transition-all z-50 cursor-pointer"
               aria-label="Close dialog"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -436,7 +438,9 @@ export function AnnouncementsSection() {
               </svg>
             </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-background dark:bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
+            {/* Scrollable Content Container */}
+            <div className="w-full max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-background dark:bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
               {/* Main content */}
               <article className="lg:col-span-2">
                 {/* Header gradient area */}
@@ -597,18 +601,10 @@ export function AnnouncementsSection() {
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* Loading Modal overlay */}
-      {detailLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" />
-          <div className="relative p-6 rounded-2xl bg-card dark:bg-[#0f0f1a] border border-border dark:border-white/10 flex flex-col items-center gap-3 shadow-2xl">
-            <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs font-semibold text-muted-foreground">Loading...</span>
-          </div>
-        </div>
-      )}
+
     </section>
   );
 }

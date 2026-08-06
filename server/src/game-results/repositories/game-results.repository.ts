@@ -44,9 +44,15 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const conditions: string[] = [];
     const params: any[] = [];
 
-    if (query.isCompleted !== undefined) {
+    if (query.isAbandoned) {
+      conditions.push('gr."isCompleted" = false');
+      conditions.push('gr."completedAt" IS NOT NULL');
+    } else if (query.isCompleted !== undefined) {
       conditions.push('gr."isCompleted" = ?');
       params.push(query.isCompleted);
+      if (query.isCompleted === false) {
+        conditions.push('gr."completedAt" IS NULL');
+      }
     }
 
     if (query.gameProfileId) {

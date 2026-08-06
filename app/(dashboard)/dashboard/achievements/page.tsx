@@ -816,7 +816,9 @@ export default function AchievementsPage() {
                           if (currentPage > 1) setCurrentPage(currentPage - 1);
                         }}
                         className={currentPage <= 1 ? "pointer-events-none opacity-40" : ""}
-                      />
+                      >
+                        {t("pagination.previous")}
+                      </PaginationPrevious>
                     </PaginationItem>
 
                     {renderPaginationItems()}
@@ -829,7 +831,9 @@ export default function AchievementsPage() {
                           if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                         }}
                         className={currentPage >= totalPages ? "pointer-events-none opacity-40" : ""}
-                      />
+                      >
+                        {t("pagination.next")}
+                      </PaginationNext>
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>

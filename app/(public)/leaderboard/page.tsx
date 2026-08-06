@@ -9,6 +9,16 @@ import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import { LeaderboardRunModal } from "@/components/leaderboard/leaderboard-run-modal";
 import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
+function formatSeasonMonth(seasonMonth: string, locale: string): string {
+  const [year, month] = seasonMonth.split('-');
+  const monthNum = parseInt(month, 10);
+  if (locale === 'vi') {
+    return `Tháng ${monthNum}/${year}`;
+  }
+  const date = new Date(parseInt(year, 10), monthNum - 1, 1);
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+}
+
 export default function LeaderboardPage() {
   const { t, locale } = useI18n();
   const [activeTab, setActiveTab] = useState<"all-time" | "seasonal">("all-time");
@@ -188,14 +198,14 @@ export default function LeaderboardPage() {
                 >
                   {(availableSeasons.length > 0
                     ? availableSeasons
-                    : [{ seasonMonth: currentMonthStr, label: `Tháng ${parseInt(currentMonthStr.split('-')[1], 10)}/${currentMonthStr.split('-')[0]}` }]
+                    : [{ seasonMonth: currentMonthStr }]
                   ).map((s) => (
                     <option
                       key={s.seasonMonth}
                       value={s.seasonMonth}
                       className="bg-background text-foreground dark:bg-[#0f0f1a] dark:text-white"
                     >
-                      {s.label} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
+                      {formatSeasonMonth(s.seasonMonth, locale)} {s.seasonMonth === currentMonthStr ? `(${t("leaderboard.current_season") || "Hiện tại"})` : ""}
                     </option>
                   ))}
                 </select>

@@ -21,6 +21,7 @@ const rankTextColors = [
 ];
 
 function formatTime(totalSeconds: number): string {
+  if (!totalSeconds) return "—";
   const hrs = Math.floor(totalSeconds / 3600);
   const mins = Math.floor((totalSeconds % 3600) / 60);
   const secs = totalSeconds % 60;

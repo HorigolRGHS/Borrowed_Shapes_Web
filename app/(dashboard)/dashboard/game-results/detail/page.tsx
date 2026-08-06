@@ -119,9 +119,13 @@ interface PlayerHistoryData {
 
 function formatTime(totalSec?: number): string {
   if (!totalSec) return "—";
-  const minutes = Math.floor(totalSec / 60);
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
   const seconds = totalSec % 60;
-  return `${minutes}m ${seconds}s`;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 
 function formatDateTime(dateStr?: string): string {
@@ -131,18 +135,18 @@ function formatDateTime(dateStr?: string): string {
     month: "numeric",
     day: "numeric",
     hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: true,
   });
 }
 
 function formatTimeOnly(dateStr?: string): string {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString(undefined, {
+  return new Date(dateStr).toLocaleTimeString(undefined, {
     hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: true,
   });
 }
@@ -503,19 +507,21 @@ export default function GameResultDetailPage() {
                       className="border-border hover:bg-muted/50"
                     >
                       <TableCell className="font-medium text-foreground">
-                        {session.levelName}
+                        {(() => {
+                          const key = `gameResults.level_names.${session.levelName}`;
+                          const translated = t(key);
+                          return translated !== key ? translated : session.levelName;
+                        })()}
                       </TableCell>
                       <TableCell>
-                        <SessionStatusBadge status={session.status} />
+                        <SessionStatusBadge status={session.status} t={t} />
                       </TableCell>
                       <TableCell>
-                        <SessionResultBadge result={session.result} />
+                        <SessionResultBadge result={session.result} t={t} />
                       </TableCell>
                       <TableCell>
                         <span className="text-amber-400 font-bold font-mono">
-                          {session.completionTimeSec
-                            ? `${session.completionTimeSec}s`
-                            : "—"}
+                          {formatTime(session.completionTimeSec)}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -805,8 +811,9 @@ function StatBox({
   );
 }
 
-function SessionStatusBadge({ status }: { status: string }) {
+function SessionStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
   const isFinished = status === "FINISHED" || status === "COMPLETED";
+  const label = t(`gameResults.session_status_${status.toLowerCase()}`) || status;
   return (
     <Badge
       variant="outline"
@@ -816,14 +823,15 @@ function SessionStatusBadge({ status }: { status: string }) {
           : "border-amber-500/70 bg-amber-500/10 text-amber-300"
       }`}
     >
-      {status}
+      {label}
     </Badge>
   );
 }
 
-function SessionResultBadge({ result }: { result?: string }) {
+function SessionResultBadge({ result, t }: { result?: string; t: (key: string) => string }) {
   if (!result) return <span className="text-muted-foreground">—</span>;
   const isWin = result === "WIN";
+  const label = t(`gameResults.session_result_${result.toLowerCase()}`) || result;
   return (
     <Badge
       variant="outline"
@@ -833,7 +841,7 @@ function SessionResultBadge({ result }: { result?: string }) {
           : "border-rose-500/70 bg-rose-500/10 text-rose-300"
       }`}
     >
-      {result}
+      {label}
     </Badge>
   );
 }

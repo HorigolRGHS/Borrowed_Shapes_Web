@@ -1316,6 +1316,7 @@
     "filter_all_status": "All Status",
     "filter_completed": "Completed",
     "filter_in_progress": "In Progress",
+    "filter_abandoned": "Abandoned",
     "filter_all_visibility": "Public & Private",
     "filter_public": "Public",
     "filter_private": "Private",
@@ -1389,7 +1390,24 @@
     "history_col_role": "Role",
     "history_col_total_time": "Total Time",
     "history_col_played_date": "Played Date",
-    "close": "Close"
+    "close": "Close",
+    "session_status_finished": "Finished",
+    "session_status_completed": "Finished",
+    "session_status_in_progress": "In Progress",
+    "session_status_abandoned": "Abandoned",
+    "session_result_win": "Win",
+    "session_result_abandoned": "Abandoned",
+    "session_result_loss": "Loss",
+    "level_names": {
+      "Lobby": "Lobby",
+      "Kitchen": "Kitchen",
+      "Bedroom": "Bedroom",
+      "Bathroom": "Bathroom",
+      "Basement": "Basement",
+      "Living Room": "Living Room"
+    },
+    "level_label": "Level",
+    "lobby_label": "Lobby"
   },
   "legal": {
     "sidebar": {

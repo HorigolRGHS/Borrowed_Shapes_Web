@@ -85,7 +85,16 @@ export class GameCleanupJob {
           }
 
           if (shouldEnd && derivedCompletedAt) {
+            // Calculate total time for all non-lobby sessions that finished/abandoned
+            const totalTimeSec = sortedSessions
+              .filter((s) => {
+                const lvlId = typeof s.levelId === 'string' ? s.levelId : s.levelId?.id;
+                return lvlId !== 'lobby';
+              })
+              .reduce((sum, s) => sum + (s.completionTimeSec ?? 0), 0);
+
             run.completedAt = derivedCompletedAt;
+            run.totalTimeSec = totalTimeSec;
             em.persist(run);
             updatedCount++;
           }

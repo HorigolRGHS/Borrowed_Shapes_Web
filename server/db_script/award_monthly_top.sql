@@ -68,3 +68,7 @@ BEGIN
   RETURN QUERY SELECT rnk, team_id, run_id, member_set FROM _monthly_rank ORDER BY rnk;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Schedule the job to run at 00:05 on the 1st of every month using pg_cron
+-- SELECT cron.unschedule('award_monthly_top_job');
+SELECT cron.schedule('award_monthly_top_job', '5 0 1 * *', 'SELECT game.award_monthly_top();');

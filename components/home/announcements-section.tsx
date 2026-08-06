@@ -98,11 +98,12 @@ function getTypeConfig(type: string) {
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
   } catch {
     return "";
   }
@@ -151,7 +152,10 @@ export function AnnouncementsSection() {
   };
 
   const openAnnouncement = async (slug: string) => {
-    setDetailLoading(true);
+    const existing = announcements.find((a) => a.slug === slug || a.slugVi === slug);
+    if (existing) {
+      setSelectedAnnouncement(existing);
+    }
     try {
       const response = await axios.get(`/api/announcements/detail/${slug}`);
       if (response.data?.success) {
@@ -159,8 +163,6 @@ export function AnnouncementsSection() {
       }
     } catch (error) {
       console.error("Failed to fetch announcement detail:", error);
-    } finally {
-      setDetailLoading(false);
     }
   };
 
@@ -599,16 +601,7 @@ export function AnnouncementsSection() {
         </div>
       )}
 
-      {/* Loading Modal overlay */}
-      {detailLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" />
-          <div className="relative p-6 rounded-2xl bg-card dark:bg-[#0f0f1a] border border-border dark:border-white/10 flex flex-col items-center gap-3 shadow-2xl">
-            <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs font-semibold text-muted-foreground">Loading...</span>
-          </div>
-        </div>
-      )}
+
     </section>
   );
 }

@@ -1397,7 +1397,7 @@
     "session_status_abandoned": "Abandoned",
     "session_result_win": "Win",
     "session_result_abandoned": "Abandoned",
-    "session_result_loss": "Loss",
+    "session_result_lose": "Lose",
     "level_names": {
       "Lobby": "Lobby",
       "Kitchen": "Kitchen",

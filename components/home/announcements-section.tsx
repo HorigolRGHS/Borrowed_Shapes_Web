@@ -426,11 +426,11 @@ export function AnnouncementsSection() {
           />
           
           {/* Modal Container */}
-          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl bg-transparent shadow-2xl p-0 animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col rounded-2xl bg-transparent shadow-2xl p-0 animate-in fade-in zoom-in-95 duration-200 z-10">
             {/* Close Button */}
             <button
               onClick={closeAnnouncement}
-              className="absolute top-4 right-4 p-2 rounded-full bg-background/50 dark:bg-white/5 hover:bg-card dark:hover:bg-white/10 text-foreground/80 dark:text-white hover:text-foreground transition-all z-50 cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-full bg-background/80 dark:bg-[#07070f]/80 hover:bg-card dark:hover:bg-white/10 text-foreground/80 dark:text-white hover:text-foreground backdrop-blur-md border border-border/40 dark:border-white/10 shadow-md transition-all z-50 cursor-pointer"
               aria-label="Close dialog"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -438,7 +438,9 @@ export function AnnouncementsSection() {
               </svg>
             </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-background dark:bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
+            {/* Scrollable Content Container */}
+            <div className="w-full max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 p-4 sm:p-6 bg-background dark:bg-[#07070f] rounded-2xl border border-border dark:border-amber-500/20 text-left">
               {/* Main content */}
               <article className="lg:col-span-2">
                 {/* Header gradient area */}
@@ -599,7 +601,8 @@ export function AnnouncementsSection() {
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
 
     </section>

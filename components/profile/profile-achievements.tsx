@@ -189,8 +189,8 @@ function AchievementCard({
         }
       `}>
         <img
-          src={achievement.badgeImageUrl}
-          alt={achievement.name}
+          src={achievement.badgeImageUrl || "https://placehold.co/100x100?text=No+Image"}
+          alt=""
           className={`
             h-16 w-16 object-contain transition-all duration-300
             ${!achievement.owned
@@ -200,6 +200,9 @@ function AchievementCard({
                 : "group-hover:scale-110"
             }
           `}
+          onError={(e) => {
+            e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+          }}
         />
         {/* Lock overlay for unowned */}
         {!achievement.owned && (

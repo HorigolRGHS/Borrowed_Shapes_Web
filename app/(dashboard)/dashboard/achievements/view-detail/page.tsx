@@ -672,7 +672,14 @@ export default function AchievementViewDetailPage() {
               <div className="flex items-center gap-3">
                 {achievement.badgeImageUrl && (
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
-                    <img src={achievement.badgeImageUrl} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={achievement.badgeImageUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+                      }}
+                    />
                   </div>
                 )}
                 <div>

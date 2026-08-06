@@ -348,10 +348,21 @@ export class GameService {
         0,
       );
 
-      // Explicitly set isCompleted based on whether the game was won
-      run.isCompleted = (dto.isWin !== false);
+      // isCompleted = true only when the caller explicitly passes isWin: true
+      run.isCompleted = dto.isWin === true;
       run.completedAt = new Date();
       run.totalTimeSec = totalTimeSec;
+
+      // Close the lobby session so it doesn't remain IN_PROGRESS indefinitely.
+      // Use nativeUpdate (raw SQL WHERE clause) to avoid MikroORM ManyToOne
+      // reference coercion: levelId is a FK column whose PK value is the string 'lobby'.
+      await em.getConnection().execute(
+        `UPDATE game."GameSession"
+         SET status = 'FINISHED', "endedAt" = NOW(),
+             "completionTimeSec" = GREATEST(0, EXTRACT(EPOCH FROM (NOW() - "startedAt"))::int)
+         WHERE "runId" = ? AND "levelId" = 'lobby' AND status = 'IN_PROGRESS'`,
+        [run.id],
+      );
 
       await this.gameSessionRepo.txFlush(em);
     });

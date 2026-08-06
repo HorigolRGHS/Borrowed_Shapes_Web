@@ -6,6 +6,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import type { Schema } from 'hast-util-sanitize';
+import { cn } from '@/lib/utils';
 
 const sanitizeSchema: Schema = {
   ...defaultSchema,
@@ -44,6 +45,12 @@ const sanitizeSchema: Schema = {
 };
 
 const components: Components = {
+  h1: ({ node, className, ...props }) => <h1 className={cn("scroll-mt-24", className)} {...props} />,
+  h2: ({ node, className, ...props }) => <h2 className={cn("scroll-mt-24", className)} {...props} />,
+  h3: ({ node, className, ...props }) => <h3 className={cn("scroll-mt-24", className)} {...props} />,
+  h4: ({ node, className, ...props }) => <h4 className={cn("scroll-mt-24", className)} {...props} />,
+  h5: ({ node, className, ...props }) => <h5 className={cn("scroll-mt-24", className)} {...props} />,
+  h6: ({ node, className, ...props }) => <h6 className={cn("scroll-mt-24", className)} {...props} />,
   a({ node, ...props }) {
     const href = props.href ?? '';
     const isExternal = /^https?:\/\//i.test(href);
@@ -79,7 +86,7 @@ export function WikiContentRenderer({ markdown }: Props) {
     <article className="prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-img:rounded-lg">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeSlug, [rehypeSanitize, sanitizeSchema]]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeSlug]}
         components={components}
       >
         {markdown}

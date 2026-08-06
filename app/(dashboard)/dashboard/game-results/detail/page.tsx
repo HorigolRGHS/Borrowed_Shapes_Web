@@ -806,34 +806,57 @@ function StatBox({
 }
 
 function SessionStatusBadge({ status }: { status: string }) {
-  const isFinished = status === "FINISHED" || status === "COMPLETED";
+  const { t } = useI18n();
+  const normalized = status?.toUpperCase();
+  const isFinished = normalized === "FINISHED" || normalized === "COMPLETED";
+  const isAbandoned = normalized === "ABANDONED";
   return (
     <Badge
       variant="outline"
       className={`${BADGE_BASE_CLASS} ${
         isFinished
           ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-          : "border-amber-500/70 bg-amber-500/10 text-amber-300"
+          : isAbandoned
+            ? "border-rose-500/70 bg-rose-500/10 text-rose-300"
+            : "border-amber-500/70 bg-amber-500/10 text-amber-300"
       }`}
     >
-      {status}
+      {isFinished
+        ? t("gameResults.session_status_finished")
+        : isAbandoned
+          ? t("gameResults.session_status_abandoned")
+          : t("gameResults.session_status_in_progress")}
     </Badge>
   );
 }
 
 function SessionResultBadge({ result }: { result?: string }) {
+  const { t } = useI18n();
   if (!result) return <span className="text-muted-foreground">—</span>;
-  const isWin = result === "WIN";
+  const normalized = result?.toUpperCase();
+  const isWin = normalized === "WIN";
+  const isLose = normalized === "LOSE";
+  const isAbandoned = normalized === "ABANDONED";
   return (
     <Badge
       variant="outline"
       className={`${BADGE_BASE_CLASS} ${
         isWin
           ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-          : "border-rose-500/70 bg-rose-500/10 text-rose-300"
+          : isLose
+            ? "border-rose-500/70 bg-rose-500/10 text-rose-300"
+            : isAbandoned
+              ? "border-orange-500/70 bg-orange-500/10 text-orange-300"
+              : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
       }`}
     >
-      {result}
+      {isWin
+        ? t("gameResults.session_result_win")
+        : isLose
+          ? t("gameResults.session_result_lose")
+          : isAbandoned
+            ? t("gameResults.session_result_abandoned")
+            : t("gameResults.session_result_none")}
     </Badge>
   );
 }

@@ -1388,7 +1388,14 @@
     "history_col_role": "Vai trò",
     "history_col_total_time": "Tổng thời gian",
     "history_col_played_date": "Ngày chơi",
-    "close": "Đóng"
+    "close": "Đóng",
+    "session_status_in_progress": "Đang chơi",
+    "session_status_finished": "Đã kết thúc",
+    "session_status_abandoned": "Bỏ cuộc",
+    "session_result_win": "Thắng",
+    "session_result_lose": "Thua",
+    "session_result_abandoned": "Bỏ cuộc",
+    "session_result_none": "—"
   },
   "legal": {
     "sidebar": {

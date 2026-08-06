@@ -1392,7 +1392,14 @@
     "history_col_role": "Role",
     "history_col_total_time": "Total Time",
     "history_col_played_date": "Played Date",
-    "close": "Close"
+    "close": "Close",
+    "session_status_in_progress": "In Progress",
+    "session_status_finished": "Finished",
+    "session_status_abandoned": "Abandoned",
+    "session_result_win": "Win",
+    "session_result_lose": "Lose",
+    "session_result_abandoned": "Abandoned",
+    "session_result_none": "—"
   },
   "legal": {
     "sidebar": {

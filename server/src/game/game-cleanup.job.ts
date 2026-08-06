@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { GameRun } from '../entities/GameRun';
+import { GameSession } from '../entities/GameSession';
 import { GameSessionStatus } from '../entities/GameSessionStatus';
 import { SessionResult } from '../entities/SessionResult';
 
@@ -19,8 +20,7 @@ export class GameCleanupJob {
       await this.em.fork().transactional(async (em) => {
         const runs = await em.find(
           GameRun,
-          { isCompleted: false, completedAt: null },
-          { populate: ['sessions'] },
+          { isCompleted: false, completedAt: null }
         );
 
         let updatedCount = 0;
@@ -29,9 +29,11 @@ export class GameCleanupJob {
         const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
         for (const run of runs) {
-          // Sort sessions by startedAt ascending — last entry is the most recent map
-          const sortedSessions = [...run.sessions].sort(
-            (a, b) => a.startedAt.getTime() - b.startedAt.getTime(),
+          // Manually find sessions for this run, ordered by startedAt
+          const sortedSessions = await em.find(
+            GameSession,
+            { runId: run.id },
+            { orderBy: { startedAt: 'ASC' } }
           );
 
           const lastSession = sortedSessions[sortedSessions.length - 1];

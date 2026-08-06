@@ -657,6 +657,7 @@
       "col_time": "THỜI GIAN",
       "status_completed": "Hoàn thành",
       "status_incomplete": "Chưa hoàn thành",
+      "status_abandoned": "Bỏ cuộc",
       "view_details": "Xem chi tiết",
       "no_runs": "Không tìm thấy lịch sử chơi.",
       "loading": "Đang tải lịch sử chơi...",
@@ -1163,7 +1164,7 @@
       "subtitle": "Gặp gỡ những người đã cùng xây dựng, kiểm thử, thiết kế và kể nên câu chuyện của Borrowed Shapes."
     },
     "stats": {
-      "members": "6 thành viên",
+      "members": "5 thành viên",
       "adventure": "1 hành trình co-op",
       "scrum": "Scrum Team",
       "platform": "Game + Web Platform"
@@ -1176,24 +1177,21 @@
         "tl": "Technical Leader",
         "doc": "Document Lead",
         "dl": "Diagram Lead",
-        "qa": "Quality Assurance",
-        "des": "Designer Lead"
+        "qa": "Quality Assurance"
       },
       "specialties": {
         "sm": "Người gác đền Sprint",
         "tl": "Kiến trúc sư Hệ thống",
         "doc": "Người giữ tài liệu",
         "dl": "Nghệ nhân Sơ đồ",
-        "qa": "Thợ săn lỗi",
-        "des": "Phù thủy Thị giác"
+        "qa": "Thợ săn lỗi"
       },
       "descriptions": {
         "sm": "Quản lý các hoạt động Scrum, điều phối lập kế hoạch và đánh giá Sprint, theo dõi tiến độ dự án, quản lý ưu tiên Product Backlog, giao tiếp với các bên liên quan và đảm bảo dự án tuân thủ các thực hành Scrum trong suốt quá trình phát triển.",
         "tl": "Thiết kế kiến trúc kỹ thuật cho hệ thống web và cơ chế gameplay, quản lý cấu trúc cơ sở dữ liệu và mạng, xem xét triển khai kỹ thuật và duy trì sự ổn định chung của hệ thống cũng như chất lượng mã nguồn.",
         "doc": "Chuẩn bị, bảo trì, tổ chức và chuẩn hóa các báo cáo dự án, tài liệu kỹ thuật, hướng dẫn định dạng và kiểm soát phiên bản tài liệu.",
         "dl": "Thiết kế và duy trì các sơ đồ kỹ thuật bao gồm sơ đồ lớp, sơ đồ tuần tự, sơ đồ hoạt động, sơ đồ ca sử dụng, quy trình làm việc, sơ đồ quan hệ cơ sở dữ liệu và trực quan hóa kiến trúc hệ thống để hỗ trợ các hoạt động phân tích và phát triển.",
-        "qa": "Thực hiện các hoạt động kiểm thử, xác nhận kết quả Sprint, theo dõi lỗi, xác minh chất lượng gameplay và hệ thống, đảm bảo các tính năng hoàn thành đáp ứng Definition of Done (DoD).",
-        "des": "Thiết kế bố cục UI/UX, hình ảnh gameplay, luồng tương tác, tài sản trực quan và duy trì tính nhất quán về mặt hình ảnh trên toàn hệ thống game và web."
+        "qa": "Thực hiện các hoạt động kiểm thử, xác nhận kết quả Sprint, theo dõi lỗi, xác minh chất lượng gameplay và hệ thống, đảm bảo các tính năng hoàn thành đáp ứng Definition of Done (DoD)."
       }
     },
     "closing": {
@@ -1336,6 +1334,7 @@
     "levels": "Màn chơi",
     "status_completed": "Hoàn thành",
     "status_in_progress": "Đang chơi",
+    "status_abandoned": "Bỏ cuộc",
     "type_public": "Công khai",
     "type_private": "Riêng tư",
     "start": "Bắt đầu",
@@ -1398,7 +1397,37 @@
     "common": {
       "lastUpdated": "Cập nhật lần cuối",
       "contactPage": "Liên hệ Hỗ trợ",
-      "policies": "Các chính sách"
+      "policies": "Các chính sách",
+      "comingSoon": "Sắp ra mắt"
+    },
+    "contact": {
+      "badge": "Liên hệ & Hỗ trợ",
+      "title": "Trung tâm Liên hệ & Hỗ trợ",
+      "description": "Chúng tôi luôn sẵn sàng lắng nghe ý kiến đóng góp, giải đáp thắc mắc và hỗ trợ người chơi trong suốt quá trình trải nghiệm.",
+      "intro": "Mọi thắc mắc về tài khoản, hỗ trợ kỹ thuật, điều khoản dịch vụ hoặc đóng góp ý kiến cho dự án Borrowed Shapes, vui lòng liên hệ trực tiếp với chúng tôi qua địa chỉ email dưới đây.",
+      "methods": {
+        "facebook": {
+          "title": "Trang Facebook chính thức",
+          "description": "Theo dõi fanpage của Borrowed Shapes để cập nhật các thông báo mới nhất, sự kiện và tin tức về trò chơi."
+        },
+        "email": {
+          "title": "Hỗ trợ qua Email",
+          "description": "Gửi thư trực tiếp cho nhóm phát triển qua địa chỉ borrowedshapes09@gmail.com để được giải đáp thắc mắc và hỗ trợ nhanh chóng."
+        },
+        "community": {
+          "title": "Cộng đồng Người chơi",
+          "description": "Tham gia nhóm cộng đồng để giao lưu, tìm đồng đội, chia sẻ mẹo chơi và phản hồi trực tiếp với đội ngũ phát triển."
+        },
+        "project": {
+          "title": "Thông tin Dự án",
+          "description": "Tìm hiểu thêm về dự án tốt nghiệp SEP490 - Borrowed Shapes, lộ trình phát triển và các tài liệu kỹ thuật liên quan."
+        }
+      },
+      "openGmail": "Mở trong Gmail",
+      "copyEmail": "Sao chép email",
+      "copied": "Đã sao chép!",
+      "noteTitle": "Lưu ý quan trọng",
+      "note": "Đội ngũ Borrowed Shapes cam kết tiếp nhận và phản hồi các yêu cầu sớm nhất có thể trong vòng 24 - 48 giờ làm việc. Đối với các vấn đề khẩn cấp, bảo mật tài khoản hoặc khiếu nại pháp lý, vui lòng liên hệ trực tiếp qua email borrowedshapes09@gmail.com."
     },
     "terms": {
       "title": "Điều khoản Dịch vụ",

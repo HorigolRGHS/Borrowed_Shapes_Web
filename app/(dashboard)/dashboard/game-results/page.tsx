@@ -6,7 +6,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Users, Globe, Clock, ChevronDown, Trophy, Calendar } from "lucide-react";
+import {
+  Users,
+  Globe,
+  Clock,
+  ChevronDown,
+  Trophy,
+  Calendar,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -52,7 +59,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const BADGE_BASE_CLASS = "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
+const BADGE_BASE_CLASS =
+  "rounded-[12px] uppercase tracking-[0.18em] text-[11px]";
 const ITEMS_PER_PAGE = 10;
 
 function formatSeasonMonth(seasonMonth: string, locale: string): string {
@@ -139,11 +147,15 @@ export default function GameResultsPage() {
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardPage, setLeaderboardPage] = useState(1);
   const [leaderboardTotalPages, setLeaderboardTotalPages] = useState(1);
-  const [leaderboardScope, setLeaderboardScope] = useState<"all-time" | "seasonal">("all-time");
+  const [leaderboardScope, setLeaderboardScope] = useState<
+    "all-time" | "seasonal"
+  >("all-time");
 
   const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const [selectedLeaderboardSeason, setSelectedLeaderboardSeason] = useState<string>(currentMonthStr);
-  const [availableLeaderboardSeasons, setAvailableLeaderboardSeasons] = useState<{ seasonMonth: string; label: string }[]>([]);
+  const [selectedLeaderboardSeason, setSelectedLeaderboardSeason] =
+    useState<string>(currentMonthStr);
+  const [availableLeaderboardSeasons, setAvailableLeaderboardSeasons] =
+    useState<{ seasonMonth: string; label: string }[]>([]);
 
   useEffect(() => {
     const profile = getUserProfile();
@@ -157,7 +169,9 @@ export default function GameResultsPage() {
   useEffect(() => {
     const fetchSeasons = async () => {
       try {
-        const response = await axios.get("/api/game-results/leaderboard/seasons");
+        const response = await axios.get(
+          "/api/game-results/leaderboard/seasons",
+        );
         const data = response.data?.data || response.data || [];
         if (Array.isArray(data) && data.length > 0) {
           setAvailableLeaderboardSeasons(data);
@@ -182,7 +196,13 @@ export default function GameResultsPage() {
     if (activeTab === "leaderboard") {
       fetchLeaderboard(true);
     }
-  }, [user, activeTab, leaderboardPage, leaderboardScope, selectedLeaderboardSeason]);
+  }, [
+    user,
+    activeTab,
+    leaderboardPage,
+    leaderboardScope,
+    selectedLeaderboardSeason,
+  ]);
 
   // Polling every 2 seconds in the background for real-time updates
   useEffect(() => {
@@ -197,7 +217,16 @@ export default function GameResultsPage() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [user, activeTab, runsPage, statusFilter, visibilityFilter, leaderboardPage, leaderboardScope, selectedLeaderboardSeason]);
+  }, [
+    user,
+    activeTab,
+    runsPage,
+    statusFilter,
+    visibilityFilter,
+    leaderboardPage,
+    leaderboardScope,
+    selectedLeaderboardSeason,
+  ]);
 
   const fetchRuns = async (showLoading = true) => {
     try {
@@ -237,7 +266,9 @@ export default function GameResultsPage() {
         params.seasonMonth = selectedLeaderboardSeason;
       }
 
-      const response = await axios.get("/api/game-results/leaderboard", { params });
+      const response = await axios.get("/api/game-results/leaderboard", {
+        params,
+      });
 
       if (response.data?.success) {
         const payload = response.data.data;
@@ -257,7 +288,8 @@ export default function GameResultsPage() {
       if (response.data?.success) {
         toast.success(t("gameResults.delete_success"));
       } else {
-        const message = response.data?.message || t("gameResults.delete_failed");
+        const message =
+          response.data?.message || t("gameResults.delete_failed");
         toast.error(t(message) || message);
         return;
       }
@@ -265,7 +297,8 @@ export default function GameResultsPage() {
       setDeleteRun(null);
     } catch (error: any) {
       console.error("Failed to delete game result:", error);
-      const message = error.response?.data?.message || t("gameResults.delete_failed");
+      const message =
+        error.response?.data?.message || t("gameResults.delete_failed");
       toast.error(t(message) || message);
     }
   };
@@ -276,7 +309,11 @@ export default function GameResultsPage() {
     setRunsPage(1);
   };
 
-  const renderPaginationItems = (currentPage: number, totalPages: number, setPage: (p: number) => void) => {
+  const renderPaginationItems = (
+    currentPage: number,
+    totalPages: number,
+    setPage: (p: number) => void,
+  ) => {
     const pages: (number | string)[] = [];
     const maxVisiblePages = 5;
 
@@ -333,15 +370,22 @@ export default function GameResultsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("gameResults.management_title")}</h1>
-          <p className="text-muted-foreground mt-2">{t("gameResults.management_subtitle")}</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t("gameResults.management_title")}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {t("gameResults.management_subtitle")}
+          </p>
         </div>
 
         {/* Tab switcher */}
         <div className="flex items-center gap-1 rounded-lg border border-border p-1 bg-muted/40 shrink-0 self-start md:self-auto">
           <button
             id="tab-runs"
-            onClick={() => { setActiveTab("runs"); setRunsPage(1); }}
+            onClick={() => {
+              setActiveTab("runs");
+              setRunsPage(1);
+            }}
             className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
               activeTab === "runs"
                 ? "bg-amber-500 text-white"
@@ -352,7 +396,10 @@ export default function GameResultsPage() {
           </button>
           <button
             id="tab-leaderboard"
-            onClick={() => { setActiveTab("leaderboard"); setLeaderboardPage(1); }}
+            onClick={() => {
+              setActiveTab("leaderboard");
+              setLeaderboardPage(1);
+            }}
             className={`px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] rounded-md transition-all ${
               activeTab === "leaderboard"
                 ? "bg-amber-500 text-white"
@@ -370,25 +417,49 @@ export default function GameResultsPage() {
           <CardContent className="p-6">
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setRunsPage(1); }}>
+              <Select
+                value={statusFilter}
+                onValueChange={(val) => {
+                  setStatusFilter(val);
+                  setRunsPage(1);
+                }}
+              >
                 <SelectTrigger className="w-[160px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("gameResults.filter_all_status")}</SelectItem>
-                  <SelectItem value="completed">{t("gameResults.filter_completed")}</SelectItem>
-                  <SelectItem value="in_progress">{t("gameResults.filter_in_progress")}</SelectItem>
+                  <SelectItem value="all">
+                    {t("gameResults.filter_all_status")}
+                  </SelectItem>
+                  <SelectItem value="completed">
+                    {t("gameResults.filter_completed")}
+                  </SelectItem>
+                  <SelectItem value="in_progress">
+                    {t("gameResults.filter_in_progress")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
-              <Select value={visibilityFilter} onValueChange={(val) => { setVisibilityFilter(val); setRunsPage(1); }}>
+              <Select
+                value={visibilityFilter}
+                onValueChange={(val) => {
+                  setVisibilityFilter(val);
+                  setRunsPage(1);
+                }}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("gameResults.filter_all_visibility")}</SelectItem>
-                  <SelectItem value="public">{t("gameResults.filter_public")}</SelectItem>
-                  <SelectItem value="private">{t("gameResults.filter_private")}</SelectItem>
+                  <SelectItem value="all">
+                    {t("gameResults.filter_all_visibility")}
+                  </SelectItem>
+                  <SelectItem value="public">
+                    {t("gameResults.filter_public")}
+                  </SelectItem>
+                  <SelectItem value="private">
+                    {t("gameResults.filter_private")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
@@ -412,18 +483,33 @@ export default function GameResultsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border hover:bg-transparent">
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_run_id")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_lobby")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_details")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_status_type")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_timeline")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("gameResults.col_actions")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_run_id")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_lobby")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_details")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_status_type")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_timeline")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">
+                          {t("gameResults.col_actions")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {runs.length > 0 ? (
                         runs.map((run) => (
-                          <TableRow key={run.id} className="border-border hover:bg-muted/50">
+                          <TableRow
+                            key={run.id}
+                            className="border-border hover:bg-muted/50"
+                          >
                             {/* Run ID */}
                             <TableCell className="text-muted-foreground font-mono text-sm">
                               {run.id.slice(0, 8)}
@@ -432,9 +518,13 @@ export default function GameResultsPage() {
                             {/* Lobby */}
                             <TableCell className="max-w-[200px]">
                               <div className="flex flex-col min-w-0">
-                                <span className="font-medium text-foreground truncate block">{run.lobbyName || "—"}</span>
+                                <span className="font-medium text-foreground truncate block">
+                                  {run.lobbyName || "—"}
+                                </span>
                                 {run.lobbyCode && (
-                                  <span className="text-xs text-muted-foreground truncate block">Code: {run.lobbyCode}</span>
+                                  <span className="text-xs text-muted-foreground truncate block">
+                                    Code: {run.lobbyCode}
+                                  </span>
                                 )}
                               </div>
                             </TableCell>
@@ -444,24 +534,37 @@ export default function GameResultsPage() {
                               <div className="flex flex-col gap-1 text-sm">
                                 <span className="flex items-center gap-1.5 text-muted-foreground">
                                   <Users className="h-3.5 w-3.5 text-orange-400" />
-                                  {run.players?.length || 0} {t("gameResults.players")}
+                                  {run.players?.length || 0}{" "}
+                                  {t("gameResults.players")}
                                 </span>
                                 <span className="flex items-center gap-1.5 text-muted-foreground">
                                   <Globe className="h-3.5 w-3.5 text-emerald-400" />
                                   {run.sessions && run.sessions.length > 0 ? (
                                     <span>
                                       {(() => {
-                                        const latest = run.sessions[run.sessions.length - 1];
-                                        return latest.levelOrder === 0 ? "Lobby" : `Level ${latest.levelOrder}`;
+                                        const latest =
+                                          run.sessions[run.sessions.length - 1];
+                                        return latest.levelOrder === 0
+                                          ? "Lobby"
+                                          : `Level ${latest.levelOrder}`;
                                       })()}
                                     </span>
                                   ) : (
-                                    <span>{run.totalLevels} {t("gameResults.levels")}</span>
+                                    <span>
+                                      {run.totalLevels}{" "}
+                                      {t("gameResults.levels")}
+                                    </span>
                                   )}
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                   <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                                  <span className={run.totalTimeSec ? "text-amber-400 font-semibold" : "text-muted-foreground"}>
+                                  <span
+                                    className={
+                                      run.totalTimeSec
+                                        ? "text-amber-400 font-semibold"
+                                        : "text-muted-foreground"
+                                    }
+                                  >
                                     {formatTime(run.totalTimeSec)}
                                   </span>
                                 </span>
@@ -476,10 +579,16 @@ export default function GameResultsPage() {
                                   className={`${BADGE_BASE_CLASS} w-32 justify-center ${
                                     run.isCompleted
                                       ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-                                      : "border-amber-500/70 bg-amber-500/10 text-amber-300"
+                                      : run.completedAt
+                                        ? "border-rose-500/70 bg-rose-500/10 text-rose-300"
+                                        : "border-amber-500/70 bg-amber-500/10 text-amber-300"
                                   }`}
                                 >
-                                  {run.isCompleted ? t("gameResults.status_completed") : t("gameResults.status_in_progress")}
+                                  {run.isCompleted
+                                    ? t("gameResults.status_completed")
+                                    : run.completedAt
+                                      ? t("gameResults.status_abandoned")
+                                      : t("gameResults.status_in_progress")}
                                 </Badge>
                                 <Badge
                                   variant="outline"
@@ -489,7 +598,9 @@ export default function GameResultsPage() {
                                       : "border-sky-500/70 bg-sky-500/10 text-sky-300"
                                   }`}
                                 >
-                                  {run.isPrivate ? t("gameResults.type_private") : t("gameResults.type_public")}
+                                  {run.isPrivate
+                                    ? t("gameResults.type_private")
+                                    : t("gameResults.type_public")}
                                 </Badge>
                               </div>
                             </TableCell>
@@ -497,8 +608,14 @@ export default function GameResultsPage() {
                             {/* Timeline */}
                             <TableCell>
                               <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
-                                <span>{t("gameResults.start")}: {formatDate(run.startedAt)}</span>
-                                <span>{t("gameResults.end")}: {formatDate(run.completedAt)}</span>
+                                <span>
+                                  {t("gameResults.start")}:{" "}
+                                  {formatDate(run.startedAt)}
+                                </span>
+                                <span>
+                                  {t("gameResults.end")}:{" "}
+                                  {formatDate(run.completedAt)}
+                                </span>
                               </div>
                             </TableCell>
 
@@ -506,13 +623,24 @@ export default function GameResultsPage() {
                             <TableCell className="text-center">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  >
                                     <ChevronDown className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-40"
+                                >
                                   <DropdownMenuItem
-                                    onClick={() => router.push(`/dashboard/game-results/detail?id=${run.id}`)}
+                                    onClick={() =>
+                                      router.push(
+                                        `/dashboard/game-results/detail?id=${run.id}`,
+                                      )
+                                    }
                                     className="cursor-pointer"
                                   >
                                     {t("gameResults.action_view")}
@@ -530,7 +658,10 @@ export default function GameResultsPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                          <TableCell
+                            colSpan={6}
+                            className="text-center py-12 text-muted-foreground"
+                          >
                             {t("gameResults.no_runs")}
                           </TableCell>
                         </TableRow>
@@ -549,18 +680,31 @@ export default function GameResultsPage() {
                             e.preventDefault();
                             if (runsPage > 1) setRunsPage(runsPage - 1);
                           }}
-                          className={runsPage <= 1 ? "pointer-events-none opacity-40" : ""}
+                          className={
+                            runsPage <= 1
+                              ? "pointer-events-none opacity-40"
+                              : ""
+                          }
                         />
                       </PaginationItem>
-                      {renderPaginationItems(runsPage, runsTotalPages, setRunsPage)}
+                      {renderPaginationItems(
+                        runsPage,
+                        runsTotalPages,
+                        setRunsPage,
+                      )}
                       <PaginationItem>
                         <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (runsPage < runsTotalPages) setRunsPage(runsPage + 1);
+                            if (runsPage < runsTotalPages)
+                              setRunsPage(runsPage + 1);
                           }}
-                          className={runsPage >= runsTotalPages ? "pointer-events-none opacity-40" : ""}
+                          className={
+                            runsPage >= runsTotalPages
+                              ? "pointer-events-none opacity-40"
+                              : ""
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -655,20 +799,35 @@ export default function GameResultsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border hover:bg-transparent">
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_rank")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_team_lobby")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">{t("gameResults.col_total_players")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">{t("gameResults.col_total_time")}</TableHead>
-                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-right">{t("gameResults.col_completed_date")}</TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_rank")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_team_lobby")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-center">
+                          {t("gameResults.col_total_players")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                          {t("gameResults.col_total_time")}
+                        </TableHead>
+                        <TableHead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium text-right">
+                          {t("gameResults.col_completed_date")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {leaderboard.length > 0 ? (
                         leaderboard.map((entry) => (
-                          <TableRow key={entry.runId} className="border-border hover:bg-muted/50">
+                          <TableRow
+                            key={entry.runId}
+                            className="border-border hover:bg-muted/50"
+                          >
                             {/* Rank */}
                             <TableCell>
-                              <div className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${getRankBadgeClass(entry.rank)}`}>
+                              <div
+                                className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${getRankBadgeClass(entry.rank)}`}
+                              >
                                 {entry.rank}
                               </div>
                             </TableCell>
@@ -698,7 +857,10 @@ export default function GameResultsPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                          <TableCell
+                            colSpan={5}
+                            className="text-center py-12 text-muted-foreground"
+                          >
                             {t("gameResults.no_leaderboard")}
                           </TableCell>
                         </TableRow>
@@ -715,20 +877,34 @@ export default function GameResultsPage() {
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (leaderboardPage > 1) setLeaderboardPage(leaderboardPage - 1);
+                            if (leaderboardPage > 1)
+                              setLeaderboardPage(leaderboardPage - 1);
                           }}
-                          className={leaderboardPage <= 1 ? "pointer-events-none opacity-40" : ""}
+                          className={
+                            leaderboardPage <= 1
+                              ? "pointer-events-none opacity-40"
+                              : ""
+                          }
                         />
                       </PaginationItem>
-                      {renderPaginationItems(leaderboardPage, leaderboardTotalPages, setLeaderboardPage)}
+                      {renderPaginationItems(
+                        leaderboardPage,
+                        leaderboardTotalPages,
+                        setLeaderboardPage,
+                      )}
                       <PaginationItem>
                         <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (leaderboardPage < leaderboardTotalPages) setLeaderboardPage(leaderboardPage + 1);
+                            if (leaderboardPage < leaderboardTotalPages)
+                              setLeaderboardPage(leaderboardPage + 1);
                           }}
-                          className={leaderboardPage >= leaderboardTotalPages ? "pointer-events-none opacity-40" : ""}
+                          className={
+                            leaderboardPage >= leaderboardTotalPages
+                              ? "pointer-events-none opacity-40"
+                              : ""
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -741,7 +917,12 @@ export default function GameResultsPage() {
       )}
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={deleteRun !== null} onOpenChange={(open) => { if (!open) setDeleteRun(null); }}>
+      <AlertDialog
+        open={deleteRun !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteRun(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("gameResults.delete_title")}</AlertDialogTitle>

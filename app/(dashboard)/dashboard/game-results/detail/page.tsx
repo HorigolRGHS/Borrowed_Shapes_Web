@@ -6,14 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {
-  ArrowLeft,
-  Zap,
-  Users,
-  Globe,
-  Clock,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, Zap, Users, Globe, Clock, Trash2 } from "lucide-react";
 import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 import { Badge } from "@/components/ui/badge";
@@ -36,11 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -191,10 +180,12 @@ export default function GameResultDetailPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Player history modal
-  const [selectedPlayer, setSelectedPlayer] =
-    useState<GameResultPlayer | null>(null);
-  const [playerHistory, setPlayerHistory] =
-    useState<PlayerHistoryData | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<GameResultPlayer | null>(
+    null,
+  );
+  const [playerHistory, setPlayerHistory] = useState<PlayerHistoryData | null>(
+    null,
+  );
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
@@ -235,7 +226,7 @@ export default function GameResultDetailPage() {
     if (!detail) return;
     try {
       const response = await axios.delete(
-        `/api/game-results/delete/${detail.id}`
+        `/api/game-results/delete/${detail.id}`,
       );
       if (response.data?.success) {
         toast.success(t("gameResults.delete_success"));
@@ -260,7 +251,7 @@ export default function GameResultDetailPage() {
     setLoadingHistory(true);
     try {
       const response = await axios.get(
-        `/api/game-results/user/${player.gameProfileId}`
+        `/api/game-results/user/${player.gameProfileId}`,
       );
       if (response.data?.success) {
         setPlayerHistory(response.data.data);
@@ -294,7 +285,7 @@ export default function GameResultDetailPage() {
   if (!detail) return null;
 
   const sortedSessions = [...detail.sessions].sort(
-    (a, b) => a.levelOrder - b.levelOrder
+    (a, b) => a.levelOrder - b.levelOrder,
   );
 
   return (
@@ -310,13 +301,13 @@ export default function GameResultDetailPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("gameResults.back_to_runs") || "Back to Game Results"}
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight">{t("gameResults.detail_title")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t("gameResults.detail_title")}
+        </h1>
         <p className="text-muted-foreground mt-2">
           {t("gameResults.detail_subtitle")}{" "}
           <span className="text-amber-400 font-mono font-semibold">
-            {detail.id.length > 12
-              ? detail.id.slice(0, 12)
-              : detail.id}
+            {detail.id.length > 12 ? detail.id.slice(0, 12) : detail.id}
           </span>
         </p>
       </div>
@@ -348,12 +339,16 @@ export default function GameResultDetailPage() {
                   className={`${BADGE_BASE_CLASS} ${
                     detail.isCompleted
                       ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-                      : "border-amber-500/70 bg-amber-500/10 text-amber-300"
+                      : detail.completedAt
+                        ? "border-rose-500/70 bg-rose-500/10 text-rose-300"
+                        : "border-amber-500/70 bg-amber-500/10 text-amber-300"
                   }`}
                 >
                   {detail.isCompleted
                     ? t("gameResults.status_completed")
-                    : t("gameResults.status_in_progress")}
+                    : detail.completedAt
+                      ? t("gameResults.status_abandoned")
+                      : t("gameResults.status_in_progress")}
                 </Badge>
               }
             />
@@ -569,210 +564,187 @@ export default function GameResultDetailPage() {
         </Button>
       </div>
 
-        {/* ── Delete Confirmation Dialog ──────────────── */}
-        <AlertDialog
-          open={showDeleteDialog}
-          onOpenChange={setShowDeleteDialog}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {t("gameResults.delete_title")}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("gameResults.delete_confirm")}
-                <br />
-                <span className="text-xs text-muted-foreground mt-1 block">
-                  {t("gameResults.delete_confirm_undone")}
-                </span>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>
-                {t("gameResults.cancel")}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-rose-600 hover:bg-rose-700 text-white"
-              >
-                {t("gameResults.action_delete")}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      {/* ── Delete Confirmation Dialog ──────────────── */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("gameResults.delete_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("gameResults.delete_confirm")}
+              <br />
+              <span className="text-xs text-muted-foreground mt-1 block">
+                {t("gameResults.delete_confirm_undone")}
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("gameResults.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+            >
+              {t("gameResults.action_delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        {/* ── Player History Modal ────────────────────── */}
-        <Dialog
-          open={selectedPlayer !== null}
-          onOpenChange={(open) => {
-            if (!open) closePlayerModal();
-          }}
-        >
-          <DialogContent className="max-w-3xl max-h-[90vh] p-0 border-border bg-card overflow-hidden">
-            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-            <DialogTitle className="sr-only">
-              {selectedPlayer?.displayName ?? ""}
-            </DialogTitle>
+      {/* ── Player History Modal ────────────────────── */}
+      <Dialog
+        open={selectedPlayer !== null}
+        onOpenChange={(open) => {
+          if (!open) closePlayerModal();
+        }}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] p-0 border-border bg-card overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
+          <DialogTitle className="sr-only">
+            {selectedPlayer?.displayName ?? ""}
+          </DialogTitle>
 
-            {selectedPlayer && (
-              <ScrollArea className="max-h-[85vh]">
-                <div className="p-6">
-                  {/* Player header */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <AvatarWithFrame
-                      displayName={selectedPlayer.displayName}
-                      avatarUrl={selectedPlayer.avatarUrl}
-                      badgeImageUrl={selectedPlayer.badgeImageUrl}
-                      size="lg"
-                      className="h-16 w-16"
-                    />
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground">
-                        {selectedPlayer.displayName}
-                      </h3>
-                      <p className="text-sm text-muted-foreground font-mono">
-                        # {t("gameResults.player_profile_id")}:{" "}
-                        {selectedPlayer.gameProfileId}
-                      </p>
-                    </div>
+          {selectedPlayer && (
+            <ScrollArea className="max-h-[85vh]">
+              <div className="p-6">
+                {/* Player header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <AvatarWithFrame
+                    displayName={selectedPlayer.displayName}
+                    avatarUrl={selectedPlayer.avatarUrl}
+                    badgeImageUrl={selectedPlayer.badgeImageUrl}
+                    size="lg"
+                    className="h-16 w-16"
+                  />
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground">
+                      {selectedPlayer.displayName}
+                    </h3>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      # {t("gameResults.player_profile_id")}:{" "}
+                      {selectedPlayer.gameProfileId}
+                    </p>
                   </div>
+                </div>
 
-                  {loadingHistory ? (
-                    <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">
-                      {t("gameResults.loading")}
+                {loadingHistory ? (
+                  <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">
+                    {t("gameResults.loading")}
+                  </div>
+                ) : playerHistory ? (
+                  <>
+                    {/* Stats row */}
+                    <div className="grid grid-cols-5 gap-3 mb-6">
+                      <StatBox
+                        label={t("gameResults.stat_total_sessions")}
+                        value={String(playerHistory.playerStats.totalSessions)}
+                      />
+                      <StatBox
+                        label={t("gameResults.stat_total_wins")}
+                        value={String(playerHistory.playerStats.totalWins)}
+                        color="text-emerald-400"
+                      />
+                      <StatBox
+                        label={t("gameResults.stat_total_losses")}
+                        value={String(playerHistory.playerStats.totalLosses)}
+                        color="text-rose-400"
+                      />
+                      <StatBox
+                        label={t("gameResults.stat_abandoned")}
+                        value={String(playerHistory.playerStats.totalAbandoned)}
+                      />
+                      <StatBox
+                        label={t("gameResults.stat_total_play_time")}
+                        value={formatTime(
+                          playerHistory.playerStats.totalPlayTimeSec,
+                        )}
+                        color="text-amber-400"
+                      />
                     </div>
-                  ) : playerHistory ? (
-                    <>
-                      {/* Stats row */}
-                      <div className="grid grid-cols-5 gap-3 mb-6">
-                        <StatBox
-                          label={t("gameResults.stat_total_sessions")}
-                          value={String(
-                            playerHistory.playerStats.totalSessions
-                          )}
-                        />
-                        <StatBox
-                          label={t("gameResults.stat_total_wins")}
-                          value={String(
-                            playerHistory.playerStats.totalWins
-                          )}
-                          color="text-emerald-400"
-                        />
-                        <StatBox
-                          label={t("gameResults.stat_total_losses")}
-                          value={String(
-                            playerHistory.playerStats.totalLosses
-                          )}
-                          color="text-rose-400"
-                        />
-                        <StatBox
-                          label={t("gameResults.stat_abandoned")}
-                          value={String(
-                            playerHistory.playerStats.totalAbandoned
-                          )}
-                        />
-                        <StatBox
-                          label={t("gameResults.stat_total_play_time")}
-                          value={formatTime(
-                            playerHistory.playerStats.totalPlayTimeSec
-                          )}
-                          color="text-amber-400"
-                        />
-                      </div>
 
-                      {/* Run history table */}
-                      <div className="rounded-[12px] border border-border overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="border-border hover:bg-transparent">
-                              <TableHead className={HEADER_CLASS}>
-                                {t("gameResults.history_col_run_id")}
-                              </TableHead>
-                              <TableHead className={HEADER_CLASS}>
-                                {t(
-                                  "gameResults.history_col_lobby_name"
-                                )}
-                              </TableHead>
-                              <TableHead className={HEADER_CLASS}>
-                                {t("gameResults.history_col_role")}
-                              </TableHead>
-                              <TableHead className={HEADER_CLASS}>
-                                {t(
-                                  "gameResults.history_col_total_time"
-                                )}
-                              </TableHead>
-                              <TableHead className={HEADER_CLASS}>
-                                {t(
-                                  "gameResults.history_col_played_date"
-                                )}
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {playerHistory.items.length > 0 ? (
-                              playerHistory.items.map((run) => (
-                                <TableRow
-                                  key={run.id}
-                                  className="border-border hover:bg-muted/50"
-                                >
-                                  <TableCell className="text-muted-foreground font-mono text-sm">
-                                    {run.id.length > 12
-                                      ? run.id.slice(0, 12)
-                                      : run.id}
-                                  </TableCell>
-                                  <TableCell className="font-medium text-foreground max-w-[200px] truncate">
-                                    {run.lobbyName || "—"}
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge
-                                      variant="outline"
-                                      className={`${BADGE_BASE_CLASS} ${
-                                        run.playerRole === "HOST"
-                                          ? "border-amber-500/70 bg-amber-500/10 text-amber-300"
-                                          : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
-                                      }`}
-                                    >
-                                      {run.playerRole === "HOST"
-                                        ? t("gameResults.role_host")
-                                        : t(
-                                            "gameResults.role_player"
-                                          )}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="text-amber-400 font-bold font-mono">
-                                      {formatTime(run.totalTimeSec)}
-                                    </span>
-                                  </TableCell>
-                                  <TableCell className="text-muted-foreground text-sm">
-                                    {formatDateTime(run.startedAt)}
-                                  </TableCell>
-                                </TableRow>
-                              ))
-                            ) : (
-                              <TableRow>
-                                <TableCell
-                                  colSpan={5}
-                                  className="text-center py-8 text-muted-foreground"
-                                >
-                                  {t("gameResults.no_runs")}
+                    {/* Run history table */}
+                    <div className="rounded-[12px] border border-border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-border hover:bg-transparent">
+                            <TableHead className={HEADER_CLASS}>
+                              {t("gameResults.history_col_run_id")}
+                            </TableHead>
+                            <TableHead className={HEADER_CLASS}>
+                              {t("gameResults.history_col_lobby_name")}
+                            </TableHead>
+                            <TableHead className={HEADER_CLASS}>
+                              {t("gameResults.history_col_role")}
+                            </TableHead>
+                            <TableHead className={HEADER_CLASS}>
+                              {t("gameResults.history_col_total_time")}
+                            </TableHead>
+                            <TableHead className={HEADER_CLASS}>
+                              {t("gameResults.history_col_played_date")}
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {playerHistory.items.length > 0 ? (
+                            playerHistory.items.map((run) => (
+                              <TableRow
+                                key={run.id}
+                                className="border-border hover:bg-muted/50"
+                              >
+                                <TableCell className="text-muted-foreground font-mono text-sm">
+                                  {run.id.length > 12
+                                    ? run.id.slice(0, 12)
+                                    : run.id}
+                                </TableCell>
+                                <TableCell className="font-medium text-foreground max-w-[200px] truncate">
+                                  {run.lobbyName || "—"}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="outline"
+                                    className={`${BADGE_BASE_CLASS} ${
+                                      run.playerRole === "HOST"
+                                        ? "border-amber-500/70 bg-amber-500/10 text-amber-300"
+                                        : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
+                                    }`}
+                                  >
+                                    {run.playerRole === "HOST"
+                                      ? t("gameResults.role_host")
+                                      : t("gameResults.role_player")}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <span className="text-amber-400 font-bold font-mono">
+                                    {formatTime(run.totalTimeSec)}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-sm">
+                                  {formatDateTime(run.startedAt)}
                                 </TableCell>
                               </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">
-                      {t("gameResults.no_runs")}
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell
+                                colSpan={5}
+                                className="text-center py-8 text-muted-foreground"
+                              >
+                                {t("gameResults.no_runs")}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
                     </div>
-                  )}
-                </div>
-              </ScrollArea>
-            )}
-          </DialogContent>
-        </Dialog>
+                  </>
+                ) : (
+                  <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">
+                    {t("gameResults.no_runs")}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -826,9 +798,7 @@ function StatBox({
       <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-1">
         {label}
       </div>
-      <div
-        className={`text-lg font-bold ${color || "text-foreground"}`}
-      >
+      <div className={`text-lg font-bold ${color || "text-foreground"}`}>
         {value}
       </div>
     </div>
@@ -836,8 +806,7 @@ function StatBox({
 }
 
 function SessionStatusBadge({ status }: { status: string }) {
-  const isFinished =
-    status === "FINISHED" || status === "COMPLETED";
+  const isFinished = status === "FINISHED" || status === "COMPLETED";
   return (
     <Badge
       variant="outline"
@@ -852,11 +821,7 @@ function SessionStatusBadge({ status }: { status: string }) {
   );
 }
 
-function SessionResultBadge({
-  result,
-}: {
-  result?: string;
-}) {
+function SessionResultBadge({ result }: { result?: string }) {
   if (!result) return <span className="text-muted-foreground">—</span>;
   const isWin = result === "WIN";
   return (

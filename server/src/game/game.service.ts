@@ -199,6 +199,15 @@ export class GameService {
       });
 
       if (!session) {
+        // Before creating a new session, ensure any previous IN_PROGRESS sessions (e.g. Lobby) are closed
+        await em.getConnection().execute(
+          `UPDATE game."GameSession"
+           SET status = 'FINISHED', "endedAt" = NOW(),
+               "completionTimeSec" = GREATEST(0, EXTRACT(EPOCH FROM (NOW() - "startedAt"))::int)
+           WHERE "runId" = ? AND status = 'IN_PROGRESS'`,
+          [run.id],
+        );
+
         const lobbySession = await this.gameSessionRepo.txFindOne(em, {
           runId: run.id,
           levelId: 'lobby',
@@ -354,14 +363,14 @@ export class GameService {
       run.totalTimeSec = totalTimeSec;
 
       // Close the lobby session so it doesn't remain IN_PROGRESS indefinitely.
-      // Use nativeUpdate (raw SQL WHERE clause) to avoid MikroORM ManyToOne
-      // reference coercion: levelId is a FK column whose PK value is the string 'lobby'.
-      await em.getConnection().execute(
-        `UPDATE game."GameSession"
-         SET status = 'FINISHED', "endedAt" = NOW(),
-             "completionTimeSec" = GREATEST(0, EXTRACT(EPOCH FROM (NOW() - "startedAt"))::int)
-         WHERE "runId" = ? AND "levelId" = 'lobby' AND status = 'IN_PROGRESS'`,
-        [run.id],
+      await em.nativeUpdate(
+        GameSession,
+        { runId: run.id, levelId: 'lobby', status: GameSessionStatus.IN_PROGRESS },
+        { 
+          status: GameSessionStatus.FINISHED, 
+          endedAt: new Date(),
+          // Ignore completionTimeSec for lobby to avoid complex SQL
+        },
       );
 
       await this.gameSessionRepo.txFlush(em);

@@ -19,6 +19,7 @@
     "login": "Log in",
     "email": "Email",
     "password": "Password",
+    "unverified_email_ban_reason": "Account banned due to unverified email. Please check your inbox.",
     "signing_in": "Signing in...",
     "login_success": "Log in successful!",
     "login_failed": "Log in failed",

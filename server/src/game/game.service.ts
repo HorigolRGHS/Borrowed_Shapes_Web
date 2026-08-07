@@ -363,14 +363,12 @@ export class GameService {
       run.totalTimeSec = totalTimeSec;
 
       // Close the lobby session so it doesn't remain IN_PROGRESS indefinitely.
-      await em.nativeUpdate(
-        GameSession,
-        { runId: run.id, levelId: 'lobby', status: GameSessionStatus.IN_PROGRESS },
-        { 
-          status: GameSessionStatus.FINISHED, 
-          endedAt: new Date(),
-          // Ignore completionTimeSec for lobby to avoid complex SQL
-        },
+      await em.getConnection().execute(
+        `UPDATE game."GameSession"
+         SET status = 'FINISHED'::game."GameSessionStatus", "endedAt" = NOW(),
+             "completionTimeSec" = GREATEST(0, EXTRACT(EPOCH FROM (NOW() - "startedAt"))::int)
+         WHERE "runId" = ? AND "levelId" = 'lobby' AND status = 'IN_PROGRESS'::game."GameSessionStatus"`,
+        [run.id],
       );
 
       await this.gameSessionRepo.txFlush(em);

@@ -92,15 +92,9 @@ export function HeroSection() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <StatCard
               icon={Users}
-              value="67+"
+              value="10+"
               label={t("home.hero.stats.active_players") || "Active Players"}
               colorClass="text-amber-500"
-            />
-            <StatCard
-              icon={Star}
-              value="S1"
-              label={t("home.hero.stats.current_season") || "Current Season"}
-              colorClass="text-orange-500"
             />
             <StatCard
               icon={Zap}
@@ -111,16 +105,5 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-
-      {/* Season Badge */}
-      <div className="absolute bottom-6 left-4 right-4 sm:left-auto sm:right-8 z-30 flex justify-center sm:justify-end">
-        <div className="flex items-center gap-2 bg-[#0a0a15]/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-lg">
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-          <span className="text-xs font-bold tracking-widest text-white">
-            {t("home.hero.season_live")}
-          </span>
-        </div>
-      </div>
-    </section>
   );
 }

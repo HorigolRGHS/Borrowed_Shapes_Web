@@ -89,21 +89,27 @@ export function HeroSection() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
             <StatCard
               icon={Users}
               value="10+"
-              label={t("home.hero.stats.active_players") || "Active Players"}
+              label={
+                t("home.hero.stats.active_players") || "Active Players"
+              }
               colorClass="text-amber-500"
             />
+
             <StatCard
               icon={Zap}
               value="1.0.0"
-              label={t("home.hero.stats.latest_patch") || "Latest Patch"}
+              label={
+                t("home.hero.stats.latest_patch") || "Latest Patch"
+              }
               colorClass="text-yellow-500"
             />
           </div>
         </div>
       </div>
+    </section>
   );
 }

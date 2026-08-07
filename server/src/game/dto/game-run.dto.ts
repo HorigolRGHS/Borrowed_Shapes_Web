@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, Min } from 'class-validator';
+import { IsInt, IsString, Min, IsOptional, IsBoolean } from 'class-validator';
 import { LobbyIdRequestDto } from './lobby.dto';
 
 export class InitGameRunRequestDto extends LobbyIdRequestDto {
@@ -58,5 +58,7 @@ export class EndRunRequestDto {
   runId!: string;
 
   @ApiProperty({ example: true, required: false })
+  @IsOptional()
+  @IsBoolean()
   isWin?: boolean;
 }

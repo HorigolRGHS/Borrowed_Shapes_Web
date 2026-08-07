@@ -9,6 +9,8 @@ import { ReportAction } from '../entities/ReportAction';
 import { AuditActionType } from '../entities/AuditActionType';
 import { ReportStatus } from '../entities/ReportStatus';
 
+const mockIp = '192.168.1.100';
+
 describe('ReportsService Audit Logging', () => {
   let service: ReportsService;
   let auditService: jest.Mocked<AuditService>;
@@ -18,6 +20,7 @@ describe('ReportsService Audit Logging', () => {
     // Basic mocks to pass dependencies
     const mockAuditService = {
       recordInCurrentUnitOfWork: jest.fn().mockResolvedValue(undefined),
+      recordStandalone: jest.fn().mockResolvedValue(undefined),
     };
 
     const mockEntityManager = {
@@ -40,6 +43,7 @@ describe('ReportsService Audit Logging', () => {
         reporterId: { id: 'user1', email: 'user1@ex.com' },
         reportedUserId: { id: 'user2' },
       }),
+      create: jest.fn().mockReturnValue({}),
     };
 
     const mockEmailService = {
@@ -65,10 +69,15 @@ describe('ReportsService Audit Logging', () => {
   });
 
   it('reject should call a single PROCESS_REPORT log', async () => {
-    await service.reject('report1', 'admin1', {
-      message: 'reject msg',
-      isVisibleToReporter: true,
-    });
+    await service.reject(
+      'report1',
+      'admin1',
+      {
+        message: 'reject msg',
+        isVisibleToReporter: true,
+      },
+      mockIp,
+    );
 
     expect(auditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(1);
     expect(auditService.recordInCurrentUnitOfWork).toHaveBeenCalledWith({
@@ -81,6 +90,7 @@ describe('ReportsService Audit Logging', () => {
         reportId: 'report1',
         targetUserId: 'user2',
       },
+      ipAddress: mockIp,
     });
 
     // Ensure audit called before flush
@@ -93,10 +103,15 @@ describe('ReportsService Audit Logging', () => {
   });
 
   it('normal resolve should call a single PROCESS_REPORT log', async () => {
-    await service.resolve('report1', 'admin1', {
-      actionTaken: ReportAction.NO_ACTION,
-      message: 'msg',
-    });
+    await service.resolve(
+      'report1',
+      'admin1',
+      {
+        actionTaken: ReportAction.NO_ACTION,
+        message: 'msg',
+      },
+      mockIp,
+    );
 
     expect(auditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(1);
     expect(auditService.recordInCurrentUnitOfWork).toHaveBeenCalledWith(
@@ -109,15 +124,21 @@ describe('ReportsService Audit Logging', () => {
           operation: 'RESOLVE',
           resolutionAction: ReportAction.NO_ACTION,
         }),
+        ipAddress: mockIp,
       }),
     );
   });
 
   it('resolve with warning should call two logs in order', async () => {
-    await service.resolve('report1', 'admin1', {
-      actionTaken: ReportAction.WARNING,
-      message: 'warn',
-    });
+    await service.resolve(
+      'report1',
+      'admin1',
+      {
+        actionTaken: ReportAction.WARNING,
+        message: 'warn',
+      },
+      mockIp,
+    );
 
     expect(auditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(2);
 
@@ -130,6 +151,7 @@ describe('ReportsService Audit Logging', () => {
         newValue: expect.objectContaining({
           resolutionAction: ReportAction.WARNING,
         }),
+        ipAddress: mockIp,
       }),
     );
 
@@ -141,6 +163,7 @@ describe('ReportsService Audit Logging', () => {
         entityName: 'User',
         entityId: 'user2',
         newValue: expect.objectContaining({ operation: 'WARNING' }),
+        ipAddress: mockIp,
       }),
     );
 
@@ -152,10 +175,15 @@ describe('ReportsService Audit Logging', () => {
   });
 
   it('resolve with ban should call two logs in order', async () => {
-    await service.resolve('report1', 'admin1', {
-      actionTaken: ReportAction.BAN_PERMANENT,
-      message: 'ban',
-    });
+    await service.resolve(
+      'report1',
+      'admin1',
+      {
+        actionTaken: ReportAction.BAN_PERMANENT,
+        message: 'ban',
+      },
+      mockIp,
+    );
 
     expect(auditService.recordInCurrentUnitOfWork).toHaveBeenCalledTimes(2);
 
@@ -165,6 +193,7 @@ describe('ReportsService Audit Logging', () => {
       expect.objectContaining({
         actionType: AuditActionType.PROCESS_REPORT,
         entityName: 'Report',
+        ipAddress: mockIp,
       }),
     );
 
@@ -176,6 +205,7 @@ describe('ReportsService Audit Logging', () => {
         entityName: 'User',
         entityId: 'user2',
         newValue: expect.objectContaining({ operation: 'BAN_FROM_REPORT' }),
+        ipAddress: mockIp,
       }),
     );
   });
@@ -186,14 +216,51 @@ describe('ReportsService Audit Logging', () => {
     );
 
     await expect(
-      service.resolve('report1', 'admin1', {
-        actionTaken: ReportAction.NO_ACTION,
-        message: 'msg',
-      }),
+      service.resolve(
+        'report1',
+        'admin1',
+        {
+          actionTaken: ReportAction.NO_ACTION,
+          message: 'msg',
+        },
+        mockIp,
+      ),
     ).rejects.toThrow('Audit DB Down');
 
     expect(
       reportRepository.getEntityManager().persistAndFlush,
     ).not.toHaveBeenCalled();
+  });
+
+  it('create should call recordStandalone with ipAddress', async () => {
+    const reportMock = { id: 'report_created_1' };
+    reportRepository.create.mockReturnValueOnce(reportMock);
+
+    await service.create(
+      {
+        reportType: 'SPAM',
+        reason: 'spamming posts',
+        reportedUserId: 'user2',
+      },
+      'user1',
+      mockIp,
+    );
+
+    expect(auditService.recordStandalone).toHaveBeenCalledTimes(1);
+    expect(auditService.recordStandalone).toHaveBeenCalledWith({
+      actionType: AuditActionType.PROCESS_REPORT,
+      userId: 'user1',
+      entityName: 'Report',
+      entityId: 'report_created_1',
+      newValue: {
+        operation: 'CREATE',
+        reportType: 'SPAM',
+        reason: 'spamming posts',
+        reportedUserId: 'user2',
+        threadId: undefined,
+        commentId: undefined,
+      },
+      ipAddress: mockIp,
+    });
   });
 });

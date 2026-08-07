@@ -308,11 +308,6 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
                 );
               })}
             </div>
-            {achievements.length === 0 && (
-              <p className="text-xs text-muted-foreground dark:text-gray-500 italic">
-                {t("profile.edit.no_frames_description")}
-              </p>
-            )}
           </div>
         </div>
 

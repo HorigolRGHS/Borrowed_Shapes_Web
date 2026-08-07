@@ -34,6 +34,7 @@ import type { RequestUser } from './decorators/current-user.decorator';
 import { AuthRateLimitGuard } from '../common/guards/auth-rate-limit.guard';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from './decorators/roles.decorator';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -48,7 +49,7 @@ export class AuthController {
     @Body() dto: RegisterRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<RegisterResponseDto>> {
-    const data = await this.authService.register(dto, req.ip ?? '');
+    const data = await this.authService.register(dto, getClientIp(req));
     return okResponse(
       'auth.register_success',
       data,
@@ -65,7 +66,7 @@ export class AuthController {
     @Body() dto: LoginRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
-    const data = await this.authService.login(dto, req.ip ?? '');
+    const data = await this.authService.login(dto, getClientIp(req));
     return okResponse('auth.login_success', data, `${req.method} ${req.path}`);
   }
 
@@ -78,7 +79,7 @@ export class AuthController {
     @Body() dto: GoogleExchangeRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleExchangeResponseDto>> {
-    const data = await this.authService.googleExchange(dto, req.ip ?? '');
+    const data = await this.authService.googleExchange(dto, getClientIp(req));
     return okResponse(
       'auth.google_exchange_success',
       data,
@@ -95,7 +96,7 @@ export class AuthController {
     @Body() dto: GoogleCompleteRequestDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<GoogleCompleteResponseDto>> {
-    const data = await this.authService.googleComplete(dto, req.ip ?? '');
+    const data = await this.authService.googleComplete(dto, getClientIp(req));
     return okResponse('auth.login_success', data, `${req.method} ${req.path}`);
   }
 
@@ -129,7 +130,7 @@ export class AuthController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.authService.logout(user.userId, user.platform, req.ip ?? '');
+    await this.authService.logout(user.userId, user.platform, getClientIp(req));
     return okResponse('auth.logout_success', null, `${req.method} ${req.path}`);
   }
 
@@ -139,7 +140,7 @@ export class AuthController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.authService.logout(user.userId, user.platform, req.ip ?? '');
+    await this.authService.logout(user.userId, user.platform, getClientIp(req));
     return okResponse('auth.logout_success', null, `${req.method} ${req.path}`);
   }
 

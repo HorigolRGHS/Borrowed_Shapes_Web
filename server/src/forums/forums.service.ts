@@ -229,6 +229,7 @@ export class ForumService {
     authorId: string,
     isAdmin = false,
     locale: 'en' | 'vi' = 'en',
+    ipAddress?: string,
   ) {
     if (dto.isPinned !== undefined && !isAdmin) {
       throw new ForbiddenException('forums.forbidden_admin_only');
@@ -292,6 +293,7 @@ export class ForumService {
         categoryId: category.id,
         content: thread.content,
       },
+      ipAddress,
     });
 
     await this.threadRepository.persistAndFlush(thread);
@@ -304,6 +306,7 @@ export class ForumService {
     userId: string,
     isAdmin = false,
     locale: 'en' | 'vi' = 'en',
+    ipAddress?: string,
   ) {
     const thread = await this.threadRepository.findOne(
       { id },
@@ -391,6 +394,7 @@ export class ForumService {
         content: thread.content,
         status: thread.status,
       },
+      ipAddress,
     });
 
     await this.threadRepository.flush();
@@ -410,7 +414,12 @@ export class ForumService {
     return null;
   }
 
-  async remove(id: string, userId: string, isAdmin = false) {
+  async remove(
+    id: string,
+    userId: string,
+    isAdmin = false,
+    ipAddress?: string,
+  ) {
     const thread = await this.threadRepository.findOne(
       { id },
       { populate: ['authorId'] },
@@ -431,6 +440,7 @@ export class ForumService {
       oldValue: {
         title: thread.title,
       },
+      ipAddress,
     });
 
     await this.threadRepository.getEntityManager().removeAndFlush(thread);

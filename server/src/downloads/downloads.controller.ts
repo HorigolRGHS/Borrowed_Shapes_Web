@@ -27,6 +27,7 @@ import { CreateUploadUrlDto } from './dto/create-upload-url.dto';
 import { ConfirmUploadDto } from './dto/confirm-upload.dto';
 import { DownloadHistoryQueryDto } from './dto/download-history-query.dto';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Downloads')
 @Controller('downloads')
@@ -98,7 +99,7 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const userId = this.tryExtractUserId(req);
-    const clientIp = req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0';
+    const clientIp = getClientIp(req);
 
     const data = await this.downloadsService.requestDownload(
       id,

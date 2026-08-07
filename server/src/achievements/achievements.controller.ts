@@ -42,6 +42,7 @@ import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { getProxyMediaUrl } from '../storage/media-utils';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Achievements')
 @Roles('USER', 'ADMIN')
@@ -345,7 +346,7 @@ export class AchievementController {
     @Body() dto: CreateAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.create(dto, user.userId);
+    await this.achievementService.create(dto, user.userId, getClientIp(req));
     return okResponse(
       'achievements.create_success',
       null,
@@ -364,7 +365,7 @@ export class AchievementController {
     @Body() dto: UpdateAchievementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.update(id, dto, user.userId);
+    await this.achievementService.update(id, dto, user.userId, getClientIp(req));
     return okResponse(
       'achievements.update_success',
       null,
@@ -381,7 +382,7 @@ export class AchievementController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.achievementService.delete(id, user.userId);
+    await this.achievementService.delete(id, user.userId, getClientIp(req));
     return okResponse(
       'achievements.delete_success',
       null,

@@ -248,7 +248,7 @@ export default function SystemAuditLogsPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs mb-1 block">Search</Label>
+              <Label className="text-xs mb-1 block">&nbsp;</Label>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input

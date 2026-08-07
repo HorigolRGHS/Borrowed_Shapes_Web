@@ -227,6 +227,7 @@ export default function AccountManagementPage() {
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [auditModalOpen, setAuditModalOpen] = useState(false);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [modalActionLoading, setModalActionLoading] = useState(false);
 
   // Form states
   const [editForm, setEditForm] = useState({ displayName: "", imgUrl: "" });
@@ -407,21 +408,28 @@ export default function AccountManagementPage() {
   };
 
   const submitEdit = async () => {
+    if (modalActionLoading) return;
+    setModalActionLoading(true);
     try {
-      const payload: any = {
-        displayName: editForm.displayName,
-      };
-      
+      const payload: any = {};
+      if (editForm.displayName !== selectedUser?.displayName) {
+        payload.displayName = editForm.displayName;
+      }
       if (editForm.imgUrl !== (selectedUser?.imgUrl || "")) {
         payload.imgUrl = editForm.imgUrl || null;
       }
 
       await api.patch(`/account/admin/users/${selectedUser?.id}/profile`, payload);
+      toast.success(t("admin.account.messages.update_success") || "Account updated successfully.");
       setEditModalOpen(false);
-      fetchUserDetails(selectedUser!.id);
-      fetchUsers();
+      if (selectedUser?.id) {
+        await fetchUserDetails(selectedUser.id);
+      }
+      await fetchUsers();
     } catch (err: any) {
-      alert(err.message || t("admin.account.messages.generic_error"));
+      toast.error(err.response?.data?.message || err.message || t("admin.account.messages.generic_error"));
+    } finally {
+      setModalActionLoading(false);
     }
   };
 
@@ -433,21 +441,29 @@ export default function AccountManagementPage() {
   };
 
   const submitRole = async () => {
+    if (modalActionLoading) return;
     try {
       if (roleForm.role === selectedUser?.role) {
         setRoleModalOpen(false);
         return;
       }
+      setModalActionLoading(true);
       await api.patch(`/account/admin/users/${selectedUser?.id}/role`, { role: roleForm.role });
+      toast.success(t("admin.account.role.updateSuccess") || "Account role updated successfully.");
       setRoleModalOpen(false);
-      fetchUserDetails(selectedUser!.id);
-      fetchUsers();
+      if (selectedUser?.id) {
+        await fetchUserDetails(selectedUser.id);
+      }
+      await fetchUsers();
     } catch (err: any) {
-      alert(err.message || t("admin.account.messages.generic_error"));
+      toast.error(err.response?.data?.message || err.message || t("admin.account.role.updateFailed") || t("admin.account.messages.generic_error"));
+    } finally {
+      setModalActionLoading(false);
     }
   };
 
   const submitBan = async () => {
+    if (modalActionLoading) return;
     setBanReasonError("");
     const plainReason = stripHtml(banForm.reason);
     if (plainReason.length === 0) {
@@ -459,59 +475,85 @@ export default function AccountManagementPage() {
       return;
     }
 
-    try {
-      let expires = null;
-      if (banForm.banExpiresAt) {
-        const [year, month, day] = banForm.banExpiresAt.split("-").map(Number);
-        const banDate = new Date(year, month - 1, day, 23, 59, 59, 999);
-        if (banDate <= new Date()) {
-          toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
-          return;
-        }
-        expires = banDate.toISOString();
+    let expires = null;
+    if (banForm.banExpiresAt) {
+      const [year, month, day] = banForm.banExpiresAt.split("-").map(Number);
+      const banDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+      if (banDate <= new Date()) {
+        toast.error(t("admin.account.modal.ban_date_past") || "Ban expiration date must be in the future.");
+        return;
       }
+      expires = banDate.toISOString();
+    }
+
+    setModalActionLoading(true);
+    try {
       await api.patch(`/account/admin/users/${selectedUser?.id}/ban`, {
-        reason: stripHtml(banForm.reason), // Ensure we only store plain text to prevent XSS
+        reason: plainReason, // Ensure we only store plain text to prevent XSS
         banExpiresAt: expires,
       });
+      toast.success(t("admin.account.messages.ban_success") || "Account banned successfully.");
       setBanModalOpen(false);
-      fetchUserDetails(selectedUser!.id);
-      fetchUsers();
+      if (selectedUser?.id) {
+        await fetchUserDetails(selectedUser.id);
+      }
+      await fetchUsers();
     } catch (err: any) {
-      alert(err.message || t("admin.account.messages.generic_error"));
+      toast.error(err.response?.data?.message || err.message || t("admin.account.messages.generic_error"));
+    } finally {
+      setModalActionLoading(false);
     }
   };
 
   const submitUnban = async () => {
+    if (modalActionLoading) return;
+    setModalActionLoading(true);
     try {
       await api.patch(`/account/admin/users/${selectedUser?.id}/unban`);
+      toast.success(t("admin.account.messages.unban_success") || "Account unbanned successfully.");
       setUnbanModalOpen(false);
-      fetchUserDetails(selectedUser!.id);
-      fetchUsers();
+      if (selectedUser?.id) {
+        await fetchUserDetails(selectedUser.id);
+      }
+      await fetchUsers();
     } catch (err: any) {
-      alert(err.message || t("admin.account.messages.generic_error"));
+      toast.error(err.response?.data?.message || err.message || t("admin.account.messages.generic_error"));
+    } finally {
+      setModalActionLoading(false);
     }
   };
 
   const submitDelete = async () => {
+    if (modalActionLoading) return;
+    setModalActionLoading(true);
     try {
       await api.delete(`/account/admin/users/${selectedUser?.id}`);
+      toast.success(t("admin.account.messages.delete_success") || "Account deleted successfully.");
       setDeleteModalOpen(false);
       closeDetail();
-      fetchUsers();
+      await fetchUsers();
     } catch (err: any) {
-      alert(err.message || t("admin.account.messages.generic_error"));
+      toast.error(err.response?.data?.message || err.message || t("admin.account.messages.generic_error"));
+    } finally {
+      setModalActionLoading(false);
     }
   };
 
   const submitRestore = async () => {
+    if (modalActionLoading) return;
+    setModalActionLoading(true);
     try {
       await api.patch(`/account/admin/users/${selectedUser?.id}/restore`);
+      toast.success(t("admin.account.messages.restore_success") || "Account restored successfully.");
       setRestoreModalOpen(false);
-      fetchUserDetails(selectedUser!.id);
-      fetchUsers();
+      if (selectedUser?.id) {
+        await fetchUserDetails(selectedUser.id);
+      }
+      await fetchUsers();
     } catch (err: any) {
-      alert(err.message || t("admin.account.messages.generic_error"));
+      toast.error(err.response?.data?.message || err.message || t("admin.account.messages.generic_error"));
+    } finally {
+      setModalActionLoading(false);
     }
   };
 
@@ -593,8 +635,18 @@ export default function AccountManagementPage() {
   };
 
   const renderRoleBadge = (role: string) => {
-    if (role === 'ADMIN') return <Badge variant="outline" className="text-amber-500 border-amber-500">{role}</Badge>;
-    return <Badge variant="outline" className="text-muted-foreground">{role}</Badge>;
+    if (role === 'ADMIN') {
+      return (
+        <Badge variant="outline" className="text-amber-500 border-amber-500">
+          {t("admin.account.role.admin") || "Admin"}
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        {t("admin.account.role.user") || "User"}
+      </Badge>
+    );
   };
 
   if (viewingDetail && selectedUser) {
@@ -875,18 +927,23 @@ export default function AccountManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.avatar_url")}</Label>
-                <Input value={editForm.imgUrl} onChange={e => setEditForm({...editForm, imgUrl: e.target.value})} placeholder="https://..." />
+                <Input disabled value={editForm.imgUrl} onChange={e => setEditForm({...editForm, imgUrl: e.target.value})} placeholder="https://..." />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditModalOpen(false)}>{t("admin.account.actions.cancel")}</Button>
-              <Button onClick={submitEdit}>{t("admin.account.actions.save")}</Button>
+              <Button variant="outline" onClick={() => setEditModalOpen(false)} disabled={modalActionLoading}>
+                {t("admin.account.actions.cancel")}
+              </Button>
+              <Button onClick={submitEdit} disabled={modalActionLoading}>
+                {modalActionLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {t("admin.account.actions.save")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Role Modal */}
-        <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
+        <Dialog open={roleModalOpen} onOpenChange={(open) => !modalActionLoading && setRoleModalOpen(open)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t("admin.account.role.changeRole") || "Change Role"}</DialogTitle>
@@ -927,8 +984,11 @@ export default function AccountManagementPage() {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setRoleModalOpen(false)}>{t("admin.account.role.cancel") || "Cancel"}</Button>
-              <Button onClick={submitRole} disabled={roleForm.role === selectedUser?.role}>
+              <Button variant="outline" onClick={() => setRoleModalOpen(false)} disabled={modalActionLoading}>
+                {t("admin.account.role.cancel") || "Cancel"}
+              </Button>
+              <Button onClick={submitRole} disabled={modalActionLoading || roleForm.role === selectedUser?.role}>
+                {modalActionLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
                 {t("admin.account.role.save") || "Save Role"}
               </Button>
             </DialogFooter>
@@ -937,6 +997,7 @@ export default function AccountManagementPage() {
 
         {/* Ban Modal with CKEditor */}
         <Dialog open={banModalOpen} onOpenChange={(open) => {
+          if (modalActionLoading) return;
           if (!open) setBanModalOpen(false);
           else {
             setBanForm({ reason: "", banExpiresAt: "" });
@@ -979,18 +1040,24 @@ export default function AccountManagementPage() {
                   min={new Date().toISOString().split("T")[0]} 
                   value={banForm.banExpiresAt} 
                   onChange={e => setBanForm({...banForm, banExpiresAt: e.target.value})} 
+                  disabled={modalActionLoading}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setBanModalOpen(false)}>{t("admin.account.actions.cancel")}</Button>
-              <Button variant="destructive" onClick={submitBan}>{t("admin.account.actions.confirm_ban")}</Button>
+              <Button variant="outline" onClick={() => setBanModalOpen(false)} disabled={modalActionLoading}>
+                {t("admin.account.actions.cancel")}
+              </Button>
+              <Button variant="destructive" onClick={submitBan} disabled={modalActionLoading}>
+                {modalActionLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {t("admin.account.actions.confirm_ban")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Unban Modal */}
-        <Dialog open={unbanModalOpen} onOpenChange={setUnbanModalOpen}>
+        <Dialog open={unbanModalOpen} onOpenChange={(open) => !modalActionLoading && setUnbanModalOpen(open)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t("admin.account.modal.unban_title")}</DialogTitle>
@@ -999,14 +1066,19 @@ export default function AccountManagementPage() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => setUnbanModalOpen(false)}>{t("admin.account.actions.cancel")}</Button>
-              <Button onClick={submitUnban}>{t("admin.account.actions.confirm_unban")}</Button>
+              <Button variant="outline" onClick={() => setUnbanModalOpen(false)} disabled={modalActionLoading}>
+                {t("admin.account.actions.cancel")}
+              </Button>
+              <Button onClick={submitUnban} disabled={modalActionLoading}>
+                {modalActionLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {t("admin.account.actions.confirm_unban")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Delete Modal */}
-        <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <Dialog open={deleteModalOpen} onOpenChange={(open) => !modalActionLoading && setDeleteModalOpen(open)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="text-red-500">{t("admin.account.modal.delete_title")}</DialogTitle>
@@ -1015,14 +1087,19 @@ export default function AccountManagementPage() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>{t("admin.account.actions.cancel")}</Button>
-              <Button variant="destructive" onClick={submitDelete}>{t("admin.account.actions.confirm_delete")}</Button>
+              <Button variant="outline" onClick={() => setDeleteModalOpen(false)} disabled={modalActionLoading}>
+                {t("admin.account.actions.cancel")}
+              </Button>
+              <Button variant="destructive" onClick={submitDelete} disabled={modalActionLoading}>
+                {modalActionLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {t("admin.account.actions.confirm_delete")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Restore Modal */}
-        <Dialog open={restoreModalOpen} onOpenChange={setRestoreModalOpen}>
+        <Dialog open={restoreModalOpen} onOpenChange={(open) => !modalActionLoading && setRestoreModalOpen(open)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="text-green-500">{t("admin.account.modal.restore_title") || "Restore Account"}</DialogTitle>
@@ -1031,8 +1108,13 @@ export default function AccountManagementPage() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => setRestoreModalOpen(false)}>{t("admin.account.actions.cancel") || "Cancel"}</Button>
-              <Button onClick={submitRestore}>{t("admin.account.actions.confirm_restore") || "Confirm Restore"}</Button>
+              <Button variant="outline" onClick={() => setRestoreModalOpen(false)} disabled={modalActionLoading}>
+                {t("admin.account.actions.cancel") || "Cancel"}
+              </Button>
+              <Button onClick={submitRestore} disabled={modalActionLoading}>
+                {modalActionLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {t("admin.account.actions.confirm_restore") || "Confirm Restore"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1044,7 +1126,7 @@ export default function AccountManagementPage() {
               <DialogTitle>{(t("admin.account.modal.audit_title") || "Audit logs").replace("{name}", selectedUser?.displayName || "")}</DialogTitle>
             </DialogHeader>
             <div className="mt-4">
-              {auditLoading ? <div className="py-8 text-center text-muted-foreground">Loading...</div> : auditLogs.length === 0 ? <div className="py-8 text-center text-muted-foreground">{t("admin.account.empty.no_audit_logs")}</div> : (
+              {auditLoading ? <div className="py-8 text-center text-muted-foreground">{t("common.loading") || "Loading..."}</div> : auditLogs.length === 0 ? <div className="py-8 text-center text-muted-foreground">{t("admin.account.empty.no_audit_logs")}</div> : (
                 <div className="space-y-4">
                   {auditLogs.map(log => (
                     <div key={log.id} className="border border-border p-4 rounded-md text-sm space-y-2 bg-card">
@@ -1165,7 +1247,7 @@ export default function AccountManagementPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Loading...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">{t("common.loading") || "Loading..."}</TableCell></TableRow>
                 ) : users.length === 0 ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">{t("admin.account.empty.no_users") || "No users found"}</TableCell></TableRow>
                 ) : (

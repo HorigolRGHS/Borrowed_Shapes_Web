@@ -68,8 +68,16 @@ export default function ProfilePage() {
             <div className="text-center md:text-left">
               <h1 className="text-4xl font-extrabold tracking-tight">{user.displayName}</h1>
               <p className="text-muted-foreground mt-1">{user.email}</p>
-              <span className="inline-block mt-2 text-xs font-semibold px-3 py-1 rounded-full bg-muted dark:bg-white/10 text-muted-foreground dark:text-white/80 border border-border dark:border-white/20">
-                {user.role}
+              <span className={`inline-block mt-2 text-xs font-semibold px-3 py-1 rounded-full border ${
+                user.role && user.role.toUpperCase() === "ADMIN"
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                  : "bg-muted dark:bg-white/10 text-muted-foreground dark:text-white/80 border-border dark:border-white/20"
+              }`}>
+                {user.role && (user.role.toUpperCase() === "ADMIN"
+                  ? t("profile.role.admin") || "Admin"
+                  : user.role.toUpperCase() === "USER"
+                  ? t("profile.role.user") || "User"
+                  : user.role)}
               </span>
             </div>
           </div>

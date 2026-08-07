@@ -76,7 +76,11 @@ export function UserMenu({ displayName, role, imgUrl }: Props) {
           )}
           {role && (
             <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider mt-1">
-              {role}
+              {role.toUpperCase() === "ADMIN"
+                ? t("profile.role.admin") || "Admin"
+                : role.toUpperCase() === "USER"
+                ? t("profile.role.user") || "User"
+                : role}
             </span>
           )}
         </DropdownMenuLabel>

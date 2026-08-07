@@ -55,6 +55,7 @@ import {
 import { WikiUploadResponseDto } from '../dto/wiki-upload.dto';
 import { UPLOAD_MAX_SIZE } from '../dto/wiki-constants';
 import { resolveLocale } from '../../common/utils/resolve-locale';
+import { getClientIp } from '../../common/utils/client-ip.util';
 import { ApiResponseDto, okResponse } from '../../common/dto/api-response.dto';
 import { MulterExceptionFilter } from './multer-exception.filter';
 
@@ -259,7 +260,7 @@ export class WikiController {
     const data = await this.revisionService.create(
       dto,
       user.userId,
-      req.ip ?? 'unknown',
+      getClientIp(req),
     );
     return okResponse('wiki.created', data, `${req.method} ${req.path}`);
   }
@@ -295,7 +296,7 @@ export class WikiController {
       wikiId,
       file,
       user.userId,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse('wiki.uploaded', data, `${req.method} ${req.path}`);
   }
@@ -317,7 +318,7 @@ export class WikiController {
       id,
       dto,
       user.userId,
-      req.ip ?? 'unknown',
+      getClientIp(req),
     );
     return okResponse('wiki.rolled_back', data, `${req.method} ${req.path}`);
   }
@@ -335,7 +336,7 @@ export class WikiController {
     const data = await this.revisionService.publish(
       id,
       user.userId,
-      req.ip ?? 'unknown',
+      getClientIp(req),
     );
     return okResponse('wiki.published', data, `${req.method} ${req.path}`);
   }
@@ -353,7 +354,7 @@ export class WikiController {
     const data = await this.revisionService.unpublish(
       id,
       user.userId,
-      req.ip ?? 'unknown',
+      getClientIp(req),
     );
     return okResponse('wiki.unpublished', data, `${req.method} ${req.path}`);
   }
@@ -375,7 +376,7 @@ export class WikiController {
       id,
       dto,
       user.userId,
-      req.ip ?? 'unknown',
+      getClientIp(req),
     );
     return okResponse('wiki.updated', data, `${req.method} ${req.path}`);
   }
@@ -389,7 +390,7 @@ export class WikiController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.revisionService.delete(id, user.userId, req.ip ?? 'unknown');
+    await this.revisionService.delete(id, user.userId, getClientIp(req));
     return okResponse('wiki.deleted', null, `${req.method} ${req.path}`);
   }
 }

@@ -36,11 +36,10 @@ function formatTime(totalSeconds: number): string {
 function formatDate(dateInput: string | Date, locale: string): string {
   const date = new Date(dateInput);
   if (isNaN(date.getTime())) return "";
-  return date.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
 }
 
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({

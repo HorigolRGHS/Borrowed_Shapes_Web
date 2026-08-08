@@ -811,16 +811,23 @@ function StatBox({
   );
 }
 
+// t passed as prop so these components work both inside and outside a useI18n context.
+// Color logic from HEAD; prop signature + dynamic key lookup from origin/dev.
 function SessionStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
-  const isFinished = status === "FINISHED" || status === "COMPLETED";
-  const label = t(`gameResults.session_status_${status.toLowerCase()}`) || status;
+  const normalized = status?.toUpperCase();
+  const isFinished = normalized === "FINISHED" || normalized === "COMPLETED";
+  const isAbandoned = normalized === "ABANDONED";
+  const label =
+    t(`gameResults.session_status_${status.toLowerCase()}`) || status;
   return (
     <Badge
       variant="outline"
       className={`${BADGE_BASE_CLASS} ${
         isFinished
           ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-          : "border-amber-500/70 bg-amber-500/10 text-amber-300"
+          : isAbandoned
+            ? "border-rose-500/70 bg-rose-500/10 text-rose-300"
+            : "border-amber-500/70 bg-amber-500/10 text-amber-300"
       }`}
     >
       {label}
@@ -830,15 +837,23 @@ function SessionStatusBadge({ status, t }: { status: string; t: (key: string) =>
 
 function SessionResultBadge({ result, t }: { result?: string; t: (key: string) => string }) {
   if (!result) return <span className="text-muted-foreground">—</span>;
-  const isWin = result === "WIN";
-  const label = t(`gameResults.session_result_${result.toLowerCase()}`) || result;
+  const normalized = result?.toUpperCase();
+  const isWin = normalized === "WIN";
+  const isLose = normalized === "LOSE";
+  const isAbandoned = normalized === "ABANDONED";
+  const label =
+    t(`gameResults.session_result_${result.toLowerCase()}`) || result;
   return (
     <Badge
       variant="outline"
       className={`${BADGE_BASE_CLASS} ${
         isWin
           ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-300"
-          : "border-rose-500/70 bg-rose-500/10 text-rose-300"
+          : isLose
+            ? "border-rose-500/70 bg-rose-500/10 text-rose-300"
+            : isAbandoned
+              ? "border-orange-500/70 bg-orange-500/10 text-orange-300"
+              : "border-slate-500/70 bg-slate-500/10 text-muted-foreground"
       }`}
     >
       {label}

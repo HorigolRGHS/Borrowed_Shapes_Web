@@ -22,9 +22,10 @@ export class GameSessionRepository extends BaseRepository<GameSession> {
     em: EntityManager,
     runId: string,
   ): Promise<GameSession | null> {
-    return em.findOne(GameSession, {
-      runId,
-      status: GameSessionStatus.IN_PROGRESS,
-    });
+    return em.findOne(
+      GameSession,
+      { runId, status: GameSessionStatus.IN_PROGRESS },
+      { orderBy: { startedAt: 'DESC' } },
+    );
   }
 }

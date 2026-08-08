@@ -46,12 +46,18 @@ export class GameResultRepository extends BaseRepository<GameRun> {
 
     if (query.isAbandoned) {
       conditions.push('gr."isCompleted" = false');
-      conditions.push('gr."completedAt" IS NOT NULL');
+      conditions.push(
+        `(gr."completedAt" IS NOT NULL OR gr."startedAt" < NOW() - INTERVAL '12 hours' OR EXISTS (SELECT 1 FROM game."GameSession" gs WHERE gs."runId" = gr.id AND gs.id = (SELECT gs2.id FROM game."GameSession" gs2 INNER JOIN game."Level" l2 ON l2.id = gs2."levelId" WHERE gs2."runId" = gr.id ORDER BY l2."order" DESC, gs2."startedAt" DESC LIMIT 1) AND (gs.status IN ('ABANDONED', 'FINISHED') OR gs."endedAt" IS NOT NULL)))`,
+      );
     } else if (query.isCompleted !== undefined) {
       conditions.push('gr."isCompleted" = ?');
       params.push(query.isCompleted);
       if (query.isCompleted === false) {
         conditions.push('gr."completedAt" IS NULL');
+        conditions.push("gr.\"startedAt\" >= NOW() - INTERVAL '12 hours'");
+        conditions.push(
+          `NOT EXISTS (SELECT 1 FROM game."GameSession" gs WHERE gs."runId" = gr.id AND gs.id = (SELECT gs2.id FROM game."GameSession" gs2 INNER JOIN game."Level" l2 ON l2.id = gs2."levelId" WHERE gs2."runId" = gr.id ORDER BY l2."order" DESC, gs2."startedAt" DESC LIMIT 1) AND (gs.status IN ('ABANDONED', 'FINISHED') OR gs."endedAt" IS NOT NULL))`,
+        );
       }
     }
 

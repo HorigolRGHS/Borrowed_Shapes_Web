@@ -5,14 +5,16 @@ assert.deepEqual(normalizeWikiFormMetadata(null), {
   tags: [],
   tags_vi: [],
   stats: {},
+  stats_vi: {},
   relatedPages: [],
 });
 
-assert.deepEqual(normalizeWikiFormMetadata({ category: "Boss" }), {
-  category: "Boss",
+assert.deepEqual(normalizeWikiFormMetadata({ category: "Character" }), {
+  category: "Character",
   tags: [],
   tags_vi: [],
   stats: {},
+  stats_vi: {},
   relatedPages: [],
 });
 
@@ -22,6 +24,7 @@ assert.deepEqual(
     tags: ["dragon"],
     tags_vi: [],
     stats: { hp: 10 },
+    stats_vi: {},
     relatedPages: [],
   },
 );

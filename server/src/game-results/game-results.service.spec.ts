@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { GameResultService } from './game-results.service';
 import { GameRun } from '../entities/GameRun';
 import { GameResultRepository } from './repositories/game-results.repository';
@@ -486,16 +486,30 @@ describe('GameResultService', () => {
   });
 
   describe('delete', () => {
-    it('should_delete_run_when_found (Normal)', async () => {
+    it('should_delete_run_when_found_and_completed (Normal)', async () => {
       const mockRun = new GameRun();
+      mockRun.isCompleted = true;
       jest.spyOn(repository, 'findOne').mockResolvedValue(mockRun);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
       jest.spyOn(repository, 'removeAndFlush').mockResolvedValue();
 
       await expect(service.delete('run-1')).resolves.toBeUndefined();
       expect(repository.removeAndFlush).toHaveBeenCalledWith(mockRun);
     });
 
-    it('should_throw_not_found_when_deleting_missing_run (Abnormal)', async () => {
+    it('should_throw_bad_request_when_deleting_in_progress_run (Abnormal)', async () => {
+      const mockRun = new GameRun();
+      mockRun.isCompleted = false;
+      mockRun.startedAt = new Date();
+      jest.spyOn(repository, 'findOne').mockResolvedValue(mockRun);
+      jest.spyOn(repository, 'getRunSessions').mockResolvedValue([]);
+
+      await expect(service.delete('run-in-progress')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should_throw_not_found_when_deleting_missing_run (Boundary)', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
 
       await expect(service.delete('non-existent')).rejects.toThrow(

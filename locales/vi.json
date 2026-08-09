@@ -19,6 +19,7 @@
     "login": "Đăng nhập",
     "email": "Email",
     "password": "Mật khẩu",
+    "unverified_email_ban_reason": "Tài khoản bị khóa do chưa xác thực email. Vui lòng kiểm tra hộp thư của bạn.",
     "signing_in": "Đang đăng nhập...",
     "login_success": "Đăng nhập thành công!",
     "login_failed": "Đăng nhập thất bại",
@@ -291,7 +292,6 @@
         "Item": "Vật phẩm",
         "Map": "Bản đồ",
         "Mechanic": "Cơ chế",
-        "Boss": "Boss",
         "Other": "Khác"
       },
       "infobox_image": "Ảnh infobox",

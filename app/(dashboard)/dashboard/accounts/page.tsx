@@ -689,7 +689,11 @@ export default function AccountManagementPage() {
                   </div>
                   <div className="pt-2">
                     <span className="text-muted-foreground block mb-1">{t("admin.account.detail.ban_reason") || "Ban Reason"}:</span>
-                    <p className="bg-background/50 border border-red-500/20 p-3 rounded-md italic text-foreground break-words">{selectedUser.banReason || t("admin.account.detail.no_reason") || "No reason provided"}</p>
+                    <p className="bg-background/50 border border-red-500/20 p-3 rounded-md italic text-foreground break-words">
+                      {selectedUser.banReason === 'auth.unverified_email_ban_reason' 
+                        ? t("auth.unverified_email_ban_reason") 
+                        : (selectedUser.banReason || t("admin.account.detail.no_reason") || "No reason provided")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>

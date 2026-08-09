@@ -140,7 +140,7 @@ function formatLeaderboardTime(totalSec?: number): string {
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleString();
 }
 
 export default function GameResultsPage() {

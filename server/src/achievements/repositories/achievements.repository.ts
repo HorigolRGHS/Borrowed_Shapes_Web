@@ -110,13 +110,13 @@ export class AchievementRepository extends BaseRepository<Achievement> {
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const orderDir = query.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    let orderBy = `ORDER BY "earnedCount" ${orderDir}`; // default
+    let orderBy = `ORDER BY "earnedCount" ${orderDir}, a.name ASC, a.id ASC`; // default
     if (query.sortBy === 'name') {
-      orderBy = `ORDER BY a.name ${orderDir}`;
+      orderBy = `ORDER BY a.name ${orderDir}, a.id ASC`;
     } else if (query.sortBy === 'type') {
-      orderBy = `ORDER BY a.type ${orderDir}`;
+      orderBy = `ORDER BY a.type ${orderDir}, a.name ASC, a.id ASC`;
     } else if (query.sortBy === 'date') {
-      orderBy = `ORDER BY a."expiresAt" ${orderDir}`;
+      orderBy = `ORDER BY a."expiresAt" ${orderDir} NULLS LAST, a.name ASC, a.id ASC`;
     }
 
     const countSql = `

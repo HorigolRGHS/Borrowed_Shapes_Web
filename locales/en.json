@@ -19,6 +19,7 @@
     "login": "Log in",
     "email": "Email",
     "password": "Password",
+    "unverified_email_ban_reason": "Account banned due to unverified email. Please check your inbox.",
     "signing_in": "Signing in...",
     "login_success": "Log in successful!",
     "login_failed": "Log in failed",
@@ -292,7 +293,6 @@
         "Item": "Item",
         "Map": "Map",
         "Mechanic": "Mechanic",
-        "Boss": "Boss",
         "Other": "Other"
       },
       "infobox_image": "Infobox image",
@@ -1356,6 +1356,7 @@
     "delete_confirm_undone": "This action cannot be undone.",
     "delete_success": "Game run deleted successfully",
     "delete_failed": "Failed to delete game run",
+    "cannot_delete_in_progress": "Cannot delete a game run that is in progress",
     "cancel": "Cancel",
     "detail_title": "Game Result Details",
     "detail_subtitle": "Viewing full details for run",
@@ -1403,7 +1404,7 @@
     "session_result_lose": "Lose",
     "session_result_loss": "Lose",
     "session_result_abandoned": "Abandoned",
-    "session_result_none": "\u2014",
+    "session_result_none": "—",
     "level_names": {
       "Lobby": "Lobby",
       "Kitchen": "Kitchen",

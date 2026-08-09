@@ -18,7 +18,6 @@ export const WIKI_CATEGORIES = [
   'Item',
   'Map',
   'Mechanic',
-  'Boss',
   'Other',
 ] as const;
 export type WikiCategory = (typeof WIKI_CATEGORIES)[number];

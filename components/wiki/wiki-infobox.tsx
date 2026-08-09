@@ -69,7 +69,7 @@ export function WikiInfobox({
 }: Props) {
   // Persisted rows are produced by compactMetadata, so they may omit empty
   // collection fields. Fill them in with empty defaults before parsing so a
-  // sparse but valid row (e.g., {category: "Boss"}) doesn't fail validation.
+  // sparse but valid row (e.g., {category: "Character"}) doesn't fail validation.
   const merged = {
     ...emptyWikiMetadata,
     ...(metadata ?? {}),

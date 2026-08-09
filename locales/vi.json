@@ -1348,6 +1348,7 @@
     "delete_confirm_undone": "Hành động này không thể hoàn tác.",
     "delete_success": "Xóa lượt chơi thành công",
     "delete_failed": "Xóa lượt chơi thất bại",
+    "cannot_delete_in_progress": "Không thể xóa lượt chơi đang trong trạng thái đang chơi",
     "cancel": "Hủy",
     "detail_title": "Chi tiết kết quả trò chơi",
     "detail_subtitle": "Xem chi tiết lượt chơi",
@@ -1393,7 +1394,6 @@
     "session_status_abandoned": "Bỏ cuộc",
     "session_result_win": "Thắng",
     "session_result_lose": "Thua",
-    "session_result_loss": "Thua",
     "session_result_abandoned": "Bỏ cuộc",
     "session_result_none": "—",
     "level_names": {

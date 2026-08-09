@@ -140,7 +140,7 @@ function formatLeaderboardTime(totalSec?: number): string {
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleString();
 }
 
 export default function GameResultsPage() {
@@ -300,6 +300,11 @@ export default function GameResultsPage() {
   };
 
   const handleDeleteRun = async (id: string) => {
+    if (deleteRun && !deleteRun.isCompleted && !deleteRun.completedAt) {
+      toast.error(t("gameResults.cannot_delete_in_progress"));
+      setDeleteRun(null);
+      return;
+    }
     try {
       const response = await axios.delete(`/api/game-results/delete/${id}`);
       if (response.data?.success) {
@@ -666,8 +671,15 @@ export default function GameResultsPage() {
                                     {t("gameResults.action_view")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => setDeleteRun(run)}
-                                    className="cursor-pointer text-rose-400 focus:text-rose-400"
+                                    onClick={() => {
+                                      if (!run.isCompleted && !run.completedAt) {
+                                        toast.error(t("gameResults.cannot_delete_in_progress"));
+                                        return;
+                                      }
+                                      setDeleteRun(run);
+                                    }}
+                                    disabled={!run.isCompleted && !run.completedAt}
+                                    className="cursor-pointer text-rose-400 focus:text-rose-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     {t("gameResults.action_delete")}
                                   </DropdownMenuItem>

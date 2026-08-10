@@ -98,6 +98,9 @@ export default function LeaderboardPage() {
             if (userProfileId && p.gameProfileId) {
               return p.gameProfileId === userProfileId;
             }
+            if (p.gameProfileId && !userProfileId) {
+              return false;
+            }
             return p.displayName === currentUser.displayName;
           })
         );
@@ -154,6 +157,9 @@ export default function LeaderboardPage() {
             const userProfileId = currentUser.gameProfileId || currentUser.profileId || currentUser.id;
             if (userProfileId && p.gameProfileId) {
               return p.gameProfileId === userProfileId;
+            }
+            if (p.gameProfileId && !userProfileId) {
+              return false;
             }
             return p.displayName === currentUser.displayName;
           }),

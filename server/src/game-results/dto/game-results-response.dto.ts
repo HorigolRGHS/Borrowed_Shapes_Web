@@ -382,6 +382,11 @@ export class PlayerHistoryResponseDto {
 // ─── Leaderboard DTOs ────────────────────────────────────
 
 export class LeaderboardPlayerDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  gameProfileId?: string;
+
   @ApiProperty()
   @IsString()
   displayName!: string;

@@ -266,6 +266,7 @@ export class GameResultService {
         totalTimeSec: row.totalTimeSec,
         completedAt: row.completedAt,
         players: runPlayers.map((p) => ({
+          gameProfileId: p.gameProfileId,
           displayName: p.displayName,
           avatarUrl: p.avatarUrl,
           badgeImageUrl: p.badgeImageUrl,

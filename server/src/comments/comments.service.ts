@@ -34,7 +34,7 @@ export class CommentsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async create(dto: CreateCommentDto, userId: string) {
+  async create(dto: CreateCommentDto, userId: string, ipAddress?: string) {
     const thread = await this.threadRepository.findOne({ id: dto.threadId });
     if (!thread) throw new NotFoundException('comments.thread_not_found');
 
@@ -68,6 +68,7 @@ export class CommentsService {
       actionType: AuditActionType.CREATE,
       entityName: 'ForumComment',
       entityId: comment.id,
+      ipAddress,
       newValue: {
         content: comment.content,
         threadId: thread.id,
@@ -123,7 +124,7 @@ export class CommentsService {
     );
   }
 
-  async update(id: string, dto: UpdateCommentDto, userId: string) {
+  async update(id: string, dto: UpdateCommentDto, userId: string, ipAddress?: string) {
     const comment = await this.commentRepository.findOne(
       { id },
       { populate: ['authorId'] },
@@ -145,6 +146,7 @@ export class CommentsService {
       actionType: AuditActionType.UPDATE,
       entityName: 'ForumComment',
       entityId: comment.id,
+      ipAddress,
       newValue: {
         content: comment.content,
       },
@@ -155,7 +157,7 @@ export class CommentsService {
     return comment;
   }
 
-  async remove(id: string, userId: string, isAdmin = false) {
+  async remove(id: string, userId: string, isAdmin = false, ipAddress?: string) {
     const comment = await this.commentRepository.findOne(
       { id },
       { populate: ['authorId'] },
@@ -174,6 +176,7 @@ export class CommentsService {
       actionType: AuditActionType.DELETE,
       entityName: 'ForumComment',
       entityId: comment.id,
+      ipAddress,
       oldValue: {
         isDeleted: false,
       },
@@ -186,7 +189,7 @@ export class CommentsService {
     return null;
   }
 
-  async vote(commentId: string, userId: string, value: 1 | -1) {
+  async vote(commentId: string, userId: string, value: 1 | -1, ipAddress?: string) {
     const comment = await this.commentRepository.findOne({ id: commentId });
     if (!comment) throw new NotFoundException('comments.comment_not_found');
 
@@ -220,6 +223,7 @@ export class CommentsService {
         actionType: AuditActionType.UPDATE,
         entityName: 'ForumComment',
         entityId: commentId,
+        ipAddress,
         newValue: { score: comment.score, userVote: value },
       });
 
@@ -238,6 +242,7 @@ export class CommentsService {
         actionType: AuditActionType.UPDATE,
         entityName: 'ForumComment',
         entityId: commentId,
+        ipAddress,
         newValue: { score: comment.score, userVote: null },
       });
 
@@ -258,6 +263,7 @@ export class CommentsService {
         actionType: AuditActionType.UPDATE,
         entityName: 'ForumComment',
         entityId: commentId,
+        ipAddress,
         newValue: { score: comment.score, userVote: value },
       });
 

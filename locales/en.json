@@ -1127,7 +1127,16 @@
         "summary_note": "Users will download this version from the public Download page.",
         "inactive_note": "Visible in the version list, but not used as the recommended download.",
         "current_version": "Current active version",
-        "new_version": "New active version"
+        "new_version": "New active version",
+        "breakdown": {
+          "property": "Property",
+          "current": "Current Active",
+          "new": "New Active",
+          "version": "Version",
+          "filename": "File Name",
+          "filesize": "File Size",
+          "uploaded": "Uploaded At"
+        }
       }
     },
     "accounts": {

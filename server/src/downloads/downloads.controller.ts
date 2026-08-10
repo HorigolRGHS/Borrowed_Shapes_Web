@@ -179,7 +179,7 @@ export class DownloadsController {
     @Req() req: Request & { user: any },
   ): Promise<ApiResponseDto<any>> {
     const adminId = req.user?.userId;
-    const data = await this.downloadsService.confirmUpload(adminId, dto);
+    const data = await this.downloadsService.confirmUpload(adminId, dto, getClientIp(req));
     return okResponse(
       'downloads.upload_confirmed',
       data,
@@ -204,7 +204,7 @@ export class DownloadsController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.downloadsService.setActiveVersion(id, user);
+    const data = await this.downloadsService.setActiveVersion(id, user, getClientIp(req));
     return okResponse(
       'downloads.set_active_success',
       data,
@@ -228,7 +228,7 @@ export class DownloadsController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.downloadsService.deleteVersion(id, user.userId);
+    const data = await this.downloadsService.deleteVersion(id, user.userId, getClientIp(req));
     return okResponse(
       'downloads.delete_success',
       data,

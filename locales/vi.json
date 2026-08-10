@@ -1124,7 +1124,16 @@
         "summary_note": "Người dùng sẽ tải phiên bản này từ trang Download công khai.",
         "inactive_note": "Vẫn hiển thị trong danh sách phiên bản, nhưng không phải bản tải khuyến nghị.",
         "current_version": "Phiên bản đang phát hành",
-        "new_version": "Phiên bản mới sẽ phát hành"
+        "new_version": "Phiên bản mới sẽ phát hành",
+        "breakdown": {
+          "property": "Thuộc tính",
+          "current": "Bản hiện tại",
+          "new": "Bản mới chọn",
+          "version": "Phiên bản",
+          "filename": "Tên tệp",
+          "filesize": "Dung lượng",
+          "uploaded": "Ngày tải lên"
+        }
       }
     },
     "accounts": {

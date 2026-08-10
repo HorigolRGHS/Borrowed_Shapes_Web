@@ -491,29 +491,28 @@ export default function DownloadManagementPage() {
                 {t("admin.download.active.warning") || "Use this when the newest upload has issues and you want users to download a stable older version."}
               </p>
             </div>
-            
-            <div className="space-y-3">
+            <div className="space-y-3 mt-4">
               {versions.find(v => v.isActive) && (
-                <div className="bg-muted/50 p-3 rounded-md text-sm flex items-center justify-between border">
-                  <div>
+                <div className="bg-muted/50 p-3 rounded-md text-sm flex items-center justify-between border gap-4">
+                  <div className="min-w-0 flex-1">
                     <span className="text-xs text-muted-foreground block mb-1">
                       {t("admin.download.active.current_version") || "Current active version"}
                     </span>
-                    <span className="font-medium">{versions.find(v => v.isActive)?.fileName}</span>
+                    <span className="font-medium block break-all">{versions.find(v => v.isActive)?.fileName}</span>
                   </div>
-                  <Badge variant="secondary">{versions.find(v => v.isActive)?.fileVersion}</Badge>
+                  <Badge variant="secondary" className="shrink-0">{versions.find(v => v.isActive)?.fileVersion}</Badge>
                 </div>
               )}
 
               {targetActiveVersion && (
-                <div className="bg-amber-500/10 p-3 rounded-md text-sm flex items-center justify-between border border-amber-500/30">
-                  <div>
+                <div className="bg-amber-500/10 p-3 rounded-md text-sm flex items-center justify-between border border-amber-500/30 gap-4">
+                  <div className="min-w-0 flex-1">
                     <span className="text-xs text-amber-600 dark:text-amber-500 block mb-1 font-medium">
                       {t("admin.download.active.new_version") || "New active version"}
                     </span>
-                    <span className="font-medium">{targetActiveVersion.fileName}</span>
+                    <span className="font-medium block break-all">{targetActiveVersion.fileName}</span>
                   </div>
-                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white">{targetActiveVersion.fileVersion}</Badge>
+                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white shrink-0">{targetActiveVersion.fileVersion}</Badge>
                 </div>
               )}
             </div>

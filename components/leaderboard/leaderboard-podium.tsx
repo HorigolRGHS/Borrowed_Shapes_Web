@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18/i18n-context";
 import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
 
 export interface LeaderboardPlayer {
+  gameProfileId?: string;
   displayName: string;
   avatarUrl?: string;
   badgeImageUrl?: string;

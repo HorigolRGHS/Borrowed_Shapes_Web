@@ -275,7 +275,9 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     ];
     const params: any[] = [];
 
-    if (query.scope === 'seasonal') {
+    const isSeasonal = query.scope === 'seasonal';
+
+    if (isSeasonal) {
       let month = query.seasonMonth;
       if (!month || !/^\d{4}-\d{2}$/.test(month)) {
         month = new Date().toISOString().slice(0, 7);
@@ -288,14 +290,10 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       conditions.push('gr."completedAt" >= ?');
       conditions.push('gr."completedAt" < ?');
       params.push(startOfTarget, startOfNext);
-
-      conditions.push(
-        '(UPPER(TRIM(gr."lobbyCode")) IN (SELECT UPPER(TRIM(st.code)) FROM game."SeasonTeam" st WHERE TO_CHAR(st."seasonMonth", \'YYYY-MM\') = ?) OR gr.id IN (SELECT grp."runId" FROM game."GameRunPlayer" grp JOIN game."SeasonTeamMember" stm ON stm."gameProfileId" = grp."gameProfileId" WHERE TO_CHAR(stm."seasonMonth", \'YYYY-MM\') = ?))',
-      );
-      params.push(month, month);
     }
 
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
+    const seasonalTeamWhere = isSeasonal ? 'WHERE tr."seasonTeamId" IS NOT NULL' : '';
 
     const countSql = `
       WITH team_runs AS (
@@ -340,6 +338,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr
+        ${seasonalTeamWhere}
       )
       SELECT COUNT(*) as count FROM ranked_team_runs WHERE rn = 1
     `;
@@ -389,6 +388,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr
+        ${seasonalTeamWhere}
       )
       SELECT
         r."runId",
@@ -398,7 +398,6 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = r."runId") as "totalPlayers"
       FROM ranked_team_runs r
       WHERE r.rn = 1
-      ORDER BY r."totalTimeSec" ASC, r."completedAt" ASC
       LIMIT ? OFFSET ?
     `;
     const dataParams = [...params, limit, offset];

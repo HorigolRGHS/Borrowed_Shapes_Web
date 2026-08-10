@@ -305,9 +305,17 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           gr."lobbyCode",
           gr."totalTimeSec",
           gr."completedAt",
-          STRING_AGG(grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature"
+          STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
+          MAX(st.id) as "seasonTeamId",
+          MAX(st.name) as "seasonTeamName"
         FROM game."GameRun" gr
         LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+        LEFT JOIN game."SeasonTeamMember" stm
+          ON stm."gameProfileId" = grp."gameProfileId"
+         AND TO_CHAR(stm."seasonMonth", 'YYYY-MM') = TO_CHAR(gr."completedAt", 'YYYY-MM')
+        LEFT JOIN game."SeasonTeam" st
+          ON st.id = stm."teamId"
+          OR (st.code IS NOT NULL AND UPPER(TRIM(st.code)) = UPPER(TRIM(gr."lobbyCode")))
         ${whereClause}
         GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
       ),
@@ -316,7 +324,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           tr.*,
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(
-              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              tr."seasonTeamId",
               NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
               tr."teamSignature"
             )
@@ -337,9 +345,17 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           gr."lobbyCode",
           gr."totalTimeSec",
           gr."completedAt",
-          STRING_AGG(grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature"
+          STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
+          MAX(st.id) as "seasonTeamId",
+          MAX(st.name) as "seasonTeamName"
         FROM game."GameRun" gr
         LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+        LEFT JOIN game."SeasonTeamMember" stm
+          ON stm."gameProfileId" = grp."gameProfileId"
+         AND TO_CHAR(stm."seasonMonth", 'YYYY-MM') = TO_CHAR(gr."completedAt", 'YYYY-MM')
+        LEFT JOIN game."SeasonTeam" st
+          ON st.id = stm."teamId"
+          OR (st.code IS NOT NULL AND UPPER(TRIM(st.code)) = UPPER(TRIM(gr."lobbyCode")))
         ${whereClause}
         GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
       ),
@@ -348,7 +364,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           tr.*,
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(
-              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
+              tr."seasonTeamId",
               NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
               tr."teamSignature"
             )
@@ -358,7 +374,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       )
       SELECT
         r."runId",
-        r."lobbyName",
+        COALESCE(r."seasonTeamName", r."lobbyName") as "lobbyName",
         r."totalTimeSec",
         r."completedAt",
         (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = r."runId") as "totalPlayers"

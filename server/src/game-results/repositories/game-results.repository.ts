@@ -398,6 +398,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = r."runId") as "totalPlayers"
       FROM ranked_team_runs r
       WHERE r.rn = 1
+      ORDER BY r."totalTimeSec" ASC, r."completedAt" ASC
       LIMIT ? OFFSET ?
     `;
     const dataParams = [...params, limit, offset];

@@ -113,6 +113,10 @@ interface PlayerHistoryData {
   playerInfo: PlayerInfo;
   playerStats: PlayerStats;
   items: PlayerHistoryRun[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 // ── Helpers ──────────────────────────────────────────────
@@ -191,6 +195,7 @@ export default function GameResultDetailPage() {
     null,
   );
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
 
   useEffect(() => {
     const profile = getUserProfile();
@@ -249,13 +254,20 @@ export default function GameResultDetailPage() {
     setShowDeleteDialog(false);
   };
 
-  const handlePlayerClick = async (player: GameResultPlayer) => {
-    setSelectedPlayer(player);
-    setPlayerHistory(null);
+  const fetchPlayerHistory = async (
+    gameProfileId: string,
+    pageToFetch: number = 1,
+  ) => {
     setLoadingHistory(true);
     try {
       const response = await axios.get(
-        `/api/game-results/user/${player.gameProfileId}`,
+        `/api/game-results/user/${gameProfileId}`,
+        {
+          params: {
+            page: pageToFetch,
+            limit: 10,
+          },
+        },
       );
       if (response.data?.success) {
         setPlayerHistory(response.data.data);
@@ -267,9 +279,29 @@ export default function GameResultDetailPage() {
     }
   };
 
+  const handlePlayerClick = async (player: GameResultPlayer) => {
+    setSelectedPlayer(player);
+    setPlayerHistory(null);
+    setHistoryPage(1);
+    await fetchPlayerHistory(player.gameProfileId, 1);
+  };
+
+  const handleHistoryPageChange = async (newPage: number) => {
+    if (
+      !selectedPlayer ||
+      newPage < 1 ||
+      (playerHistory && newPage > playerHistory.totalPages)
+    ) {
+      return;
+    }
+    setHistoryPage(newPage);
+    await fetchPlayerHistory(selectedPlayer.gameProfileId, newPage);
+  };
+
   const closePlayerModal = () => {
     setSelectedPlayer(null);
     setPlayerHistory(null);
+    setHistoryPage(1);
   };
 
   if (!user) return null;
@@ -740,6 +772,50 @@ export default function GameResultDetailPage() {
                         </TableBody>
                       </Table>
                     </div>
+
+                    {/* Modal Pagination */}
+                    {playerHistory && playerHistory.totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-4 px-1 text-xs text-muted-foreground">
+                        <span>
+                          {(playerHistory.page - 1) * playerHistory.limit + 1} -{" "}
+                          {Math.min(
+                            playerHistory.page * playerHistory.limit,
+                            playerHistory.total,
+                          )}{" "}
+                          / {playerHistory.total}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleHistoryPageChange(historyPage - 1)
+                            }
+                            disabled={historyPage === 1 || loadingHistory}
+                            className="h-8 w-8 p-0 text-xs cursor-pointer"
+                          >
+                            ‹
+                          </Button>
+                          <span className="px-2 font-mono font-medium text-foreground">
+                            {historyPage} / {playerHistory.totalPages}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleHistoryPageChange(historyPage + 1)
+                            }
+                            disabled={
+                              historyPage === playerHistory.totalPages ||
+                              loadingHistory
+                            }
+                            className="h-8 w-8 p-0 text-xs cursor-pointer"
+                          >
+                            ›
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="rounded-[12px] border border-border bg-background/60 p-12 text-center text-muted-foreground">

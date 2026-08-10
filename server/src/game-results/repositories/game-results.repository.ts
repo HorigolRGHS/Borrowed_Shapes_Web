@@ -306,8 +306,18 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           gr."totalTimeSec",
           gr."completedAt",
           STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
-          MAX(st.id) as "seasonTeamId",
-          MAX(st.name) as "seasonTeamName"
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.id)
+            ELSE NULL
+          END as "seasonTeamId",
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.name)
+            ELSE NULL
+          END as "seasonTeamName"
         FROM game."GameRun" gr
         LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
         LEFT JOIN game."SeasonTeamMember" stm
@@ -325,8 +335,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(
               tr."seasonTeamId",
-              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
-              tr."teamSignature"
+              CONCAT(COALESCE(NULLIF(UPPER(TRIM(tr."lobbyName")), ''), 'LOBBY'), ':', tr."teamSignature")
             )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
@@ -346,8 +355,18 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           gr."totalTimeSec",
           gr."completedAt",
           STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
-          MAX(st.id) as "seasonTeamId",
-          MAX(st.name) as "seasonTeamName"
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.id)
+            ELSE NULL
+          END as "seasonTeamId",
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.name)
+            ELSE NULL
+          END as "seasonTeamName"
         FROM game."GameRun" gr
         LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
         LEFT JOIN game."SeasonTeamMember" stm
@@ -365,8 +384,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(
               tr."seasonTeamId",
-              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
-              tr."teamSignature"
+              CONCAT(COALESCE(NULLIF(UPPER(TRIM(tr."lobbyName")), ''), 'LOBBY'), ':', tr."teamSignature")
             )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn

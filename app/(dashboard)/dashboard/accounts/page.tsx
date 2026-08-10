@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -621,7 +621,7 @@ export default function AccountManagementPage() {
         </Badge>
       );
     }
-    
+
     const platformLabel = getPresencePlatformLabel(status);
     const label = t("admin.accounts.onlineStatus.online") || "Online";
     const fullLabel = platformLabel ? `${label} · ${platformLabel}` : label;
@@ -726,7 +726,7 @@ export default function AccountManagementPage() {
               <Card className="border-red-500/50 bg-red-500/5">
                 <CardHeader>
                   <CardTitle className="text-red-500 flex items-center">
-                    <ShieldAlert className="mr-2 h-5 w-5"/> 
+                    <ShieldAlert className="mr-2 h-5 w-5" />
                     {t("admin.account.detail.ban_details") || "Ban Details"}
                   </CardTitle>
                 </CardHeader>
@@ -742,8 +742,8 @@ export default function AccountManagementPage() {
                   <div className="pt-2">
                     <span className="text-muted-foreground block mb-1">{t("admin.account.detail.ban_reason") || "Ban Reason"}:</span>
                     <p className="bg-background/50 border border-red-500/20 p-3 rounded-md italic text-foreground break-words">
-                      {selectedUser.banReason === 'auth.unverified_email_ban_reason' 
-                        ? t("auth.unverified_email_ban_reason") 
+                      {selectedUser.banReason === 'auth.unverified_email_ban_reason'
+                        ? t("auth.unverified_email_ban_reason")
                         : (selectedUser.banReason || t("admin.account.detail.no_reason") || "No reason provided")}
                     </p>
                   </div>
@@ -751,7 +751,7 @@ export default function AccountManagementPage() {
               </Card>
             )}
 
-            
+
           </div>
 
           {/* Right Column (Actions) */}
@@ -788,90 +788,90 @@ export default function AccountManagementPage() {
                   <CardTitle className="text-lg">{t("admin.account.detail.action_panel") || "Actions"}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 pt-0 flex flex-col gap-3">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
                     onClick={openEditModal}
                     disabled={!!selectedUser?.deletedAt}
                   >
-                    <Edit className="mr-2 h-4 w-4"/> {t("admin.account.actions.edit_account")}
+                    <Edit className="mr-2 h-4 w-4" /> {t("admin.account.actions.edit_account")}
                   </Button>
-                  
+
                   {false && (
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start" 
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
                       onClick={openRoleModal}
                       disabled={!!selectedUser?.deletedAt || isSelf}
                       title={isSelf ? t("admin.account.role.selfDemoteBlocked") || "Cannot change your own role" : undefined}
                     >
-                      <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.role.changeRole") || "Change Role"}
+                      <ShieldCheck className="mr-2 h-4 w-4" /> {t("admin.account.role.changeRole") || "Change Role"}
                     </Button>
                   )}
 
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
                     onClick={openAuditLogs}
                   >
-                    <FileText className="mr-2 h-4 w-4"/> {t("admin.account.actions.view_audit_log")}
+                    <FileText className="mr-2 h-4 w-4" /> {t("admin.account.actions.view_audit_log")}
                   </Button>
 
                   {selectedUser?.isBanned && !selectedUser?.deletedAt ? (
-                    <Button 
-                      variant="secondary" 
-                      className="w-full justify-start" 
+                    <Button
+                      variant="secondary"
+                      className="w-full justify-start"
                       onClick={() => setUnbanModalOpen(true)}
                     >
-                      <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.actions.unban_account")}
+                      <ShieldCheck className="mr-2 h-4 w-4" /> {t("admin.account.actions.unban_account")}
                     </Button>
                   ) : !selectedUser?.deletedAt ? (
-                    <Button 
-                      variant="destructive" 
-                      className="w-full justify-start" 
+                    <Button
+                      variant="destructive"
+                      className="w-full justify-start"
                       onClick={() => setBanModalOpen(true)}
                       disabled={isSelf || selectedUser?.role === 'ADMIN'}
                       title={isSelf ? "Cannot ban yourself" : selectedUser?.role === 'ADMIN' ? "Cannot ban an ADMIN" : undefined}
                     >
-                      <ShieldAlert className="mr-2 h-4 w-4"/> {t("admin.account.actions.ban_account")}
+                      <ShieldAlert className="mr-2 h-4 w-4" /> {t("admin.account.actions.ban_account")}
                     </Button>
                   ) : null}
 
                   {!selectedUser?.deletedAt && (
-                    <Button 
-                      variant="destructive" 
-                      className="w-full justify-start" 
+                    <Button
+                      variant="destructive"
+                      className="w-full justify-start"
                       onClick={() => setDeleteModalOpen(true)}
                       disabled={isSelf || selectedUser?.role === 'ADMIN'}
                       title={isSelf ? "Cannot delete yourself" : selectedUser?.role === 'ADMIN' ? "Cannot delete an ADMIN" : undefined}
                     >
-                      <Trash2 className="mr-2 h-4 w-4"/> {t("admin.account.actions.delete_account")}
+                      <Trash2 className="mr-2 h-4 w-4" /> {t("admin.account.actions.delete_account")}
                     </Button>
                   )}
 
 
                   {selectedUser?.deletedAt && (
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-600" 
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-600"
                       onClick={() => setRestoreModalOpen(true)}
                       disabled={isSelf || selectedUser?.role === 'ADMIN'}
                     >
-                      <ShieldCheck className="mr-2 h-4 w-4"/> {t("admin.account.actions.restore_account") || "Restore Account"}
+                      <ShieldCheck className="mr-2 h-4 w-4" /> {t("admin.account.actions.restore_account") || "Restore Account"}
                     </Button>
                   )}
 
                   {!selectedUser?.deletedAt && (
-                    <Button 
-                      variant="destructive" 
-                      className="w-full justify-start relative pr-32" 
+                    <Button
+                      variant="destructive"
+                      className="w-full justify-start relative pr-32"
                       onClick={() => {
                         setSessionToRevoke(mostRecentSession);
                         setRevokeModalOpen(true);
                       }}
                       disabled={!hasActiveSession || !sessionsChecked || sessionsLoading}
                     >
-                      <ShieldAlert className="mr-2 h-4 w-4"/> 
+                      <ShieldAlert className="mr-2 h-4 w-4" />
                       {!sessionsChecked || sessionsLoading ? (
                         t("admin.accounts.detail.sessions.checking") || "Checking session..."
                       ) : !hasActiveSession ? (
@@ -880,8 +880,8 @@ export default function AccountManagementPage() {
                         <>
                           <span className="truncate">{t("admin.accounts.detail.sessions.revoke") || "Revoke Session"}</span>
                           <Badge variant="outline" className="absolute right-2 border-white/30 text-white bg-white/10 font-normal">
-                            {activeSessions.length === 1 
-                              ? (t("admin.accounts.detail.sessions.activeSession")?.replace("{count}", "1") || "1 active session") 
+                            {activeSessions.length === 1
+                              ? (t("admin.accounts.detail.sessions.activeSession")?.replace("{count}", "1") || "1 active session")
                               : (t("admin.accounts.detail.sessions.activeSessions")?.replace("{count}", activeSessions.length.toString()) || `${activeSessions.length} active sessions`)
                             }
                           </Badge>
@@ -927,11 +927,11 @@ export default function AccountManagementPage() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.display_name")}</Label>
-                <Input value={editForm.displayName} onChange={e => setEditForm({...editForm, displayName: e.target.value})} />
+                <Input value={editForm.displayName} onChange={e => setEditForm({ ...editForm, displayName: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.avatar_url")}</Label>
-                <Input disabled value={editForm.imgUrl} onChange={e => setEditForm({...editForm, imgUrl: e.target.value})} placeholder="https://..." />
+                <Input disabled value={editForm.imgUrl} onChange={e => setEditForm({ ...editForm, imgUrl: e.target.value })} placeholder="https://..." />
               </div>
             </div>
             <DialogFooter>
@@ -969,7 +969,7 @@ export default function AccountManagementPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {roleForm.role !== selectedUser?.role && roleForm.role === 'ADMIN' && (
                 <Alert className="bg-yellow-500/10 text-yellow-500 border-yellow-500/50">
                   <AlertCircle className="h-4 w-4 !text-yellow-500" />
@@ -1022,28 +1022,28 @@ export default function AccountManagementPage() {
                 <p className="text-xs text-muted-foreground mb-2">
                   {t("admin.account.modal.ban_reason_editor_hint") || "Describe why this account is being banned."}
                 </p>
-                
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={banForm.reason}
-                    config={CKEDITOR_CONFIG}
-                    onChange={(_evt, editor) => {
-                      setBanForm({...banForm, reason: editor.getData()});
-                      setBanReasonError("");
-                    }}
-                  />
-                
+
+                <CKEditor
+                  editor={ClassicEditor}
+                  data={banForm.reason}
+                  config={CKEDITOR_CONFIG}
+                  onChange={(_evt, editor) => {
+                    setBanForm({ ...banForm, reason: editor.getData() });
+                    setBanReasonError("");
+                  }}
+                />
+
                 {banReasonError && (
                   <p className="text-xs text-red-500 mt-1">{banReasonError}</p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.ban_expiration")}</Label>
-                <Input 
-                  type="date" 
-                  min={new Date().toISOString().split("T")[0]} 
-                  value={banForm.banExpiresAt} 
-                  onChange={e => setBanForm({...banForm, banExpiresAt: e.target.value})} 
+                <Input
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  value={banForm.banExpiresAt}
+                  onChange={e => setBanForm({ ...banForm, banExpiresAt: e.target.value })}
                   disabled={modalActionLoading}
                 />
               </div>
@@ -1175,8 +1175,8 @@ export default function AccountManagementPage() {
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder={t("admin.account.search_placeholder") || "Search..."} 
+                <Input
+                  placeholder={t("admin.account.search_placeholder") || "Search..."}
                   className="pl-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}

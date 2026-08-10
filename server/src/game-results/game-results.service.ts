@@ -406,4 +406,13 @@ export class GameResultService {
       };
     });
   }
+
+  async getPublicStats(): Promise<{ totalGameSessions: number }> {
+    const result = await this.gameResultRepository.execute(
+      'SELECT COUNT(*)::int as count FROM game."GameSession"',
+    );
+    return {
+      totalGameSessions: Number(result[0]?.count || 0),
+    };
+  }
 }

@@ -1102,7 +1102,13 @@
           "uploaded_at": "Uploaded At",
           "updated_at": "Updated At",
           "latest_status": "Latest Status",
-          "close": "Close"
+          "close": "Close",
+          "delete": "Delete Version",
+          "delete_confirm_title": "Confirm Version Deletion",
+          "delete_confirm_desc": "Are you sure you want to delete version {version}? This action will permanently remove the file from Cloudflare R2 storage and the database, and cannot be undone.",
+          "delete_success": "Version deleted successfully!",
+          "delete_error": "Failed to delete version.",
+          "cannot_delete_active": "Cannot delete the active version."
         }
       },
       "active": {

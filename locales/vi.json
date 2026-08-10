@@ -129,7 +129,8 @@
     "theme_system": "Theo hệ thống",
     "theme_toggle_label": "Đổi giao diện",
     "site_brand": "Từ điển Borrowed Shapes",
-    "game_results": "Kết quả trò chơi"
+    "game_results": "Kết quả trò chơi",
+    "cancel": "Hủy"
   },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",
@@ -1098,7 +1099,13 @@
           "uploaded_at": "Ngày tải lên",
           "updated_at": "Ngày cập nhật",
           "latest_status": "Trạng thái",
-          "close": "Đóng"
+          "close": "Đóng",
+          "delete": "Xóa phiên bản",
+          "delete_confirm_title": "Xác nhận xóa phiên bản",
+          "delete_confirm_desc": "Bạn có chắc chắn muốn xóa phiên bản {version} không? Hành động này sẽ xóa file khỏi hệ thống lưu trữ R2 và cơ sở dữ liệu vĩnh viễn, không thể hoàn tác.",
+          "delete_success": "Xóa phiên bản thành công!",
+          "delete_error": "Có lỗi xảy ra khi xóa phiên bản.",
+          "cannot_delete_active": "Không thể xóa phiên bản đang phát hành."
         }
       },
       "active": {

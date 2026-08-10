@@ -50,9 +50,9 @@ export function HeroSection() {
       }
 
       try {
-        const statsResponse = await api.get("/account/admin/dashboard/statistics?range=7d");
+        const statsResponse = await api.get("/game-results/public-stats");
         const stats = statsResponse?.data || statsResponse;
-        const totalGameSessions = stats?.summary?.gameplay?.totalGameSessions;
+        const totalGameSessions = stats?.totalGameSessions;
 
         if (typeof totalGameSessions === "number") {
           setPlayersValue(formatStat(totalGameSessions));

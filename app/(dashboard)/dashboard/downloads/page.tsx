@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Info, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Info, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "react-toastify";
 
 interface VersionItem {
   id: string;
@@ -75,6 +76,9 @@ export default function DownloadManagementPage() {
   const [activeConfirmOpen, setActiveConfirmOpen] = useState(false);
   const [targetActiveVersion, setTargetActiveVersion] = useState<VersionItem | null>(null);
   const [settingActive, setSettingActive] = useState(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchVersions = useCallback(async () => {
     setLoading(true);
@@ -152,6 +156,29 @@ export default function DownloadManagementPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!selectedVersion) return;
+    if (selectedVersion.isActive) {
+      toast.error(t("admin.download.versions.details.cannot_delete_active") || "Cannot delete the active version.");
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await api.delete(`/downloads/admin/versions/${selectedVersion.id}`);
+      toast.success(t("admin.download.versions.details.delete_success") || "Version deleted successfully!");
+      setDeleteConfirmOpen(false);
+      setDetailsOpen(false);
+      setSelectedVersion(null);
+      fetchVersions();
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err.message || t("admin.download.versions.details.delete_error") || "Failed to delete version.";
+      toast.error(errMsg);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
@@ -223,7 +250,7 @@ export default function DownloadManagementPage() {
                         className={version.isActive ? "bg-amber-500/5 hover:bg-amber-500/10 border-l-2 border-l-amber-500" : ""}
                       >
                         <TableCell className="font-medium">{version.fileVersion}</TableCell>
-                        <TableCell>{version.fileName}</TableCell>
+                        <TableCell className="max-w-[200px] truncate" title={version.fileName}>{version.fileName}</TableCell>
                         <TableCell>{formatBytes(version.fileSize)}</TableCell>
                         <TableCell>{Intl.NumberFormat('en-US').format(version.downloadCount || 0)}</TableCell>
                         <TableCell className="text-muted-foreground text-xs">{version.mimeType}</TableCell>
@@ -326,7 +353,7 @@ export default function DownloadManagementPage() {
               
               <div className="grid grid-cols-3 gap-4 border-b pb-2 border-border/50">
                 <div className="col-span-1 text-sm font-medium text-muted-foreground">{t("admin.download.versions.details.file_name") || "File Name"}</div>
-                <div className="col-span-2 text-sm">{selectedVersion.fileName}</div>
+                <div className="col-span-2 text-sm break-all">{selectedVersion.fileName}</div>
               </div>
               
               <div className="grid grid-cols-3 gap-4 border-b pb-2 border-border/50">
@@ -372,22 +399,77 @@ export default function DownloadManagementPage() {
               
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-1 text-sm font-medium text-muted-foreground">{t("admin.download.versions.details.latest_status") || "Latest Status"}</div>
-                <div className="col-span-2 text-sm">
-                  {selectedVersion.isLatest ? (
-                    <Badge className="bg-green-500 hover:bg-green-600">{t("admin.download.versions.status.latest") || "Latest"}</Badge>
-                  ) : (
-                    <Badge variant="secondary">{t("admin.download.versions.status.older") || "Older"}</Badge>
+                <div className="col-span-2 text-sm flex flex-col gap-1.5 items-start">
+                  <div className="flex gap-2">
+                    {selectedVersion.isActive && (
+                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+                        {t("admin.download.active.badge") || "Active"}
+                      </Badge>
+                    )}
+                    {selectedVersion.isLatest ? (
+                      <Badge className="bg-green-500 hover:bg-green-600">{t("admin.download.versions.status.latest") || "Latest"}</Badge>
+                    ) : (
+                      <Badge variant="secondary">{t("admin.download.versions.status.older") || "Older"}</Badge>
+                    )}
+                  </div>
+                  {selectedVersion.isActive && (
+                    <span className="text-xs text-red-500 font-medium">
+                      {t("admin.download.versions.details.cannot_delete_active") || "Cannot delete the active version."}
+                    </span>
                   )}
                 </div>
               </div>
             </div>
           )}
           
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-between items-center mt-4 border-t pt-4">
+            {selectedVersion && (
+              <Button
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1.5"
+                disabled={selectedVersion.isActive}
+                onClick={() => setDeleteConfirmOpen(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+                {t("admin.download.versions.details.delete") || "Delete Version"}
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setDetailsOpen(false)}>
               {t("admin.download.versions.details.close") || "Close"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Modal */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t("admin.download.versions.details.delete_confirm_title") || "Confirm Version Deletion"}
+            </DialogTitle>
+            <DialogDescription>
+              {t("admin.download.versions.details.delete_confirm_desc", { version: selectedVersion?.fileVersion || "" }) ||
+                `Are you sure you want to delete version ${selectedVersion?.fileVersion || ""}? This action will permanently remove the file from Cloudflare R2 storage and the database, and cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={isDeleting}
+            >
+              {t("common.cancel") || "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "..." : (t("admin.download.versions.details.delete") || "Delete")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

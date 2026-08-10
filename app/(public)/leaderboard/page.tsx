@@ -38,6 +38,8 @@ export default function LeaderboardPage() {
   const [user, setUser] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
 
+  const [userBestRankEntry, setUserBestRankEntry] = useState<LeaderboardEntry | null>(null);
+
   useEffect(() => {
     setUser(getUserProfile());
     setMounted(true);
@@ -86,6 +88,31 @@ export default function LeaderboardPage() {
       }
       setTotal(data.total || 0);
       setTotalPages(data.totalPages || 1);
+
+      // Track user's overall best rank entry across pages
+      const currentUser = user || getUserProfile();
+      if (currentUser) {
+        const found = items.find((e: LeaderboardEntry) =>
+          e.players?.some((p) => {
+            const userProfileId = currentUser.gameProfileId || currentUser.profileId || currentUser.id;
+            if (userProfileId && p.gameProfileId) {
+              return p.gameProfileId === userProfileId;
+            }
+            if (p.gameProfileId && !userProfileId) {
+              return false;
+            }
+            return p.displayName === currentUser.displayName;
+          })
+        );
+        if (found) {
+          setUserBestRankEntry((prev) => {
+            if (!prev || found.rank < prev.rank) {
+              return found;
+            }
+            return prev;
+          });
+        }
+      }
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
       setEntries([]);
@@ -117,14 +144,27 @@ export default function LeaderboardPage() {
     setActiveTab(tab);
     setPage(1); // Reset to page 1 on tab switch
     setTop3Entries([]); // Clear podium so it re-fetches for the new tab
+    setUserBestRankEntry(null);
   };
 
-  // Find if logged-in user has a run in the current list
-  const userRankEntry = user
-    ? entries.find((e) =>
-        e.players?.some((p) => p.displayName === user.displayName)
-      )
-    : null;
+  // Find if logged-in user has a run (prefer userBestRankEntry so rank doesn't change on page switch)
+  const currentUser = user || (mounted ? getUserProfile() : null);
+  const userRankEntry =
+    userBestRankEntry ||
+    (currentUser
+      ? entries.find((e) =>
+          e.players?.some((p) => {
+            const userProfileId = currentUser.gameProfileId || currentUser.profileId || currentUser.id;
+            if (userProfileId && p.gameProfileId) {
+              return p.gameProfileId === userProfileId;
+            }
+            if (p.gameProfileId && !userProfileId) {
+              return false;
+            }
+            return p.displayName === currentUser.displayName;
+          }),
+        )
+      : null);
 
   if (!mounted) {
     return <div className="min-h-screen bg-background dark:bg-[#07070f]" />;

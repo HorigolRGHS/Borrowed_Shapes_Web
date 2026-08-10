@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { getEffectiveExpiresAt } from '../achievements/achievements.service';
 import { GameResultRepository } from './repositories/game-results.repository';
 import {
@@ -266,6 +266,7 @@ export class GameResultService {
         totalTimeSec: row.totalTimeSec,
         completedAt: row.completedAt,
         players: runPlayers.map((p) => ({
+          gameProfileId: p.gameProfileId,
           displayName: p.displayName,
           avatarUrl: p.avatarUrl,
           badgeImageUrl: p.badgeImageUrl,
@@ -291,6 +292,35 @@ export class GameResultService {
     if (!run) {
       throw new NotFoundException('game_results.not_found');
     }
+
+    const sessions = await this.getRunSessions(id);
+    let derivedCompletedAt = run.completedAt ?? undefined;
+
+    if (!run.isCompleted && !run.completedAt) {
+      const lastSession = sessions[sessions.length - 1];
+      if (
+        lastSession &&
+        (lastSession.status === 'ABANDONED' ||
+          lastSession.status === 'FINISHED' ||
+          lastSession.endedAt)
+      ) {
+        derivedCompletedAt = lastSession.endedAt || lastSession.startedAt;
+      } else {
+        const startedAtDate = new Date(run.startedAt);
+        const hoursElapsed =
+          (new Date().getTime() - startedAtDate.getTime()) / (1000 * 60 * 60);
+        if (hoursElapsed > 12) {
+          derivedCompletedAt = new Date(
+            startedAtDate.getTime() + 2 * 60 * 60 * 1000,
+          );
+        }
+      }
+    }
+
+    if (!run.isCompleted && !derivedCompletedAt) {
+      throw new BadRequestException('game_results.cannot_delete_in_progress');
+    }
+
     await this.gameResultRepository.removeAndFlush(run);
   }
 

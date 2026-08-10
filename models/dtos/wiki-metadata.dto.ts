@@ -11,7 +11,6 @@ export const WIKI_CATEGORIES = [
   "Item",
   "Map",
   "Mechanic",
-  "Boss",
   "Other",
 ] as const;
 

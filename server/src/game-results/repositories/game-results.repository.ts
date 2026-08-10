@@ -275,7 +275,9 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     ];
     const params: any[] = [];
 
-    if (query.scope === 'seasonal') {
+    const isSeasonal = query.scope === 'seasonal';
+
+    if (isSeasonal) {
       let month = query.seasonMonth;
       if (!month || !/^\d{4}-\d{2}$/.test(month)) {
         month = new Date().toISOString().slice(0, 7);
@@ -288,14 +290,10 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       conditions.push('gr."completedAt" >= ?');
       conditions.push('gr."completedAt" < ?');
       params.push(startOfTarget, startOfNext);
-
-      conditions.push(
-        '(UPPER(TRIM(gr."lobbyCode")) IN (SELECT UPPER(TRIM(st.code)) FROM game."SeasonTeam" st WHERE TO_CHAR(st."seasonMonth", \'YYYY-MM\') = ?) OR gr.id IN (SELECT grp."runId" FROM game."GameRunPlayer" grp JOIN game."SeasonTeamMember" stm ON stm."gameProfileId" = grp."gameProfileId" WHERE TO_CHAR(stm."seasonMonth", \'YYYY-MM\') = ?))',
-      );
-      params.push(month, month);
     }
 
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
+    const seasonalTeamWhere = isSeasonal ? 'WHERE tr."seasonTeamId" IS NOT NULL' : '';
 
     const countSql = `
       WITH team_runs AS (
@@ -305,9 +303,27 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           gr."lobbyCode",
           gr."totalTimeSec",
           gr."completedAt",
-          STRING_AGG(grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature"
+          STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.id)
+            ELSE NULL
+          END as "seasonTeamId",
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.name)
+            ELSE NULL
+          END as "seasonTeamName"
         FROM game."GameRun" gr
         LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+        LEFT JOIN game."SeasonTeamMember" stm
+          ON stm."gameProfileId" = grp."gameProfileId"
+         AND TO_CHAR(stm."seasonMonth", 'YYYY-MM') = TO_CHAR(gr."completedAt", 'YYYY-MM')
+        LEFT JOIN game."SeasonTeam" st
+          ON st.id = stm."teamId"
+          OR (st.code IS NOT NULL AND UPPER(TRIM(st.code)) = UPPER(TRIM(gr."lobbyCode")))
         ${whereClause}
         GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
       ),
@@ -316,13 +332,13 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           tr.*,
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(
-              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
-              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
-              tr."teamSignature"
+              tr."seasonTeamId",
+              CONCAT(COALESCE(NULLIF(UPPER(TRIM(tr."lobbyName")), ''), 'LOBBY'), ':', tr."teamSignature")
             )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr
+        ${seasonalTeamWhere}
       )
       SELECT COUNT(*) as count FROM ranked_team_runs WHERE rn = 1
     `;
@@ -337,9 +353,27 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           gr."lobbyCode",
           gr."totalTimeSec",
           gr."completedAt",
-          STRING_AGG(grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature"
+          STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.id)
+            ELSE NULL
+          END as "seasonTeamId",
+          CASE
+            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
+                 AND COUNT(DISTINCT stm."gameProfileId") > 0
+            THEN MAX(st.name)
+            ELSE NULL
+          END as "seasonTeamName"
         FROM game."GameRun" gr
         LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
+        LEFT JOIN game."SeasonTeamMember" stm
+          ON stm."gameProfileId" = grp."gameProfileId"
+         AND TO_CHAR(stm."seasonMonth", 'YYYY-MM') = TO_CHAR(gr."completedAt", 'YYYY-MM')
+        LEFT JOIN game."SeasonTeam" st
+          ON st.id = stm."teamId"
+          OR (st.code IS NOT NULL AND UPPER(TRIM(st.code)) = UPPER(TRIM(gr."lobbyCode")))
         ${whereClause}
         GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
       ),
@@ -348,17 +382,17 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           tr.*,
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(
-              NULLIF(UPPER(TRIM(tr."lobbyName")), ''),
-              NULLIF(UPPER(TRIM(tr."lobbyCode")), ''),
-              tr."teamSignature"
+              tr."seasonTeamId",
+              CONCAT(COALESCE(NULLIF(UPPER(TRIM(tr."lobbyName")), ''), 'LOBBY'), ':', tr."teamSignature")
             )
             ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
           ) as rn
         FROM team_runs tr
+        ${seasonalTeamWhere}
       )
       SELECT
         r."runId",
-        r."lobbyName",
+        COALESCE(r."seasonTeamName", r."lobbyName") as "lobbyName",
         r."totalTimeSec",
         r."completedAt",
         (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = r."runId") as "totalPlayers"

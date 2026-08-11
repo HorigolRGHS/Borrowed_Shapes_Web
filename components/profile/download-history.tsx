@@ -75,10 +75,10 @@ export function DownloadHistory() {
     fetchHistory();
   }, [fetchHistory]);
 
-  const handleRedownload = async (fileAssetId: string) => {
-    setRedownloadingId(fileAssetId);
+  const handleRedownload = async (record: DownloadRecord) => {
+    setRedownloadingId(record.id);
     try {
-      const res = await api.post(`/downloads/versions/${fileAssetId}/download`);
+      const res = await api.post(`/downloads/versions/${record.fileAssetId}/download`);
       const data = res?.data || res;
       if (data?.downloadUrl) {
         window.open(data.downloadUrl, "_blank");
@@ -219,10 +219,10 @@ export function DownloadHistory() {
                 variant="outline" 
                 size="sm"
                 className="gap-2 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
-                onClick={() => handleRedownload(record.fileAssetId)}
-                disabled={redownloadingId === record.fileAssetId}
+                onClick={() => handleRedownload(record)}
+                disabled={redownloadingId === record.id}
               >
-                {redownloadingId === record.fileAssetId ? (
+                {redownloadingId === record.id ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />
@@ -281,7 +281,7 @@ export function DownloadHistory() {
         onOpenChange={setDetailsOpen}
         record={selectedRecord}
         onRedownload={handleRedownload}
-        isRedownloading={selectedRecord ? redownloadingId === selectedRecord.fileAssetId : false}
+        isRedownloading={selectedRecord ? redownloadingId === selectedRecord.id : false}
       />
     </div>
   );

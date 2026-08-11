@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18/i18n-context";
 export function PublicFooter() {
   const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
-  
+
   const R2_BASE = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev";
   const logoUrl = `${R2_BASE}/Logo.jpg`;
 
@@ -86,11 +86,11 @@ export function PublicFooter() {
                   {t("footer.contact")}
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/legal" className="text-sm text-muted-foreground dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-500 transition-colors">
                   {t("footer.termsAndPolicy") || "Terms & Policy"}
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

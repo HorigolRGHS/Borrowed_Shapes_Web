@@ -11,6 +11,7 @@ import {
   Req,
   ForbiddenException,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ResolveReportDto } from './dto/resolve-report.dto';
@@ -25,6 +26,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ReportStatus } from '../entities/ReportStatus';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -55,8 +57,13 @@ export class ReportsController {
   async create(
     @Body() createReportDto: CreateReportDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.reportsService.create(createReportDto, user.userId);
+    const data = await this.reportsService.create(
+      createReportDto,
+      user.userId,
+      getClientIp(req),
+    );
     return okResponse('reports.create_success', data, 'POST /reports');
   }
 
@@ -144,11 +151,17 @@ export class ReportsController {
     @Param('id') id: string,
     @Body() dto: ResolveReportDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     if (user.role !== 'ADMIN') {
       throw new ForbiddenException('reports.forbidden_admin_only');
     }
-    const data = await this.reportsService.resolve(id, user.userId, dto);
+    const data = await this.reportsService.resolve(
+      id,
+      user.userId,
+      dto,
+      getClientIp(req),
+    );
     return okResponse(
       'reports.resolve_success',
       data,
@@ -163,11 +176,17 @@ export class ReportsController {
     @Param('id') id: string,
     @Body() dto: RejectReportDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     if (user.role !== 'ADMIN') {
       throw new ForbiddenException('reports.forbidden_admin_only');
     }
-    const data = await this.reportsService.reject(id, user.userId, dto);
+    const data = await this.reportsService.reject(
+      id,
+      user.userId,
+      dto,
+      getClientIp(req),
+    );
     return okResponse(
       'reports.reject_success',
       data,

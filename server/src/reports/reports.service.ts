@@ -42,7 +42,7 @@ export class ReportsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async create(dto: CreateReportDto, reporterId: string) {
+  async create(dto: CreateReportDto, reporterId: string, ipAddress?: string) {
     const reporter = this.reportRepository
       .getEntityManager()
       .getReference(User, reporterId);
@@ -117,6 +117,7 @@ export class ReportsService {
         threadId: dto.threadId,
         commentId: dto.commentId,
       },
+      ipAddress,
     });
 
     return {
@@ -334,7 +335,12 @@ export class ReportsService {
     };
   }
 
-  async resolve(id: string, adminId: string, dto: ResolveReportDto) {
+  async resolve(
+    id: string,
+    adminId: string,
+    dto: ResolveReportDto,
+    ipAddress?: string,
+  ) {
     const report = await this.reportRepository.findOne(
       { id },
       { populate: ['reportedUserId', 'reporterId'] },
@@ -413,6 +419,7 @@ export class ReportsService {
         reportId: report.id,
         targetUserId: report.reportedUserId?.id,
       },
+      ipAddress,
     });
 
     if (
@@ -438,6 +445,7 @@ export class ReportsService {
                 ? dto.banExpiresAt
                 : undefined,
           },
+          ipAddress,
         });
       }
     }
@@ -501,7 +509,12 @@ export class ReportsService {
     return { success: true };
   }
 
-  async reject(id: string, adminId: string, dto: RejectReportDto) {
+  async reject(
+    id: string,
+    adminId: string,
+    dto: RejectReportDto,
+    ipAddress?: string,
+  ) {
     const report = await this.reportRepository.findOne(
       { id },
       { populate: ['reporterId'] },
@@ -540,6 +553,7 @@ export class ReportsService {
         reportId: report.id,
         targetUserId: report.reportedUserId?.id,
       },
+      ipAddress,
     });
 
     await this.reportRepository

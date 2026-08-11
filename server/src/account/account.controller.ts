@@ -25,6 +25,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { getClientIp } from '../common/utils/client-ip.util';
 import { AdminAccountQueryDto } from './dto/admin-account-query.dto';
 import { AdminUpdateAccountProfileDto } from './dto/admin-update-account-profile.dto';
 import { AdminBanAccountDto } from './dto/admin-ban-account.dto';
@@ -51,7 +52,7 @@ export class AccountController {
     const data = await this.accountService.updateProfile(
       user.userId,
       dto,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'account.profile_updated',
@@ -206,7 +207,7 @@ export class AccountController {
       admin.userId,
       targetId,
       dto,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'admin.account.profile_updated',
@@ -229,7 +230,7 @@ export class AccountController {
       admin.userId,
       targetId,
       dto,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'admin.account.role_updated',
@@ -252,7 +253,7 @@ export class AccountController {
       admin.userId,
       targetId,
       dto,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'admin.account.user_banned',
@@ -273,7 +274,7 @@ export class AccountController {
     const data = await this.accountService.adminUnbanUser(
       admin.userId,
       targetId,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'admin.account.user_unbanned',
@@ -294,7 +295,7 @@ export class AccountController {
     const data = await this.accountService.adminDeleteUser(
       admin.userId,
       targetId,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'admin.account.user_deleted',
@@ -315,7 +316,7 @@ export class AccountController {
     const data = await this.accountService.adminRestoreUser(
       admin.userId,
       targetId,
-      req.ip ?? '',
+      getClientIp(req),
     );
     return okResponse(
       'admin.account.messages.restore_success',

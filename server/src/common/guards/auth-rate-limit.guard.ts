@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { RedisService } from '../../redis/redis.service';
+import { getClientIp } from '../utils/client-ip.util';
 
 const LIMIT = 5;
 const WINDOW_SEC = 120; // 2 minutes
@@ -25,7 +26,7 @@ export class AuthRateLimitGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
 
     const deviceId = req.headers['x-device-id'] as string | undefined;
-    const ip = req.ip ?? req.socket?.remoteAddress ?? 'unknown';
+    const ip = getClientIp(req);
     const identifier = (deviceId?.trim() || ip).toLowerCase();
 
     // Key is scoped to the specific endpoint path to keep login and register buckets separate

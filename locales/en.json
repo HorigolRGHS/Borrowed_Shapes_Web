@@ -341,7 +341,7 @@
     "list_success": "Achievements retrieved successfully",
     "search_success": "Achievements search completed successfully",
     "detail_success": "Achievement details retrieved successfully",
-    "user_list_success": "User achievements retrieved successfully",
+    "user_list_success": "Player achievements retrieved successfully",
     "create_success": "Achievement created successfully",
     "create_failed": "Failed to create achievement",
     "update_success": "Achievement updated successfully",
@@ -350,7 +350,7 @@
     "delete_failed": "Failed to delete achievement",
     "not_found": "Achievement not found",
     "already_exists": "Achievement already exists",
-    "users_success": "Users retrieved successfully",
+    "users_success": "Players retrieved successfully",
     "management_title": "Achievement Management",
     "management_subtitle": "Create, edit, and track achievement unlocks",
     "search_placeholder": "Search by name, criteria code, or description...",
@@ -372,7 +372,7 @@
     "edit_button": "Edit",
     "delete_button": "Delete",
     "view_button": "View",
-    "users_button": "Users",
+    "users_button": "Players",
     "create_edit_subtitle": "Fill in the achievement details to keep your catalog up to date.",
     "name_label": "Name",
     "criteria_code_label": "Criteria Code",
@@ -389,17 +389,17 @@
     "expires_at_label": "Expires At",
     "selected_label": "Selected:",
     "delete_confirm": "Are you sure you want to delete this achievement?",
-    "loading_users": "Loading users...",
-    "no_users_found": "No users found",
-    "users_loaded_failed": "Failed to load users",
-    "users_with": "Users with",
+    "loading_users": "Loading players...",
+    "no_users_found": "No players found",
+    "users_loaded_failed": "Failed to load players",
+    "users_with": "Players with",
     "player_earned_single": "player earned this achievement",
     "players_earned_plural": "players earned this achievement",
     "detail_title": "Achievement Detail",
     "detail_subtitle": "View achievement information",
     "total_earned_label": "Total Earned",
     "season_title": "Season",
-    "view_users_button": "View Users",
+    "view_users_button": "View Players",
     "delete_achievement_title": "Delete Achievement",
     "delete_warning": "This may remove achievement records from players. This action cannot be undone.",
     "earned_date_label": "Earned Date",
@@ -412,7 +412,7 @@
     "col_total_earned": "Total Earned",
     "col_actions": "Actions",
     "action_view_detail": "View Detail",
-    "action_view_users": "View Users",
+    "action_view_users": "View Players",
     "back_to_achievements": "Back to Achievements",
     "detail_page_title": "Achievement Details",
     "detail_page_subtitle": "Viewing details for: ",
@@ -574,6 +574,10 @@
   },
   "profile": {
     "title": "Profile",
+    "role": {
+      "admin": "Admin",
+      "user": "User"
+    },
     "download_history": {
       "tab": "Download History",
       "loading": "Loading download history...",
@@ -763,7 +767,7 @@
       "play_free_now": "Play Free Now",
       "explore_wiki": "Explore Wiki",
       "stats": {
-        "active_players": "Active Players",
+        "active_players": "Total Game Sessions",
         "current_season": "Current Season",
         "latest_patch": "Latest Patch"
       },
@@ -981,7 +985,7 @@
         "unban_title": "Unban Account",
         "unban_description": "Are you sure you want to restore access to this user?",
         "delete_title": "Delete Account",
-        "delete_warning": "Warning: Account will be soft deleted and no longer accessible.",
+        "delete_warning": "Warning: Account will be deleted and no longer accessible.",
         "audit_title": "Audit Log for {name}",
         "ban_reason_editor_hint": "Describe why this account is being banned.",
         "ban_reason_plain_required": "Ban reason is required.",
@@ -1111,7 +1115,13 @@
           "uploaded_at": "Uploaded At",
           "updated_at": "Updated At",
           "latest_status": "Latest Status",
-          "close": "Close"
+          "close": "Close",
+          "delete": "Delete Version",
+          "delete_confirm_title": "Confirm Version Deletion",
+          "delete_confirm_desc": "Are you sure you want to delete version {version}? This action will permanently remove the file from Cloudflare R2 storage and the database, and cannot be undone.",
+          "delete_success": "Version deleted successfully!",
+          "delete_error": "Failed to delete version.",
+          "cannot_delete_active": "Cannot delete the active version."
         }
       },
       "active": {
@@ -1130,7 +1140,16 @@
         "summary_note": "Users will download this version from the public Download page.",
         "inactive_note": "Visible in the version list, but not used as the recommended download.",
         "current_version": "Current active version",
-        "new_version": "New active version"
+        "new_version": "New active version",
+        "breakdown": {
+          "property": "Property",
+          "current": "Current Active",
+          "new": "New Active",
+          "version": "Version",
+          "filename": "File Name",
+          "filesize": "File Size",
+          "uploaded": "Uploaded At"
+        }
       }
     },
     "accounts": {
@@ -1465,7 +1484,7 @@
       "copyEmail": "Copy Email",
       "copied": "Copied!",
       "noteTitle": "Important Note",
-      "note": "The Borrowed Shapes team strives to respond to inquiries within 24 to 48 business hours. For urgent issues, account security, or legal inquiries, please contact us directly at borrowedshapes09@gmail.com."
+      "note": "The Borrowed Shapes team strives to respond to inquiries within 24 to 48 business hours. For urgent issues, account security, or legal inquiries, please contact us directly at contact@borrowedshapes.id.vn."
     },
     "terms": {
       "title": "Terms of Service",

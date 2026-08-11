@@ -23,6 +23,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { CurrentUser, type RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import {
   ApiTags,
@@ -32,6 +33,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { resolveLocale } from '../common/utils/resolve-locale';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Category')
 @Controller('category')
@@ -101,11 +103,13 @@ export class CategoryController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
-    @Req() req: any,
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.categoryService.create(
       createCategoryDto,
-      req.user?.sub,
+      user.userId,
+      getClientIp(req),
     );
     return okResponse('category.create_success', data, 'POST /category');
   }
@@ -115,12 +119,14 @@ export class CategoryController {
   async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-    @Req() req: any,
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.categoryService.update(
       id,
       updateCategoryDto,
-      req.user?.sub,
+      user.userId,
+      getClientIp(req),
     );
     return okResponse('category.update_success', data, `PATCH /category/${id}`);
   }
@@ -129,9 +135,10 @@ export class CategoryController {
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Req() req: any,
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.categoryService.remove(id, req.user?.sub);
+    const data = await this.categoryService.remove(id, user.userId, getClientIp(req));
     return okResponse(
       'category.delete_success',
       data,

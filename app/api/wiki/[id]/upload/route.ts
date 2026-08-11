@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import type { ApiResponse } from "@/models/dtos/api-response.dto";
-
-const BACKEND_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
+import { getBackendBaseUrl } from "@/lib/api/runtime-base-url";
 
 interface RefreshData {
   accessToken?: string;
@@ -24,7 +22,7 @@ async function uploadToBackend(
   locale: string,
   accessToken?: string,
 ) {
-  return fetch(`${BACKEND_BASE}/wiki/${encodeURIComponent(id)}/upload`, {
+  return fetch(`${getBackendBaseUrl()}/wiki/${encodeURIComponent(id)}/upload`, {
     method: "POST",
     body: formData,
     headers: buildUploadHeaders(locale, accessToken),

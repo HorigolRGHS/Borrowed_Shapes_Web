@@ -3,8 +3,6 @@ import { cookies } from 'next/headers';
 import { ApiResponse } from '@/models/dtos/api-response.dto';
 import { api } from '@/lib/api/api-client';
 
-const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api';
-
 function getPublicOrigin(req: Request): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL;

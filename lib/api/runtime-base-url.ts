@@ -1,10 +1,19 @@
-// Đọc backend base URL ở RUNTIME (route handler chạy trên server, đọc process.env mỗi request).
-// Chuẩn hoá để luôn kết thúc bằng "/api":
-//   http://bs_be:3001            -> http://bs_be:3001/api   (docker-compose default)
-//   https://api.example.com/api  -> giữ nguyên
-//   undefined                    -> http://localhost:3001/api (local fallback)
+const LOCAL_API_BASE_URL = "http://localhost:3001/api";
+
+function normalizeApiBaseUrl(raw: string): string {
+  return `${raw.replace(/\/+$/, "").replace(/(?:\/api)+$/, "")}/api`;
+}
+
+export function getPublicApiBaseUrl(runtimeUrl?: string): string {
+  return normalizeApiBaseUrl(
+    runtimeUrl || process.env.NEXT_PUBLIC_API_BASE_URL || LOCAL_API_BASE_URL,
+  );
+}
+
 export function getBackendBaseUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
-  const trimmed = raw.replace(/\/+$/, "");
-  return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
+  return normalizeApiBaseUrl(
+    process.env.INTERNAL_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      LOCAL_API_BASE_URL,
+  );
 }

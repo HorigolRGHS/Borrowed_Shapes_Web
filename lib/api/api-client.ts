@@ -1,16 +1,20 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { decodeJwt } from "@/lib/utils/jwt";
+import {
+  getBackendBaseUrl,
+  getPublicApiBaseUrl,
+} from "@/lib/api/runtime-base-url";
 
 // Đọc API base URL ở RUNTIME, không inline lúc build.
 // - Client: lấy từ window.__ENV (được layout chèn vào <head> theo request).
-// - Server: đọc trực tiếp process.env (route handler / server component chạy ở runtime).
+// - Server: ưu tiên INTERNAL_API_BASE_URL (Docker) để không quay vòng qua Cloudflare.
 export const getApiBaseUrl = (): string => {
   if (typeof window !== "undefined") {
     const runtime = (window as unknown as { __ENV?: Record<string, string> })
       .__ENV?.NEXT_PUBLIC_API_BASE_URL;
-    if (runtime) return runtime;
+    return getPublicApiBaseUrl(runtime);
   }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+  return getBackendBaseUrl();
 };
 
 const apiClient = axios.create({

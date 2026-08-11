@@ -67,7 +67,7 @@ export class SeasonTeamController {
   @ApiOperation({ summary: 'Kick a member from my season team' })
   async kickMember(
     @CurrentUser() user: RequestUser,
-    @Param('teamId', new ParseUUIDPipe()) teamId: string,
+    @Param('teamId') teamId: string,
     @Body() dto: KickSeasonTeamMemberDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
@@ -91,7 +91,7 @@ export class SeasonTeamController {
   @ApiOperation({ summary: 'Delete my season team' })
   async deleteTeam(
     @CurrentUser() user: RequestUser,
-    @Param('teamId', new ParseUUIDPipe()) teamId: string,
+    @Param('teamId') teamId: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;

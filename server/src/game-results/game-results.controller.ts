@@ -140,6 +140,18 @@ export class GameResultController {
     );
   }
 
+  @Get('public-stats')
+  @Public()
+  @ApiOperation({ summary: 'Get public game statistics for homepage' })
+  async getPublicStats(@Req() req: Request): Promise<ApiResponseDto<{ totalGameSessions: number }>> {
+    const data = await this.gameResultService.getPublicStats();
+    return okResponse(
+      'game_results.stats_success',
+      data,
+      `${req.method} ${req.path}`,
+    );
+  }
+
   @Get(':id')
   @Roles('USER', 'ADMIN')
   @ApiOperation({ summary: 'Get game result details' })

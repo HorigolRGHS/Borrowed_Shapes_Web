@@ -183,7 +183,7 @@ export class DownloadsService {
     };
   }
 
-  async setActiveVersion(id: string, adminUser: { userId: string }) {
+  async setActiveVersion(id: string, adminUser: { userId: string }, ipAddress?: string) {
     return await this.fileAssetRepository
       .getEntityManager()
       .transactional(async (em) => {
@@ -213,6 +213,7 @@ export class DownloadsService {
             actionType: AuditActionType.UPDATE,
             entityName: 'FileAsset',
             entityId: target.id,
+            ipAddress,
             oldValue: previousActive
               ? {
                   id: previousActive.id,
@@ -479,7 +480,7 @@ export class DownloadsService {
   }
 
   // ─── 5. Confirm upload (Admin) ───────────────────────────
-  async confirmUpload(adminId: string, dto: ConfirmUploadDto) {
+  async confirmUpload(adminId: string, dto: ConfirmUploadDto, ipAddress?: string) {
     const fileVersion = dto.fileVersion?.trim();
     if (!fileVersion) {
       throw new BadRequestException('Invalid version');
@@ -564,6 +565,7 @@ export class DownloadsService {
       userId: adminId,
       entityName: 'FileAsset',
       entityId: fileAsset.id,
+      ipAddress,
       newValue: {
         operation: 'CONFIRM_UPLOAD',
         version: fileAsset.fileVersion,
@@ -583,7 +585,7 @@ export class DownloadsService {
   }
 
   // ─── 6. Delete Version (Admin) ───────────────────────────
-  async deleteVersion(id: string, adminId: string) {
+  async deleteVersion(id: string, adminId: string, ipAddress?: string) {
     return await this.fileAssetRepository
       .getEntityManager()
       .transactional(async (em) => {
@@ -603,6 +605,7 @@ export class DownloadsService {
           actionType: AuditActionType.DELETE,
           entityName: 'FileAsset',
           entityId: fileAsset.id,
+          ipAddress,
           oldValue: {
             fileVersion: fileAsset.fileVersion,
             fileName: fileAsset.fileName,

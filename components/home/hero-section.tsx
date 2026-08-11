@@ -1,14 +1,22 @@
 "use client";
 
+import { useEffect, useState, type ComponentType } from "react";
 import Link from "next/link";
-import { Download, BookOpen, Users, Star, Zap } from "lucide-react";
+import { Download, BookOpen, Users, Zap } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { Modak } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api/api-client";
 
 const modak = Modak({ subsets: ["latin"], weight: "400" });
 
-function StatCard({ icon: Icon, value, label, colorClass }: { icon: any, value: string, label: string, colorClass: string }) {
+function formatStat(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
+  return String(value);
+}
+
+function StatCard({ icon: Icon, value, label, colorClass }: { icon: ComponentType<{ className?: string }>; value: string; label: string; colorClass: string }) {
   return (
     <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 transition-transform hover:-translate-y-1 hover:shadow-lg">
       <div className={cn("p-2 rounded-lg bg-white/5", colorClass)}>
@@ -24,8 +32,38 @@ function StatCard({ icon: Icon, value, label, colorClass }: { icon: any, value: 
 
 export function HeroSection() {
   const { t } = useI18n();
+  const [playersValue, setPlayersValue] = useState("67+");
+  const [latestPatch, setLatestPatch] = useState("1.0.0");
 
   const HERO_BG = process.env.NEXT_PUBLIC_HERO_BG_URL || "https://pub-4a3e334f734f4b669489b78b2a739715.r2.dev/notexthouseright.jpg";
+
+  useEffect(() => {
+    const fetchHeroStats = async () => {
+      try {
+        const activeVersionResponse = await api.get("/downloads/active-version");
+        const activeVersionData = activeVersionResponse?.data || activeVersionResponse;
+        if (activeVersionData?.fileVersion) {
+          setLatestPatch(activeVersionData.fileVersion);
+        }
+      } catch {
+        // Keep the default patch version if the public endpoint is not available.
+      }
+
+      try {
+        const statsResponse = await api.get("/game-results/public-stats");
+        const stats = statsResponse?.data || statsResponse;
+        const totalGameSessions = stats?.totalGameSessions;
+
+        if (typeof totalGameSessions === "number") {
+          setPlayersValue(formatStat(totalGameSessions));
+        }
+      } catch {
+        // If the admin dashboard statistics endpoint is unavailable, retain the default value.
+      }
+    };
+
+    fetchHeroStats();
+  }, []);
 
   return (
     <section className="relative w-full h-[80vh] min-h-[600px] flex items-center overflow-hidden bg-[#07070f] mt-16">
@@ -89,22 +127,17 @@ export function HeroSection() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <StatCard
               icon={Users}
-              value="10+"
-              label={
-                t("home.hero.stats.active_players") || "Active Players"
-              }
+              value={playersValue}
+              label={t("home.hero.stats.active_players") || "Active Players"}
               colorClass="text-amber-500"
             />
-
             <StatCard
               icon={Zap}
-              value="1.0.0"
-              label={
-                t("home.hero.stats.latest_patch") || "Latest Patch"
-              }
+              value={latestPatch}
+              label={t("home.hero.stats.latest_patch") || "Latest Patch"}
               colorClass="text-yellow-500"
             />
           </div>

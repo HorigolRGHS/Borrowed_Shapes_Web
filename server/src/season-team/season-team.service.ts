@@ -31,7 +31,7 @@ export class SeasonTeamService {
     private readonly auditService: AuditService,
   ) {}
 
-  async createTeam(userId: string, dto: CreateSeasonTeamDto, path: string) {
+  async createTeam(userId: string, dto: CreateSeasonTeamDto, path: string, ipAddress?: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
 
@@ -61,6 +61,7 @@ export class SeasonTeamService {
       actionType: AuditActionType.CREATE,
       entityName: 'SeasonTeam',
       entityId: team.id,
+      ipAddress,
       newValue: {
         name: team.name,
         seasonMonth: team.seasonMonth,
@@ -77,7 +78,7 @@ export class SeasonTeamService {
     );
   }
 
-  async joinTeam(userId: string, dto: JoinSeasonTeamDto, path: string) {
+  async joinTeam(userId: string, dto: JoinSeasonTeamDto, path: string, ipAddress?: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
 
@@ -117,6 +118,7 @@ export class SeasonTeamService {
       actionType: AuditActionType.UPDATE,
       entityName: 'SeasonTeam',
       entityId: team.id,
+      ipAddress,
       newValue: {
         newMemberId: profile.id,
       },
@@ -165,6 +167,7 @@ export class SeasonTeamService {
     teamId: string,
     dto: KickSeasonTeamMemberDto,
     path: string,
+    ipAddress?: string,
   ) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const leaderProfile = await this.findGameProfileOrFail(userId);
@@ -197,6 +200,7 @@ export class SeasonTeamService {
       actionType: AuditActionType.UPDATE,
       entityName: 'SeasonTeam',
       entityId: team.id,
+      ipAddress,
       oldValue: {
         kickedMemberId: dto.gameProfileId,
       },
@@ -206,7 +210,7 @@ export class SeasonTeamService {
     return okResponse<null>('season_team.kicked_success', null, path);
   }
 
-  async leaveTeam(userId: string, path: string) {
+  async leaveTeam(userId: string, path: string, ipAddress?: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
     
@@ -226,6 +230,7 @@ export class SeasonTeamService {
       actionType: AuditActionType.UPDATE,
       entityName: 'SeasonTeam',
       entityId: myMember.teamId.id,
+      ipAddress,
       oldValue: {
         leftMemberId: profile.id,
       },
@@ -235,7 +240,7 @@ export class SeasonTeamService {
     return okResponse<null>('season_team.left_success', null, path);
   }
 
-  async deleteTeam(userId: string, teamId: string, path: string) {
+  async deleteTeam(userId: string, teamId: string, path: string, ipAddress?: string) {
     const seasonMonth = this.getCurrentSeasonMonth();
     const profile = await this.findGameProfileOrFail(userId);
     
@@ -255,6 +260,7 @@ export class SeasonTeamService {
       actionType: AuditActionType.DELETE,
       entityName: 'SeasonTeam',
       entityId: team.id,
+      ipAddress,
       oldValue: {
         name: team.name,
       },

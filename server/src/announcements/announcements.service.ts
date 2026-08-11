@@ -130,7 +130,11 @@ export class AnnouncementService {
 
   // --- Mutations ---
 
-  async create(dto: CreateAnnouncementDto, authorId: string): Promise<null> {
+  async create(
+    dto: CreateAnnouncementDto,
+    authorId: string,
+    ipAddress?: string,
+  ): Promise<null> {
     const existing = await this.announcementRepository.checkSlugUniqueness({
       slug: dto.slug,
       slugVi: dto.slugVi,
@@ -165,6 +169,7 @@ export class AnnouncementService {
         title: announcement.title,
         type: announcement.type,
       },
+      ipAddress,
     });
 
     await this.announcementRepository.flush();
@@ -176,6 +181,7 @@ export class AnnouncementService {
     id: string,
     dto: UpdateAnnouncementDto,
     authorId?: string,
+    ipAddress?: string,
   ): Promise<null> {
     const announcement = await this.announcementRepository.findOne(
       { id },
@@ -223,6 +229,7 @@ export class AnnouncementService {
         title: announcement.title,
         type: announcement.type,
       },
+      ipAddress,
     });
 
     await this.announcementRepository.flush();
@@ -230,7 +237,11 @@ export class AnnouncementService {
     return null;
   }
 
-  async delete(id: string, authorId?: string): Promise<void> {
+  async delete(
+    id: string,
+    authorId?: string,
+    ipAddress?: string,
+  ): Promise<void> {
     const announcement = await this.announcementRepository.findOne({ id });
     if (!announcement) {
       throw new NotFoundException('announcements.not_found');
@@ -245,6 +256,7 @@ export class AnnouncementService {
         title: announcement.title,
         type: announcement.type,
       },
+      ipAddress,
     });
 
     await this.announcementRepository.removeAndFlush(announcement);

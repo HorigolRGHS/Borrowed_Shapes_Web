@@ -84,11 +84,9 @@ export class EmailService {
                       This is an automated message from <strong>Borrowed Shapes</strong>.<br/>
                       Please do not reply directly to this email.
                     </p>
-                    <div style="margin-top: 16px;">
-                      <a href="#" style="color: #7c3aed; text-decoration: none; font-size: 13px; font-weight: 600; margin: 0 10px;">Privacy Policy</a>
-                      <span style="color: #334155;">|</span>
-                      <a href="#" style="color: #7c3aed; text-decoration: none; font-size: 13px; font-weight: 600; margin: 0 10px;">Terms of Service</a>
-                    </div>
+                    <p style="color: #64748b; font-size: 13px; margin: 0; line-height: 1.5;">
+                      Contact: <a href="mailto:contact@borrowedshapes.id.vn" style="color: #7c3aed; text-decoration: none; font-weight: 600;">contact@borrowedshapes.id.vn</a>
+                    </p>
                   </td>
                 </tr>
               </table>

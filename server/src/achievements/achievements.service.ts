@@ -123,7 +123,11 @@ export class AchievementService {
     return count >= 5;
   }
 
-  async create(dto: CreateAchievementDto, authorId?: string): Promise<null> {
+  async create(
+    dto: CreateAchievementDto,
+    authorId?: string,
+    ipAddress?: string,
+  ): Promise<null> {
     const existing = await this.achievementRepository.findOneByCriteria(
       dto.criteriaCode,
     );
@@ -146,6 +150,7 @@ export class AchievementService {
         name: achievement.name,
         criteriaCode: achievement.criteriaCode,
       },
+      ipAddress,
     });
 
     await this.achievementRepository.persistAndFlush(achievement);
@@ -156,6 +161,7 @@ export class AchievementService {
     id: string,
     dto: UpdateAchievementDto,
     authorId?: string,
+    ipAddress?: string,
   ): Promise<null> {
     const achievement = await this.findOne(id);
     if (dto.criteriaCode) {
@@ -183,13 +189,18 @@ export class AchievementService {
         name: achievement.name,
         criteriaCode: achievement.criteriaCode,
       },
+      ipAddress,
     });
 
     await this.achievementRepository.flush();
     return null;
   }
 
-  async delete(id: string, authorId?: string): Promise<void> {
+  async delete(
+    id: string,
+    authorId?: string,
+    ipAddress?: string,
+  ): Promise<void> {
     const achievement = await this.findOne(id);
 
     // Set equippedAchievementId to null for any game profile that equipped it
@@ -222,6 +233,7 @@ export class AchievementService {
         name: achievement.name,
         criteriaCode: achievement.criteriaCode,
       },
+      ipAddress,
     });
 
     await this.achievementRepository.removeAndFlush(achievement);

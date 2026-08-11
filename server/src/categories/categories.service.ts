@@ -43,50 +43,52 @@ export class CategoryService {
     return category;
   }
 
-  async create(dto: CreateCategoryDto, userId?: string) {
+  async create(dto: CreateCategoryDto, userId?: string, ipAddress?: string) {
     if (!dto.name?.trim())
       throw new BadRequestException('category.name_required');
     if (!dto.nameVi?.trim())
       throw new BadRequestException('category.name_vi_required');
 
-    const slug = this.slugify(dto.slug?.trim() || dto.name);
-    const slugVi = this.slugify(dto.slugVi?.trim() || dto.nameVi);
+    const name = dto.name.trim();
+    const nameVi = dto.nameVi.trim();
 
-    if (!slug) {
-      throw new BadRequestException('category.slug_required');
+    // Check conflict
+    const existingEn = await this.categoryRepository.findOne({ name });
+    if (existingEn) {
+      throw new BadRequestException('category.name_conflict');
     }
-    if (!slugVi) {
-      throw new BadRequestException('category.slug_vi_required');
+
+    const existingVi = await this.categoryRepository.findOne({ nameVi });
+    if (existingVi) {
+      throw new BadRequestException('category.name_vi_conflict');
     }
+
+    const slug = this.slugify(dto.slug?.trim() || name);
+    const slugVi = this.slugify(dto.slugVi?.trim() || nameVi);
+
+    if (!slug) throw new BadRequestException('category.slug_required');
+    if (!slugVi) throw new BadRequestException('category.slug_vi_required');
 
     const existingSlug = await this.categoryRepository.findOne({ slug });
-    if (existingSlug) throw new BadRequestException('category.slug_conflict');
+    if (existingSlug) {
+      throw new BadRequestException('category.slug_conflict');
+    }
 
     const existingSlugVi = await this.categoryRepository.findOne({ slugVi });
-    if (existingSlugVi)
+    if (existingSlugVi) {
       throw new BadRequestException('category.slug_vi_conflict');
-
-    const existingName = await this.categoryRepository.findOne({
-      name: dto.name.trim(),
-    });
-    if (existingName) throw new BadRequestException('category.name_conflict');
-
-    const existingNameVi = await this.categoryRepository.findOne({
-      nameVi: dto.nameVi.trim(),
-    });
-    if (existingNameVi)
-      throw new BadRequestException('category.name_vi_conflict');
+    }
 
     const category = this.categoryRepository.create({
       id: randomUUID(),
-      name: dto.name.trim(),
-      nameVi: dto.nameVi.trim(),
+      name,
+      nameVi,
       slug,
       slugVi,
-      description: dto.description?.trim(),
-      descriptionVi: dto.descriptionVi?.trim(),
-      iconUrl: dto.iconUrl,
-      isOfficial: !!dto.isOfficial,
+      description: dto.description?.trim() || undefined,
+      descriptionVi: dto.descriptionVi?.trim() || undefined,
+      iconUrl: dto.iconUrl?.trim() || undefined,
+      isOfficial: dto.isOfficial ?? true,
     });
 
     try {
@@ -100,6 +102,7 @@ export class CategoryService {
         actionType: AuditActionType.CREATE,
         entityName: 'ForumCategory',
         entityId: category.id,
+        ipAddress,
         newValue: {
           name: category.name,
           slug: category.slug,
@@ -114,7 +117,7 @@ export class CategoryService {
     }
   }
 
-  async update(id: string, dto: UpdateCategoryDto, userId?: string) {
+  async update(id: string, dto: UpdateCategoryDto, userId?: string, ipAddress?: string) {
     const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
@@ -225,6 +228,7 @@ export class CategoryService {
       actionType: AuditActionType.UPDATE,
       entityName: 'ForumCategory',
       entityId: category.id,
+      ipAddress,
       newValue: {
         name: category.name,
         slug: category.slug,
@@ -251,7 +255,7 @@ export class CategoryService {
     return null;
   }
 
-  async remove(id: string, userId?: string) {
+  async remove(id: string, userId?: string, ipAddress?: string) {
     const category = await this.categoryRepository.findOne({ id });
     if (!category) throw new NotFoundException('category.not_found');
 
@@ -262,6 +266,7 @@ export class CategoryService {
       actionType: AuditActionType.DELETE,
       entityName: 'ForumCategory',
       entityId: category.id,
+      ipAddress,
       oldValue: {
         name: category.name,
         slug: category.slug,

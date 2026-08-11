@@ -17,6 +17,7 @@ import {
   UserSessionResponseDto,
   SessionMeResponseDto,
 } from './dto/sessions.dto';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Sessions')
 @Controller('sessions')
@@ -59,7 +60,7 @@ export class SessionsController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<null> {
-    await this.sessionsService.revoke(id, user.userId, user.role, req.ip ?? '');
+    await this.sessionsService.revoke(id, user.userId, user.role, getClientIp(req));
     return null;
   }
 }

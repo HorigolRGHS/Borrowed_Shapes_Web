@@ -152,10 +152,24 @@ apiClient.interceptors.request.use(
       config.headers["Accept-Language"] = lang;
     } else {
       try {
-        const { cookies } = require("next/headers");
+        const { cookies, headers } = require("next/headers");
         const cookieStore = await cookies();
         const lang = cookieStore.get("NEXT_LOCALE")?.value || "en";
         config.headers["Accept-Language"] = lang;
+
+        const headerStore = await headers();
+        const forwardedFor = headerStore.get("x-forwarded-for");
+        const realIp = headerStore.get("x-real-ip");
+        const cfIp = headerStore.get("cf-connecting-ip");
+        if (forwardedFor && !config.headers["x-forwarded-for"]) {
+          config.headers["x-forwarded-for"] = forwardedFor;
+        }
+        if (realIp && !config.headers["x-real-ip"]) {
+          config.headers["x-real-ip"] = realIp;
+        }
+        if (cfIp && !config.headers["cf-connecting-ip"]) {
+          config.headers["cf-connecting-ip"] = cfIp;
+        }
       } catch (e) {}
     }
 

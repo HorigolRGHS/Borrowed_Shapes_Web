@@ -645,6 +645,7 @@
         "display_name_required": "Display name is required.",
         "display_name_too_short": "Display name must be at least 2 characters.",
         "display_name_too_long": "Display name must be at most 50 characters.",
+        "display_name_invalid": "Only letters, numbers, spaces, underscores, and hyphens allowed.",
         "avatar_invalid_type": "Avatar must be a PNG, JPG, or WEBP image.",
         "avatar_too_large": "Avatar must be smaller than 2MB."
       }

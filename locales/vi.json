@@ -642,6 +642,7 @@
         "display_name_required": "Tên hiển thị không được để trống.",
         "display_name_too_short": "Tên hiển thị phải có ít nhất 2 ký tự.",
         "display_name_too_long": "Tên hiển thị tối đa 50 ký tự.",
+        "display_name_invalid": "Chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối.",
         "avatar_invalid_type": "Ảnh đại diện phải là PNG, JPG hoặc WEBP.",
         "avatar_too_large": "Ảnh đại diện phải nhỏ hơn 2MB."
       }

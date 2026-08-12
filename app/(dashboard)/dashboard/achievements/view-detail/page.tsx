@@ -798,9 +798,9 @@ export default function AchievementViewDetailPage() {
             }
           }}
         >
-          <DialogContent className="max-w-2xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
+          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-            <DialogHeader>
+            <DialogHeader className="shrink-0">
               <DialogTitle>{t('achievements.edit_achievement')}</DialogTitle>
               <DialogDescription>{t('achievements.create_edit_subtitle')}</DialogDescription>
             </DialogHeader>
@@ -810,7 +810,7 @@ export default function AchievementViewDetailPage() {
                 e.preventDefault();
                 handleEditSubmit();
               }}
-              className="space-y-5"
+              className="flex-1 overflow-y-auto custom-scroll pr-1 space-y-5"
             >
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>

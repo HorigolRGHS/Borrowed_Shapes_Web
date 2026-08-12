@@ -859,9 +859,9 @@ export default function AchievementsPage() {
           }
         }}
       >
-        <DialogContent className="max-w-3xl h-[85vh] max-h-[90vh] overflow-y-auto custom-scroll">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-          <DialogHeader>
+          <DialogHeader className="shrink-0">
             <DialogTitle>
               {editingAchievement ? t('achievements.edit_achievement') : t('achievements.create_achievement')}
             </DialogTitle>
@@ -879,7 +879,7 @@ export default function AchievementsPage() {
               e.preventDefault();
               editingAchievement ? handleEdit() : handleCreate();
             }}
-            className="space-y-5"
+            className="flex-1 overflow-y-auto custom-scroll pr-1 space-y-5"
           >
             <div className="grid gap-5 sm:grid-cols-2">
               <div>

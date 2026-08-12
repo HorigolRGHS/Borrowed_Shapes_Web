@@ -20,6 +20,7 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
   const { t } = useI18n();
 
   const [displayName, setDisplayName] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [equippedAchievementId, setEquippedAchievementId] = useState<string | null>(null);
 
@@ -45,6 +46,7 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
       setSelectedFile(null);
       setPreviewUrl(null);
       setUploadedKey(null);
+      setError(null);
 
       // Fetch user achievements for frames
       api.get("/auth/me?include=achievements").then((res) => {
@@ -127,17 +129,17 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
 
   const handleSave = async () => {
     if (displayName.trim().length < 2) {
-      toast.error(t("profile.edit.validation.display_name_too_short"));
+      setError(t("profile.edit.validation.display_name_too_short"));
       return;
     }
     if (displayName.trim().length > 50) {
-      toast.error(t("profile.edit.validation.display_name_too_long") || "Name must be under 50 characters");
+      setError(t("profile.edit.validation.display_name_too_long") || "Name must be under 50 characters");
       return;
     }
 
     const nameRegex = /^[\p{L}0-9 _-]+$/u;
     if (!nameRegex.test(displayName.trim())) {
-      toast.error(t("profile.edit.validation.display_name_invalid"));
+      setError(t("profile.edit.validation.display_name_invalid"));
       return;
     }
 
@@ -245,15 +247,23 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
               id="displayName"
               value={displayName}
               maxLength={50}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={(e) => {
+                setDisplayName(e.target.value);
+                if (error) setError(null);
+              }}
               disabled={isSaving}
               placeholder={t("profile.edit.display_name_placeholder")}
               className={`bg-background dark:bg-white/5 focus-visible:ring-amber-500/50 transition-colors ${
-                displayName.length >= 50
+                error
+                  ? 'border-red-500 dark:border-red-500 focus-visible:ring-red-500/50'
+                  : displayName.length >= 50
                   ? 'border-red-500/50 dark:border-red-500/50 focus-visible:ring-red-500/50'
                   : 'border-border dark:border-[#1e1e3a]'
               }`}
             />
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
           </div>
 
           {/* Frame Picker */}

@@ -405,7 +405,7 @@
     "detail_page_subtitle": "Viewing details for: ",
     "info_title": "Achievement Information",
     "achievement_id_label": "Achievement ID",
-    "total_users_achieved_label": "Total Users Achieved",
+    "total_users_achieved_label": "Total Players Achieved",
     "edit_achievement_button": "Edit Achievement",
     "delete_achievement_button": "Delete Achievement",
     "sort_default": "Default",
@@ -563,7 +563,7 @@
     "title": "Profile",
     "role": {
       "admin": "Admin",
-      "user": "User"
+      "user": "Player"
     },
     "download_history": {
       "tab": "Download History",
@@ -836,11 +836,11 @@
         "range90d": "90 days",
         "totalForumThreads": "Total Forum Threads",
         "totalGameSessions": "Total Game Sessions",
-        "totalUsers": "Total Users",
+        "totalUsers": "Total Players",
         "totalDownloads": "Total Downloads",
         "forumActivity": "Forum Activity",
         "gameplayActivity": "Gameplay Activity",
-        "userGrowth": "User Growth",
+        "userGrowth": "Player Growth",
         "downloadTrend": "Download Trend",
         "noData": "No data available."
       }
@@ -878,8 +878,8 @@
         "LOGIN": "Login",
         "LOGOUT": "Logout",
         "REVOKE_SESSION": "Revoke Session",
-        "BAN_USER": "Ban User",
-        "UNBAN_USER": "Unban User",
+        "BAN_USER": "Ban Player",
+        "UNBAN_USER": "Unban Player",
         "CREATE_REPORT": "Create",
         "PROCESS_REPORT": "Process",
         "RESOLVE_REPORT": "Resolve",
@@ -889,7 +889,7 @@
     "account": {
       "nav_label": "Accounts",
       "title": "Account Management",
-      "subtitle": "View, search, edit, ban, unban, and delete user accounts.",
+      "subtitle": "View, search, edit, ban, unban, and delete player accounts.",
       "total": "Total accounts",
       "pagination": {
         "previous": "Previous",
@@ -899,7 +899,7 @@
       "search_placeholder": "Search by ID, name, or email...",
       "filters": {
         "all": "All",
-        "user": "User",
+        "user": "Player",
         "admin": "Admin",
         "active": "Active",
         "banned": "Banned",
@@ -907,7 +907,7 @@
         "clear": "Clear Filter"
       },
       "columns": {
-        "user": "User",
+        "user": "Player",
         "email": "Email",
         "role": "Role",
         "status": "Status",
@@ -932,9 +932,9 @@
       },
       "detail": {
         "title": "Account Detail",
-        "subtitle": "Managing user: {name}",
+        "subtitle": "Managing player: {name}",
         "account_information": "Account Information",
-        "user_id": "User ID",
+        "user_id": "Player ID",
         "created_at": "Created At",
         "updated_at": "Updated At",
         "ban_details": "Ban Details",
@@ -970,7 +970,7 @@
         "ban_reason": "Ban Reason",
         "ban_expiration": "Expiration Date (Optional)",
         "unban_title": "Unban Account",
-        "unban_description": "Are you sure you want to restore access to this user?",
+        "unban_description": "Are you sure you want to restore access to this player?",
         "delete_title": "Delete Account",
         "delete_warning": "Warning: Account will be deleted and no longer accessible.",
         "audit_title": "Audit Log for {name}",
@@ -983,7 +983,7 @@
       },
       "role": {
         "title": "Role",
-        "user": "User",
+        "user": "Player",
         "admin": "Admin",
         "change": "Change Role",
         "changeRole": "Change Role",
@@ -994,7 +994,7 @@
         "demoteConfirmTitle": "Revoke Admin Privileges?",
         "demoteConfirmDescription": "This account will lose access to all administrative functions. Are you sure you want to proceed?",
         "selfDemoteBlocked": "You cannot revoke your own admin privileges.",
-        "lastAdminBlocked": "Cannot revoke privileges of the last active administrator.",
+        "lastAdminBlocked": "Cannot revoke privileges of the last active admin.",
         "updateSuccess": "Account role updated successfully.",
         "updateFailed": "Failed to update account role.",
         "noChange": "Role was not changed.",
@@ -1002,8 +1002,8 @@
         "cancel": "Cancel"
       },
       "empty": {
-        "no_users": "No users found.",
-        "no_audit_logs": "No audit logs found for this user."
+        "no_users": "No players found.",
+        "no_audit_logs": "No audit logs found for this player."
       },
       "messages": {
         "update_success": "Account updated successfully.",
@@ -1117,14 +1117,14 @@
         "set_active": "Set Active",
         "title": "Set Active Download Version",
         "description": "This version will become the recommended download on the public Download page. The previous active version will become inactive but will remain in the version list.",
-        "warning": "Use this when the newest upload has issues and you want users to download a stable older version.",
+        "warning": "Use this when the newest upload has issues and you want players to download a stable older version.",
         "confirm": "Confirm",
         "success": "Active download version updated successfully.",
         "error": "Failed to update active download version.",
         "inactive_badge": "Inactive",
         "summary_title": "Current Public Download",
         "no_active": "No active version selected.",
-        "summary_note": "Users will download this version from the public Download page.",
+        "summary_note": "Players will download this version from the public Download page.",
         "inactive_note": "Visible in the version list, but not used as the recommended download.",
         "current_version": "Current active version",
         "new_version": "New active version",
@@ -1169,8 +1169,8 @@
           "activeSessions": "{count} active sessions",
           "revoke": "Revoke Session",
           "revokeDialogTitle": "Revoke session?",
-          "revokeDialogDescription": "This will log this user out of the selected active session.",
-          "revokeMultipleDialogDescription": "This user has {count} active sessions. This action will revoke the most recent active session.",
+          "revokeDialogDescription": "This will log this player out of the selected active session.",
+          "revokeMultipleDialogDescription": "This player has {count} active sessions. This action will revoke the most recent active session.",
           "revokeConfirm": "Revoke session",
           "revokeSuccess": "Session revoked successfully.",
           "revokeFailed": "Failed to revoke session.",
@@ -1479,7 +1479,7 @@
       "sections": {
         "1": {
           "title": "1. Introduction",
-          "content": "This Terms of Service (\"Agreement\") establishes a legally binding contract between the user (\"Player\", \"you\") and the developers and operators of the online game Borrowed Shapes (\"Company\", \"we\", \"us\"). The purpose of this introduction is to clearly communicate the establishment of a legal relationship upon the initiation of software usage. The Player possesses the right to review this Agreement prior to accessing the software and maintains the right to reject these terms by abstaining from use or uninstalling the game. Conversely, the Company retains the fundamental right to enforce these rules to maintain a secure, functional, and commercially viable digital environment1. A realistic scenario involving this clause occurs when a new individual downloads the game client; the initial loading screen requires explicit, affirmative acknowledgment of this document via a clickwrap agreement, thereby initiating the legal relationship. Avoidance or rejection of these terms strictly prohibits access to the game and all associated web platforms. Furthermore, for residents of the United States and certain other jurisdictions, this introduction serves as a preliminary notice that disputes will be resolved via binding individual arbitration rather than jury trials or class actions2."
+          "content": "This Terms of Service (\"Agreement\") establishes a legally binding contract between the player (\"Player\", \"you\") and the developers and operators of the online game Borrowed Shapes (\"Company\", \"we\", \"us\"). The purpose of this introduction is to clearly communicate the establishment of a legal relationship upon the initiation of software usage. The Player possesses the right to review this Agreement prior to accessing the software and maintains the right to reject these terms by abstaining from use or uninstalling the game. Conversely, the Company retains the fundamental right to enforce these rules to maintain a secure, functional, and commercially viable digital environment1. A realistic scenario involving this clause occurs when a new individual downloads the game client; the initial loading screen requires explicit, affirmative acknowledgment of this document via a clickwrap agreement, thereby initiating the legal relationship. Avoidance or rejection of these terms strictly prohibits access to the game and all associated web platforms. Furthermore, for residents of the United States and certain other jurisdictions, this introduction serves as a preliminary notice that disputes will be resolved via binding individual arbitration rather than jury trials or class actions2."
         },
         "2": {
           "title": "2. Definitions",
@@ -1491,7 +1491,7 @@
         },
         "4": {
           "title": "4. Acceptance of the Terms",
-          "content": "This section details the exact mechanism by which this contract is legally executed and recognized. The Player has the right to be distinctly notified when their actions constitute acceptance of a legal contract. The Company possesses the right to systematically track, log, and audit this acceptance for compliance and defensive legal purposes. Acceptance is finalized when the User registers an Account, authenticates via a designated method, or actively utilizes any of the Services6. Consider a scenario where a User bypasses the traditional graphical login screen by interacting directly with the backend API or utilizing an automated third-party launch tool. Because they are transmitting data to the game servers and utilizing the Services, their actions constitute explicit acceptance, ensuring the Company remains legally protected against unauthorized backend manipulation or claims of contractual ignorance."
+          "content": "This section details the exact mechanism by which this contract is legally executed and recognized. The Player has the right to be distinctly notified when their actions constitute acceptance of a legal contract. The Company possesses the right to systematically track, log, and audit this acceptance for compliance and defensive legal purposes. Acceptance is finalized when the Player registers an Account, authenticates via a designated method, or actively utilizes any of the Services6. Consider a scenario where a Player bypasses the traditional graphical login screen by interacting directly with the backend API or utilizing an automated third-party launch tool. Because they are transmitting data to the game servers and utilizing the Services, their actions constitute explicit acceptance, ensuring the Company remains legally protected against unauthorized backend manipulation or claims of contractual ignorance."
         },
         "5": {
           "title": "5. Eligibility Requirements",
@@ -1499,55 +1499,55 @@
         },
         "6": {
           "title": "6. Account Registration",
-          "content": "This clause outlines the rules governing the creation and maintenance of a unique User profile. Players have the right to create one primary Account to access the Services and track their progression. The Company reserves the right to demand accurate registration information and technically limit the number of Accounts a single individual may operate to prevent system abuse8. In a realistic scenario, a User creates an Account utilizing a legitimate email address and selects a unique username. If the User instead utilizes disposable, rapidly generated email addresses to create dozens of Accounts designed to bypass moderation (known as \"smurfing\" or evasion), the Company maintains the right to suspend the registrations and permanently ban the underlying IP address to protect the integrity of the multiplayer ecosystem."
+          "content": "This clause outlines the rules governing the creation and maintenance of a unique Player profile. Players have the right to create one primary Account to access the Services and track their progression. The Company reserves the right to demand accurate registration information and technically limit the number of Accounts a single individual may operate to prevent system abuse8. In a realistic scenario, a Player creates an Account utilizing a legitimate email address and selects a unique username. If the Player instead utilizes disposable, rapidly generated email addresses to create dozens of Accounts designed to bypass moderation (known as \"smurfing\" or evasion), the Company maintains the right to suspend the registrations and permanently ban the underlying IP address to protect the integrity of the multiplayer ecosystem."
         },
         "7": {
           "title": "7. Authentication Methods",
-          "content": "This section legally defines the acceptable avenues for identity verification within Borrowed Shapes, specifically supporting standard Email authentication and third-party integration via Google Login. The Player has the right to freely choose between these supported methods and expect secure, industry-standard handling of their cryptographic login tokens. The Company holds the right to deprecate, suspend, or update these authentication methods as technological security standards evolve. For example, if a Player utilizes Google Login, the authentication token is processed to grant seamless access without the Company ever storing or observing the raw Google password9. If Google experiences a global outage preventing token validation, the Company is legally insulated and not held liable for the User's temporary inability to authenticate into the game."
+          "content": "This section legally defines the acceptable avenues for identity verification within Borrowed Shapes, specifically supporting standard Email authentication and third-party integration via Google Login. The Player has the right to freely choose between these supported methods and expect secure, industry-standard handling of their cryptographic login tokens. The Company holds the right to deprecate, suspend, or update these authentication methods as technological security standards evolve. For example, if a Player utilizes Google Login, the authentication token is processed to grant seamless access without the Company ever storing or observing the raw Google password9. If Google experiences a global outage preventing token validation, the Company is legally insulated and not held liable for the Player's temporary inability to authenticate into the game."
         },
         "8": {
           "title": "8. Account Security",
-          "content": "This provision establishes the strict allocation of responsibility regarding the protection of Account credentials. The Player maintains the right to utilize platform-provided tools, such as password resets and session management, to secure their Account, but simultaneously bears the absolute responsibility to keep their credentials confidential. The Company reserves the right to refuse the restoration of Virtual Goods, avatar data, or wiki access if an Account is compromised due to User negligence or social engineering1. For example, if a Player voluntarily shares their login credentials with a friend to complete a cooperative multiplayer challenge, and the friend subsequently deletes the Player's custom avatar configurations, the Company is not legally obligated to restore the lost data, as the breach directly originated from the User's violation of security protocols."
+          "content": "This provision establishes the strict allocation of responsibility regarding the protection of Account credentials. The Player maintains the right to utilize platform-provided tools, such as password resets and session management, to secure their Account, but simultaneously bears the absolute responsibility to keep their credentials confidential. The Company reserves the right to refuse the restoration of Virtual Goods, avatar data, or wiki access if an Account is compromised due to Player negligence or social engineering1. For example, if a Player voluntarily shares their login credentials with a friend to complete a cooperative multiplayer challenge, and the friend subsequently deletes the Player's custom avatar configurations, the Company is not legally obligated to restore the lost data, as the breach directly originated from the Player's violation of security protocols."
         },
         "9": {
-          "title": "9. User Responsibilities",
-          "content": "The purpose of this section is to set a baseline standard of expected user behavior and technological maintenance necessary to interface with the software. The Player possesses the right to enjoy the Services, provided they maintain a stable internet connection and utilize hardware that meets the publicly stated minimum requirements. The Company reserves the right to continuously update the game engine, which may render older devices or operating systems incompatible over time13. A realistic scenario involves the Company deploying a major graphical update to the Borrowed Shapes client; it becomes the User's responsibility to ensure their hardware meets the newly published specifications. The Company is not legally obligated to provide legacy support, refunds, or specialized network routing for outdated operating systems that can no longer run the updated client."
+          "title": "9. Player Responsibilities",
+          "content": "The purpose of this section is to set a baseline standard of expected player behavior and technological maintenance necessary to interface with the software. The Player possesses the right to enjoy the Services, provided they maintain a stable internet connection and utilize hardware that meets the publicly stated minimum requirements. The Company reserves the right to continuously update the game engine, which may render older devices or operating systems incompatible over time13. A realistic scenario involves the Company deploying a major graphical update to the Borrowed Shapes client; it becomes the Player's responsibility to ensure their hardware meets the newly published specifications. The Company is not legally obligated to provide legacy support, refunds, or specialized network routing for outdated operating systems that can no longer run the updated client."
         },
         "10": {
           "title": "10. Acceptable Use",
-          "content": "This section defines the authorized, intended scope of interaction with the Borrowed Shapes platform. The Player is granted a limited, personal, non-commercial, non-transferable, and revocable license to interface with the game client, contribute to the wiki, and participate in multiplayer environments7. The Company retains the right to strictly dictate these parameters to prevent unauthorized commercial exploitation or distribution of the software. For example, a User may stream their gameplay on a platform like Twitch or YouTube for personal entertainment or content creation, which falls under acceptable use. However, they may not lease their Account to a third party, sell boosting services, or utilize a single consumer license to set up a commercial internet café operation without executing a separate commercial licensing agreement with the Company."
+          "content": "This section defines the authorized, intended scope of interaction with the Borrowed Shapes platform. The Player is granted a limited, personal, non-commercial, non-transferable, and revocable license to interface with the game client, contribute to the wiki, and participate in multiplayer environments7. The Company retains the right to strictly dictate these parameters to prevent unauthorized commercial exploitation or distribution of the software. For example, a Player may stream their gameplay on a platform like Twitch or YouTube for personal entertainment or content creation, which falls under acceptable use. However, they may not lease their Account to a third party, sell boosting services, or utilize a single consumer license to set up a commercial internet café operation without executing a separate commercial licensing agreement with the Company."
         },
         "11": {
           "title": "11. Prohibited Conduct",
-          "content": "This clause explicitly catalogues behaviors that threaten the technical integrity, commercial viability, and community safety of the Services. The Player has the right to a fair, secure, and competitive gaming environment, necessitating the strict restriction of malicious actors. The Company maintains the right to unilaterally define, investigate, and punish prohibited conduct. Prohibited activities include, but are not limited to, the utilization of aimbots, memory readers, deploying distributed denial-of-service (DDoS) attacks, match-fixing, exploiting server vulnerabilities, or engaging in hate speech2. In a practical scenario, if a User develops or installs a kernel-level script to automate avatar movements (botting) to unfairly farm progression in multiplayer matches, the Company's anti-cheat infrastructure will detect this anomaly. The Company holds the absolute right to terminate the Account instantly for violating the fair-play environment, mirroring industry standards necessary to combat rapidly evolving cheats15."
+          "content": "This clause explicitly catalogues behaviors that threaten the technical integrity, commercial viability, and community safety of the Services. The Player has the right to a fair, secure, and competitive gaming environment, necessitating the strict restriction of malicious actors. The Company maintains the right to unilaterally define, investigate, and punish prohibited conduct. Prohibited activities include, but are not limited to, the utilization of aimbots, memory readers, deploying distributed denial-of-service (DDoS) attacks, match-fixing, exploiting server vulnerabilities, or engaging in hate speech2. In a practical scenario, if a Player develops or installs a kernel-level script to automate avatar movements (botting) to unfairly farm progression in multiplayer matches, the Company's anti-cheat infrastructure will detect this anomaly. The Company holds the absolute right to terminate the Account instantly for violating the fair-play environment, mirroring industry standards necessary to combat rapidly evolving cheats15."
         },
         "12": {
           "title": "12. User Generated Content",
-          "content": "This section regulates all materials originally created or uploaded by the User, encompassing custom images for avatars, structural modifications, or text submitted to the centralized wiki system. The Player retains the right to upload content that falls within the boundaries of applicable intellectual property laws and community guidelines. The Company reserves the broad right to monitor, filter, modify, or permanently remove any User Generated Content (UGC) that it deems offensive, illegal, defamatory, or harmful to the brand17. For instance, if a User uploads a copyrighted corporate logo or a sexually explicit image to the Cloudflare R2 storage to be utilized as their in-game avatar, the Company's moderation system (whether automated or manual) will flag and delete the image, subsequently issuing a warning or suspension to the offending Account to prevent platform liability."
+          "content": "This section regulates all materials originally created or uploaded by the Player, encompassing custom images for avatars, structural modifications, or text submitted to the centralized wiki system. The Player retains the right to upload content that falls within the boundaries of applicable intellectual property laws and community guidelines. The Company reserves the broad right to monitor, filter, modify, or permanently remove any User Generated Content (UGC) that it deems offensive, illegal, defamatory, or harmful to the brand17. For instance, if a Player uploads a copyrighted corporate logo or a sexually explicit image to the Cloudflare R2 storage to be utilized as their in-game avatar, the Company's moderation system (whether automated or manual) will flag and delete the image, subsequently issuing a warning or suspension to the offending Account to prevent platform liability."
         },
         "13": {
-          "title": "13. Ownership of User Content",
-          "content": "The purpose of this clause is to establish clear intellectual property boundaries regarding UGC. The Player maintains the right to the original ownership and underlying intellectual property of the original works they create and upload, provided the content does not infringe upon third-party rights or incorporate the Company's proprietary assets. The Company asserts the right to avoid legal liability for the User's uploaded materials, classifying the platform as a neutral host under relevant safe harbor provisions18. If a User writes a highly detailed, original lore article for the wiki system based on their own independent fiction, the User continues to own that underlying text. However, the act of uploading it triggers specific platform licensing requirements outlined in the subsequent section to ensure the game can legally display the text to other players."
+          "title": "13. Ownership of Player Content",
+          "content": "The purpose of this clause is to establish clear intellectual property boundaries regarding UGC. The Player maintains the right to the original ownership and underlying intellectual property of the original works they create and upload, provided the content does not infringe upon third-party rights or incorporate the Company's proprietary assets. The Company asserts the right to avoid legal liability for the Player's uploaded materials, classifying the platform as a neutral host under relevant safe harbor provisions18. If a Player writes a highly detailed, original lore article for the wiki system based on their own independent fiction, the Player continues to own that underlying text. However, the act of uploading it triggers specific platform licensing requirements outlined in the subsequent section to ensure the game can legally display the text to other players."
         },
         "14": {
-          "title": "14. License Granted by Users",
-          "content": "To operate a multiplayer game and a community wiki, the Company requires specific legal permissions to transmit and display user data. By uploading content, the Player grants the Company a worldwide, royalty-free, perpetual, irrevocable, sub-licensable, and non-exclusive right to host, reproduce, display, distribute, and modify the material in connection with operating and promoting the Services3. In a realistic scenario, when a User uploads a custom image via the game client, this license ensures the Company is not committing copyright infringement by rendering that image on the screens of other players in a multiplayer lobby, backing up the image on Cloudflare servers, or featuring the User's unique avatar in a promotional gameplay trailer for Borrowed Shapes."
+          "title": "14. License Granted by Players",
+          "content": "To operate a multiplayer game and a community wiki, the Company requires specific legal permissions to transmit and display player data. By uploading content, the Player grants the Company a worldwide, royalty-free, perpetual, irrevocable, sub-licensable, and non-exclusive right to host, reproduce, display, distribute, and modify the material in connection with operating and promoting the Services3. In a realistic scenario, when a Player uploads a custom image via the game client, this license ensures the Company is not committing copyright infringement by rendering that image on the screens of other players in a multiplayer lobby, backing up the image on Cloudflare servers, or featuring the Player's unique avatar in a promotional gameplay trailer for Borrowed Shapes."
         },
         "15": {
           "title": "15. License Granted by Borrowed Shapes",
-          "content": "This provision establishes the legal framework allowing the User to interact with the Company's proprietary software and digital assets. The Player is granted a limited, revocable, non-transferable, and non-exclusive right to download, install, and execute the game client solely for personal, non-commercial entertainment purposes. The Company retains the absolute right to revoke this license at any time for violations of this Agreement11. For example, the User is licensed to view, manipulate, and interact with the game's 3D shapes, textures, and user interface during active gameplay. However, they are strictly prohibited from extracting those models from the local game files, decompiling the source code, or utilizing the assets in an independent commercial project or competing video game."
+          "content": "This provision establishes the legal framework allowing the Player to interact with the Company's proprietary software and digital assets. The Player is granted a limited, revocable, non-transferable, and non-exclusive right to download, install, and execute the game client solely for personal, non-commercial entertainment purposes. The Company retains the absolute right to revoke this license at any time for violations of this Agreement11. For example, the Player is licensed to view, manipulate, and interact with the game's 3D shapes, textures, and player interface during active gameplay. However, they are strictly prohibited from extracting those models from the local game files, decompiling the source code, or utilizing the assets in an independent commercial project or competing video game."
         },
         "16": {
           "title": "16. Intellectual Property",
-          "content": "This section is designed to aggressively protect the Company's brand identity, proprietary code, and visual assets. The Player possesses the right to interact with the intellectual property solely within the intended confines of the game client. The Company holds and reserves all exclusive rights, title, and interest in the game code, the trademark \"Borrowed Shapes,\" server architecture, narrative elements, and all official artwork13. If a User attempts to reverse-engineer the game client's networking protocols to create a private, unauthorized server emulator (commonly known as a \"private server\"), the Company possesses the legal authority to issue a cease-and-desist order, terminate the User's Account, and pursue statutory damages for copyright and trademark infringement."
+          "content": "This section is designed to aggressively protect the Company's brand identity, proprietary code, and visual assets. The Player possesses the right to interact with the intellectual property solely within the intended confines of the game client. The Company holds and reserves all exclusive rights, title, and interest in the game code, the trademark \"Borrowed Shapes,\" server architecture, narrative elements, and all official artwork13. If a Player attempts to reverse-engineer the game client's networking protocols to create a private, unauthorized server emulator (commonly known as a \"private server\"), the Company possesses the legal authority to issue a cease-and-desist order, terminate the Player's Account, and pursue statutory damages for copyright and trademark infringement."
         },
         "17": {
           "title": "17. Community Features",
-          "content": "This clause governs interactions within shared digital spaces, specifically the wiki system and online multiplayer lobbies. The Player has the right to participate in these communities free from severe harassment, discrimination, and extreme toxicity. The Company holds the right to enforce strict moderation policies and restrict access to these specific features independently of the core game access2. For instance, if a User consistently utilizes hate speech or spams advertisements in the multiplayer chat, the Company may issue a localized \"communications ban.\" This restricts the User from typing in chat channels or editing wiki pages, effectively silencing them in community spaces while technically still allowing them to log in and play the game in isolation."
+          "content": "This clause governs interactions within shared digital spaces, specifically the wiki system and online multiplayer lobbies. The Player has the right to participate in these communities free from severe harassment, discrimination, and extreme toxicity. The Company holds the right to enforce strict moderation policies and restrict access to these specific features independently of the core game access2. For instance, if a Player consistently utilizes hate speech or spams advertisements in the multiplayer chat, the Company may issue a localized \"communications ban.\" This restricts the Player from typing in chat channels or editing wiki pages, effectively silencing them in community spaces while technically still allowing them to log in and play the game in isolation."
         },
         "18": {
           "title": "18. Virtual Goods and Future Digital Purchases",
-          "content": "To preemptively establish the economic and legal realities of monetization, this section governs any premium services, digital items, or virtual currencies introduced to the game. The Player has the right to utilize purchased Virtual Goods strictly within the closed game ecosystem. The Company retains absolute control over the pricing, availability, modification, and existence of these items, stipulating that Virtual Goods represent a limited license, hold no real-world monetary value, and cannot be cashed out, traded externally, or inherited5. If a User purchases premium customization options for their avatar, and the Company later alters the visual aesthetics of those options during a global graphical update for technical optimization, the User is not entitled to a financial refund, as they merely purchased a revocable license to use the good as presently provided by the Company."
+          "content": "To preemptively establish the economic and legal realities of monetization, this section governs any premium services, digital items, or virtual currencies introduced to the game. The Player has the right to utilize purchased Virtual Goods strictly within the closed game ecosystem. The Company retains absolute control over the pricing, availability, modification, and existence of these items, stipulating that Virtual Goods represent a limited license, hold no real-world monetary value, and cannot be cashed out, traded externally, or inherited5. If a Player purchases premium customization options for their avatar, and the Company later alters the visual aesthetics of those options during a global graphical update for technical optimization, the Player is not entitled to a financial refund, as they merely purchased a revocable license to use the good as presently provided by the Company."
         },
         "19": {
           "title": "19. Third-Party Services",
@@ -1555,15 +1555,15 @@
         },
         "20": {
           "title": "20. Updates and Changes to the Services",
-          "content": "This section secures the Company's legal and technical ability to iterate, patch, and evolve the software post-launch. The Player has the right to receive these updates to continue accessing the multiplayer ecosystem, but possesses no right to demand the preservation of older, unpatched versions of the game. The Company reserves the right to automatically deploy patches, modify game balance, or remove features at its sole discretion without prior consent3. In a realistic scenario, if a specific avatar customization shape is discovered to cause severe graphical frame-rate drops in multiplayer environments, the Company may deploy an immediate hotfix removing or altering the item. Users are contractually obligated to download the update to reconnect to the servers, and cannot claim the product was \"destroyed\" by the patch."
+          "content": "This section secures the Company's legal and technical ability to iterate, patch, and evolve the software post-launch. The Player has the right to receive these updates to continue accessing the multiplayer ecosystem, but possesses no right to demand the preservation of older, unpatched versions of the game. The Company reserves the right to automatically deploy patches, modify game balance, or remove features at its sole discretion without prior consent3. In a realistic scenario, if a specific avatar customization shape is discovered to cause severe graphical frame-rate drops in multiplayer environments, the Company may deploy an immediate hotfix removing or altering the item. Players are contractually obligated to download the update to reconnect to the servers, and cannot claim the product was \"destroyed\" by the patch."
         },
         "21": {
           "title": "21. Account Termination by Borrowed Shapes",
           "content": "The Company reserves the absolute right to terminate, suspend, or restrict any Player's access to the Services at any time, with or without cause or prior notice. This clause is a standard defensive measure in commercial software, allowing immediate neutralization of threats to the platform's stability or community safety. If the Company detects fraudulent payment chargebacks associated with an Account, they possess the unilateral right to permanently ban the Account and forfeit all associated progression and Virtual Goods without incurring liability."
         },
         "22": {
-          "title": "22. Account Termination by the User",
-          "content": "The Player maintains the fundamental right to sever their legal relationship with the Company by permanently deleting their Account. This process is fully detailed in the dedicated Account Deletion Policy. The right to termination ensures the User is not perpetually bound by this contract against their will."
+          "title": "22. Account Termination by the Player",
+          "content": "The Player maintains the fundamental right to sever their legal relationship with the Company by permanently deleting their Account. This process is fully detailed in the dedicated Account Deletion Policy. The right to termination ensures the Player is not perpetually bound by this contract against their will."
         },
         "23": {
           "title": "23. Effect of Termination",
@@ -1579,7 +1579,7 @@
         },
         "26": {
           "title": "26. Indemnification",
-          "content": "The Player agrees to indemnify, defend, and hold harmless the Company from any claims, losses, or legal fees arising directly from the Player's violation of these Terms or their infringement of third-party rights. If a User uploads copyrighted music to the game servers and the original artist sues the Company, this clause obligates the User to cover the Company's legal defense costs."
+          "content": "The Player agrees to indemnify, defend, and hold harmless the Company from any claims, losses, or legal fees arising directly from the Player's violation of these Terms or their infringement of third-party rights. If a Player uploads copyrighted music to the game servers and the original artist sues the Company, this clause obligates the Player to cover the Company's legal defense costs."
         },
         "27": {
           "title": "27. Governing Law",
@@ -1613,11 +1613,11 @@
       "sections": {
         "1": {
           "title": "1. Introduction",
-          "content": "The purpose of this Introduction is to demystify the Company's data processing practices and establish absolute transparency regarding what happens to personal information once it enters the ecosystem of Borrowed Shapes. The Player holds the fundamental right to be informed about data collection practices prior to engagement, while the Company has the legal responsibility under global frameworks like the GDPR and CCPA to publish an accessible, accurate policy. A practical scenario involves a privacy-conscious User reading this document to verify that their email address will not be sold to third-party marketing firms before they commit to creating an Account."
+          "content": "The purpose of this Introduction is to demystify the Company's data processing practices and establish absolute transparency regarding what happens to personal information once it enters the ecosystem of Borrowed Shapes. The Player holds the fundamental right to be informed about data collection practices prior to engagement, while the Company has the legal responsibility under global frameworks like the GDPR and CCPA to publish an accessible, accurate policy. A practical scenario involves a privacy-conscious Player reading this document to verify that their email address will not be sold to third-party marketing firms before they commit to creating an Account."
         },
         "2": {
           "title": "2. Scope",
-          "content": "This section defines the exact digital boundaries of the Privacy Policy. The policy applies exclusively to the Borrowed Shapes web platform, the multiplayer game client, the wiki system, and all associated back-end storage and routing services. The Player has the right to know exactly which digital properties are covered by these protections. The Company is responsible for ensuring data collected across all these internal platforms is governed uniformly. If a User clicks an external hyperlink on the community wiki that navigates to an unaffiliated third-party website, this clause clarifies that the Company's privacy protections sever at that point, and the third-party's rules apply."
+          "content": "This section defines the exact digital boundaries of the Privacy Policy. The policy applies exclusively to the Borrowed Shapes web platform, the multiplayer game client, the wiki system, and all associated back-end storage and routing services. The Player has the right to know exactly which digital properties are covered by these protections. The Company is responsible for ensuring data collected across all these internal platforms is governed uniformly. If a Player clicks an external hyperlink on the community wiki that navigates to an unaffiliated third-party website, this clause clarifies that the Company's privacy protections sever at that point, and the third-party's rules apply."
         },
         "3": {
           "title": "3. Definitions",
@@ -1629,23 +1629,23 @@
         },
         "5": {
           "title": "5. Account Information",
-          "content": "The policy requires the collection of basic identifiers to establish a persistent profile. The information involved includes the User's email address, chosen profile name, and account creation timestamp. The Company handles this by storing the data in secure, encrypted relational databases. The Player has the right to view and update this information in their profile settings. The Company is responsible for protecting this core data against unauthorized breaches and unauthorized internal access."
+          "content": "The policy requires the collection of basic identifiers to establish a persistent profile. The information involved includes the Player's email address, chosen profile name, and account creation timestamp. The Company handles this by storing the data in secure, encrypted relational databases. The Player has the right to view and update this information in their profile settings. The Company is responsible for protecting this core data against unauthorized breaches and unauthorized internal access."
         },
         "6": {
           "title": "6. Authentication Information",
-          "content": "To secure Accounts against unauthorized access, the system processes authentication data. This involves cryptographic hashes of passwords (if standard email authentication is used) and active login session tokens. The Company hashes and salts all passwords, meaning the raw text is never known or stored. The Player has the right to securely reset these credentials at will. The Company must ensure session tokens expire appropriately to prevent session hijacking if a User logs in from a public computer."
+          "content": "To secure Accounts against unauthorized access, the system processes authentication data. This involves cryptographic hashes of passwords (if standard email authentication is used) and active login session tokens. The Company hashes and salts all passwords, meaning the raw text is never known or stored. The Player has the right to securely reset these credentials at will. The Company must ensure session tokens expire appropriately to prevent session hijacking if a Player logs in from a public computer."
         },
         "7": {
           "title": "7. Google Login Information",
-          "content": "When a User opts for third-party authentication for convenience, specific data is exchanged. The information involved is an OAuth 2.0 token and the verified email address provided by Google APIs. The Company handles this by validating the token with Google's servers to grant access. The Player has the right to revoke this connection at any time via their Google account security settings. The Company is responsible for not harvesting extraneous data from the User's broader Google profile beyond the basic authentication scope required for the game."
+          "content": "When a Player opts for third-party authentication for convenience, specific data is exchanged. The information involved is an OAuth 2.0 token and the verified email address provided by Google APIs. The Company handles this by validating the token with Google's servers to grant access. The Player has the right to revoke this connection at any time via their Google account security settings. The Company is responsible for not harvesting extraneous data from the Player's broader Google profile beyond the basic authentication scope required for the game."
         },
         "8": {
           "title": "8. Device Information",
-          "content": "For engine optimization and security profiling, hardware data is collected upon client launch. This includes GPU specifications, operating system versions, and RAM capacity. The Company uses this telemetry to optimize the game's rendering pipeline and to detect hardware spoofing commonly associated with ban evasion. The Player has the right to understand that their hardware signature is logged. The Company must secure this data so it cannot be used by external actors to maliciously fingerprint a User across the wider internet."
+          "content": "For engine optimization and security profiling, hardware data is collected upon client launch. This includes GPU specifications, operating system versions, and RAM capacity. The Company uses this telemetry to optimize the game's rendering pipeline and to detect hardware spoofing commonly associated with ban evasion. The Player has the right to understand that their hardware signature is logged. The Company must secure this data so it cannot be used by external actors to maliciously fingerprint a Player across the wider internet."
         },
         "9": {
           "title": "9. Browser Information",
-          "content": "When the User accesses the web platform or wiki system, browser-specific details are logged. This includes user-agent strings, preferred language, and screen resolution. The Company uses this strictly for web layout optimization and automated anti-bot security checks. The Player's right to privacy here is protected by limiting the retention of this data. The Company is responsible for ensuring this data is aggregated and anonymized for broad analytics wherever possible, rather than tracking individual browsing habits."
+          "content": "When the Player accesses the web platform or wiki system, browser-specific details are logged. This includes user-agent strings, preferred language, and screen resolution. The Company uses this strictly for web layout optimization and automated anti-bot security checks. The Player's right to privacy here is protected by limiting the retention of this data. The Company is responsible for ensuring this data is aggregated and anonymized for broad analytics wherever possible, rather than tracking individual browsing habits."
         },
         "10": {
           "title": "10. Network Information",
@@ -1665,11 +1665,11 @@
         },
         "14": {
           "title": "14. Uploaded Images",
-          "content": "The system allows visual customization, necessitating scalable image storage. The information involves the binary image files uploaded by the User for avatars or wiki pages. The Company handles this by uploading the files directly to Cloudflare R2 object storage10. The Player has the right to delete these images from their profile at any time. The Company is responsible for securing the Cloudflare R2 buckets, stripping sensitive EXIF metadata (such as GPS coordinates) from the image prior to public display, and monitoring for illicit content23."
+          "content": "The system allows visual customization, necessitating scalable image storage. The information involves the binary image files uploaded by the Player for avatars or wiki pages. The Company handles this by uploading the files directly to Cloudflare R2 object storage10. The Player has the right to delete these images from their profile at any time. The Company is responsible for securing the Cloudflare R2 buckets, stripping sensitive EXIF metadata (such as GPS coordinates) from the image prior to public display, and monitoring for illicit content23."
         },
         "15": {
           "title": "15. Wiki Contributions",
-          "content": "The community wiki relies heavily on user-submitted text and structural edits. The information involves the text written by the User, permanently associated with their username and a timestamp. The Company handles this by publishing it to the public-facing web platform. The Player has the right to edit their contributions. The Company is responsible for maintaining revision histories to prevent vandalism and ensuring the public display of this data aligns with the moderation policies."
+          "content": "The community wiki relies heavily on player-submitted text and structural edits. The information involves the text written by the Player, permanently associated with their username and a timestamp. The Company handles this by publishing it to the public-facing web platform. The Player has the right to edit their contributions. The Company is responsible for maintaining revision histories to prevent vandalism and ensuring the public display of this data aligns with the moderation policies."
         },
         "16": {
           "title": "16. Avatar Data",
@@ -1677,11 +1677,11 @@
         },
         "17": {
           "title": "17. Reports",
-          "content": "The moderation system relies on user-generated reports to maintain community standards. This involves the text of a complaint, the reporter's internal ID, and the accused's ID. The Company handles this in strict confidentiality, storing it in databases accessible only by the authorized moderation team. The Player has the right to submit reports securely without fear of public retaliation. The Company is responsible for investigating the data objectively and maintaining the absolute privacy of both the reporter and the reported individual."
+          "content": "The moderation system relies on player-generated reports to maintain community standards. This involves the text of a complaint, the reporter's internal ID, and the accused's ID. The Company handles this in strict confidentiality, storing it in databases accessible only by the authorized moderation team. The Player has the right to submit reports securely without fear of public retaliation. The Company is responsible for investigating the data objectively and maintaining the absolute privacy of both the reporter and the reported individual."
         },
         "18": {
           "title": "18. Customer Support Communications",
-          "content": "When a User requests technical or billing help, communication records are generated. This includes emails, support ticket text, and any attached diagnostic screenshots. The Company stores this in its customer relationship management (CRM) software to track and resolve the issue. The Player has the right to request the closure and subsequent deletion of support tickets. The Company must ensure CRM access is heavily restricted internally to prevent unauthorized staff from reading private correspondence."
+          "content": "When a Player requests technical or billing help, communication records are generated. This includes emails, support ticket text, and any attached diagnostic screenshots. The Company stores this in its customer relationship management (CRM) software to track and resolve the issue. The Player has the right to request the closure and subsequent deletion of support tickets. The Company must ensure CRM access is heavily restricted internally to prevent unauthorized staff from reading private correspondence."
         },
         "19": {
           "title": "19. Security Logs",
@@ -1689,7 +1689,7 @@
         },
         "20": {
           "title": "20. Information Collected Automatically",
-          "content": "Certain background diagnostic data is ingested without active User input. This involves crash reports, error logs, and CDN routing requests generated when the game client fails. The Company automatically ingests this via the game client to fix software bugs and improve stability. The Player has the right to understand that the client operates these diagnostic tools. The Company must ensure that automatic crash dumps do not inadvertently capture or transmit sensitive files from the User's personal computer hard drive."
+          "content": "Certain background diagnostic data is ingested without active Player input. This involves crash reports, error logs, and CDN routing requests generated when the game client fails. The Company automatically ingests this via the game client to fix software bugs and improve stability. The Player has the right to understand that the client operates these diagnostic tools. The Company must ensure that automatic crash dumps do not inadvertently capture or transmit sensitive files from the Player's personal computer hard drive."
         },
         "21": {
           "title": "21. Why We Collect Information",
@@ -1697,7 +1697,7 @@
         },
         "22": {
           "title": "22. Legal Bases for Processing",
-          "content": "This clause ensures compliance with the strict requirements of the GDPR and similar international legislative acts. The Player has the right to know the exact legal foundation upon which their data processing rests4. The Company bases its processing on the following pillars:\n- Contractual Necessity: Processing emails and passwords is required to fulfill the Terms of Service.\n- Legitimate Interest: Processing security logs, IP addresses, and game telemetry is necessary for the Company's legitimate interest in securing the platform and improving the product.\n- Consent: Processing non-essential marketing emails or optional linked profile data relies entirely on the User's explicit, revocable consent."
+          "content": "This clause ensures compliance with the strict requirements of the GDPR and similar international legislative acts. The Player has the right to know the exact legal foundation upon which their data processing rests4. The Company bases its processing on the following pillars:\n- Contractual Necessity: Processing emails and passwords is required to fulfill the Terms of Service.\n- Legitimate Interest: Processing security logs, IP addresses, and game telemetry is necessary for the Company's legitimate interest in securing the platform and improving the product.\n- Consent: Processing non-essential marketing emails or optional linked profile data relies entirely on the Player's explicit, revocable consent."
         },
         "23": {
           "title": "23. How We Use Information",
@@ -1713,11 +1713,11 @@
         },
         "26": {
           "title": "26. Cloudflare Services",
-          "content": "Borrowed Shapes relies heavily on Cloudflare for global infrastructure. The information involves CDN caching data, IP addresses for DDoS protection, and all user images uploaded to Cloudflare R2 object storage10. The Company handles this by routing traffic exclusively through Cloudflare's secure edge nodes. The Player benefits from significantly faster load times and enterprise-grade protection against network attacks. The Company is responsible for properly configuring the R2 buckets to ensure private data remains encrypted at rest10."
+          "content": "Borrowed Shapes relies heavily on Cloudflare for global infrastructure. The information involves CDN caching data, IP addresses for DDoS protection, and all player images uploaded to Cloudflare R2 object storage10. The Company handles this by routing traffic exclusively through Cloudflare's secure edge nodes. The Player benefits from significantly faster load times and enterprise-grade protection against network attacks. The Company is responsible for properly configuring the R2 buckets to ensure private data remains encrypted at rest10."
         },
         "27": {
           "title": "27. Google Authentication",
-          "content": "When a User links their Google account for seamless login, data is shared bidirectionally. The information involves cryptographic token validation requests sent from the Company to Google servers. The Company handles this via secure, encrypted API calls. The Player has the right to seamlessly log in using this integration without creating a new password. The Company is responsible for adhering to Google's strict API terms of service regarding user data handling and minimizing the data footprint."
+          "content": "When a Player links their Google account for seamless login, data is shared bidirectionally. The information involves cryptographic token validation requests sent from the Company to Google servers. The Company handles this via secure, encrypted API calls. The Player has the right to seamlessly log in using this integration without creating a new password. The Company is responsible for adhering to Google's strict API terms of service regarding player data handling and minimizing the data footprint."
         },
         "28": {
           "title": "28. Analytics",
@@ -1729,27 +1729,27 @@
         },
         "30": {
           "title": "30. Security Monitoring",
-          "content": "To protect the integrity of the game and its users, security data is shared with cybersecurity vendors. This involves analyzing network traffic patterns to detect DDoS attacks, scraping bots, or brute-force login attempts. The Company utilizes automated tools to parse this data in real-time. The Player has the right to a secure, uncompromised gaming environment. The Company must ensure these monitoring tools respect data minimization principles and do not unnecessarily log benign user activity."
+          "content": "To protect the integrity of the game and its players, security data is shared with cybersecurity vendors. This involves analyzing network traffic patterns to detect DDoS attacks, scraping bots, or brute-force login attempts. The Company utilizes automated tools to parse this data in real-time. The Player has the right to a secure, uncompromised gaming environment. The Company must ensure these monitoring tools respect data minimization principles and do not unnecessarily log benign player activity."
         },
         "31": {
           "title": "31. Cookies",
-          "content": "This section explains the use of local web storage technologies on the web platform and wiki. The information involves session IDs and authentication tokens stored directly on the User's browser. The Company uses strictly necessary cookies solely to keep the User logged in and secure the session against cross-site request forgery29. The Player has the right to clear these cookies at any time via their browser settings. The Company is responsible for not utilizing intrusive third-party advertising or tracking cookies without obtaining explicit, opt-in consent."
+          "content": "This section explains the use of local web storage technologies on the web platform and wiki. The information involves session IDs and authentication tokens stored directly on the Player's browser. The Company uses strictly necessary cookies solely to keep the Player logged in and secure the session against cross-site request forgery29. The Player has the right to clear these cookies at any time via their browser settings. The Company is responsible for not utilizing intrusive third-party advertising or tracking cookies without obtaining explicit, opt-in consent."
         },
         "32": {
           "title": "32. International Data Transfers",
-          "content": "This clause addresses the global nature of cloud computing and server hosting. The information involved encompasses all Personal Data, which may be transferred from the User's home country (e.g., within the European Economic Area) to servers located in the United States or other regions. The Company handles this legally by utilizing Standard Contractual Clauses (SCCs) and frameworks like the EU-US Data Privacy Framework (DPF)29. The Player has the right to know their data crosses international borders. The Company assumes legal responsibility for ensuring the destination country's processing facilities provide an adequate, legally compliant level of data protection."
+          "content": "This clause addresses the global nature of cloud computing and server hosting. The information involved encompasses all Personal Data, which may be transferred from the Player's home country (e.g., within the European Economic Area) to servers located in the United States or other regions. The Company handles this legally by utilizing Standard Contractual Clauses (SCCs) and frameworks like the EU-US Data Privacy Framework (DPF)29. The Player has the right to know their data crosses international borders. The Company assumes legal responsibility for ensuring the destination country's processing facilities provide an adequate, legally compliant level of data protection."
         },
         "33": {
           "title": "33. Data Retention",
           "content": "This section establishes the precise lifespan of stored data to prevent permanent hoarding. The Company is responsible for not holding data perpetually once its purpose is fulfilled. The Player has the right to \"the right to be forgotten.\"\n* Data Type | Retention Period | Post-Deletion Handling\n* Account Data | Duration of active account. | Deleted within 30 days of closure request29.\n* Server Logs | 90 days. | Automatically purged after security analysis.\n* Uploaded Images | Duration of active account. | Removed from Cloudflare R2 upon account termination.\n* Financial Records | Up to 7 years. | Retained purely for statutory tax compliance."
         },
         "34": {
-          "title": "34. User Rights",
-          "content": "This overarching section details the robust statutory rights granted to the User regarding their data, heavily influenced by global privacy laws. The Company is legally bound to facilitate these rights efficiently and without undue delay. The Player possesses the right to exert ultimate control over their digital identity and footprint."
+          "title": "34. Player Rights",
+          "content": "This overarching section details the robust statutory rights granted to the Player regarding their data, heavily influenced by global privacy laws. The Company is legally bound to facilitate these rights efficiently and without undue delay. The Player possesses the right to exert ultimate control over their digital identity and footprint."
         },
         "35": {
           "title": "35. Access Requests",
-          "content": "The Player has the right to request a complete copy of all Personal Data the Company holds about them. The information involves a compilation of account data, chat logs, and UGC. The Company handles this by providing a digital archive within 30 days of the verified request. The Company is responsible for ensuring the data is delivered in a readable, secure format without exposing the data of other users."
+          "content": "The Player has the right to request a complete copy of all Personal Data the Company holds about them. The information involves a compilation of account data, chat logs, and UGC. The Company handles this by providing a digital archive within 30 days of the verified request. The Company is responsible for ensuring the data is delivered in a readable, secure format without exposing the data of other players."
         },
         "36": {
           "title": "36. Correction Requests",
@@ -1761,7 +1761,7 @@
         },
         "38": {
           "title": "38. Data Portability",
-          "content": "The Player has the right to take their data elsewhere in a usable format. The information involves structured profile and telemetry data. The Company provides this via a standard, machine-readable format, such as a CSV or JSON file. The Company is responsible for ensuring the exported file contains the User's data without exposing the proprietary algorithms, database structures, or trade secrets of the game itself."
+          "content": "The Player has the right to take their data elsewhere in a usable format. The information involves structured profile and telemetry data. The Company provides this via a standard, machine-readable format, such as a CSV or JSON file. The Company is responsible for ensuring the exported file contains the Player's data without exposing the proprietary algorithms, database structures, or trade secrets of the game itself."
         },
         "39": {
           "title": "39. Restriction of Processing",
@@ -1777,11 +1777,11 @@
         },
         "42": {
           "title": "42. Incident Response",
-          "content": "This section outlines the legal and technical protocol in the event of a cyber breach. The information involves the potential exposure of User credentials, emails, or profile data to unauthorized actors. The Company handles this by immediately isolating affected servers, patching the vulnerability, and assessing the scope of the leak. The Player has the right to be notified promptly if their unencrypted Personal Data is compromised. The Company is legally responsible for reporting the breach to the relevant supervisory authorities (e.g., the local Data Protection Authority) within 72 hours of discovery29."
+          "content": "This section outlines the legal and technical protocol in the event of a cyber breach. The information involves the potential exposure of Player credentials, emails, or profile data to unauthorized actors. The Company handles this by immediately isolating affected servers, patching the vulnerability, and assessing the scope of the leak. The Player has the right to be notified promptly if their unencrypted Personal Data is compromised. The Company is legally responsible for reporting the breach to the relevant supervisory authorities (e.g., the local Data Protection Authority) within 72 hours of discovery29."
         },
         "43": {
           "title": "43. Policy Updates",
-          "content": "This section allows the Privacy Policy to adapt to new legal regulations, international frameworks, or novel game features. The information involves the text and rules of this very document. The Company handles this by publishing a revised version on the web platform with a new, clearly visible \"Last Updated\" timestamp. The Player has the right to review these changes prior to continued engagement. The Company is responsible for notifying active Users via email or in-game prompts if the changes materially alter how their Personal Data is processed, requiring renewed acknowledgment."
+          "content": "This section allows the Privacy Policy to adapt to new legal regulations, international frameworks, or novel game features. The information involves the text and rules of this very document. The Company handles this by publishing a revised version on the web platform with a new, clearly visible \"Last Updated\" timestamp. The Player has the right to review these changes prior to continued engagement. The Company is responsible for notifying active Players via email or in-game prompts if the changes materially alter how their Personal Data is processed, requiring renewed acknowledgment."
         },
         "44": {
           "title": "44. Contact Information",
@@ -1803,7 +1803,7 @@
         },
         "3": {
           "title": "3. Respect for Others",
-          "content": "Rationale & Enforcement: Mutual respect ensures the platform remains enjoyable for millions of global players. We enforce this through proactive chat moderation and user reports. Behavior & Examples: Treat others with basic human dignity. Acceptable behavior is congratulating an opponent after a match. Unacceptable behavior includes personal attacks based on someone’s gameplay style. Consequences: Infractions may result in warnings or temporary communication suspensions."
+          "content": "Rationale & Enforcement: Mutual respect ensures the platform remains enjoyable for millions of global players. We enforce this through proactive chat moderation and player reports. Behavior & Examples: Treat others with basic human dignity. Acceptable behavior is congratulating an opponent after a match. Unacceptable behavior includes personal attacks based on someone’s gameplay style. Consequences: Infractions may result in warnings or temporary communication suspensions."
         },
         "4": {
           "title": "4. Inclusivity",
@@ -1819,7 +1819,7 @@
         },
         "7": {
           "title": "7. Bullying",
-          "content": "Rationale & Enforcement: Exists to protect vulnerable players from coordinated intimidation. We investigate bullying claims by looking at patterns of behavior over time. Behavior & Examples: Support peers rather than tear them down. Acceptable behavior is offering constructive feedback on a user's uploaded avatar. Unacceptable behavior is organizing a group to mock a player's wiki contributions. Consequences: Temporary suspensions escalating to permanent bans."
+          "content": "Rationale & Enforcement: Exists to protect vulnerable players from coordinated intimidation. We investigate bullying claims by looking at patterns of behavior over time. Behavior & Examples: Support peers rather than tear them down. Acceptable behavior is offering constructive feedback on a player's uploaded avatar. Unacceptable behavior is organizing a group to mock a player's wiki contributions. Consequences: Temporary suspensions escalating to permanent bans."
         },
         "8": {
           "title": "8. Discrimination",
@@ -1851,7 +1851,7 @@
         },
         "15": {
           "title": "15. Doxxing",
-          "content": "Rationale & Enforcement: Doxxing is a severe privacy breach used for intimidation. We treat this as a critical safety incident requiring immediate intervention. Behavior & Examples: Never compile or share real-world data. Acceptable behavior is keeping interactions anonymous. Unacceptable behavior is publishing a user's real name and phone number on the wiki. Consequences: Immediate permanent ban."
+          "content": "Rationale & Enforcement: Doxxing is a severe privacy breach used for intimidation. We treat this as a critical safety incident requiring immediate intervention. Behavior & Examples: Never compile or share real-world data. Acceptable behavior is keeping interactions anonymous. Unacceptable behavior is publishing a player's real name and phone number on the wiki. Consequences: Immediate permanent ban."
         },
         "16": {
           "title": "16. Spam",
@@ -1911,7 +1911,7 @@
         },
         "30": {
           "title": "30. Username Policy",
-          "content": "Rationale & Enforcement: Usernames are highly visible and must be appropriate for all ages. We use word filters and user reports to police names. Behavior & Examples: Choose a respectful identifier. Acceptable behavior is naming yourself \"ShapeMaster99.\" Unacceptable behavior is using slurs, sexually explicit terms, or impersonating staff in your username. Consequences: Forced name changes or account bans."
+          "content": "Rationale & Enforcement: Usernames are highly visible and must be appropriate for all ages. We use word filters and player reports to police names. Behavior & Examples: Choose a respectful identifier. Acceptable behavior is naming yourself \"ShapeMaster99.\" Unacceptable behavior is using slurs, sexually explicit terms, or impersonating staff in your username. Consequences: Forced name changes or account bans."
         },
         "31": {
           "title": "31. Display Name Policy",
@@ -1931,7 +1931,7 @@
         },
         "35": {
           "title": "35. Comments",
-          "content": "Rationale & Enforcement: Public comment sections must foster discussion, not hostility. We use automated filters for severe infractions. Behavior & Examples: Debate constructively. Acceptable behavior is disagreeing with a strategy. Unacceptable behavior is launching personal attacks in the comment section of a user's guide. Consequences: Comment deletion and posting bans."
+          "content": "Rationale & Enforcement: Public comment sections must foster discussion, not hostility. We use automated filters for severe infractions. Behavior & Examples: Debate constructively. Acceptable behavior is disagreeing with a strategy. Unacceptable behavior is launching personal attacks in the comment section of a player's guide. Consequences: Comment deletion and posting bans."
         },
         "36": {
           "title": "36. Player Collaboration",
@@ -1993,11 +1993,11 @@
       "sections": {
         "1": {
           "title": "1. Introduction",
-          "content": "Why it exists: To establish absolute clarity on what materials are permitted on Borrowed Shapes servers. Covered: All digital uploads, text, and media. Permitted: Original, safe content. Restricted: Content needing age-gating. Prohibited: Illegal or highly offensive material. Review/Decisions: Automated scanning and manual review based on strict guidelines. Appeals: Users can appeal removals via the support portal."
+          "content": "Why it exists: To establish absolute clarity on what materials are permitted on Borrowed Shapes servers. Covered: All digital uploads, text, and media. Permitted: Original, safe content. Restricted: Content needing age-gating. Prohibited: Illegal or highly offensive material. Review/Decisions: Automated scanning and manual review based on strict guidelines. Appeals: Players can appeal removals via the support portal."
         },
         "2": {
           "title": "2. Purpose",
-          "content": "Why it exists: To protect the community and ensure legal compliance. Covered: The overarching philosophy applied to all user-generated content (UGC). Permitted/Restricted/Prohibited: Sets the baseline for all subsequent categories. Review/Decisions/Appeals: Guides moderators in ambiguous situations by prioritizing platform safety."
+          "content": "Why it exists: To protect the community and ensure legal compliance. Covered: The overarching philosophy applied to all player-generated content (UGC). Permitted/Restricted/Prohibited: Sets the baseline for all subsequent categories. Review/Decisions/Appeals: Guides moderators in ambiguous situations by prioritizing platform safety."
         },
         "3": {
           "title": "3. Definitions",
@@ -2005,11 +2005,11 @@
         },
         "4": {
           "title": "4. Content Ownership",
-          "content": "Why it exists: To clarify intellectual property rights. Covered: The legal rights to UGC. Permitted: Original content owned by the user. Restricted/Prohibited: Stolen or infringing content. Review/Decisions: Moderators do not judge ownership unless a formal DMCA claim is filed. Appeals: Handled via formal legal counter-notices."
+          "content": "Why it exists: To clarify intellectual property rights. Covered: The legal rights to UGC. Permitted: Original content owned by the player. Restricted/Prohibited: Stolen or infringing content. Review/Decisions: Moderators do not judge ownership unless a formal DMCA claim is filed. Appeals: Handled via formal legal counter-notices."
         },
         "5": {
-          "title": "5. User Responsibility",
-          "content": "Why it exists: To make users accountable for their uploads. Covered: Everything submitted via the user's account. Permitted: Content vetted by the user before upload. Restricted/Prohibited: Uploading blind files. Review/Decisions: Moderators assume the account holder is responsible for the upload. Appeals: Users must prove their account was compromised if claiming they did not upload the prohibited content."
+          "title": "5. Player Responsibility",
+          "content": "Why it exists: To make players accountable for their uploads. Covered: Everything submitted via the player's account. Permitted: Content vetted by the player before upload. Restricted/Prohibited: Uploading blind files. Review/Decisions: Moderators assume the account holder is responsible for the upload. Appeals: Players must prove their account was compromised if claiming they did not upload the prohibited content."
         },
         "6": {
           "title": "6. Content Review",
@@ -2029,15 +2029,15 @@
         },
         "10": {
           "title": "10. Creative Content",
-          "content": "Why it exists: To support the game's customization features. Covered: Custom avatars and shapes. Permitted: Original designs fitting the game's aesthetic. Restricted/Prohibited: Offensive or legally infringing designs. Review/Decisions: Image recognition software scans uploads for known offensive patterns. Appeals: Users can appeal rejected avatars."
+          "content": "Why it exists: To support the game's customization features. Covered: Custom avatars and shapes. Permitted: Original designs fitting the game's aesthetic. Restricted/Prohibited: Offensive or legally infringing designs. Review/Decisions: Image recognition software scans uploads for known offensive patterns. Appeals: Players can appeal rejected avatars."
         },
         "11": {
           "title": "11. Fan Art",
-          "content": "Why it exists: To celebrate the community's passion. Covered: User-drawn depictions of the game. Permitted: SFW (Safe for Work) art. Restricted/Prohibited: NSFW (Not Safe for Work) or hyper-violent depictions of game characters. Review/Decisions: Moderated based on visual content policies. Appeals: Standard process."
+          "content": "Why it exists: To celebrate the community's passion. Covered: Player-drawn depictions of the game. Permitted: SFW (Safe for Work) art. Restricted/Prohibited: NSFW (Not Safe for Work) or hyper-violent depictions of game characters. Review/Decisions: Moderated based on visual content policies. Appeals: Standard process."
         },
         "12": {
           "title": "12. Gameplay Images",
-          "content": "Why it exists: To allow sharing of achievements. Covered: Screenshots and clips. Permitted: Standard gameplay capture. Restricted/Prohibited: Screenshots showcasing the use of cheat overlays or exploits. Review/Decisions: Reviewed when reported by other users. Appeals: Standard process."
+          "content": "Why it exists: To allow sharing of achievements. Covered: Screenshots and clips. Permitted: Standard gameplay capture. Restricted/Prohibited: Screenshots showcasing the use of cheat overlays or exploits. Review/Decisions: Reviewed when reported by other players. Appeals: Standard process."
         },
         "13": {
           "title": "13. Wiki Articles",
@@ -2049,7 +2049,7 @@
         },
         "15": {
           "title": "15. Community Projects",
-          "content": "Why it exists: To govern large-scale user collaborations. Covered: Multi-user builds or events. Permitted: Inclusive, rule-abiding projects. Restricted/Prohibited: Projects designed to crash the server or exclude protected groups. Review/Decisions: Monitored by community managers. Appeals: Project leaders may appeal takedowns."
+          "content": "Why it exists: To govern large-scale player collaborations. Covered: Multi-player builds or events. Permitted: Inclusive, rule-abiding projects. Restricted/Prohibited: Projects designed to crash the server or exclude protected groups. Review/Decisions: Monitored by community managers. Appeals: Project leaders may appeal takedowns."
         },
         "16": {
           "title": "16. Restricted Content",
@@ -2057,7 +2057,7 @@
         },
         "17": {
           "title": "17. Sensitive Content",
-          "content": "Why it exists: To protect users from unexpected distress. Covered: Phobias, mild horror, or intense themes. Permitted: Spooky content fitting a Halloween event. Restricted/Prohibited: Hyper-realistic shock imagery. Review/Decisions: Moderators apply \"safe for general audiences\" tests. Appeals: Standard process."
+          "content": "Why it exists: To protect players from unexpected distress. Covered: Phobias, mild horror, or intense themes. Permitted: Spooky content fitting a Halloween event. Restricted/Prohibited: Hyper-realistic shock imagery. Review/Decisions: Moderators apply \"safe for general audiences\" tests. Appeals: Standard process."
         },
         "18": {
           "title": "18. Misleading Content",
@@ -2109,11 +2109,11 @@
         },
         "30": {
           "title": "30. Graphic Gore",
-          "content": "Why it exists: To protect users from severe shock. Covered: Highly realistic depictions of mutilation or death. Permitted: Cartoonish, in-game damage. Restricted/Prohibited: Real-world accident photos or hyper-gory drawings. Review/Decisions: Automated visual screening and user reports. Appeals: Standard process."
+          "content": "Why it exists: To protect players from severe shock. Covered: Highly realistic depictions of mutilation or death. Permitted: Cartoonish, in-game damage. Restricted/Prohibited: Real-world accident photos or hyper-gory drawings. Review/Decisions: Automated visual screening and player reports. Appeals: Standard process."
         },
         "31": {
           "title": "31. Self-Harm Promotion",
-          "content": "Why it exists: To protect vulnerable individuals. Covered: Content encouraging suicide, cutting, or eating disorders. Permitted: Seeking mental health resources in support channels. Restricted/Prohibited: Glorifying or providing instructions for self-harm. Review/Decisions: Immediate removal; we may direct the user to crisis resources. Appeals: Standard process."
+          "content": "Why it exists: To protect vulnerable individuals. Covered: Content encouraging suicide, cutting, or eating disorders. Permitted: Seeking mental health resources in support channels. Restricted/Prohibited: Glorifying or providing instructions for self-harm. Review/Decisions: Immediate removal; we may direct the player to crisis resources. Appeals: Standard process."
         },
         "32": {
           "title": "32. Illegal Activities",
@@ -2141,7 +2141,7 @@
         },
         "38": {
           "title": "38. Harassment",
-          "content": "Why it exists: To remove the artifacts of bullying. Covered: Images or text designed to demean a specific person. Permitted: None. Restricted/Prohibited: \"Attack pages\" on the wiki or uploading embarrassing photos of another user. Review/Decisions: Contextual review based on user reports. Appeals: Standard process."
+          "content": "Why it exists: To remove the artifacts of bullying. Covered: Images or text designed to demean a specific person. Permitted: None. Restricted/Prohibited: \"Attack pages\" on the wiki or uploading embarrassing photos of another player. Review/Decisions: Contextual review based on player reports. Appeals: Standard process."
         },
         "39": {
           "title": "39. Threats",
@@ -2169,7 +2169,7 @@
         },
         "45": {
           "title": "45. Malware",
-          "content": "Why it exists: To protect users' computer systems. Covered: Links or files containing malicious code. Permitted: None. Restricted/Prohibited: Uploading a \"game mod\" that actually contains a trojan virus. Review/Decisions: Automated security scanning of all files. Appeals: Standard process."
+          "content": "Why it exists: To protect players' computer systems. Covered: Links or files containing malicious code. Permitted: None. Restricted/Prohibited: Uploading a \"game mod\" that actually contains a trojan virus. Review/Decisions: Automated security scanning of all files. Appeals: Standard process."
         },
         "46": {
           "title": "46. Viruses",
@@ -2185,7 +2185,7 @@
         },
         "49": {
           "title": "49. Impersonation",
-          "content": "Why it exists: To remove spoofed content. Covered: Profiles designed to look exactly like administrators. Permitted: Fan accounts (clearly labeled). Restricted/Prohibited: Using the official Borrowed Shapes logo as your avatar while claiming to be support. Review/Decisions: Forced profile resets. Appeals: Standard process."
+          "content": "Why it exists: To remove spoofed content. Covered: Profiles designed to look exactly like admins. Permitted: Fan accounts (clearly labeled). Restricted/Prohibited: Using the official Borrowed Shapes logo as your avatar while claiming to be support. Review/Decisions: Forced profile resets. Appeals: Standard process."
         },
         "50": {
           "title": "50. Spam",
@@ -2213,7 +2213,7 @@
         },
         "56": {
           "title": "56. Profile Images",
-          "content": "Why it exists: To regulate user representation. Covered: Static images uploaded for accounts. Permitted: SFW images. Restricted/Prohibited: Explicit or infringing images. Review/Decisions: Scanned at upload. Appeals: Standard process."
+          "content": "Why it exists: To regulate player representation. Covered: Static images uploaded for accounts. Permitted: SFW images. Restricted/Prohibited: Explicit or infringing images. Review/Decisions: Scanned at upload. Appeals: Standard process."
         },
         "57": {
           "title": "57. Avatar Images",
@@ -2245,7 +2245,7 @@
         },
         "64": {
           "title": "64. Repeat Violations",
-          "content": "Why it exists: To deter chronic rule-breakers. Covered: Tracking user strike histories. Permitted: Correcting behavior after one warning. Restricted/Prohibited: Continuing to upload prohibited content. Review/Decisions: Automated systems flag repeat offenders for harsher penalties. Appeals: Standard process."
+          "content": "Why it exists: To deter chronic rule-breakers. Covered: Tracking player strike histories. Permitted: Correcting behavior after one warning. Restricted/Prohibited: Continuing to upload prohibited content. Review/Decisions: Automated systems flag repeat offenders for harsher penalties. Appeals: Standard process."
         },
         "65": {
           "title": "65. Escalating Penalties",
@@ -2257,7 +2257,7 @@
         },
         "67": {
           "title": "67. Policy Updates",
-          "content": "Why it exists: Policies must adapt to new types of content (e.g., new AI tools). Covered: Modifications to this document. Permitted: N/A. Restricted/Prohibited: Expecting old rules to apply to new updates. Review/Decisions: We will notify users of major changes. Appeals: N/A."
+          "content": "Why it exists: Policies must adapt to new types of content (e.g., new AI tools). Covered: Modifications to this document. Permitted: N/A. Restricted/Prohibited: Expecting old rules to apply to new updates. Review/Decisions: We will notify players of major changes. Appeals: N/A."
         },
         "68": {
           "title": "68. Contact Information",
@@ -2283,7 +2283,7 @@
         },
         "4": {
           "title": "4. Definitions",
-          "content": "To ensure consistent interpretation:\n- **Copyright** protects original works of authorship fixed in a tangible or digital medium, including source code, text, music, and visual art.\n- **Trademark** refers to signs, logos, and names that distinguish Borrowed Shapes from other products on the market.\n- **Trade Dress** protects the overall visual appearance, including the game's distinctive color schemes and UI design.\n- **Patents** protect proprietary technological processes, network algorithms, or data processing mechanisms.\n- **Trade Secrets** encompass matchmaking algorithms, user databases, and undisclosed technical information providing core competitive advantages.\n- **Ownership of the Game** affirms that the product is licensed, not sold; players purchase access within regulatory bounds rather than owning actual digital assets."
+          "content": "To ensure consistent interpretation:\n- **Copyright** protects original works of authorship fixed in a tangible or digital medium, including source code, text, music, and visual art.\n- **Trademark** refers to signs, logos, and names that distinguish Borrowed Shapes from other products on the market.\n- **Trade Dress** protects the overall visual appearance, including the game's distinctive color schemes and UI design.\n- **Patents** protect proprietary technological processes, network algorithms, or data processing mechanisms.\n- **Trade Secrets** encompass matchmaking algorithms, player databases, and undisclosed technical information providing core competitive advantages.\n- **Ownership of the Game** affirms that the product is licensed, not sold; players purchase access within regulatory bounds rather than owning actual digital assets."
         },
         "5": {
           "title": "5. Ownership of Software and Technical Foundations",
@@ -2295,7 +2295,7 @@
         },
         "7": {
           "title": "7. Ownership of Visual Art and Interfaces",
-          "content": "- **Artwork, Concept Art, and Illustrations** include all sketches, 2D/3D imagery, loading screens, and ideation art. The company holds full copyright. Players may save images for personal wallpapers or share them non-commercially on social media. They are prohibited from selling prints, minting them as NFTs, or using them as training data for generative AI models. This maintains the core aesthetic value and protects artists' livelihoods. Enforcement includes social media copyright strikes and legal action against NFT platforms.\n- **UI (User Interface) and Icons** encompass the dashboard, skill icons, menus, and visual navigation systems, wholly owned by Borrowed Shapes. Players may interact with the UI and take screenshots for guides, but cannot extract UI/Icon image files for proprietary software or UI asset packs. This protects our Trade Dress and UX. Extracting our skill icons for a mobile app will result in the app's removal from digital storefronts."
+          "content": "- **Artwork, Concept Art, and Illustrations** include all sketches, 2D/3D imagery, loading screens, and ideation art. The company holds full copyright. Players may save images for personal wallpapers or share them non-commercially on social media. They are prohibited from selling prints, minting them as NFTs, or using them as training data for generative AI models. This maintains the core aesthetic value and protects artists' livelihoods. Enforcement includes social media copyright strikes and legal action against NFT platforms.\n- **UI (Player Interface) and Icons** encompass the dashboard, skill icons, menus, and visual navigation systems, wholly owned by Borrowed Shapes. Players may interact with the UI and take screenshots for guides, but cannot extract UI/Icon image files for proprietary software or UI asset packs. This protects our Trade Dress and UX. Extracting our skill icons for a mobile app will result in the app's removal from digital storefronts."
         },
         "8": {
           "title": "8. Ownership of Audio and Animation",
@@ -2315,7 +2315,7 @@
         },
         "12": {
           "title": "12. Enforcement Procedures and Legal Remedies",
-          "content": "Borrowed Shapes utilizes a transparent, rapid-response enforcement framework:\n- **DMCA Notice Procedure**: Any entity whose IP is infringed by our game or users can send a takedown notice to our legal representative, requiring an electronic signature, infringing link, and a good-faith statement.\n- **Counter Notification**: Accused users may file a counter-notice if they believe content was removed by mistake, triggering a waiting period for the claimant to pursue a court order.\n- **Investigation Process**: Suspected in-game violations undergo automated and manual review of network logs and memory data to verify behavior.\n- **Repeat Infringers**: We maintain a zero-tolerance policy for repeat offenders, resulting in permanent hardware bans without appeal.\n- **Enforcement Actions**: Sanctions range from warnings and temporary suspensions to permanent Termination of the agreement, stripping all access to virtual assets without refunds.\n- **Civil Remedies**: For commercial or large-scale damages, the company will seek permanent injunctions and statutory/actual damages for lost revenue.\n- **Reservation of Rights**: The company reserves all rights to IP not explicitly licensed and may issue Policy Updates unilaterally to address new technologies.\n- **Contact Information**: For legal inquiries, contact legal@borrowedshapes.com."
+          "content": "Borrowed Shapes utilizes a transparent, rapid-response enforcement framework:\n- **DMCA Notice Procedure**: Any entity whose IP is infringed by our game or players can send a takedown notice to our legal representative, requiring an electronic signature, infringing link, and a good-faith statement.\n- **Counter Notification**: Accused players may file a counter-notice if they believe content was removed by mistake, triggering a waiting period for the claimant to pursue a court order.\n- **Investigation Process**: Suspected in-game violations undergo automated and manual review of network logs and memory data to verify behavior.\n- **Repeat Infringers**: We maintain a zero-tolerance policy for repeat offenders, resulting in permanent hardware bans without appeal.\n- **Enforcement Actions**: Sanctions range from warnings and temporary suspensions to permanent Termination of the agreement, stripping all access to virtual assets without refunds.\n- **Civil Remedies**: For commercial or large-scale damages, the company will seek permanent injunctions and statutory/actual damages for lost revenue.\n- **Reservation of Rights**: The company reserves all rights to IP not explicitly licensed and may issue Policy Updates unilaterally to address new technologies.\n- **Contact Information**: For legal inquiries, contact legal@borrowedshapes.com."
         }
       }
     },
@@ -2363,11 +2363,11 @@
         },
         "4": {
           "title": "4. What Are Cookies and Types of Cookies",
-          "content": "- **Essential Cookies**: These are strictly necessary for the core operation of Borrowed Shapes. They store routing tokens and session identifiers. They are mandatory, retained only until your browsing session ends, and cannot be controlled or disabled by users. We use them to keep you connected to our servers.\n- **Authentication Cookies**: These exist to verify your identity continuously. They store JSON Web Tokens (JWT) and session hashes. They are essential while logged in, retained for up to 30 days or until you log out. Users control them by actively logging out. We use them to prevent you from having to repeatedly enter your credentials.\n- **Session Cookies**: Used to maintain temporary states, such as form inputs on the Community Wiki. They store interface positions and are mandatory for navigation. They expire immediately upon closing the browser and cannot be managed manually. We use them for seamless page transitions.\n- **Persistent Cookies**: These remember your device across multiple sessions. They store a unique user identifier (UUID). They are optional, retained for up to 13 months, and can be disabled via our Cookie Consent banner. We use them to apply your saved preferences automatically.\n- **Preference Cookies**: Designed to personalize your interface, storing data like language selection or dark/light mode choices. They are optional, retained for 12 months, and controllable via browser settings. We use them to ensure your UI experience is tailored to your liking.\n- **Security Cookies**: These exist to prevent fraud, brute-force attacks, and unauthorized access. They store hashed IP addresses and device fingerprints. They are essential, retained for up to 30 days based on threat levels, and cannot be disabled. We use them to protect the multiplayer ecosystem.\n- **Performance Cookies**: Used to measure infrastructure stability. They store data regarding page load times and network errors. They are optional, retained for up to 90 days, and controllable via the consent banner. We use them to optimize server routing.\n- **Analytics Cookies**: These help us understand player behavior. They store click streams and feature usage data. They are optional, retained for up to 24 months, and can be disabled via your account settings. We use them to decide which game features need further development.\n- **Load Balancing Cookies**: Provided by Cloudflare (e.g., the _cflb cookie), these ensure session affinity by routing your future requests to the same origin server. They store server node IDs, are strictly necessary, and last up to 24 hours. We use them to maintain your connection stability during high-traffic esports events.\n- **Cloudflare Cookies**: Specifically the __cf_bm cookie, this is deployed to calculate proprietary bot scores and identify malicious automated traffic. It is strictly necessary, stores encryption data (not user IDs), expires after 30 minutes of inactivity, and cannot be disabled. We use it to defend our servers against DDoS attacks.\n- **Google Authentication Cookies**: If you utilize Google Login, these cookies store OAuth 2.0 tokens. They are essential if you choose this login method, are retained according to Google's token lifecycle, and are managed through your Google Account permissions. We use them to facilitate secure third-party login.\n- **Third-Party Cookies**: Set by external partners (e.g., embedded video players on our Wiki). They store cross-site tracking data. They are optional, retained according to the third party's policy, and controlled via your browser's third-party cookie blocker. We use them to provide rich multimedia content."
+          "content": "- **Essential Cookies**: These are strictly necessary for the core operation of Borrowed Shapes. They store routing tokens and session identifiers. They are mandatory, retained only until your browsing session ends, and cannot be controlled or disabled by players. We use them to keep you connected to our servers.\n- **Authentication Cookies**: These exist to verify your identity continuously. They store JSON Web Tokens (JWT) and session hashes. They are essential while logged in, retained for up to 30 days or until you log out. Players control them by actively logging out. We use them to prevent you from having to repeatedly enter your credentials.\n- **Session Cookies**: Used to maintain temporary states, such as form inputs on the Community Wiki. They store interface positions and are mandatory for navigation. They expire immediately upon closing the browser and cannot be managed manually. We use them for seamless page transitions.\n- **Persistent Cookies**: These remember your device across multiple sessions. They store a unique player identifier (UUID). They are optional, retained for up to 13 months, and can be disabled via our Cookie Consent banner. We use them to apply your saved preferences automatically.\n- **Preference Cookies**: Designed to personalize your interface, storing data like language selection or dark/light mode choices. They are optional, retained for 12 months, and controllable via browser settings. We use them to ensure your UI experience is tailored to your liking.\n- **Security Cookies**: These exist to prevent fraud, brute-force attacks, and unauthorized access. They store hashed IP addresses and device fingerprints. They are essential, retained for up to 30 days based on threat levels, and cannot be disabled. We use them to protect the multiplayer ecosystem.\n- **Performance Cookies**: Used to measure infrastructure stability. They store data regarding page load times and network errors. They are optional, retained for up to 90 days, and controllable via the consent banner. We use them to optimize server routing.\n- **Analytics Cookies**: These help us understand player behavior. They store click streams and feature usage data. They are optional, retained for up to 24 months, and can be disabled via your account settings. We use them to decide which game features need further development.\n- **Load Balancing Cookies**: Provided by Cloudflare (e.g., the _cflb cookie), these ensure session affinity by routing your future requests to the same origin server. They store server node IDs, are strictly necessary, and last up to 24 hours. We use them to maintain your connection stability during high-traffic esports events.\n- **Cloudflare Cookies**: Specifically the __cf_bm cookie, this is deployed to calculate proprietary bot scores and identify malicious automated traffic. It is strictly necessary, stores encryption data (not player IDs), expires after 30 minutes of inactivity, and cannot be disabled. We use it to defend our servers against DDoS attacks.\n- **Google Authentication Cookies**: If you utilize Google Login, these cookies store OAuth 2.0 tokens. They are essential if you choose this login method, are retained according to Google's token lifecycle, and are managed through your Google Account permissions. We use them to facilitate secure third-party login.\n- **Third-Party Cookies**: Set by external partners (e.g., embedded video players on our Wiki). They store cross-site tracking data. They are optional, retained according to the third party's policy, and controlled via your browser's third-party cookie blocker. We use them to provide rich multimedia content."
         },
         "5": {
           "title": "5. Similar Technologies",
-          "content": "- **Local Storage & Browser Storage**: These exist to cache heavy game assets (like Avatar customizations) locally on your device to reduce loading times. They store static interface data, are essential for game performance, and are retained indefinitely until you clear your browser's site data. We use them to minimize bandwidth consumption.\n- **Session Storage**: Temporarily holds data like unsent Reporting System text. It is essential for user experience, deleted when the tab closes, and controlled by closing the window. We use it to prevent data loss if you accidentally refresh a page.\n- **Web Beacons & Pixels**: Invisible graphics embedded in emails. They store data regarding whether an email was opened and your IP address. They are optional, retained for 14 months, and controlled by disabling automatic image loading in your email client. We use them to measure the effectiveness of our communication."
+          "content": "- **Local Storage & Browser Storage**: These exist to cache heavy game assets (like Avatar customizations) locally on your device to reduce loading times. They store static interface data, are essential for game performance, and are retained indefinitely until you clear your browser's site data. We use them to minimize bandwidth consumption.\n- **Session Storage**: Temporarily holds data like unsent Reporting System text. It is essential for player experience, deleted when the tab closes, and controlled by closing the window. We use it to prevent data loss if you accidentally refresh a page.\n- **Web Beacons & Pixels**: Invisible graphics embedded in emails. They store data regarding whether an email was opened and your IP address. They are optional, retained for 14 months, and controlled by disabling automatic image loading in your email client. We use them to measure the effectiveness of our communication."
         },
         "6": {
           "title": "6. How Cookies Are Used",
@@ -2401,7 +2401,7 @@
         },
         "4": {
           "title": "4. Eligibility and Request",
-          "content": "Any user with an active, unbanned account is eligible to submit a Deletion Request via their account dashboard. The rule exists to ensure you retain ultimate sovereignty over your data."
+          "content": "Any player with an active, unbanned account is eligible to submit a Deletion Request via their account dashboard. The rule exists to ensure you retain ultimate sovereignty over your data."
         },
         "5": {
           "title": "5. Identity Verification and Authentication Requirements",
@@ -2421,15 +2421,15 @@
         },
         "9": {
           "title": "9. Partial Deletion vs. Permanent Deletion",
-          "content": "You may request Partial Deletion for specific User-Uploaded Images or Forum Posts by contacting support. Permanent Deletion, however, targets the root of your identity."
+          "content": "You may request Partial Deletion for specific Player-Uploaded Images or Forum Posts by contacting support. Permanent Deletion, however, targets the root of your identity."
         },
         "10": {
           "title": "10. Information Removed vs. Information Retained",
-          "content": "- **Information Removed**: Your real name, email, linked Google OAuth credentials, gameplay progress, avatar customizations, and premium currency balances are destroyed permanently. Once the Grace Period ends, this data is gone forever.\n- **Legal Retention Requirements**: We are legally obligated to retain Purchase Records and transaction histories for up to 10 years to comply with international tax and Anti-Money Laundering (AML) laws. You cannot request the deletion of this financial data.\n- **Fraud and Security Investigation**: If your account was banned for using Cheating Software, your hardware ID, IP address, and moderation logs are retained indefinitely. This rule exists to prevent you from circumventing a ban by creating a new account.\n- **Community Records & Wiki Contributions**: Your Forum Posts and Wiki Contributions represent shared community knowledge. Instead of removing them and breaking the Wiki, we retain the content but permanently anonymize the author name to \"[Deleted User]\".\n- **Support Tickets**: Customer service interactions are archived for 3 years to resolve potential legal disputes."
+          "content": "- **Information Removed**: Your real name, email, linked Google OAuth credentials, gameplay progress, avatar customizations, and premium currency balances are destroyed permanently. Once the Grace Period ends, this data is gone forever.\n- **Legal Retention Requirements**: We are legally obligated to retain Purchase Records and transaction histories for up to 10 years to comply with international tax and Anti-Money Laundering (AML) laws. You cannot request the deletion of this financial data.\n- **Fraud and Security Investigation**: If your account was banned for using Cheating Software, your hardware ID, IP address, and moderation logs are retained indefinitely. This rule exists to prevent you from circumventing a ban by creating a new account.\n- **Community Records & Wiki Contributions**: Your Forum Posts and Wiki Contributions represent shared community knowledge. Instead of removing them and breaking the Wiki, we retain the content but permanently anonymize the author name to \"[Deleted Player]\".\n- **Support Tickets**: Customer service interactions are archived for 3 years to resolve potential legal disputes."
         },
         "11": {
           "title": "11. Backups and Third-Party Services",
-          "content": "For Disaster Recovery, your data may reside in encrypted cold-storage Backups. It is technically impossible to extract a single user from an archive tape; therefore, your data will naturally expire when the backup cycle is overwritten (typically after 90 days). Regarding Third-Party Services like Google Login, disconnecting OAuth access from your Google dashboard triggers an immediate deletion request for Google-derived data within 30 days. Uploaded images stored on Cloudflare R2 Storage are marked for deletion and purged via automated table maintenance (snapshot expiration)."
+          "content": "For Disaster Recovery, your data may reside in encrypted cold-storage Backups. It is technically impossible to extract a single player from an archive tape; therefore, your data will naturally expire when the backup cycle is overwritten (typically after 90 days). Regarding Third-Party Services like Google Login, disconnecting OAuth access from your Google dashboard triggers an immediate deletion request for Google-derived data within 30 days. Uploaded images stored on Cloudflare R2 Storage are marked for deletion and purged via automated table maintenance (snapshot expiration)."
         },
         "12": {
           "title": "12. Consequences of Deletion",
@@ -2459,7 +2459,7 @@
         },
         "3": {
           "title": "3. Definitions",
-          "content": "\"Data Governance Principles\" dictate that every byte of data requires a justified legal basis. \"Lawful Processing\" means we rely on user consent, contract fulfillment, or legitimate interests. \"Legal Hold\" is the suspension of all deletion scripts due to a court order or legal dispute."
+          "content": "\"Data Governance Principles\" dictate that every byte of data requires a justified legal basis. \"Lawful Processing\" means we rely on player consent, contract fulfillment, or legitimate interests. \"Legal Hold\" is the suspension of all deletion scripts due to a court order or legal dispute."
         },
         "4": {
           "title": "4. Data Classification and Retention Schedule",
@@ -2537,18 +2537,18 @@
     "image_too_large": "Image size must be less than 5MB",
     "invalid_image_type": "Only JPEG, PNG, and WebP are allowed",
     "upload_failed": "Failed to upload image",
-    "forbidden_admin_only": "Only administrators can perform this action",
+    "forbidden_admin_only": "Only admins can perform this action",
     "title_required": "Title is required",
     "content_required": "Content is required",
     "category_required": "Category is required",
     "invalid_author": "Invalid author",
     "category_not_found": "Category not found",
-    "category_official_admin_only": "Only administrators can post in official categories",
+    "category_official_admin_only": "Only admins can post in official categories",
     "slug_conflict": "A thread with this slug/title already exists",
     "forbidden_update": "You do not have permission to update this thread",
     "slug_required": "Slug is required",
     "forbidden_delete": "You do not have permission to delete this thread",
-    "invalid_user": "Invalid user",
+    "invalid_user": "Invalid player",
     "unauthenticated": "You must be logged in to perform this action",
     "thread_id_invalid": "Thread ID must be a valid UUID",
     "quick_category": "Quick Categories",
@@ -2738,12 +2738,12 @@
     "thread_not_found": "Thread not found",
     "parent_not_found": "Parent comment not found",
     "parent_thread_mismatch": "Parent comment belongs to a different thread",
-    "user_not_found": "User not found",
+    "user_not_found": "Player not found",
     "comment_not_found": "Comment not found",
     "forbidden_edit": "You do not have permission to edit this comment",
     "cannot_edit_deleted": "Cannot edit a deleted comment",
     "forbidden_delete": "You do not have permission to delete this comment",
-    "invalid_user": "Invalid user",
+    "invalid_user": "Invalid player",
     "title": "Comments",
     "write_placeholder": "Write a comment...",
     "write_reply_placeholder": "Write a reply...",
@@ -2801,14 +2801,14 @@
     "success_submit": "Thank you for your report. We will review and handle it as soon as possible. We will send you an email once it is processed.",
     "failed_submit": "Failed to submit report",
     "cannot_report_self": "You cannot report yourself!",
-    "cannot_ban_admin": "You cannot process this user",
+    "cannot_ban_admin": "You cannot process this player",
     "report_not_found": "Report not found",
     "forbidden_view": "You do not have permission to view this report",
     "already_processed": "Report is already processed",
-    "no_reported_user": "No reported user associated with this report",
-    "forbidden_admin_only": "Only administrators can perform this action",
+    "no_reported_user": "No reported player associated with this report",
+    "forbidden_admin_only": "Only admins can perform this action",
     "file_too_large": "Evidence file size exceeds limit",
-    "user_not_found": "Reported user not found",
+    "user_not_found": "Reported player not found",
     "thread_not_found": "Reported thread not found",
     "comment_not_found": "Reported comment not found",
     "max_total_size": "Max 20MB total",
@@ -2817,10 +2817,10 @@
     "btn_add_file": "Add file",
     "size_limit_exceeded": "Total size of all attached files must not exceed 20MB!",
     "cancel_report": "Cancel Report",
-    "report_user_btn": "Report this user",
+    "report_user_btn": "Report this player",
     "report_form_title": "Report Form",
-    "role_member": "Member",
-    "role_admin": "Administrator",
+    "role_member": "Player",
+    "role_admin": "Admin",
     "role_mod": "Moderator",
     "joined_at": "Joined",
     "label_visibility": "Visible to reporter",
@@ -2831,7 +2831,7 @@
     "col_date": "Created Date",
     "details_title": "Report Details",
     "label_reporter": "Reporter",
-    "label_reported": "Reported User",
+    "label_reported": "Reported Player",
     "label_status": "Status",
     "label_created": "Reported Date",
     "label_resolved": "Resolved Date",
@@ -2853,13 +2853,13 @@
       "REJECTED": "Rejected"
     },
     "actions": {
-      "WARNING": "Warn User",
+      "WARNING": "Warn Player",
       "BAN_PERMANENT": "Ban Permanently",
       "BAN_CUSTOM": "Ban Custom Duration",
       "NO_ACTION": "No Action / Rejected"
     },
     "targets": {
-      "user": "User",
+      "user": "Player",
       "thread": "Thread",
       "comment": "Comment"
     },
@@ -2903,8 +2903,8 @@
       "showing_reports": "Showing {range} of {total} reports",
       "evidence": "Evidence Files",
       "resolve_title": "Resolve Report",
-      "action_select": "Select action to take on reported user",
-      "ban_duration": "Ban user until",
+      "action_select": "Select action to take on reported player",
+      "ban_duration": "Ban player until",
       "action_warning": "WARN USER",
       "action_ban_perm": "BAN PERMANENT",
       "action_ban_custom": "BAN CUSTOM",

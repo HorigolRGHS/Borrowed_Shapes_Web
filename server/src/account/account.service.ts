@@ -104,7 +104,7 @@ export class AccountService {
     private configService: ConfigService,
     private authService: AuthService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   private getPublicBaseUrl(): string {
     return this.configService
@@ -339,12 +339,12 @@ export class AccountService {
         updatedGameProfile?.equippedAchievementId?.id ?? null,
       equippedAchievement: updatedGameProfile?.equippedAchievementId
         ? {
-            id: updatedGameProfile.equippedAchievementId.id,
-            name: updatedGameProfile.equippedAchievementId.name,
-            badgeImageUrl:
-              updatedGameProfile.equippedAchievementId.badgeImageUrl,
-            type: updatedGameProfile.equippedAchievementId.type,
-          }
+          id: updatedGameProfile.equippedAchievementId.id,
+          name: updatedGameProfile.equippedAchievementId.name,
+          badgeImageUrl:
+            updatedGameProfile.equippedAchievementId.badgeImageUrl,
+          type: updatedGameProfile.equippedAchievementId.type,
+        }
         : null,
     };
   }
@@ -398,8 +398,8 @@ export class AccountService {
     const onlineStatuses =
       userIds.length > 0
         ? await this.userOnlineStatusRepository.find({
-            userId: { $in: userIds },
-          })
+          userId: { $in: userIds },
+        })
         : [];
     const statusMap = new Map(onlineStatuses.map((s) => [s.userId.id, s]));
 
@@ -495,16 +495,16 @@ export class AccountService {
       updatedAt: user.updatedAt,
       gameProfile: gameProfile
         ? {
-            id: gameProfile.id,
-            totalPlayTime: Number(gameProfile.totalPlayTime || 0),
-            totalSessions: gameProfile.totalSessions,
-            totalWins: gameProfile.totalWins,
-            totalLosses: gameProfile.totalLosses,
-            totalAbandoned: gameProfile.totalAbandoned,
-            equippedAchievementId:
-              gameProfile.equippedAchievementId?.id || null,
-            equippedAchievement,
-          }
+          id: gameProfile.id,
+          totalPlayTime: Number(gameProfile.totalPlayTime || 0),
+          totalSessions: gameProfile.totalSessions,
+          totalWins: gameProfile.totalWins,
+          totalLosses: gameProfile.totalLosses,
+          totalAbandoned: gameProfile.totalAbandoned,
+          equippedAchievementId:
+            gameProfile.equippedAchievementId?.id || null,
+          equippedAchievement,
+        }
         : null,
     };
   }
@@ -557,15 +557,15 @@ export class AccountService {
       items: logs.map((log: any) => {
         const actor = log.userId
           ? {
-              id: log.userId.id,
-              email: String(log.userId.email),
-              displayName: String(log.userId.displayName),
-              imgUrl: getProxyAvatarUrl(
-                log.userId.imgUrl,
-                log.userId.id,
-                log.userId.updatedAt || new Date(),
-              ),
-            }
+            id: log.userId.id,
+            email: String(log.userId.email),
+            displayName: String(log.userId.displayName),
+            imgUrl: getProxyAvatarUrl(
+              log.userId.imgUrl,
+              log.userId.id,
+              log.userId.updatedAt || new Date(),
+            ),
+          }
           : null;
 
         return {
@@ -910,11 +910,19 @@ export class AccountService {
 
     const oldValues = {
       deletedAt: target.deletedAt,
+      email: target.email,
+      googleId: target.googleId,
     };
 
     const hasChanged = !target.deletedAt;
 
     target.deletedAt = new Date();
+    
+    const originalEmail = target.email;
+    target.email = `deleted_user_${target.id}@deleted.local` as any;
+    if (target.googleId) {
+      target.googleId = `deleted_google_${target.id}`;
+    }
 
     await this.auditService.recordInCurrentUnitOfWork({
       userId: adminId,
@@ -924,6 +932,8 @@ export class AccountService {
       oldValue: oldValues,
       newValue: {
         deletedAt: target.deletedAt,
+        email: target.email,
+        googleId: target.googleId,
       },
       ipAddress: ipAddress || null,
     });
@@ -939,10 +949,10 @@ export class AccountService {
 
     await this.accountRepository.flush();
 
-    if (hasChanged && target.email) {
+    if (hasChanged && originalEmail) {
       try {
         await this.emailService.sendAccountDeletedEmail({
-          to: target.email as string,
+          to: originalEmail as string,
           displayName: target.displayName,
         });
       } catch (error) {

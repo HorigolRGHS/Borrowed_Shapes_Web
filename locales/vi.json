@@ -129,7 +129,8 @@
     "theme_system": "Theo hệ thống",
     "theme_toggle_label": "Đổi giao diện",
     "site_brand": "Từ điển Borrowed Shapes",
-    "game_results": "Kết quả trò chơi"
+    "game_results": "Kết quả trò chơi",
+    "cancel": "Hủy"
   },
   "validation": {
     "invalid_email": "Địa chỉ email không hợp lệ",
@@ -560,6 +561,10 @@
   },
   "profile": {
     "title": "Hồ sơ",
+    "role": {
+      "admin": "Quản Trị Viên",
+      "user": "Người Dùng"
+    },
     "download_history": {
       "tab": "Lịch sử tải xuống",
       "loading": "Đang tải lịch sử tải xuống...",
@@ -742,11 +747,11 @@
     "hero": {
       "title_line_1": "Borrowed",
       "title_line_2": "Shapes",
-      "subtitle": "Mượn hình khối, cùng giải đố, và tìm lại niềm vui gia đình.",
+      "subtitle": "Mượn hình, cùng giải đố, và tìm lại niềm vui gia đình.",
       "play_free_now": "Chơi miễn phí ngay",
       "explore_wiki": "Khám phá từ điển",
       "stats": {
-        "active_players": "Người chơi",
+        "active_players": "Tổng phiên chơi",
         "current_season": "Mùa hiện tại",
         "latest_patch": "Bản vá mới nhất"
       },
@@ -842,7 +847,7 @@
       "nav": "Nhật ký hệ thống",
       "title": "Nhật ký hệ thống",
       "description": "Xem lịch sử hoạt động và thao tác quản trị trong toàn hệ thống.",
-      "searchPlaceholder": "Tìm actor, entity hoặc ID...",
+      "searchPlaceholder": "Tìm người thao tác, đối tượng hoặc ID...",
       "filters": "Bộ lọc",
       "actionType": "Loại hành động",
       "allActions": "Tất cả hành động",
@@ -964,7 +969,7 @@
         "unban_title": "Gỡ cấm tài khoản",
         "unban_description": "Bạn có chắc muốn khôi phục quyền truy cập cho người dùng này không?",
         "delete_title": "Xóa tài khoản",
-        "delete_warning": "Cảnh báo: Tài khoản sẽ bị xóa mềm và không thể truy cập.",
+        "delete_warning": "Cảnh báo: Tài khoản sẽ bị xóa và không thể truy cập.",
         "audit_title": "Nhật ký của {name}",
         "ban_reason_editor_hint": "Mô tả lý do tài khoản này bị cấm.",
         "ban_reason_plain_required": "Lý do cấm không được để trống.",
@@ -1094,7 +1099,13 @@
           "uploaded_at": "Ngày tải lên",
           "updated_at": "Ngày cập nhật",
           "latest_status": "Trạng thái",
-          "close": "Đóng"
+          "close": "Đóng",
+          "delete": "Xóa phiên bản",
+          "delete_confirm_title": "Xác nhận xóa phiên bản",
+          "delete_confirm_desc": "Bạn có chắc chắn muốn xóa phiên bản {version} không? Hành động này sẽ xóa file khỏi hệ thống lưu trữ R2 và cơ sở dữ liệu vĩnh viễn, không thể hoàn tác.",
+          "delete_success": "Xóa phiên bản thành công!",
+          "delete_error": "Có lỗi xảy ra khi xóa phiên bản.",
+          "cannot_delete_active": "Không thể xóa phiên bản đang phát hành."
         }
       },
       "active": {
@@ -1113,7 +1124,16 @@
         "summary_note": "Người dùng sẽ tải phiên bản này từ trang Download công khai.",
         "inactive_note": "Vẫn hiển thị trong danh sách phiên bản, nhưng không phải bản tải khuyến nghị.",
         "current_version": "Phiên bản đang phát hành",
-        "new_version": "Phiên bản mới sẽ phát hành"
+        "new_version": "Phiên bản mới sẽ phát hành",
+        "breakdown": {
+          "property": "Thuộc tính",
+          "current": "Bản hiện tại",
+          "new": "Bản mới chọn",
+          "version": "Phiên bản",
+          "filename": "Tên tệp",
+          "filesize": "Dung lượng",
+          "uploaded": "Ngày tải lên"
+        }
       }
     },
     "accounts": {
@@ -1447,7 +1467,7 @@
       "copyEmail": "Sao chép email",
       "copied": "Đã sao chép!",
       "noteTitle": "Lưu ý quan trọng",
-      "note": "Đội ngũ Borrowed Shapes cam kết tiếp nhận và phản hồi các yêu cầu sớm nhất có thể trong vòng 24 - 48 giờ làm việc. Đối với các vấn đề khẩn cấp, bảo mật tài khoản hoặc khiếu nại pháp lý, vui lòng liên hệ trực tiếp qua email borrowedshapes09@gmail.com."
+      "note": "Đội ngũ Borrowed Shapes cam kết tiếp nhận và phản hồi các yêu cầu sớm nhất có thể trong vòng 24 - 48 giờ làm việc. Đối với các vấn đề khẩn cấp, bảo mật tài khoản hoặc khiếu nại pháp lý, vui lòng liên hệ trực tiếp qua email contact@borrowedshapes.id.vn."
     },
     "terms": {
       "title": "Điều khoản Dịch vụ",

@@ -561,6 +561,10 @@
   },
   "profile": {
     "title": "Profile",
+    "role": {
+      "admin": "Admin",
+      "user": "User"
+    },
     "download_history": {
       "tab": "Download History",
       "loading": "Loading download history...",
@@ -750,7 +754,7 @@
       "play_free_now": "Play Free Now",
       "explore_wiki": "Explore Wiki",
       "stats": {
-        "active_players": "Active Players",
+        "active_players": "Total Game Sessions",
         "current_season": "Current Season",
         "latest_patch": "Latest Patch"
       },
@@ -968,7 +972,7 @@
         "unban_title": "Unban Account",
         "unban_description": "Are you sure you want to restore access to this user?",
         "delete_title": "Delete Account",
-        "delete_warning": "Warning: Account will be soft deleted and no longer accessible.",
+        "delete_warning": "Warning: Account will be deleted and no longer accessible.",
         "audit_title": "Audit Log for {name}",
         "ban_reason_editor_hint": "Describe why this account is being banned.",
         "ban_reason_plain_required": "Ban reason is required.",
@@ -1098,7 +1102,13 @@
           "uploaded_at": "Uploaded At",
           "updated_at": "Updated At",
           "latest_status": "Latest Status",
-          "close": "Close"
+          "close": "Close",
+          "delete": "Delete Version",
+          "delete_confirm_title": "Confirm Version Deletion",
+          "delete_confirm_desc": "Are you sure you want to delete version {version}? This action will permanently remove the file from Cloudflare R2 storage and the database, and cannot be undone.",
+          "delete_success": "Version deleted successfully!",
+          "delete_error": "Failed to delete version.",
+          "cannot_delete_active": "Cannot delete the active version."
         }
       },
       "active": {
@@ -1117,7 +1127,16 @@
         "summary_note": "Users will download this version from the public Download page.",
         "inactive_note": "Visible in the version list, but not used as the recommended download.",
         "current_version": "Current active version",
-        "new_version": "New active version"
+        "new_version": "New active version",
+        "breakdown": {
+          "property": "Property",
+          "current": "Current Active",
+          "new": "New Active",
+          "version": "Version",
+          "filename": "File Name",
+          "filesize": "File Size",
+          "uploaded": "Uploaded At"
+        }
       }
     },
     "accounts": {
@@ -1452,7 +1471,7 @@
       "copyEmail": "Copy Email",
       "copied": "Copied!",
       "noteTitle": "Important Note",
-      "note": "The Borrowed Shapes team strives to respond to inquiries within 24 to 48 business hours. For urgent issues, account security, or legal inquiries, please contact us directly at borrowedshapes09@gmail.com."
+      "note": "The Borrowed Shapes team strives to respond to inquiries within 24 to 48 business hours. For urgent issues, account security, or legal inquiries, please contact us directly at contact@borrowedshapes.id.vn."
     },
     "terms": {
       "title": "Terms of Service",

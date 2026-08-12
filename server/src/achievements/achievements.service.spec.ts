@@ -7,16 +7,22 @@ import { Achievement, AchievementType } from '../entities/Achievement';
 import { ConfigService } from '@nestjs/config';
 import { R2StorageService } from '../storage/r2-storage.service';
 import { AchievementRepository } from './repositories/achievements.repository';
+import { AuditService } from '../audit/audit.service';
 
 describe('AchievementService', () => {
   let service: AchievementService;
   let repository: AchievementRepository;
   let r2StorageService: R2StorageService;
+  let mockAuditService: any;
 
   beforeEach(async () => {
+    mockAuditService = {
+      recordInCurrentUnitOfWork: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        { provide: 'AuditService', useValue: {} },
+        { provide: AuditService, useValue: mockAuditService },
         AchievementService,
         {
           provide: AchievementRepository,
@@ -198,7 +204,7 @@ describe('AchievementService', () => {
       expect(result.key.endsWith('.png')).toBe(true);
       expect(
         result.publicUrl.startsWith(
-          'https://pub-x.r2.dev/achievement/ach-123/',
+          '/api/media/achievement/ach-123/',
         ),
       ).toBe(true);
       expect(result.method).toBe('PUT');

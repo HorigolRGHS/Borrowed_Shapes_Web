@@ -27,6 +27,7 @@ import { CreateUploadUrlDto } from './dto/create-upload-url.dto';
 import { ConfirmUploadDto } from './dto/confirm-upload.dto';
 import { DownloadHistoryQueryDto } from './dto/download-history-query.dto';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Downloads')
 @Controller('downloads')
@@ -98,7 +99,7 @@ export class DownloadsController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const userId = this.tryExtractUserId(req);
-    const clientIp = req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0';
+    const clientIp = getClientIp(req);
 
     const data = await this.downloadsService.requestDownload(
       id,
@@ -178,7 +179,7 @@ export class DownloadsController {
     @Req() req: Request & { user: any },
   ): Promise<ApiResponseDto<any>> {
     const adminId = req.user?.userId;
-    const data = await this.downloadsService.confirmUpload(adminId, dto);
+    const data = await this.downloadsService.confirmUpload(adminId, dto, getClientIp(req));
     return okResponse(
       'downloads.upload_confirmed',
       data,
@@ -203,7 +204,7 @@ export class DownloadsController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.downloadsService.setActiveVersion(id, user);
+    const data = await this.downloadsService.setActiveVersion(id, user, getClientIp(req));
     return okResponse(
       'downloads.set_active_success',
       data,
@@ -227,7 +228,7 @@ export class DownloadsController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.downloadsService.deleteVersion(id, user.userId);
+    const data = await this.downloadsService.deleteVersion(id, user.userId, getClientIp(req));
     return okResponse(
       'downloads.delete_success',
       data,

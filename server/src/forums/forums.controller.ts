@@ -12,7 +12,9 @@ import {
   Headers,
   ForbiddenException,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ForumService } from './forums.service';
 import { CreateForumDto } from './dto/create-forums.dto';
 import { UpdateForumDto } from './dto/update-forums.dto';
@@ -23,6 +25,7 @@ import { resolveLocale } from '../common/utils/resolve-locale';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Public } from '../auth/decorators/public.decorator';
+import { getClientIp } from '../common/utils/client-ip.util';
 import {
   ThreadImageUploadRequestDto,
   ThreadImageUploadResponseDto,
@@ -101,6 +104,7 @@ export class ForumController {
   async create(
     @Body() createForumDto: CreateForumDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
     @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
     const locale = resolveLocale(acceptLanguage);
@@ -110,6 +114,7 @@ export class ForumController {
       user.userId,
       isAdmin,
       locale,
+      getClientIp(req),
     );
     return okResponse('forums.create_success', newThread, 'POST /forums');
   }
@@ -126,6 +131,7 @@ export class ForumController {
     @Param('id') id: string,
     @Body() updateForumDto: UpdateForumDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
     @Headers('accept-language') acceptLanguage?: string,
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
@@ -136,6 +142,7 @@ export class ForumController {
       user.userId,
       isAdmin,
       locale,
+      getClientIp(req),
     );
     return okResponse('forums.update_success', null, `PATCH /forums/${id}`);
   }
@@ -151,9 +158,10 @@ export class ForumController {
   async remove(
     @Param('id') id: string,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
-    await this.forumService.remove(id, user.userId, isAdmin);
+    await this.forumService.remove(id, user.userId, isAdmin, getClientIp(req));
     return okResponse('forums.delete_success', null, `DELETE /forums/${id}`);
   }
 

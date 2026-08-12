@@ -22,6 +22,7 @@ import { CreateSeasonTeamDto } from './dto/create-season-team.dto';
 import { JoinSeasonTeamDto } from './dto/join-season-team.dto';
 import { KickSeasonTeamMemberDto } from './dto/kick-season-team-member.dto';
 import { SeasonTeamResponseDto } from './dto/season-team-response.dto';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Season Team')
 @Controller('season-team')
@@ -37,7 +38,7 @@ export class SeasonTeamController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<SeasonTeamResponseDto>> {
     const path = `${req.method} ${req.path}`;
-    return this.seasonTeamService.createTeam(user.userId, dto, path);
+    return this.seasonTeamService.createTeam(user.userId, dto, path, getClientIp(req));
   }
 
   @Post('join')
@@ -49,7 +50,7 @@ export class SeasonTeamController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<SeasonTeamResponseDto>> {
     const path = `${req.method} ${req.path}`;
-    return this.seasonTeamService.joinTeam(user.userId, dto, path);
+    return this.seasonTeamService.joinTeam(user.userId, dto, path, getClientIp(req));
   }
 
   @Get('me')
@@ -67,12 +68,12 @@ export class SeasonTeamController {
   @ApiOperation({ summary: 'Kick a member from my season team' })
   async kickMember(
     @CurrentUser() user: RequestUser,
-    @Param('teamId', new ParseUUIDPipe()) teamId: string,
+    @Param('teamId') teamId: string,
     @Body() dto: KickSeasonTeamMemberDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;
-    return this.seasonTeamService.kickMember(user.userId, teamId, dto, path);
+    return this.seasonTeamService.kickMember(user.userId, teamId, dto, path, getClientIp(req));
   }
 
   @Post('leave')
@@ -83,7 +84,7 @@ export class SeasonTeamController {
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;
-    return this.seasonTeamService.leaveTeam(user.userId, path);
+    return this.seasonTeamService.leaveTeam(user.userId, path, getClientIp(req));
   }
 
   @Delete(':teamId')
@@ -91,10 +92,10 @@ export class SeasonTeamController {
   @ApiOperation({ summary: 'Delete my season team' })
   async deleteTeam(
     @CurrentUser() user: RequestUser,
-    @Param('teamId', new ParseUUIDPipe()) teamId: string,
+    @Param('teamId') teamId: string,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
     const path = `${req.method} ${req.path}`;
-    return this.seasonTeamService.deleteTeam(user.userId, teamId, path);
+    return this.seasonTeamService.deleteTeam(user.userId, teamId, path, getClientIp(req));
   }
 }

@@ -30,11 +30,12 @@ import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Announcements')
 @Controller('announcements')
 export class AnnouncementController {
-  constructor(private readonly announcementService: AnnouncementService) {}
+  constructor(private readonly announcementService: AnnouncementService) { }
 
   @Public()
   @Get()
@@ -123,7 +124,7 @@ export class AnnouncementController {
     @Body() dto: CreateAnnouncementDto,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    const data = await this.announcementService.create(dto, user.userId);
+    const data = await this.announcementService.create(dto, user.userId, getClientIp(req));
     return okResponse(
       'announcements.create_success',
       data,
@@ -142,7 +143,7 @@ export class AnnouncementController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    const data = await this.announcementService.update(id, dto, user.userId);
+    const data = await this.announcementService.update(id, dto, user.userId, getClientIp(req));
     return okResponse(
       'announcements.update_success',
       data,
@@ -159,7 +160,7 @@ export class AnnouncementController {
     @CurrentUser() user: RequestUser,
     @Req() req: Request,
   ): Promise<ApiResponseDto<null>> {
-    await this.announcementService.delete(id, user.userId);
+    await this.announcementService.delete(id, user.userId, getClientIp(req));
     return okResponse(
       'announcements.delete_success',
       null,

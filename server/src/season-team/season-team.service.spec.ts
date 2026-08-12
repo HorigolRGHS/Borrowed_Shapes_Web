@@ -5,6 +5,7 @@ import { SeasonTeamService } from './season-team.service';
 import { SeasonTeamRepository } from './repositories/season-team.repository';
 import { SeasonTeamMemberRepository } from './repositories/season-team-member.repository';
 import { GameProfileRepository } from '../game/repositories/game-profile.repository';
+import { AuditService } from '../audit/audit.service';
 
 describe('SeasonTeamService', () => {
   let service: SeasonTeamService;
@@ -17,7 +18,7 @@ describe('SeasonTeamService', () => {
         { provide: SeasonTeamRepository, useValue: {} },
         { provide: SeasonTeamMemberRepository, useValue: {} },
         { provide: GameProfileRepository, useValue: {} },
-        { provide: 'AuditService', useValue: {} },
+        { provide: AuditService, useValue: {} },
       ],
     }).compile();
 

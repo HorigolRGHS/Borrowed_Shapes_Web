@@ -23,7 +23,7 @@ interface DownloadDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   record: DownloadRecord | null;
-  onRedownload: (fileAssetId: string) => void;
+  onRedownload: (record: DownloadRecord) => void;
   isRedownloading: boolean;
 }
 
@@ -51,7 +51,7 @@ export function DownloadDetailModal({
   if (!record) return null;
 
   const handleRedownload = () => {
-    onRedownload(record.fileAssetId);
+    onRedownload(record);
   };
 
   return (

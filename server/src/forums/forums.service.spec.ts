@@ -77,9 +77,9 @@ describe('ForumService', () => {
 
       const out = await service.list({ page: 1, limit: 20 });
       const item = out.items[0] as any;
-      expect(item.content.length).toBeLessThanOrEqual(101);
-      expect(item.content.endsWith('…')).toBe(true);
-      expect(item.content).not.toContain('#');
+      expect(item.excerpt.length).toBeLessThanOrEqual(101);
+      expect(item.excerpt.endsWith('…')).toBe(true);
+      expect(item.excerpt).not.toContain('#');
     });
 
     it('leaves short content intact without ellipsis', async () => {
@@ -111,7 +111,7 @@ describe('ForumService', () => {
       });
 
       const out = await service.list({ page: 1, limit: 20 });
-      expect((out.items[0] as any).content).toBe('short body');
+      expect((out.items[0] as any).excerpt).toBe('short body');
     });
   });
 });

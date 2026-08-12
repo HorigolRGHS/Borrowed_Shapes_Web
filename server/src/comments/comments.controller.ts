@@ -10,7 +10,9 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -23,6 +25,7 @@ import {
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { getClientIp } from '../common/utils/client-ip.util';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -36,10 +39,12 @@ export class CommentsController {
   async create(
     @Body() createCommentDto: CreateCommentDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.commentsService.create(
       createCommentDto,
       user.userId,
+      getClientIp(req),
     );
     return okResponse('comments.create_success', data, 'POST /comments');
   }
@@ -75,11 +80,13 @@ export class CommentsController {
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const data = await this.commentsService.update(
       id,
       updateCommentDto,
       user.userId,
+      getClientIp(req),
     );
     return okResponse('comments.update_success', data, `PATCH /comments/${id}`);
   }
@@ -90,9 +97,10 @@ export class CommentsController {
   async remove(
     @Param('id') id: string,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
     const isAdmin = user.role === 'ADMIN';
-    const data = await this.commentsService.remove(id, user.userId, isAdmin);
+    const data = await this.commentsService.remove(id, user.userId, isAdmin, getClientIp(req));
     return okResponse(
       'comments.delete_success',
       data,
@@ -108,8 +116,9 @@ export class CommentsController {
     @Param('id') id: string,
     @Body() dto: CommentVoteDto,
     @CurrentUser() user: RequestUser,
+    @Req() req: Request,
   ): Promise<ApiResponseDto<any>> {
-    const data = await this.commentsService.vote(id, user.userId, dto.value);
+    const data = await this.commentsService.vote(id, user.userId, dto.value, getClientIp(req));
     return okResponse(
       'comments.vote_success',
       data,

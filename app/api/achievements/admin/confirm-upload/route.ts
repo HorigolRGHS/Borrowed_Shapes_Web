@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import type { ApiResponse } from "@/models/dtos/api-response.dto";
-
-const BACKEND_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
+import { getBackendBaseUrl } from "@/lib/api/runtime-base-url";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +16,7 @@ export async function POST(req: NextRequest) {
     };
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-    const upstream = await fetch(`${BACKEND_BASE}/achievements/admin/confirm-upload`, {
+    const upstream = await fetch(`${getBackendBaseUrl()}/achievements/admin/confirm-upload`, {
       method: "POST",
       body: JSON.stringify(body),
       headers,

@@ -778,9 +778,9 @@ export default function AnnouncementsPage() {
           }
         }}
       >
-        <DialogContent className="max-w-3xl h-[90vh] max-h-[95vh] overflow-y-auto custom-scroll">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-          <DialogHeader>
+          <DialogHeader className="shrink-0">
             <DialogTitle>
               {editingAnnouncement ? t("announcements.edit_announcement") : t("announcements.create_announcement")}
             </DialogTitle>
@@ -794,7 +794,7 @@ export default function AnnouncementsPage() {
               e.preventDefault();
               editingAnnouncement ? handleEdit() : handleCreate();
             }}
-            className="space-y-5"
+            className="flex-1 overflow-y-auto custom-scroll pr-1 space-y-5"
           >
             {/* Title EN + Title VI */}
             <div className="grid gap-5 sm:grid-cols-2">
@@ -1049,7 +1049,7 @@ export default function AnnouncementsPage() {
         }}
       >
 
-        <DialogContent className="max-w-3xl h-[90vh] max-h-[95vh] overflow-y-auto custom-scroll">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader className="sr-only">
             <DialogTitle>
               {t("announcements.detail_title")}
@@ -1057,7 +1057,7 @@ export default function AnnouncementsPage() {
           </DialogHeader>
           <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
 
-          <div className="flex items-center justify-between pb-4 border-b border-border">
+          <div className="flex items-center justify-between pb-4 border-b border-border shrink-0">
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -1074,7 +1074,7 @@ export default function AnnouncementsPage() {
           </div>
 
           {viewingAnnouncement && (
-            <div className="mt-4 space-y-6">
+            <div className="mt-4 space-y-6 flex-1 overflow-y-auto custom-scroll pr-1">
               {/* Title & Metadata */}
               <div>
                 <h2 className="text-2xl font-bold text-foreground">

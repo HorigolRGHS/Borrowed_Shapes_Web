@@ -135,6 +135,12 @@ export function EditProfileModal({ open, onOpenChange, user }: EditProfileModalP
       return;
     }
 
+    const nameRegex = /^[\p{L}0-9 _-]+$/u;
+    if (!nameRegex.test(displayName.trim())) {
+      toast.error(t("profile.edit.validation.display_name_invalid"));
+      return;
+    }
+
     try {
       setIsSaving(true);
       const payload: any = {

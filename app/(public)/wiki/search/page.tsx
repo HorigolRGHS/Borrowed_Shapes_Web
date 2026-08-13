@@ -3,7 +3,7 @@ import { searchWiki } from "@/lib/wiki/api";
 import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
 import { WikiList } from "@/components/wiki/wiki-list";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { WikiListResponse } from "@/models/dtos/wiki.dto";
+import type { WikiPublicListResponse } from "@/models/dtos/wiki.dto";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default async function WikiSearchPage({
   if (!q) redirect("/wiki");
   const page = Math.max(1, Number(params.page) || 1);
 
-  let data: WikiListResponse | undefined;
+  let data: WikiPublicListResponse | undefined;
   let errorMessage: string | null = null;
   try {
     data = await searchWiki(q, page, 20);

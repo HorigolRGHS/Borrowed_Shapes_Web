@@ -6,6 +6,7 @@ import {
   BadRequestException,
   PayloadTooLargeException,
 } from '@nestjs/common';
+import { isDeepStrictEqual } from 'node:util';
 import { validateUploadOrThrow } from './wiki-upload-validator';
 import { AuditActionType } from '../../entities/AuditActionType';
 import { WikiPageRepository } from '../repositories/wiki-page.repository';
@@ -292,10 +293,8 @@ export class WikiRevisionService {
       if (dto.slugVi !== page.slugVi) metadataDiff.push('slugVi');
       if (dto.title !== page.title) metadataDiff.push('title');
       if (dto.titleVi !== page.titleVi) metadataDiff.push('titleVi');
-      if (
-        JSON.stringify(compactMetadata(dto.metadataJson)) !==
-        JSON.stringify(page.metadataJson ?? null)
-      ) {
+      const metadata = compactMetadata(dto.metadataJson);
+      if (!isDeepStrictEqual(metadata, page.metadataJson ?? null)) {
         metadataDiff.push('metadataJson');
       }
       const publishStateChanged =

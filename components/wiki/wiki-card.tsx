@@ -4,27 +4,40 @@ import Link from "next/link";
 import { CalendarDays, UserRound } from "lucide-react";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { cn } from "@/lib/utils";
-import type { WikiListItem } from "@/models/dtos/wiki.dto";
+import type {
+  WikiListItem,
+  WikiPublicListItem,
+} from "@/models/dtos/wiki.dto";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface Props {
+type Props = {
   item: WikiListItem;
   showDraftBadge?: boolean;
   href?: string;
-  variant?: "default" | "public";
-}
+  variant?: "default";
+} | {
+  item: WikiPublicListItem;
+  showDraftBadge?: boolean;
+  href?: string;
+  variant: "public";
+};
 
 export function WikiCard({ item, showDraftBadge = false, href, variant = "default" }: Props) {
   const { t, locale } = useI18n();
-  const defaultSlug = locale === "vi" ? (item.slugVi || item.slug) : (item.slug || item.slugVi);
-  const defaultSummary =
-    locale === "vi"
-      ? item.latestRevision?.summaryVi
-      : item.latestRevision?.summary;
-  const publicSlug = item.slug;
-  const publicSummary = item.latestRevision?.summary;
-  const linkHref = href ?? `/wiki/${encodeURIComponent(variant === "public" ? publicSlug : defaultSlug)}`;
+  const publicVariant = variant === "public";
+  const adminItem = publicVariant ? null : item as WikiListItem;
+  const defaultSlug = adminItem
+    ? locale === "vi"
+      ? adminItem.slugVi || adminItem.slug
+      : adminItem.slug || adminItem.slugVi
+    : item.slug;
+  const defaultSummary = adminItem
+    ? locale === "vi"
+      ? adminItem.latestRevision?.summaryVi
+      : adminItem.latestRevision?.summary
+    : item.latestRevision?.summary;
+  const linkHref = href ?? `/wiki/${encodeURIComponent(defaultSlug)}`;
 
   if (variant === "default") {
     return (
@@ -81,8 +94,8 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
           )}
         </CardHeader>
         <CardContent className="flex-1 min-h-[96px] border-b border-border px-5 py-5 dark:border-[#252541]">
-          {publicSummary && (
-            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 dark:text-sky-200/80">{publicSummary}</p>
+          {defaultSummary && (
+            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 dark:text-sky-200/80">{defaultSummary}</p>
           )}
         </CardContent>
         <CardFooter className="flex items-center gap-4 px-5 py-4 text-xs text-muted-foreground dark:text-slate-500 mt-auto">

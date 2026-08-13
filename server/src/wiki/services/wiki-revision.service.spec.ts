@@ -272,7 +272,7 @@ describe('WikiRevisionService.create', () => {
           content: 'a',
           contentVi: 'b',
           metadataJson: {
-            category: 'Boss',
+            category: 'Character',
             tags: ['legendary'],
             tags_vi: [],
             stats: {},
@@ -287,7 +287,7 @@ describe('WikiRevisionService.create', () => {
       );
       expect(persistedPage).toBeDefined();
       expect(persistedPage![1].metadataJson).toEqual({
-        category: 'Boss',
+        category: 'Character',
         tags: ['legendary'],
       });
     });
@@ -341,7 +341,7 @@ describe('WikiRevisionService.create', () => {
     });
 
     it('persists null when metadata has only category (partial wire shape, no defaults)', async () => {
-      // Reproduces wire-boundary case: class-validator DTO passes {category: 'Boss'}
+      // Reproduces wire-boundary case: class-validator DTO passes {category: 'Character'}
       // straight through with no .tags / .tags_vi / .stats / .relatedPages defaults.
       // Persistence layer must not crash.
       await expect(
@@ -353,7 +353,7 @@ describe('WikiRevisionService.create', () => {
             titleVi: 'P',
             content: 'a',
             contentVi: 'b',
-            metadataJson: { category: 'Boss' },
+            metadataJson: { category: 'Character' },
           } as any,
           'admin-1',
           '127.0.0.1',
@@ -364,7 +364,7 @@ describe('WikiRevisionService.create', () => {
       );
       expect(persistedPage).toBeDefined();
       expect(persistedPage![1].metadataJson).toEqual({
-        category: 'Boss',
+        category: 'Character',
       });
     });
   });
@@ -622,6 +622,38 @@ describe('WikiRevisionService.update', () => {
     expect(audit.recordInCurrentUnitOfWork).not.toHaveBeenCalled();
   });
 
+  it('treats reordered metadata keys as a total no-op', async () => {
+    em.findOne.mockResolvedValueOnce({
+      ...fakePage('r-current'),
+      metadataJson: { tags: ['shape'], category: 'Character' },
+    });
+    await service.update(
+      'p1',
+      {
+        expectedLatestRevisionId: 'r-current',
+        slug: 'old-slug',
+        slugVi: 'old-vi',
+        title: 'Old',
+        titleVi: 'OldVi',
+        content: 'OLD',
+        contentVi: 'OLDVI',
+        metadataJson: {
+          category: 'Character',
+          tags: ['shape'],
+          tags_vi: [],
+          stats: {},
+          stats_vi: {},
+          relatedPages: [],
+        },
+      } as any,
+      'admin-1',
+      '1.1.1.1',
+    );
+    expect(em.create).not.toHaveBeenCalled();
+    expect(em.flush).not.toHaveBeenCalled();
+    expect(audit.recordInCurrentUnitOfWork).not.toHaveBeenCalled();
+  });
+
   it('rejects publishing with empty content', async () => {
     em.findOne.mockResolvedValueOnce({
       ...fakePage('r-current'),
@@ -656,7 +688,7 @@ describe('WikiRevisionService.update', () => {
     it('updates only metadataJson — creates revision with new metadata snapshot and logs metadataJson in changedFields', async () => {
       em.findOne.mockResolvedValueOnce({
         ...fakePage('r-current'),
-        metadataJson: { category: 'Boss' },
+        metadataJson: { category: 'Character' },
       });
       await service.update(
         'p1',
@@ -823,7 +855,7 @@ describe('WikiRevisionService.update writes full snapshot', () => {
         contentVi: 'thân',
         summary: 's',
         summaryVi: 't',
-        metadataJson: { category: 'Boss' },
+        metadataJson: { category: 'Character' },
         isPublished: true,
         expectedLatestRevisionId: 'r1',
       } as any,
@@ -843,7 +875,7 @@ describe('WikiRevisionService.update writes full snapshot', () => {
     expect(existingPage.slugVi).toBe('old-slug-vi');
     expect(existingPage.title).toBe('New');
     expect(existingPage.titleVi).toBe('Mới');
-    expect(existingPage.metadataJson).toEqual({ category: 'Boss' });
+    expect(existingPage.metadataJson).toEqual({ category: 'Character' });
     expect(existingPage.isPublished).toBe(true);
   });
 

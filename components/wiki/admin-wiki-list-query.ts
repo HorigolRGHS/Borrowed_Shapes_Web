@@ -9,12 +9,14 @@ export const ADMIN_WIKI_CATEGORIES = [
 ] as const satisfies readonly WikiCategory[];
 
 export type AdminWikiListStatus = "all" | "published" | "draft";
+export type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
 
 export interface AdminWikiListQueryState {
   page: number;
   q: string;
   status: AdminWikiListStatus;
   category: WikiCategory | "";
+  sort: SortOption;
 }
 
 export type AdminWikiListQueryChange = Partial<AdminWikiListQueryState>;
@@ -26,7 +28,17 @@ const DEFAULT_STATE: AdminWikiListQueryState = {
   q: "",
   status: "all",
   category: "",
+  sort: "updated_desc",
 };
+
+function isSortOption(value: string | null): value is SortOption {
+  return (
+    value === "updated_desc" ||
+    value === "updated_asc" ||
+    value === "title_asc" ||
+    value === "title_desc"
+  );
+}
 
 function isStatus(value: string | null): value is AdminWikiListStatus {
   return value === "all" || value === "published" || value === "draft";
@@ -51,12 +63,14 @@ export function parseAdminWikiListQuery(
   const q = searchParams.get("q")?.trim() ?? "";
   const statusValue = searchParams.get("status");
   const categoryValue = searchParams.get("category");
+  const sortValue = searchParams.get("sort");
 
   return {
     page: parsePage(searchParams.get("page")),
     q,
     status: isStatus(statusValue) ? statusValue : DEFAULT_STATE.status,
     category: isCategory(categoryValue) ? categoryValue : DEFAULT_STATE.category,
+    sort: isSortOption(sortValue) ? sortValue : DEFAULT_STATE.sort,
   };
 }
 
@@ -65,7 +79,7 @@ export function buildAdminWikiListHref(
   state: AdminWikiListQueryState,
   change: AdminWikiListQueryChange = {},
 ): string {
-  const filterChanged = ["q", "status", "category"].some((key) =>
+  const filterChanged = ["q", "status", "category", "sort"].some((key) =>
     Object.prototype.hasOwnProperty.call(change, key),
   );
   const nextState: AdminWikiListQueryState = {
@@ -85,6 +99,9 @@ export function buildAdminWikiListHref(
     searchParams.set("status", nextState.status);
   }
   if (nextState.category) searchParams.set("category", nextState.category);
+  if (nextState.sort !== DEFAULT_STATE.sort) {
+    searchParams.set("sort", nextState.sort);
+  }
   if (nextState.page > 1) searchParams.set("page", String(nextState.page));
 
   const query = searchParams.toString();

@@ -7,11 +7,11 @@ import { fetchWikiList } from "@/lib/wiki/api";
 import { WikiCard } from "@/components/wiki/wiki-card";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18/i18n-context";
-import type { WikiListResponse } from "@/models/dtos/wiki.dto";
+import type { WikiPublicListResponse } from "@/models/dtos/wiki.dto";
 
 export function KnowledgeBaseSection() {
   const { t } = useI18n();
-  const [data, setData] = useState<WikiListResponse | null>(null);
+  const [data, setData] = useState<WikiPublicListResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function KnowledgeBaseSection() {
         {/* Cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {data.items.map((item) => (
-            <WikiCard key={item.id} item={item} />
+            <WikiCard key={item.id} item={item} variant="public" />
           ))}
         </div>
 

@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { fetchWikiBySlug, fetchWikiHistory } from '@/lib/wiki/api';
 import { WikiHistoryList } from '@/components/wiki/wiki-history-list';
-import { WikiLocaleSync } from '@/components/wiki/wiki-locale-sync';
 import { decodeJwt, normalizeJwt } from '@/lib/utils/jwt';
 import { getApiErrorStatus, type ApiError } from '@/lib/wiki/http';
 import enDict from '@/locales/en.json';
@@ -40,6 +39,10 @@ export default async function WikiHistoryPage({
     throw err;
   }
 
+  if (slug !== detail.slug) {
+    redirect(`/wiki/${encodeURIComponent(detail.slug)}/history`);
+  }
+
   const history = await fetchWikiHistory(detail.id, page, 20);
   const title = detail.title;
 
@@ -47,14 +50,12 @@ export default async function WikiHistoryPage({
   const dict = uiLocale === 'vi' ? viDict : enDict;
 
   return (
-    <>
-      <WikiLocaleSync slug={detail.slug} slugVi={detail.slug} pathSuffix="/history" />
-      <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
+    <main className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">{dict.wiki.list_title}</Link>
         <span className="mx-2">›</span>
         <Link
-          href={`/wiki/${encodeURIComponent(slug)}`}
+          href={`/wiki/${encodeURIComponent(detail.slug)}`}
           className="hover:text-foreground"
         >
           {title}
@@ -69,7 +70,7 @@ export default async function WikiHistoryPage({
 
         <WikiHistoryList
           pageId={detail.id}
-          slug={slug}
+          slug={detail.slug}
           items={history.items}
           total={history.total}
           page={history.page}
@@ -77,6 +78,5 @@ export default async function WikiHistoryPage({
           expectedLatestRevisionId={detail.latestRevision.id}
         />
       </main>
-    </>
   );
 }

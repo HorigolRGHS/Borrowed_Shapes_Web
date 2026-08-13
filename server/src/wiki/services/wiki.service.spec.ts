@@ -68,6 +68,89 @@ describe('WikiService.list', () => {
     expect(orClause[0].title.$ilike).toContain('50\\%\\_off');
   });
 
+  it('filters metadata category before pagination totals are calculated', async () => {
+    pageRepo.listPaged.mockResolvedValueOnce([[], 21]);
+
+    const output = await service.list(
+      { page: 1, limit: 20, category: 'Character' } as any,
+      false,
+    );
+
+    expect(pageRepo.listPaged).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isPublished: true,
+        metadataJson: { $contains: { category: 'Character' } },
+      }),
+      expect.anything(),
+    );
+    expect(output.total).toBe(21);
+    expect(output.totalPages).toBe(2);
+  });
+
+  it.each([
+    ['published', true],
+    ['draft', false],
+  ] as const)(
+    'applies admin status=%s before pagination totals are calculated',
+    async (status, isPublished) => {
+      pageRepo.listPaged.mockResolvedValueOnce([[], 11]);
+
+      const output = await service.list(
+        { page: 2, limit: 10, status } as any,
+        true,
+      );
+
+      expect(pageRepo.listPaged).toHaveBeenCalledWith(
+        expect.objectContaining({ isPublished }),
+        expect.objectContaining({ limit: 10, offset: 10 }),
+      );
+      expect(output.total).toBe(11);
+      expect(output.totalPages).toBe(2);
+    },
+  );
+
+  it('combines admin search, category, and draft status in one pre-pagination predicate', async () => {
+    pageRepo.listPaged.mockResolvedValueOnce([[], 23]);
+
+    const output = await service.list(
+      {
+        page: 2,
+        limit: 10,
+        q: ' dragon ',
+        category: 'Character',
+        status: 'draft',
+      } as any,
+      true,
+    );
+
+    expect(pageRepo.listPaged).toHaveBeenCalledTimes(1);
+    expect(pageRepo.listPaged).toHaveBeenCalledWith(
+      {
+        isPublished: false,
+        $or: [
+          { title: { $ilike: '%dragon%' } },
+          { titleVi: { $ilike: '%dragon%' } },
+        ],
+        metadataJson: { $contains: { category: 'Character' } },
+      },
+      expect.objectContaining({ limit: 10, offset: 10 }),
+    );
+    expect(output.total).toBe(23);
+    expect(output.totalPages).toBe(3);
+  });
+
+  it('keeps public lists published when status=draft is supplied', async () => {
+    await service.list(
+      { page: 1, limit: 10, status: 'draft' } as any,
+      false,
+    );
+
+    expect(pageRepo.listPaged).toHaveBeenCalledWith(
+      expect.objectContaining({ isPublished: true }),
+      expect.anything(),
+    );
+  });
+
   it('returns paginated shape', async () => {
     pageRepo.listPaged.mockResolvedValueOnce([[], 47]);
     const out = await service.list({ page: 2, limit: 20 }, false);

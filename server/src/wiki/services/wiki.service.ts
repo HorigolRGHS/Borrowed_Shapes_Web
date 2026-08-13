@@ -15,7 +15,11 @@ import {
   WIKI_LIST_MAX_LIMIT,
   WIKI_SEARCH_MAX_LENGTH,
 } from '../dto/wiki-constants';
-import { WikiListItemDto, WikiListResponseDto } from '../dto/wiki-list.dto';
+import {
+  WikiListItemDto,
+  WikiListResponseDto,
+  type WikiListStatus,
+} from '../dto/wiki-list.dto';
 import { isValidSlug } from '../dto/wiki-slug.validator';
 import {
   WikiDetailResponseDto,
@@ -27,7 +31,11 @@ import {
   WikiDiffChunkDto,
   WikiRevisionDiffResponseDto,
 } from '../dto/wiki-history.dto';
-import { RelatedPageDto, WikiMetadataDto } from '../dto/wiki-metadata.dto';
+import {
+  RelatedPageDto,
+  type WikiCategory,
+  WikiMetadataDto,
+} from '../dto/wiki-metadata.dto';
 import { escapeLike } from '../../common/utils/sql-like';
 import type { Locale } from '../../common/utils/resolve-locale';
 import {
@@ -62,6 +70,8 @@ export class WikiService {
       page?: number;
       limit?: number;
       q?: string;
+      category?: WikiCategory;
+      status?: WikiListStatus;
       sort?: 'createdAt' | 'title';
       order?: 'asc' | 'desc';
     },
@@ -73,6 +83,8 @@ export class WikiService {
       page?: number;
       limit?: number;
       q?: string;
+      category?: WikiCategory;
+      status?: WikiListStatus;
       sort?: 'createdAt' | 'title';
       order?: 'asc' | 'desc';
     },
@@ -84,6 +96,8 @@ export class WikiService {
       page?: number;
       limit?: number;
       q?: string;
+      category?: WikiCategory;
+      status?: WikiListStatus;
       sort?: 'createdAt' | 'title';
       order?: 'asc' | 'desc';
     },
@@ -99,7 +113,13 @@ export class WikiService {
     const offset = (page - 1) * limit;
 
     const where: FilterQuery<WikiPage> = {};
-    if (!includeAll) (where as Record<string, unknown>).isPublished = true;
+    if (!includeAll) {
+      (where as Record<string, unknown>).isPublished = true;
+    } else if (query.status === 'published') {
+      (where as Record<string, unknown>).isPublished = true;
+    } else if (query.status === 'draft') {
+      (where as Record<string, unknown>).isPublished = false;
+    }
 
     if (query.q && query.q.trim().length > 0) {
       const pattern = `%${escapeLike(query.q.trim())}%`;
@@ -107,6 +127,12 @@ export class WikiService {
         { title: { $ilike: pattern } },
         { titleVi: { $ilike: pattern } },
       ];
+    }
+
+    if (query.category) {
+      (where as Record<string, unknown>).metadataJson = {
+        $contains: { category: query.category },
+      };
     }
 
     const sort = query.sort ?? 'createdAt';
@@ -240,15 +266,6 @@ export class WikiService {
     requestedSlug: string,
   ): WikiDetailResponseDto {
     const rev = page.latestRevisionId as WikiRevision;
-    const detailRev: WikiDetailRevisionDto = {
-      id: rev.id,
-      content: rev.content,
-      contentVi: rev.contentVi,
-      summary: rev.summary ?? null,
-      summaryVi: rev.summaryVi ?? null,
-      author: this.toAuthor(rev.authorId),
-      createdAt: rev.createdAt,
-    };
     return {
       id: page.id,
       slug: page.slug,
@@ -259,7 +276,7 @@ export class WikiService {
       isPublished: page.isPublished,
       createdAt: page.createdAt,
       updatedAt: page.updatedAt,
-      latestRevision: detailRev,
+      latestRevision: this.toDetailRevision(rev),
       matchedSlugLocale: requestedSlug === page.slug ? 'en' : 'vi',
     };
   }

@@ -18,6 +18,7 @@ import {
   SlugAvailabilityExhausted,
 } from "@/lib/wiki/slug-availability";
 import { getApiErrorMessage, getApiErrorStatus, type ApiError } from "@/lib/wiki/http";
+import { WIKI_TITLE_MAX_LENGTH } from "@/models/dtos/wiki-limits";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { I18nFormMessage } from "@/components/ui/i18n-form-message";
 import { SlugEditRow } from "@/components/wiki/slug-edit-row";
 
 interface BumpedNotice {
@@ -221,9 +221,12 @@ export default function AdminWikiNewPage() {
                       {t("wiki.new.title_field")} ({t("wiki.tab_en")})
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} autoFocus />
+                      <Input
+                        {...field}
+                        autoFocus
+                        maxLength={WIKI_TITLE_MAX_LENGTH}
+                      />
                     </FormControl>
-                    <I18nFormMessage />
                   </FormItem>
                 )}
               />
@@ -239,9 +242,8 @@ export default function AdminWikiNewPage() {
                       {t("wiki.new.title_field")} ({t("wiki.tab_vi")})
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} maxLength={WIKI_TITLE_MAX_LENGTH} />
                     </FormControl>
-                    <I18nFormMessage />
                   </FormItem>
                 )}
               />

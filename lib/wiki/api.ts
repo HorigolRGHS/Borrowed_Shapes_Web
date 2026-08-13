@@ -1,6 +1,9 @@
 // lib/wiki/api.ts
 import { bffFetchJson, bffFetchForm } from "@/lib/wiki/bff-fetch";
+import type { WikiCategory } from "@/models/dtos/wiki-metadata.dto";
 import type {
+  WikiPublicListResponse,
+  WikiPublicDetail,
   WikiListResponse,
   WikiDetail,
   WikiHistoryResponse,
@@ -17,6 +20,8 @@ export interface WikiListQuery {
   page?: number;
   limit?: number;
   q?: string;
+  category?: WikiCategory;
+  status?: "all" | "published" | "draft";
   sort?: "createdAt" | "title";
   order?: "asc" | "desc";
   [key: string]: string | number | undefined;
@@ -24,8 +29,8 @@ export interface WikiListQuery {
 
 export async function fetchWikiList(
   query: WikiListQuery,
-): Promise<WikiListResponse> {
-  const res = await bffFetchJson<WikiListResponse>("GET", "/api/wiki", {
+): Promise<WikiPublicListResponse> {
+  const res = await bffFetchJson<WikiPublicListResponse>("GET", "/api/wiki", {
     params: query,
   });
   return res.data;
@@ -45,8 +50,8 @@ export async function fetchAdminWikiStats(): Promise<WikiAdminStats> {
   return res.data;
 }
 
-export async function fetchWikiBySlug(slug: string): Promise<WikiDetail> {
-  const res = await bffFetchJson<WikiDetail>(
+export async function fetchWikiBySlug(slug: string): Promise<WikiPublicDetail> {
+  const res = await bffFetchJson<WikiPublicDetail>(
     "GET",
     `/api/wiki/slug/${encodeURIComponent(slug)}`,
   );
@@ -65,8 +70,8 @@ export async function searchWiki(
   q: string,
   page = 1,
   limit = 20,
-): Promise<WikiListResponse> {
-  const res = await bffFetchJson<WikiListResponse>("GET", "/api/wiki/search", {
+): Promise<WikiPublicListResponse> {
+  const res = await bffFetchJson<WikiPublicListResponse>("GET", "/api/wiki/search", {
     params: { q, page, limit },
   });
   return res.data;

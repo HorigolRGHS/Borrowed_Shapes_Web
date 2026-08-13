@@ -55,7 +55,7 @@ export function StickySaveBar({
             size="sm"
             className="rounded-full"
             onClick={onSaveDraft}
-            disabled={saving}
+            disabled={saving || !isDirty}
           >
             {t("wiki.save_draft_button")}
           </Button>
@@ -64,7 +64,7 @@ export function StickySaveBar({
             size="sm"
             className="rounded-full"
             onClick={onPublish}
-            disabled={saving}
+            disabled={saving || !isDirty}
           >
             {t("wiki.save_publish_button")}
           </Button>

@@ -93,9 +93,9 @@ export function WikiInfobox({
   const hasKVTable = !!m.category || statEntries.length > 0 || !!location;
 
   return (
-    <aside aria-label={i18n.infoboxLabel}>
-      <Card>
-        <CardContent className="space-y-3 pt-4">
+    <aside aria-label={i18n.infoboxLabel} className="min-w-0">
+      <Card className="min-w-0">
+        <CardContent className="min-w-0 space-y-3 pt-4">
           {m.infoboxImage && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -110,7 +110,7 @@ export function WikiInfobox({
           {hasKVTable && (
             <>
               {m.infoboxImage && <Separator />}
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+              <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
                 {m.category && (
                   <>
                     <dt className="text-muted-foreground">
@@ -124,11 +124,13 @@ export function WikiInfobox({
                     <dt className="text-muted-foreground">
                       {i18n.statsLabel}
                     </dt>
-                    <dd>
-                      <dl className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-0.5">
+                    <dd className="min-w-0">
+                      <dl className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5">
                         {statEntries.map(([k, v]) => (
                           <span key={k} className="contents">
-                            <dt>{k}</dt>
+                            <dt className="min-w-0 [overflow-wrap:anywhere]">
+                              {k}
+                            </dt>
                             <dd className="text-right tabular-nums">{v}</dd>
                           </span>
                         ))}
@@ -141,7 +143,9 @@ export function WikiInfobox({
                     <dt className="text-muted-foreground">
                       {i18n.locationLabel}
                     </dt>
-                    <dd>{location}</dd>
+                    <dd className="min-w-0 [overflow-wrap:anywhere]">
+                      {location}
+                    </dd>
                   </>
                 )}
               </dl>
@@ -151,11 +155,11 @@ export function WikiInfobox({
           {related.length > 0 && (
             <>
               <Separator />
-              <div className="space-y-1">
+              <div className="min-w-0 space-y-1">
                 <p className="text-sm text-muted-foreground">
                   {i18n.relatedLabel}
                 </p>
-                <ul className="space-y-1 text-sm">
+                <ul className="min-w-0 space-y-1 text-sm">
                   {related.map((slug) => {
                     const entry = relatedTitles?.get(slug);
                     if (entry?.exists) {
@@ -167,7 +171,7 @@ export function WikiInfobox({
                         <li key={slug}>
                           <Link
                             href={`/wiki/${encodeURIComponent(slug)}`}
-                            className="underline hover:no-underline break-words block"
+                            className="block min-w-0 underline [overflow-wrap:anywhere] hover:no-underline"
                           >
                             {lbl}
                           </Link>
@@ -177,7 +181,7 @@ export function WikiInfobox({
                     return (
                       <li
                         key={slug}
-                        className="text-muted-foreground line-through break-words"
+                        className="min-w-0 text-muted-foreground line-through [overflow-wrap:anywhere]"
                       >
                         {slug}
                       </li>
@@ -197,8 +201,13 @@ export function WikiInfobox({
                 </p>
                 <ul role="list" className="flex flex-wrap gap-1">
                   {tags.map((tag) => (
-                    <li key={tag}>
-                      <Badge variant="secondary">{tag}</Badge>
+                    <li key={tag} className="min-w-0">
+                      <Badge
+                        variant="secondary"
+                        className="max-w-full whitespace-normal [overflow-wrap:anywhere]"
+                      >
+                        {tag}
+                      </Badge>
                     </li>
                   ))}
                 </ul>

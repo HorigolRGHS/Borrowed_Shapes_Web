@@ -590,6 +590,9 @@
         "latest": "Mới nhất",
         "completed": "Hoàn tất"
       },
+      "pagination": {
+        "showing": "Hiển thị {from}–{to} trong số {total} bản ghi"
+      },
       "detail": {
         "title": "Chi tiết lượt tải",
         "description": "Xem thông tin file và lượt tải xuống",
@@ -740,7 +743,7 @@
     "contact": "Liên hệ",
     "privacy": "Chính sách bảo mật",
     "terms": "Điều khoản dịch vụ",
-    "copyright": "© 2026 Borrowed Shapes. Đã đăng ký bản quyền.",
+    "copyright": "© 2026 Borrowed Shapes. Bảo lưu mọi quyền.",
     "tagline": "Dành cho những người chơi cùng nhau giải quyết thử thách.",
     "termsAndPolicy": "Chính sách & Điều khoản"
   },

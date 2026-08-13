@@ -23,11 +23,17 @@ const fixtures: Fixture[] = [
       tags_vi: ['anh hùng'],
       infoboxImage: 'https://cdn.example.com/link.png',
       stats: { stamina: 1, weight: 2 },
+      stats_vi: { 'thể lực': 1, 'trọng lượng': 2 },
       location: 'Hyrule',
       location_vi: 'Vương quốc Hyrule',
       relatedPages: ['princess-zelda', 'ganondorf'],
     },
     expected: 'pass',
+  },
+  {
+    name: 'non-finite stats_vi stat',
+    input: { stats_vi: { hp: Number.POSITIVE_INFINITY } },
+    expected: 'fail',
   },
   {
     name: 'unknown category',

@@ -13,6 +13,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18/i18n-context";
 import {
   deleteWiki,
@@ -187,8 +188,11 @@ export function AdminWikiListClient() {
       setPendingDelete(null);
       setConfirmInput("");
       setDeleteError(null);
+      toast.success(t("wiki.delete_success"));
     } catch (e) {
-      setDeleteError(getApiErrorMessage(e as ApiError, "Delete failed"));
+      const msg = getApiErrorMessage(e as ApiError, t("wiki.delete_failed"));
+      setDeleteError(msg);
+      toast.error(msg);
     } finally {
       setDeleting(false);
     }
@@ -272,13 +276,27 @@ export function AdminWikiListClient() {
           })}
         </div>
 
-        {/* Sort (cosmetic) */}
-        <Select defaultValue="updated">
-          <SelectTrigger className="w-[180px] h-8 text-xs">
+        {/* Sort */}
+        <Select
+          value={sortBy}
+          onValueChange={(val) => setSortBy(val as SortOption)}
+        >
+          <SelectTrigger className="w-[190px] h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="updated">{t("wiki.sort_by_updated")}</SelectItem>
+            <SelectItem value="updated_desc">
+              {t("wiki.sort_recently_updated")}
+            </SelectItem>
+            <SelectItem value="updated_asc">
+              {t("wiki.sort_oldest_updated")}
+            </SelectItem>
+            <SelectItem value="title_asc">
+              {t("wiki.sort_title_asc")}
+            </SelectItem>
+            <SelectItem value="title_desc">
+              {t("wiki.sort_title_desc")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

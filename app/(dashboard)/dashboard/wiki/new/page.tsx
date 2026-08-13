@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18/i18n-context";
 import { createWiki } from "@/lib/wiki/api";
 import {
@@ -143,6 +144,7 @@ export default function AdminWikiNewPage() {
         contentVi: "",
         isPublished: false,
       });
+      toast.success(t("wiki.new.create_success"));
       router.replace(`/dashboard/wiki/${detail.id}/edit`);
       return;
     } catch (err) {
@@ -164,23 +166,22 @@ export default function AdminWikiNewPage() {
               contentVi: "",
               isPublished: false,
             });
+            toast.success(t("wiki.new.create_success"));
             router.replace(`/dashboard/wiki/${detail.id}/edit`);
             return;
           }
         } catch (recheckErr) {
-          if (recheckErr instanceof SlugAvailabilityExhausted) {
-            setSubmitError(t("wiki.new.create_failed"));
-            setSubmitting(false);
-            return;
-          }
-          setSubmitError(
-            getApiErrorMessage(recheckErr as ApiError, t("wiki.new.create_failed")),
-          );
+          const recheckMsg = recheckErr instanceof SlugAvailabilityExhausted
+            ? t("wiki.new.create_failed")
+            : getApiErrorMessage(recheckErr as ApiError, t("wiki.new.create_failed"));
+          setSubmitError(recheckMsg);
+          toast.error(recheckMsg);
           setSubmitting(false);
           return;
         }
       }
       setSubmitError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

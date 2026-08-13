@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { checkSlug } from "@/lib/wiki/slug";
+import { WIKI_TITLE_MAX_LENGTH } from "@/models/dtos/wiki-limits";
 
 function slugReason(slug: string): string | null {
   const issue = checkSlug(slug);
@@ -9,8 +10,16 @@ function slugReason(slug: string): string | null {
 }
 
 export const step1FormSchema = z.object({
-  title: z.string().trim().min(1, "wiki.title_required_error"),
-  titleVi: z.string().trim().min(1, "wiki.title_required_error"),
+  title: z
+    .string()
+    .trim()
+    .min(1, "wiki.title_required_error")
+    .max(WIKI_TITLE_MAX_LENGTH, "wiki.title_too_long_error"),
+  titleVi: z
+    .string()
+    .trim()
+    .min(1, "wiki.title_required_error")
+    .max(WIKI_TITLE_MAX_LENGTH, "wiki.title_too_long_error"),
   slug: z.string().superRefine((s, ctx) => {
     const reason = slugReason(s);
     if (reason) ctx.addIssue({ code: "custom", message: reason });

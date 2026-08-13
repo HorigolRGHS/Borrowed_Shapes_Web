@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { fetchWikiBySlug } from "@/lib/wiki/api";
@@ -20,7 +20,6 @@ import enDict from "@/locales/en.json";
 import viDict from "@/locales/vi.json";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { WikiLocaleSync } from "@/components/wiki/wiki-locale-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +35,7 @@ export async function generateMetadata({
       title: `${detail.title} | Borrowed Shapes`,
       description: detail.latestRevision.summary ?? undefined,
       alternates: {
-        canonical: `/wiki/${detail.matchedSlugLocale === "en" ? detail.slug : detail.slugVi}`,
-        languages: {
-          en: `/wiki/${detail.slug}`,
-          vi: `/wiki/${detail.slugVi}`,
-        },
+        canonical: `/wiki/${detail.slug}`,
       },
     };
   } catch {
@@ -62,12 +57,12 @@ export default async function WikiDetailPage({
     throw err;
   }
 
-  const isVi = detail.matchedSlugLocale === "vi";
-  const title = (isVi ? detail.titleVi : detail.title) || detail.title;
-  const content =
-    (isVi ? detail.latestRevision.contentVi : detail.latestRevision.content) ||
-    detail.latestRevision.content ||
-    "";
+  if (slug !== detail.slug) {
+    redirect(`/wiki/${encodeURIComponent(detail.slug)}`);
+  }
+
+  const title = detail.title;
+  const content = detail.latestRevision.content || "";
   const author = detail.latestRevision.author?.displayName ?? "—";
   const updated = new Date(detail.updatedAt);
 
@@ -105,7 +100,7 @@ export default async function WikiDetailPage({
     <main className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
       <nav className="text-sm text-muted-foreground mb-4">
         <Link href="/wiki" className="hover:text-foreground">
-          Wiki
+          {dict.wiki.list_title}
         </Link>
         <span className="mx-2">›</span>
         <span 
@@ -121,13 +116,9 @@ export default async function WikiDetailPage({
           <WikiPageHeader
             mode="view"
             title={title}
-            summary={
-              isVi
-                ? detail.latestRevision.summaryVi
-                : detail.latestRevision.summary
-            }
+            summary={detail.latestRevision.summary}
             isDraft={!detail.isPublished}
-            byline={`${author} · ${updated.toLocaleString()}`}
+            byline={`${author} · ${updated.toLocaleString(uiLocale)}`}
           />
         }
         body={
@@ -135,7 +126,7 @@ export default async function WikiDetailPage({
             <WikiContentRenderer markdown={content} />
             <Separator className="my-8" />
             <Button asChild variant="link" className="px-0">
-              <Link href={`/wiki/${encodeURIComponent(slug)}/history`}>
+              <Link href={`/wiki/${encodeURIComponent(detail.slug)}/history`}>
                 {dict.wiki.view_history}
               </Link>
             </Button>

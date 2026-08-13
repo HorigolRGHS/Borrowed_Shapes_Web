@@ -15,9 +15,9 @@ export class AdminUpdateAccountProfileDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(2, { message: 'admin.account.validation.display_name_too_short' })
-  @MaxLength(50, { message: 'admin.account.validation.display_name_too_long' })
-  @Matches(/\S/, { message: 'validation.display_name_invalid' })
+  @MinLength(2, { message: 'profile.edit.validation.display_name_too_short' })
+  @MaxLength(50, { message: 'profile.edit.validation.display_name_too_long' })
+  @Matches(/^[\p{L}0-9 _-]+$/u, { message: 'profile.edit.validation.display_name_invalid' })
   displayName?: string;
 
   @ApiPropertyOptional({ description: 'Avatar URL' })

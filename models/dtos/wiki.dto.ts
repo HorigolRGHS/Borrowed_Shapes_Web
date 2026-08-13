@@ -5,6 +5,31 @@ export interface WikiAuthor {
   displayName: string;
 }
 
+export interface WikiPublicListItemRevision {
+  id: string;
+  summary: string | null;
+  author: WikiAuthor | null;
+  createdAt: string;
+}
+
+export interface WikiPublicListItem {
+  id: string;
+  slug: string;
+  title: string;
+  metadataJson?: WikiMetadata | null;
+  isPublished: boolean;
+  updatedAt: string;
+  latestRevision: WikiPublicListItemRevision | null;
+}
+
+export interface WikiPublicListResponse {
+  items: WikiPublicListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface WikiListItemRevision {
   id: string;
   summary: string | null;
@@ -49,6 +74,26 @@ export interface WikiDetailRevision {
   summaryVi: string | null;
   author: WikiAuthor | null;
   createdAt: string;
+}
+
+export interface WikiPublicDetailRevision {
+  id: string;
+  content: string;
+  summary: string | null;
+  author: WikiAuthor | null;
+  createdAt: string;
+}
+
+export interface WikiPublicDetail {
+  id: string;
+  slug: string;
+  title: string;
+  metadataJson: WikiMetadata | null;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+  latestRevision: WikiPublicDetailRevision;
+  matchedSlugLocale: 'en' | 'vi';
 }
 
 export interface WikiDetail {

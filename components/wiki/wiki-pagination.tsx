@@ -9,6 +9,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { buildWikiPaginationHref } from "./wiki-pagination-url";
 
 interface Props {
   page: number;
@@ -21,22 +22,6 @@ function range(from: number, to: number): number[] {
   const out: number[] = [];
   for (let i = from; i <= to; i++) out.push(i);
   return out;
-}
-
-function buildHref(
-  basePath: string,
-  page: number,
-  extraParams?: Record<string, string>,
-): string {
-  const sp = new URLSearchParams();
-  if (extraParams) {
-    for (const [k, v] of Object.entries(extraParams)) {
-      if (v !== undefined && v !== null && v !== "") sp.set(k, v);
-    }
-  }
-  if (page > 1) sp.set("page", String(page));
-  const qs = sp.toString();
-  return qs ? `${basePath}?${qs}` : basePath;
 }
 
 export function WikiPagination({ page, totalPages, basePath, extraParams }: Props) {
@@ -61,7 +46,11 @@ export function WikiPagination({ page, totalPages, basePath, extraParams }: Prop
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href={prevDisabled ? "#" : buildHref(basePath, page - 1, extraParams)}
+            href={
+              prevDisabled
+                ? "#"
+                : buildWikiPaginationHref(basePath, page - 1, extraParams)
+            }
             aria-disabled={prevDisabled}
             className={prevDisabled ? "pointer-events-none opacity-40" : ""}
           />
@@ -74,7 +63,7 @@ export function WikiPagination({ page, totalPages, basePath, extraParams }: Prop
           ) : (
             <PaginationItem key={p}>
               <PaginationLink
-                href={buildHref(basePath, p, extraParams)}
+                href={buildWikiPaginationHref(basePath, p, extraParams)}
                 isActive={p === page}
               >
                 {p}
@@ -84,7 +73,11 @@ export function WikiPagination({ page, totalPages, basePath, extraParams }: Prop
         )}
         <PaginationItem>
           <PaginationNext
-            href={nextDisabled ? "#" : buildHref(basePath, page + 1, extraParams)}
+            href={
+              nextDisabled
+                ? "#"
+                : buildWikiPaginationHref(basePath, page + 1, extraParams)
+            }
             aria-disabled={nextDisabled}
             className={nextDisabled ? "pointer-events-none opacity-40" : ""}
           />

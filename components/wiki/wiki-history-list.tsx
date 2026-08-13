@@ -208,7 +208,9 @@ export function WikiHistoryList({
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>
+                              {t("wiki.cancel_button")}
+                            </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleRollback(it.id)}
                             >

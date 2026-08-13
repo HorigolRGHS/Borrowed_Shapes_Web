@@ -12,7 +12,6 @@ import { WikiToc } from '@/components/wiki/wiki-toc';
 import { WikiInfobox } from '@/components/wiki/wiki-infobox';
 import { WikiPageShell } from '@/components/wiki/wiki-page-shell';
 import { WikiPageHeader } from '@/components/wiki/wiki-page-header';
-import { WikiLocaleSync } from '@/components/wiki/wiki-locale-sync';
 import { extractToc } from '@/lib/wiki/markdown-toc';
 import { fetchRelatedTitles } from '@/lib/wiki/related-api';
 import {
@@ -51,6 +50,12 @@ export default async function WikiRevisionPage({
   } catch (err) {
     if (getApiErrorStatus(err as ApiError) === 404) notFound();
     throw err;
+  }
+
+  if (slug !== detail.slug) {
+    redirect(
+      `/wiki/${encodeURIComponent(detail.slug)}/history/${encodeURIComponent(revisionId)}`,
+    );
   }
 
   let revision;
@@ -105,27 +110,21 @@ export default async function WikiRevisionPage({
   };
 
   return (
-    <>
-      <WikiLocaleSync
-        slug={detail.slug}
-        slugVi={detail.slug}
-        pathSuffix={`/history/${revisionId}`}
-      />
-      <main className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
-        <nav className="text-sm text-muted-foreground mb-4">
+    <main className="container mx-auto px-4 py-8 pt-24 max-w-7xl">
+      <nav className="text-sm text-muted-foreground mb-4">
           <Link href="/wiki" className="hover:text-foreground">
             {dict.wiki.list_title}
           </Link>
           <span className="mx-2">›</span>
           <Link
-            href={`/wiki/${encodeURIComponent(slug)}`}
+            href={`/wiki/${encodeURIComponent(detail.slug)}`}
             className="hover:text-foreground"
           >
             {title}
           </Link>
           <span className="mx-2">›</span>
           <Link
-            href={`/wiki/${encodeURIComponent(slug)}/history`}
+            href={`/wiki/${encodeURIComponent(detail.slug)}/history`}
             className="hover:text-foreground"
           >
             {dict.wiki.history_button}
@@ -134,12 +133,14 @@ export default async function WikiRevisionPage({
           <span className="text-foreground">{revisionId.slice(0, 8)}…</span>
         </nav>
 
-        <WikiPageShell
+      <WikiPageShell
           header={
             <WikiPageHeader
               mode="view"
               title={title}
               summary={summary}
+              isDraft={!detail.isPublished}
+              draftLabel={dict.wiki.draft_badge}
               byline={`${dict.wiki.revision_at.replace('{date}', created)} · ${dict.wiki.by_author.replace('{name}', author)}`}
             />
           }
@@ -160,8 +161,7 @@ export default async function WikiRevisionPage({
             ) : undefined
           }
           toc={hasToc ? <WikiToc markdown={content} /> : undefined}
-        />
-      </main>
-    </>
+      />
+    </main>
   );
 }

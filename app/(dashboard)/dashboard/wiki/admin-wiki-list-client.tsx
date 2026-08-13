@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Eye,
@@ -15,11 +15,24 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18/i18n-context";
-import { fetchAdminWikiList, fetchAdminWikiStats, deleteWiki } from "@/lib/wiki/api";
-import type { WikiListResponse, WikiListItem, WikiAdminStats } from "@/models/dtos/wiki.dto";
-import type { WikiCategory } from "@/models/dtos/wiki-metadata.dto";
+import {
+  deleteWiki,
+  fetchAdminWikiList,
+  fetchAdminWikiStats,
+} from "@/lib/wiki/api";
+import type {
+  WikiAdminStats,
+  WikiListItem,
+  WikiListResponse,
+} from "@/models/dtos/wiki.dto";
 import { categoryLabelKey } from "@/lib/wiki/category-label";
 import { getApiErrorMessage, type ApiError } from "@/lib/wiki/http";
+import {
+  ADMIN_WIKI_CATEGORIES,
+  buildAdminWikiListHref,
+  parseAdminWikiListQuery,
+  type AdminWikiListStatus,
+} from "@/components/wiki/admin-wiki-list-query";
 import { WikiPagination } from "@/components/wiki/wiki-pagination";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,27 +71,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type FilterMode = "all" | "published" | "draft";
-type SortOption =
-  | "updated_desc"
-  | "updated_asc"
-  | "title_asc"
-  | "title_desc";
+const ADMIN_WIKI_PATH = "/dashboard/wiki";
+const ADMIN_WIKI_PAGE_SIZE = 10;
 
 export function AdminWikiListClient() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const sp = useSearchParams();
-  const page = Math.max(1, Number(sp.get("page")) || 1);
-  const filter: FilterMode = (sp.get("filter") as FilterMode) ?? "all";
+  const { page, q, status, category } = parseAdminWikiListQuery(sp);
 
   const [data, setData] = useState<WikiListResponse | null>(null);
   const [stats, setStats] = useState<WikiAdminStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"All" | WikiCategory>("All");
-  const [sortBy, setSortBy] = useState<SortOption>("updated_desc");
+  const [searchText, setSearchText] = useState(q);
   const [pendingDelete, setPendingDelete] = useState<WikiListItem | null>(null);
   const [confirmInput, setConfirmInput] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -88,87 +94,74 @@ export function AdminWikiListClient() {
     setLoading(true);
     setError(null);
     try {
-      const [result, statsResult] = await Promise.all([
-        fetchAdminWikiList({ page, limit: 50 }),
-        fetchAdminWikiStats(),
-      ]);
+      const result = await fetchAdminWikiList({
+        page,
+        limit: ADMIN_WIKI_PAGE_SIZE,
+        q: q || undefined,
+        status,
+        category: category || undefined,
+      });
       setData(result);
-      setStats(statsResult);
     } catch (e) {
       setError(getApiErrorMessage(e as ApiError, "Load failed"));
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [category, page, q, status]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 
-  const handleFilter = (next: FilterMode) => {
-    const params = new URLSearchParams();
-    if (next !== "all") params.set("filter", next);
-    router.push(`/dashboard/wiki${params.toString() ? "?" + params : ""}`);
+  useEffect(() => {
+    void fetchAdminWikiStats()
+      .then(setStats)
+      .catch((e: unknown) => {
+        setError(getApiErrorMessage(e as ApiError, "Load failed"));
+      });
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchText(q);
+  }, [q]);
+
+  useEffect(() => {
+    if (searchText.trim() === q) return;
+    const timer = window.setTimeout(() => {
+      router.replace(
+        buildAdminWikiListHref(
+          ADMIN_WIKI_PATH,
+          { page, q, status, category },
+          { q: searchText },
+        ),
+      );
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [category, page, q, router, searchText, status]);
+
+  const handleStatus = (next: AdminWikiListStatus) => {
+    router.push(
+      buildAdminWikiListHref(
+        ADMIN_WIKI_PATH,
+        { page, q, status, category },
+        { status: next },
+      ),
+    );
   };
 
-  const categories = useMemo(() => {
-    if (!data) return [];
-    const seen = new Set<string>();
-    const cats: WikiCategory[] = [];
-    for (const item of data.items) {
-      const cat = item.metadataJson?.category;
-      if (cat && !seen.has(cat)) {
-        seen.add(cat);
-        cats.push(cat);
-      }
-    }
-    return cats;
-  }, [data]);
-
-  const filteredItems = useMemo(() => {
-    if (!data) return [];
-    let items = data.items;
-
-    if (filter === "published") items = items.filter((i) => i.isPublished);
-    if (filter === "draft") items = items.filter((i) => !i.isPublished);
-
-    if (categoryFilter !== "All") {
-      items = items.filter((i) => i.metadataJson?.category === categoryFilter);
-    }
-
-    if (searchText.trim()) {
-      const q = searchText.trim().toLowerCase();
-      items = items.filter(
-        (i) =>
-          i.title.toLowerCase().includes(q) ||
-          i.titleVi.toLowerCase().includes(q) ||
-          i.slug.toLowerCase().includes(q),
-      );
-    }
-
-    const sorted = [...items].sort((a, b) => {
-      if (sortBy === "updated_desc") {
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-      }
-      if (sortBy === "updated_asc") {
-        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-      }
-      if (sortBy === "title_asc") {
-        const titleA = locale === "vi" ? (a.titleVi || a.title) : (a.title || a.titleVi);
-        const titleB = locale === "vi" ? (b.titleVi || b.title) : (b.title || b.titleVi);
-        return titleA.localeCompare(titleB, locale);
-      }
-      if (sortBy === "title_desc") {
-        const titleA = locale === "vi" ? (a.titleVi || a.title) : (a.title || a.titleVi);
-        const titleB = locale === "vi" ? (b.titleVi || b.title) : (b.title || b.titleVi);
-        return titleB.localeCompare(titleA, locale);
-      }
-      return 0;
-    });
-
-    return sorted;
-  }, [data, filter, categoryFilter, searchText, sortBy, locale]);
+  const handleCategory = (
+    next: "" | (typeof ADMIN_WIKI_CATEGORIES)[number],
+  ) => {
+    router.push(
+      buildAdminWikiListHref(
+        ADMIN_WIKI_PATH,
+        { page, q, status, category },
+        { category: next },
+      ),
+    );
+  };
 
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
@@ -181,12 +174,16 @@ export function AdminWikiListClient() {
     setDeleting(true);
     try {
       await deleteWiki(pendingDelete.id);
-      if (data) {
-        setData({
-          ...data,
-          items: data.items.filter((i) => i.id !== pendingDelete.id),
-          total: Math.max(0, data.total - 1),
-        });
+      if (data?.items.length === 1 && page > 1) {
+        router.replace(
+          buildAdminWikiListHref(
+            ADMIN_WIKI_PATH,
+            { page, q, status, category },
+            { page: page - 1 },
+          ),
+        );
+      } else {
+        await load();
       }
       setPendingDelete(null);
       setConfirmInput("");
@@ -254,7 +251,7 @@ export function AdminWikiListClient() {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         {/* Segmented status filter */}
         <div className="inline-flex rounded-md border bg-muted p-0.5">
-          {(["all", "published", "draft"] as FilterMode[]).map((mode) => {
+          {(["all", "published", "draft"] as AdminWikiListStatus[]).map((mode) => {
             const label =
               mode === "all"
                 ? t("wiki.filter_all")
@@ -265,10 +262,10 @@ export function AdminWikiListClient() {
               <button
                 key={mode}
                 type="button"
-                onClick={() => handleFilter(mode)}
+                onClick={() => handleStatus(mode)}
                 className={cn(
                   "px-3 py-1.5 text-xs font-medium rounded-sm transition-colors",
-                  filter === mode
+                  status === mode
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
@@ -305,29 +302,28 @@ export function AdminWikiListClient() {
       </div>
 
       {/* Category pills */}
-      {categories.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          {(["All" as const, ...categories]).map((cat) => {
-            const selected = categoryFilter === cat;
-            const label = cat === "All" ? t("wiki.filter_all") : t(categoryLabelKey(cat));
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setCategoryFilter(cat)}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                  selected
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {(["", ...ADMIN_WIKI_CATEGORIES] as const).map((cat) => {
+          const selected = category === cat;
+          const label =
+            cat === "" ? t("wiki.filter_all") : t(categoryLabelKey(cat));
+          return (
+            <button
+              key={cat || "all"}
+              type="button"
+              onClick={() => handleCategory(cat)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                selected
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
 
       {error && (
         <Alert variant="destructive" className="mb-4">
@@ -358,7 +354,7 @@ export function AdminWikiListClient() {
                   <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                 </TableRow>
               ))}
-            {!loading && filteredItems.length === 0 && (
+            {!loading && data?.items.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-12">
                   <p className="text-muted-foreground mb-4">
@@ -374,7 +370,7 @@ export function AdminWikiListClient() {
               </TableRow>
             )}
             {!loading &&
-              filteredItems.map((item) => {
+              data?.items.map((item) => {
                 const title = locale === "vi" ? item.titleVi : item.title;
                 const catLabel = item.metadataJson?.category
                   ? t(categoryLabelKey(item.metadataJson.category))
@@ -470,8 +466,12 @@ export function AdminWikiListClient() {
         <WikiPagination
           page={data.page}
           totalPages={data.totalPages}
-          basePath="/dashboard/wiki"
-          extraParams={filter !== "all" ? { filter } : undefined}
+          basePath={ADMIN_WIKI_PATH}
+          extraParams={{
+            q,
+            status: status === "all" ? "" : status,
+            category,
+          }}
         />
       )}
 

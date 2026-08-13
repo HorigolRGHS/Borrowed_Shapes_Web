@@ -14,7 +14,14 @@ import {
   WIKI_LIST_MAX_LIMIT,
   WIKI_SEARCH_MAX_LENGTH,
 } from './wiki-constants';
-import { WikiMetadataDto } from './wiki-metadata.dto';
+import {
+  WIKI_CATEGORIES,
+  type WikiCategory,
+  WikiMetadataDto,
+} from './wiki-metadata.dto';
+
+export const WIKI_LIST_STATUSES = ['all', 'published', 'draft'] as const;
+export type WikiListStatus = (typeof WIKI_LIST_STATUSES)[number];
 
 export class WikiListQueryDto {
   @ApiPropertyOptional({ minimum: 1, default: 1 })
@@ -41,6 +48,16 @@ export class WikiListQueryDto {
   @IsString()
   @MaxLength(WIKI_SEARCH_MAX_LENGTH)
   q?: string;
+
+  @ApiPropertyOptional({ enum: WIKI_CATEGORIES })
+  @IsOptional()
+  @IsIn(WIKI_CATEGORIES)
+  category?: WikiCategory;
+
+  @ApiPropertyOptional({ enum: WIKI_LIST_STATUSES, default: 'all' })
+  @IsOptional()
+  @IsIn(WIKI_LIST_STATUSES)
+  status?: WikiListStatus = 'all';
 
   @ApiPropertyOptional({ enum: ['createdAt', 'title'], default: 'createdAt' })
   @IsOptional()

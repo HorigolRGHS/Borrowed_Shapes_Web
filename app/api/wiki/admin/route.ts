@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
       page: sp.get("page") ?? undefined,
       limit: sp.get("limit") ?? undefined,
       q: sp.get("q") ?? undefined,
+      status: sp.get("status") ?? undefined,
+      category: sp.get("category") ?? undefined,
       sort: sp.get("sort") ?? undefined,
       order: sp.get("order") ?? undefined,
     },

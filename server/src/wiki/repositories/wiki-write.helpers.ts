@@ -5,7 +5,9 @@ export function isWikiSlugUniqueError(err: any): boolean {
   if (err?.code !== '23505' && err?.driverError?.code !== '23505') return false;
   const constraint = err?.constraint ?? err?.driverError?.constraint ?? '';
   return (
-    constraint === 'WikiPage_slug_key' || constraint === 'WikiPage_slugVi_key'
+    constraint === 'WikiPage_slug_key' ||
+    constraint === 'WikiPage_slug_vi_key' ||
+    constraint === 'WikiPage_slugVi_key'
   );
 }
 

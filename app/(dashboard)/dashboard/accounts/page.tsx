@@ -231,6 +231,7 @@ export default function AccountManagementPage() {
 
   // Form states
   const [editForm, setEditForm] = useState({ displayName: "", imgUrl: "" });
+  const [editError, setEditError] = useState<string | null>(null);
   const [roleForm, setRoleForm] = useState({ role: "" });
   const [banForm, setBanForm] = useState({ reason: "", banExpiresAt: "" });
   const [banReasonError, setBanReasonError] = useState("");
@@ -403,6 +404,7 @@ export default function AccountManagementPage() {
         displayName: selectedUser.displayName,
         imgUrl: selectedUser.imgUrl || "",
       });
+      setEditError(null);
       setEditModalOpen(true);
     }
   };
@@ -427,7 +429,14 @@ export default function AccountManagementPage() {
       }
       await fetchUsers();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || err.message || t("admin.account.messages.generic_error"));
+      const resMsg = err.response?.data?.message;
+      const errorKey = Array.isArray(resMsg) ? resMsg[0] : resMsg;
+      if (errorKey) {
+        const translated = t(errorKey);
+        setEditError(translated !== errorKey ? translated : (t("admin.account.messages.generic_error") || "An error occurred"));
+      } else {
+        setEditError(t("admin.account.messages.generic_error") || "An error occurred");
+      }
     } finally {
       setModalActionLoading(false);
     }
@@ -927,7 +936,15 @@ export default function AccountManagementPage() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.display_name")}</Label>
-                <Input value={editForm.displayName} onChange={e => setEditForm({ ...editForm, displayName: e.target.value })} />
+                <Input 
+                  value={editForm.displayName} 
+                  onChange={e => {
+                    setEditForm({ ...editForm, displayName: e.target.value });
+                    if (editError) setEditError(null);
+                  }} 
+                  className={editError ? 'border-red-500 focus-visible:ring-red-500/50' : ''}
+                />
+                {editError && <p className="text-sm text-red-500 mt-1">{editError}</p>}
               </div>
               <div className="space-y-2">
                 <Label>{t("admin.account.modal.avatar_url")}</Label>

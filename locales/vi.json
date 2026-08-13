@@ -590,6 +590,9 @@
         "latest": "Mới nhất",
         "completed": "Hoàn tất"
       },
+      "pagination": {
+        "showing": "Hiển thị {from}–{to} trong số {total} bản ghi"
+      },
       "detail": {
         "title": "Chi tiết lượt tải",
         "description": "Xem thông tin file và lượt tải xuống",

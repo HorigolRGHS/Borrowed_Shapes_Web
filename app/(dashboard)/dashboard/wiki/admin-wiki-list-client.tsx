@@ -32,6 +32,7 @@ import {
   buildAdminWikiListHref,
   parseAdminWikiListQuery,
   type AdminWikiListStatus,
+  type SortOption,
 } from "@/components/wiki/admin-wiki-list-query";
 import { WikiPagination } from "@/components/wiki/wiki-pagination";
 import { cn } from "@/lib/utils";
@@ -78,7 +79,7 @@ export function AdminWikiListClient() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const sp = useSearchParams();
-  const { page, q, status, category } = parseAdminWikiListQuery(sp);
+  const { page, q, status, category, sort } = parseAdminWikiListQuery(sp);
 
   const [data, setData] = useState<WikiListResponse | null>(null);
   const [stats, setStats] = useState<WikiAdminStats | null>(null);
@@ -90,6 +91,15 @@ export function AdminWikiListClient() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const sortParam =
+    sort === "updated_asc"
+      ? { sort: "createdAt" as const, order: "asc" as const }
+      : sort === "title_asc"
+        ? { sort: "title" as const, order: "asc" as const }
+        : sort === "title_desc"
+          ? { sort: "title" as const, order: "desc" as const }
+          : { sort: "createdAt" as const, order: "desc" as const };
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -100,6 +110,7 @@ export function AdminWikiListClient() {
         q: q || undefined,
         status,
         category: category || undefined,
+        ...sortParam,
       });
       setData(result);
     } catch (e) {
@@ -107,7 +118,7 @@ export function AdminWikiListClient() {
     } finally {
       setLoading(false);
     }
-  }, [category, page, q, status]);
+  }, [category, page, q, status, sortParam.sort, sortParam.order]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -133,20 +144,30 @@ export function AdminWikiListClient() {
       router.replace(
         buildAdminWikiListHref(
           ADMIN_WIKI_PATH,
-          { page, q, status, category },
+          { page, q, status, category, sort },
           { q: searchText },
         ),
       );
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [category, page, q, router, searchText, status]);
+  }, [category, page, q, router, searchText, sort, status]);
 
   const handleStatus = (next: AdminWikiListStatus) => {
     router.push(
       buildAdminWikiListHref(
         ADMIN_WIKI_PATH,
-        { page, q, status, category },
+        { page, q, status, category, sort },
         { status: next },
+      ),
+    );
+  };
+
+  const handleSort = (next: SortOption) => {
+    router.push(
+      buildAdminWikiListHref(
+        ADMIN_WIKI_PATH,
+        { page, q, status, category, sort },
+        { sort: next },
       ),
     );
   };
@@ -157,7 +178,7 @@ export function AdminWikiListClient() {
     router.push(
       buildAdminWikiListHref(
         ADMIN_WIKI_PATH,
-        { page, q, status, category },
+        { page, q, status, category, sort },
         { category: next },
       ),
     );
@@ -178,7 +199,7 @@ export function AdminWikiListClient() {
         router.replace(
           buildAdminWikiListHref(
             ADMIN_WIKI_PATH,
-            { page, q, status, category },
+            { page, q, status, category, sort },
             { page: page - 1 },
           ),
         );
@@ -278,8 +299,8 @@ export function AdminWikiListClient() {
 
         {/* Sort */}
         <Select
-          value={sortBy}
-          onValueChange={(val) => setSortBy(val as SortOption)}
+          value={sort}
+          onValueChange={(val) => handleSort(val as SortOption)}
         >
           <SelectTrigger className="w-[190px] h-8 text-xs">
             <SelectValue />

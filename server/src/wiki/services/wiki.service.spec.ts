@@ -140,10 +140,7 @@ describe('WikiService.list', () => {
   });
 
   it('keeps public lists published when status=draft is supplied', async () => {
-    await service.list(
-      { page: 1, limit: 10, status: 'draft' } as any,
-      false,
-    );
+    await service.list({ page: 1, limit: 10, status: 'draft' } as any, false);
 
     expect(pageRepo.listPaged).toHaveBeenCalledWith(
       expect.objectContaining({ isPublished: true }),

@@ -32,6 +32,11 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
       ? adminItem.slugVi || adminItem.slug
       : adminItem.slug || adminItem.slugVi
     : item.slug;
+  const defaultTitle = adminItem
+    ? locale === "vi"
+      ? adminItem.titleVi || adminItem.title
+      : adminItem.title || adminItem.titleVi
+    : item.title;
   const defaultSummary = adminItem
     ? locale === "vi"
       ? adminItem.latestRevision?.summaryVi
@@ -46,9 +51,9 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
           <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
             <h3 
               className="text-lg font-semibold line-clamp-2 group-hover:text-primary flex-1 min-w-0 break-words"
-              title={title}
+              title={defaultTitle}
             >
-              {title}
+              {defaultTitle}
             </h3>
             {showDraftBadge && !item.isPublished && (
               <Badge variant="secondary" className="shrink-0">
@@ -57,8 +62,8 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
             )}
           </CardHeader>
           <CardContent className="flex-1 min-h-[72px]">
-            {summary && (
-              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">{summary}</p>
+            {defaultSummary && (
+              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">{defaultSummary}</p>
             )}
           </CardContent>
           <CardFooter className="text-xs text-muted-foreground mt-auto">
@@ -81,11 +86,11 @@ export function WikiCard({ item, showDraftBadge = false, href, variant = "defaul
         )}
       >
         <CardHeader className="flex min-h-[58px] flex-row items-start justify-between gap-2 border-b border-border px-5 py-4 dark:border-[#252541]">
-          <h3 
+          <h3
             className="font-sans text-lg font-bold leading-snug text-foreground line-clamp-2 group-hover:text-amber-600 dark:text-white dark:group-hover:text-amber-400 flex-1 min-w-0 break-words"
-            title={title}
+            title={defaultTitle}
           >
-            {title}
+            {defaultTitle}
           </h3>
           {showDraftBadge && !item.isPublished && (
             <Badge variant="secondary" className="shrink-0">

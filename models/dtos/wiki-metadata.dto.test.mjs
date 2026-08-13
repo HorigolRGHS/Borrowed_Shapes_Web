@@ -8,8 +8,8 @@ assert.deepEqual(normalizeWikiFormMetadata(null), {
   relatedPages: [],
 });
 
-assert.deepEqual(normalizeWikiFormMetadata({ category: "Boss" }), {
-  category: "Boss",
+assert.deepEqual(normalizeWikiFormMetadata({ category: "Character" }), {
+  category: "Character",
   tags: [],
   tags_vi: [],
   stats: {},

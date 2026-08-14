@@ -269,12 +269,6 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const limit = clamp(query.limit ?? 10, 1, 50);
     const offset = (page - 1) * limit;
 
-    const conditions: string[] = [
-      'gr."isCompleted" = true',
-      'gr."totalTimeSec" IS NOT NULL',
-    ];
-    const params: any[] = [];
-
     const isSeasonal = query.scope === 'seasonal';
 
     if (isSeasonal) {
@@ -282,142 +276,247 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       if (!month || !/^\d{4}-\d{2}$/.test(month)) {
         month = new Date().toISOString().slice(0, 7);
       }
-      const year = parseInt(month.split('-')[0], 10);
-      const monthNum = parseInt(month.split('-')[1], 10);
-      const startOfTarget = new Date(Date.UTC(year, monthNum - 1, 1));
-      const startOfNext = new Date(Date.UTC(year, monthNum, 1));
+      const targetMonthDate = `${month}-01`;
 
-      conditions.push('gr."completedAt" >= ?');
-      conditions.push('gr."completedAt" < ?');
-      params.push(startOfTarget, startOfNext);
+      const countSql = `
+        WITH run_members AS (
+          SELECT
+            r."id"           AS run_id,
+            r."totalTimeSec" AS total_time,
+            r."completedAt"  AS completed_at,
+            r."lobbyName"    AS lobby_name,
+            array_agg(p."gameProfileId" ORDER BY p."gameProfileId") AS member_set
+          FROM game."GameRun" r
+          JOIN game."GameRunPlayer" p ON p."runId" = r."id"
+          WHERE r."isCompleted" = true
+            AND r."totalTimeSec" IS NOT NULL
+            AND date_trunc('month', r."completedAt") = date_trunc('month', ?::date)
+          GROUP BY r."id", r."totalTimeSec", r."completedAt", r."lobbyName"
+        ),
+        team_members AS (
+          SELECT
+            st."id"   AS team_id,
+            st."name" AS team_name,
+            array_agg(stm."gameProfileId" ORDER BY stm."gameProfileId") AS member_set
+          FROM game."SeasonTeam" st
+          JOIN game."SeasonTeamMember" stm
+            ON stm."teamId" = st."id" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', st."seasonMonth")
+          WHERE date_trunc('month', st."seasonMonth") = date_trunc('month', ?::date)
+          GROUP BY st."id", st."name"
+        ),
+        matched_runs AS (
+          SELECT
+            tm.team_id,
+            rm.run_id,
+            rm.total_time,
+            rm.completed_at
+          FROM run_members rm
+          JOIN team_members tm ON rm.member_set <@ tm.member_set
+        ),
+        best_run_per_team AS (
+          SELECT DISTINCT ON (team_id) team_id, total_time, completed_at
+          FROM matched_runs
+          ORDER BY team_id, total_time ASC, completed_at ASC
+        )
+        SELECT COUNT(*)::int AS count FROM best_run_per_team
+      `;
+      const countResult = await this.execute(countSql, [targetMonthDate, targetMonthDate]);
+      const total = Number(countResult[0]?.count || 0);
+
+      const dataSql = `
+        WITH run_members AS (
+          SELECT
+            r."id"           AS run_id,
+            r."totalTimeSec" AS total_time,
+            r."completedAt"  AS completed_at,
+            r."lobbyName"    AS lobby_name,
+            array_agg(p."gameProfileId" ORDER BY p."gameProfileId") AS member_set
+          FROM game."GameRun" r
+          JOIN game."GameRunPlayer" p ON p."runId" = r."id"
+          WHERE r."isCompleted" = true
+            AND r."totalTimeSec" IS NOT NULL
+            AND date_trunc('month', r."completedAt") = date_trunc('month', ?::date)
+          GROUP BY r."id", r."totalTimeSec", r."completedAt", r."lobbyName"
+        ),
+        team_members AS (
+          SELECT
+            st."id"   AS team_id,
+            st."name" AS team_name,
+            array_agg(stm."gameProfileId" ORDER BY stm."gameProfileId") AS member_set
+          FROM game."SeasonTeam" st
+          JOIN game."SeasonTeamMember" stm
+            ON stm."teamId" = st."id" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', st."seasonMonth")
+          WHERE date_trunc('month', st."seasonMonth") = date_trunc('month', ?::date)
+          GROUP BY st."id", st."name"
+        ),
+        matched_runs AS (
+          SELECT
+            tm.team_id,
+            tm.team_name,
+            rm.run_id,
+            rm.total_time,
+            rm.completed_at,
+            rm.lobby_name
+          FROM run_members rm
+          JOIN team_members tm ON rm.member_set <@ tm.member_set
+        ),
+        best_run_per_team AS (
+          SELECT DISTINCT ON (team_id)
+            team_id,
+            team_name,
+            run_id,
+            total_time,
+            completed_at,
+            lobby_name
+          FROM matched_runs
+          ORDER BY team_id, total_time ASC, completed_at ASC
+        )
+        SELECT
+          b.run_id AS "runId",
+          COALESCE(NULLIF(TRIM(b.team_name), ''), b.lobby_name) AS "lobbyName",
+          b.total_time AS "totalTimeSec",
+          b.completed_at AS "completedAt",
+          (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = b.run_id) AS "totalPlayers"
+        FROM best_run_per_team b
+        ORDER BY b.total_time ASC, b.completed_at ASC
+        LIMIT ? OFFSET ?
+      `;
+      const dataParams = [targetMonthDate, targetMonthDate, limit, offset];
+      const rows = await this.execute(dataSql, dataParams);
+
+      return { rows: rows || [], total };
+    } else {
+      const countSql = `
+        WITH run_members AS (
+          SELECT
+            r."id"           AS run_id,
+            r."totalTimeSec" AS total_time,
+            r."completedAt"  AS completed_at,
+            r."lobbyName"    AS lobby_name,
+            array_agg(p."gameProfileId" ORDER BY p."gameProfileId") AS member_set
+          FROM game."GameRun" r
+          JOIN game."GameRunPlayer" p ON p."runId" = r."id"
+          WHERE r."isCompleted" = true
+            AND r."totalTimeSec" IS NOT NULL
+          GROUP BY r."id", r."totalTimeSec", r."completedAt", r."lobbyName"
+        ),
+        team_members AS (
+          SELECT
+            st."id"   AS team_id,
+            st."name" AS team_name,
+            st."seasonMonth" AS season_month,
+            array_agg(stm."gameProfileId" ORDER BY stm."gameProfileId") AS member_set
+          FROM game."SeasonTeam" st
+          JOIN game."SeasonTeamMember" stm
+            ON stm."teamId" = st."id" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', st."seasonMonth")
+          GROUP BY st."id", st."name", st."seasonMonth"
+        ),
+        matched_runs AS (
+          SELECT
+            COALESCE(
+              'TEAM:' || tm.team_id,
+              'RUN_SET:' || array_to_string(rm.member_set, ',')
+            ) AS team_key,
+            tm.team_name,
+            rm.run_id,
+            rm.total_time,
+            rm.completed_at,
+            rm.lobby_name
+          FROM run_members rm
+          LEFT JOIN team_members tm
+            ON date_trunc('month', rm.completed_at) = date_trunc('month', tm.season_month)
+           AND rm.member_set <@ tm.member_set
+        ),
+        best_run_per_team AS (
+          SELECT DISTINCT ON (team_key)
+            team_key, total_time, completed_at
+          FROM matched_runs
+          ORDER BY team_key, total_time ASC, completed_at ASC
+        )
+        SELECT COUNT(*)::int AS count FROM best_run_per_team
+      `;
+      const countResult = await this.execute(countSql);
+      const total = Number(countResult[0]?.count || 0);
+
+      const dataSql = `
+        WITH run_members AS (
+          SELECT
+            r."id"           AS run_id,
+            r."totalTimeSec" AS total_time,
+            r."completedAt"  AS completed_at,
+            r."lobbyName"    AS lobby_name,
+            array_agg(p."gameProfileId" ORDER BY p."gameProfileId") AS member_set
+          FROM game."GameRun" r
+          JOIN game."GameRunPlayer" p ON p."runId" = r."id"
+          WHERE r."isCompleted" = true
+            AND r."totalTimeSec" IS NOT NULL
+          GROUP BY r."id", r."totalTimeSec", r."completedAt", r."lobbyName"
+        ),
+        team_members AS (
+          SELECT
+            st."id"   AS team_id,
+            st."name" AS team_name,
+            st."seasonMonth" AS season_month,
+            array_agg(stm."gameProfileId" ORDER BY stm."gameProfileId") AS member_set
+          FROM game."SeasonTeam" st
+          JOIN game."SeasonTeamMember" stm
+            ON stm."teamId" = st."id" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', st."seasonMonth")
+          GROUP BY st."id", st."name", st."seasonMonth"
+        ),
+        matched_runs AS (
+          SELECT
+            COALESCE(
+              'TEAM:' || tm.team_id,
+              'RUN_SET:' || array_to_string(rm.member_set, ',')
+            ) AS team_key,
+            tm.team_name,
+            rm.run_id,
+            rm.total_time,
+            rm.completed_at,
+            rm.lobby_name
+          FROM run_members rm
+          LEFT JOIN team_members tm
+            ON date_trunc('month', rm.completed_at) = date_trunc('month', tm.season_month)
+           AND rm.member_set <@ tm.member_set
+        ),
+        best_run_per_team AS (
+          SELECT DISTINCT ON (team_key)
+            team_key,
+            team_name,
+            run_id,
+            total_time,
+            completed_at,
+            lobby_name
+          FROM matched_runs
+          ORDER BY team_key, total_time ASC, completed_at ASC
+        )
+        SELECT
+          b.run_id AS "runId",
+          COALESCE(NULLIF(TRIM(b.team_name), ''), b.lobby_name) AS "lobbyName",
+          b.total_time AS "totalTimeSec",
+          b.completed_at AS "completedAt",
+          (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = b.run_id) AS "totalPlayers"
+        FROM best_run_per_team b
+        ORDER BY b.total_time ASC, b.completed_at ASC
+        LIMIT ? OFFSET ?
+      `;
+      const dataParams = [limit, offset];
+      const rows = await this.execute(dataSql, dataParams);
+
+      return { rows: rows || [], total };
     }
-
-    const whereClause = `WHERE ${conditions.join(' AND ')}`;
-    const seasonalTeamWhere = isSeasonal ? 'WHERE tr."seasonTeamId" IS NOT NULL' : '';
-
-    const countSql = `
-      WITH team_runs AS (
-        SELECT
-          gr.id as "runId",
-          gr."lobbyName",
-          gr."lobbyCode",
-          gr."totalTimeSec",
-          gr."completedAt",
-          STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
-          CASE
-            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
-                 AND COUNT(DISTINCT stm."gameProfileId") > 0
-            THEN MAX(st.id)
-            ELSE NULL
-          END as "seasonTeamId",
-          CASE
-            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
-                 AND COUNT(DISTINCT stm."gameProfileId") > 0
-            THEN MAX(st.name)
-            ELSE NULL
-          END as "seasonTeamName"
-        FROM game."GameRun" gr
-        LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
-        LEFT JOIN game."SeasonTeamMember" stm
-          ON stm."gameProfileId" = grp."gameProfileId"
-         AND TO_CHAR(stm."seasonMonth", 'YYYY-MM') = TO_CHAR(gr."completedAt", 'YYYY-MM')
-        LEFT JOIN game."SeasonTeam" st
-          ON st.id = stm."teamId"
-          OR (st.code IS NOT NULL AND UPPER(TRIM(st.code)) = UPPER(TRIM(gr."lobbyCode")))
-        ${whereClause}
-        GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
-      ),
-      ranked_team_runs AS (
-        SELECT
-          tr.*,
-          ROW_NUMBER() OVER (
-            PARTITION BY COALESCE(
-              tr."seasonTeamId",
-              CONCAT(COALESCE(NULLIF(UPPER(TRIM(tr."lobbyName")), ''), 'LOBBY'), ':', tr."teamSignature")
-            )
-            ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
-          ) as rn
-        FROM team_runs tr
-        ${seasonalTeamWhere}
-      )
-      SELECT COUNT(*) as count FROM ranked_team_runs WHERE rn = 1
-    `;
-    const countResult = await this.execute(countSql, params);
-    const total = Number(countResult[0]?.count || 0);
-
-    const dataSql = `
-      WITH team_runs AS (
-        SELECT
-          gr.id as "runId",
-          gr."lobbyName",
-          gr."lobbyCode",
-          gr."totalTimeSec",
-          gr."completedAt",
-          STRING_AGG(DISTINCT grp."gameProfileId", ',' ORDER BY grp."gameProfileId") as "teamSignature",
-          CASE
-            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
-                 AND COUNT(DISTINCT stm."gameProfileId") > 0
-            THEN MAX(st.id)
-            ELSE NULL
-          END as "seasonTeamId",
-          CASE
-            WHEN COUNT(DISTINCT grp."gameProfileId") = COUNT(DISTINCT stm."gameProfileId")
-                 AND COUNT(DISTINCT stm."gameProfileId") > 0
-            THEN MAX(st.name)
-            ELSE NULL
-          END as "seasonTeamName"
-        FROM game."GameRun" gr
-        LEFT JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
-        LEFT JOIN game."SeasonTeamMember" stm
-          ON stm."gameProfileId" = grp."gameProfileId"
-         AND TO_CHAR(stm."seasonMonth", 'YYYY-MM') = TO_CHAR(gr."completedAt", 'YYYY-MM')
-        LEFT JOIN game."SeasonTeam" st
-          ON st.id = stm."teamId"
-          OR (st.code IS NOT NULL AND UPPER(TRIM(st.code)) = UPPER(TRIM(gr."lobbyCode")))
-        ${whereClause}
-        GROUP BY gr.id, gr."lobbyName", gr."lobbyCode", gr."totalTimeSec", gr."completedAt"
-      ),
-      ranked_team_runs AS (
-        SELECT
-          tr.*,
-          ROW_NUMBER() OVER (
-            PARTITION BY COALESCE(
-              tr."seasonTeamId",
-              CONCAT(COALESCE(NULLIF(UPPER(TRIM(tr."lobbyName")), ''), 'LOBBY'), ':', tr."teamSignature")
-            )
-            ORDER BY tr."totalTimeSec" ASC, tr."completedAt" ASC
-          ) as rn
-        FROM team_runs tr
-        ${seasonalTeamWhere}
-      )
-      SELECT
-        r."runId",
-        COALESCE(r."seasonTeamName", r."lobbyName") as "lobbyName",
-        r."totalTimeSec",
-        r."completedAt",
-        (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = r."runId") as "totalPlayers"
-      FROM ranked_team_runs r
-      WHERE r.rn = 1
-      ORDER BY r."totalTimeSec" ASC, r."completedAt" ASC
-      LIMIT ? OFFSET ?
-    `;
-    const dataParams = [...params, limit, offset];
-    const rows = await this.execute(dataSql, dataParams);
-
-    return { rows: rows || [], total };
   }
 
   async getAvailableSeasons(): Promise<{ seasonMonth: string; label: string }[]> {
     const sql = `
       SELECT DISTINCT s."seasonMonth"
       FROM (
-        SELECT TO_CHAR(stm."seasonMonth", 'YYYY-MM') as "seasonMonth"
-        FROM game."SeasonTeamMember" stm
-        WHERE stm."seasonMonth" IS NOT NULL
+        SELECT TO_CHAR(st."seasonMonth", 'YYYY-MM') as "seasonMonth"
+        FROM game."SeasonTeam" st
+        WHERE st."seasonMonth" IS NOT NULL
         UNION
         SELECT TO_CHAR(gr."completedAt", 'YYYY-MM') as "seasonMonth"
         FROM game."GameRun" gr
-        JOIN game."SeasonTeam" st ON UPPER(TRIM(gr."lobbyCode")) = UPPER(TRIM(st.code))
         WHERE gr."isCompleted" = true
           AND gr."totalTimeSec" IS NOT NULL
           AND gr."completedAt" IS NOT NULL

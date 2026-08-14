@@ -128,11 +128,13 @@ export class AchievementService {
     authorId?: string,
     ipAddress?: string,
   ): Promise<null> {
-    const existing = await this.achievementRepository.findOneByCriteria(
-      dto.criteriaCode,
-    );
-    if (existing) {
-      throw new BadRequestException('achievements.already_exists');
+    if (dto.type !== 'SEASONAL') {
+      const existing = await this.achievementRepository.findOneByCriteria(
+        dto.criteriaCode,
+      );
+      if (existing) {
+        throw new BadRequestException('achievements.already_exists');
+      }
     }
 
     const achievement = this.achievementRepository.createAchievement({
@@ -165,13 +167,16 @@ export class AchievementService {
   ): Promise<null> {
     const achievement = await this.findOne(id);
     if (dto.criteriaCode) {
-      const existing =
-        await this.achievementRepository.findOneByCriteriaExcludeId(
-          dto.criteriaCode,
-          id,
-        );
-      if (existing) {
-        throw new BadRequestException('achievements.already_exists');
+      const type = dto.type ?? achievement.type;
+      if (type !== 'SEASONAL') {
+        const existing =
+          await this.achievementRepository.findOneByCriteriaExcludeId(
+            dto.criteriaCode,
+            id,
+          );
+        if (existing) {
+          throw new BadRequestException('achievements.already_exists');
+        }
       }
     }
     const { id: _, ...updateData } = dto as any;

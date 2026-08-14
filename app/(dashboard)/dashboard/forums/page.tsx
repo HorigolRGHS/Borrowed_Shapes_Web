@@ -468,7 +468,9 @@ export default function DashboardForumsPage() {
                       if (currentPage > 1) setCurrentPage(currentPage - 1);
                     }}
                     className={currentPage <= 1 ? "pointer-events-none opacity-40 text-muted-foreground" : "text-muted-foreground hover:bg-muted"}
-                  />
+                  >
+                    {t("pagination.previous")}
+                  </PaginationPrevious>
                 </PaginationItem>
                 {renderPaginationItems()}
                 <PaginationItem>
@@ -479,7 +481,9 @@ export default function DashboardForumsPage() {
                       if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                     }}
                     className={currentPage >= totalPages ? "pointer-events-none opacity-40 text-muted-foreground" : "text-muted-foreground hover:bg-muted"}
-                  />
+                  >
+                    {t("pagination.next")}
+                  </PaginationNext>
                 </PaginationItem>
               </PaginationContent>
             </Pagination>

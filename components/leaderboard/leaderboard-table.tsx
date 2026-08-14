@@ -199,7 +199,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
           {totalPages > 1 && onPageChange && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-border dark:border-violet-500/10 bg-muted/5 dark:bg-[#07070f]/20">
               <span className="text-xs text-muted-foreground">
-                Page {page} of {totalPages}
+                {t("pagination.page")} {page} {t("pagination.of")} {totalPages}
               </span>
               <div className="flex items-center gap-2">
                 <button

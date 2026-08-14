@@ -983,6 +983,9 @@ export default function AchievementsPage() {
                       seasonMonth: value === 'SEASONAL' ? formData.seasonMonth : '',
                       expiresAt: value === 'SEASONAL' ? formData.expiresAt : '',
                     };
+                    if (value === 'SEASONAL' && !next.criteriaCode) {
+                      next.criteriaCode = 'SEASON_TOP_';
+                    }
                     setFormData(next);
                     if (value !== 'SEASONAL') {
                       setFormErrors((prev) => { const copy = { ...prev }; delete copy.seasonMonth; return copy; });

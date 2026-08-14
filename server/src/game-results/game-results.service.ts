@@ -258,13 +258,6 @@ export class GameResultService {
     for (let index = 0; index < (rows || []).length; index++) {
       const row = rows[index];
       const runPlayers = await this.getRunPlayers(row.runId);
-      if (row.leaderId) {
-        runPlayers.sort((a, b) => {
-          if (a.gameProfileId === row.leaderId) return -1;
-          if (b.gameProfileId === row.leaderId) return 1;
-          return 0;
-        });
-      }
       items.push({
         rank: offset + index + 1,
         runId: row.runId,

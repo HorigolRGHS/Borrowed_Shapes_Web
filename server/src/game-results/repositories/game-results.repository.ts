@@ -142,8 +142,12 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       INNER JOIN game."GameProfile" gp ON gp.id = grp."gameProfileId"
       INNER JOIN auth."User" u ON u.id = gp."userId"
       LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
+      LEFT JOIN game."SeasonTeamMember" stm ON stm."gameProfileId" = grp."gameProfileId" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', grp."joinedAt")
+      LEFT JOIN game."SeasonTeam" st ON st.id = stm."teamId"
       WHERE grp."runId" = ?
-      ORDER BY grp."joinedAt" ASC
+      ORDER BY 
+        CASE WHEN st."leaderId" = grp."gameProfileId" THEN 0 ELSE 1 END ASC,
+        grp."joinedAt" ASC
     `;
     const rows = await this.execute(sql, [runId]);
     return rows || [];

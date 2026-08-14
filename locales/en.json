@@ -935,6 +935,7 @@
         "view_audit_log": "View Audit Log",
         "ban_account": "Ban Account",
         "unban_account": "Unban Account",
+        "verify_account": "Manual Verify",
         "delete_account": "Delete Account",
         "back": "Back to Accounts",
         "save": "Save",

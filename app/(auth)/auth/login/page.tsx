@@ -8,6 +8,7 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { Loader2, Mail } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18/i18n-context";
 import {
   setUserProfile,
@@ -111,38 +112,49 @@ export default function LoginPage() {
       }
     >
       {statusError && (
-        <div className="mb-4 bg-destructive/10 border border-destructive/20 p-4 rounded-md space-y-3">
-          <div className="font-bold text-destructive mb-2">
-             {statusError.code === "ACCOUNT_BANNED" 
-                ? (t("auth.status.banned_message") || "Your account has been banned.")
-                : (t("auth.status.deleted_message") || "Your account has been deleted.")}
-          </div>
-          
-          {statusError.code === "ACCOUNT_BANNED" ? (
+        <div className={cn("mb-4 border p-4 rounded-md space-y-3", statusError.code === "ACCOUNT_BANNED" && statusError.ban?.reason === "auth.unverified_email_ban_reason" ? "bg-amber-500/10 border-amber-500/20" : "bg-destructive/10 border-destructive/20")}>
+          {statusError.code === "ACCOUNT_BANNED" && statusError.ban?.reason === "auth.unverified_email_ban_reason" ? (
             <>
-              <div>
-                <span className="text-sm font-semibold text-destructive mb-1 block">
-                  {t("auth.status.reason") || "Reason"}:
-                </span>
-                <p className="text-sm text-foreground">
-                  {statusError.ban?.reason || t("auth.status.no_reason") || "No reason provided."}
-                </p>
+              <div className="font-bold text-amber-500 mb-2">
+                {t("auth.unverified_email_status") || "Unverified Email"}
               </div>
-              
-              <div className="border-t border-destructive/10 pt-3">
-                <span className="text-sm font-semibold text-destructive mb-1 block">
-                  {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
-                    ? (t("auth.status.duration") || "Duration") + ":"
-                    : (t("auth.status.expires_at") || "Expires At") + ":"}
-                </span>
-                <p className="text-sm font-mono text-foreground">
-                  {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
-                    ? t("auth.status.permanent") || "Permanent"
-                    : new Date(statusError.ban?.banExpiresAt).toLocaleDateString()}
-                </p>
-              </div>
+              <p className="text-sm text-foreground">
+                {t("auth.unverified_email_ban_reason") || "Unverified email. Please check your inbox to verify your account."}
+              </p>
             </>
           ) : (
+            <>
+              <div className="font-bold text-destructive mb-2">
+                {statusError.code === "ACCOUNT_BANNED" 
+                    ? (t("auth.status.banned_message") || "Your account has been banned.")
+                    : (t("auth.status.deleted_message") || "Your account has been deleted.")}
+              </div>
+              
+              {statusError.code === "ACCOUNT_BANNED" ? (
+                <>
+                  <div>
+                    <span className="text-sm font-semibold text-destructive mb-1 block">
+                      {t("auth.status.reason") || "Reason"}:
+                    </span>
+                    <p className="text-sm text-foreground">
+                      {statusError.ban?.reason || t("auth.status.no_reason") || "No reason provided."}
+                    </p>
+                  </div>
+                  
+                  <div className="border-t border-destructive/10 pt-3">
+                    <span className="text-sm font-semibold text-destructive mb-1 block">
+                      {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
+                        ? (t("auth.status.duration") || "Duration") + ":"
+                        : (t("auth.status.expires_at") || "Expires At") + ":"}
+                    </span>
+                    <p className="text-sm font-mono text-foreground">
+                      {statusError.ban?.isPermanent || !statusError.ban?.banExpiresAt
+                        ? t("auth.status.permanent") || "Permanent"
+                        : new Date(statusError.ban?.banExpiresAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </>
+              ) : (
             <>
               <p className="text-sm text-foreground mb-2">
                 {t("auth.status.deleted_description") || "This account can no longer access the system."}
@@ -186,6 +198,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
+                      tabIndex={1}
                       type="email" 
                       autoComplete="email" 
                       placeholder="name@example.com" 
@@ -207,13 +220,14 @@ export default function LoginPage() {
                   <FormLabel className="text-foreground font-sans">{t("auth.password")}</FormLabel>
                   <Link
                     href="/auth/forgot-password"
+                    tabIndex={4}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("auth.forgot_password")}
                   </Link>
                 </div>
                 <FormControl>
-                  <PasswordInput autoComplete="current-password" placeholder="••••••••" {...field} />
+                  <PasswordInput autoComplete="current-password" placeholder="••••••••" tabIndex={2} {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -222,6 +236,7 @@ export default function LoginPage() {
           
           <div className="pt-2">
             <button 
+              tabIndex={3}
               type="submit" 
               disabled={loading} 
               className="w-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all flex justify-center items-center font-orbitron tracking-wide"

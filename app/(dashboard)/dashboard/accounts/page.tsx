@@ -597,7 +597,12 @@ export default function AccountManagementPage() {
 
   const renderStatus = (u: UserItem) => {
     if (u.deletedAt) return <Badge variant="secondary" className="bg-slate-500 hover:bg-slate-600 text-white">{t("admin.account.filters.deleted") || "Deleted"}</Badge>;
-    if (u.isBanned) return <Badge variant="destructive" className="bg-red-500">{t("admin.account.filters.banned") || "Banned"}</Badge>;
+    if (u.isBanned) {
+      if (u.banReason === 'auth.unverified_email_ban_reason') {
+        return <Badge variant="outline" className="border-amber-500 text-amber-500 bg-amber-500/10 hover:bg-amber-500/20">{t("auth.unverified_email_status") || "Unverified Email"}</Badge>;
+      }
+      return <Badge variant="destructive" className="bg-red-500">{t("admin.account.filters.banned") || "Banned"}</Badge>;
+    }
     return <Badge variant="default" className="bg-green-600 hover:bg-green-700">{t("admin.account.filters.active") || "Active"}</Badge>;
   };
 
@@ -732,25 +737,31 @@ export default function AccountManagementPage() {
             </Card>
 
             {selectedUser.isBanned && (
-              <Card className="border-red-500/50 bg-red-500/5">
+              <Card className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "border-amber-500/50 bg-amber-500/5" : "border-red-500/50 bg-red-500/5"}>
                 <CardHeader>
-                  <CardTitle className="text-red-500 flex items-center">
+                  <CardTitle className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "text-amber-500 flex items-center" : "text-red-500 flex items-center"}>
                     <ShieldAlert className="mr-2 h-5 w-5" />
-                    {t("admin.account.detail.ban_details") || "Ban Details"}
+                    {selectedUser.banReason === 'auth.unverified_email_ban_reason' 
+                      ? (t("auth.unverified_email_status") || "Unverified Email") 
+                      : (t("admin.account.detail.ban_details") || "Ban Details")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-2 text-sm pt-0">
-                  <div className="flex justify-between border-b border-red-500/20 pb-2">
+                  <div className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "flex justify-between border-b border-amber-500/20 pb-2" : "flex justify-between border-b border-red-500/20 pb-2"}>
                     <span className="text-muted-foreground">{t("admin.account.detail.banned_at") || "Banned At"}:</span>
                     <span className="text-foreground">{selectedUser.bannedAt ? new Date(selectedUser.bannedAt).toLocaleString() : "N/A"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-red-500/20 pb-2">
+                  <div className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "flex justify-between border-b border-amber-500/20 pb-2" : "flex justify-between border-b border-red-500/20 pb-2"}>
                     <span className="text-muted-foreground">{t("admin.account.detail.expiration_date") || "Expiration Date"}:</span>
                     <span className="text-foreground">{selectedUser.banExpiresAt ? new Date(selectedUser.banExpiresAt).toLocaleDateString() : t("admin.account.detail.permanent") || "Permanent"}</span>
                   </div>
                   <div className="pt-2">
-                    <span className="text-muted-foreground block mb-1">{t("admin.account.detail.ban_reason") || "Ban Reason"}:</span>
-                    <p className="bg-background/50 border border-red-500/20 p-3 rounded-md italic text-foreground break-words">
+                    <span className="text-muted-foreground block mb-1">
+                      {selectedUser.banReason === 'auth.unverified_email_ban_reason' 
+                        ? (t("auth.status.reason") || "Reason") + ":" 
+                        : (t("admin.account.detail.ban_reason") || "Ban Reason") + ":"}
+                    </span>
+                    <p className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "bg-background/50 border border-amber-500/20 p-3 rounded-md italic text-foreground break-words" : "bg-background/50 border border-red-500/20 p-3 rounded-md italic text-foreground break-words"}>
                       {selectedUser.banReason === 'auth.unverified_email_ban_reason'
                         ? t("auth.unverified_email_ban_reason")
                         : (selectedUser.banReason || t("admin.account.detail.no_reason") || "No reason provided")}

@@ -39,7 +39,7 @@
     "current_password_incorrect": "Mật khẩu hiện tại không chính xác",
     "new_password_same_as_old": "Mật khẩu mới không được trùng với mật khẩu hiện tại",
     "session_not_found": "Không tìm thấy phiên làm việc",
-    "unverified_email_ban_reason": "Tài khoản đang chờ xác thực email"
+    "unverified_email_ban_reason": "Chưa xác thực email. Vui lòng kiểm tra hộp thư để xác thực tài khoản."
   },
   "game": {
     "run_initialized": "Khởi tạo lượt chơi thành công",

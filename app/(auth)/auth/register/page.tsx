@@ -183,6 +183,7 @@ export default function RegisterPage() {
                   <div className="relative">
                     <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
+                      tabIndex={1}
                       type="text" 
                       placeholder="John Doe" 
                       className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
@@ -204,6 +205,7 @@ export default function RegisterPage() {
                   <div className="relative">
                     <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input 
+                      tabIndex={2}
                       type="email" 
                       placeholder="name@example.com" 
                       className="w-full bg-background border border-border hover:border-muted-foreground/50 focus:border-primary rounded-xl py-2.5 pl-9 pr-4 text-foreground placeholder-muted-foreground text-sm outline-none transition-colors font-sans"
@@ -222,7 +224,7 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel className="text-foreground font-sans">{t("auth.password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput placeholder="••••••••" {...field} />
+                  <PasswordInput placeholder="••••••••" tabIndex={3} {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -235,7 +237,7 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel className="text-foreground font-sans">{t("auth.confirm_password")}</FormLabel>
                 <FormControl>
-                  <PasswordInput placeholder="••••••••" {...field} />
+                  <PasswordInput placeholder="••••••••" tabIndex={4} {...field} />
                 </FormControl>
                 <I18nFormMessage />
               </FormItem>
@@ -244,6 +246,7 @@ export default function RegisterPage() {
           
           <div className="pt-2">
             <button 
+              tabIndex={5}
               type="submit" 
               disabled={loading} 
               className="w-full bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-bold py-3 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all flex justify-center items-center font-orbitron tracking-wide"

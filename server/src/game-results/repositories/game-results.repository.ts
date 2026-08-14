@@ -142,8 +142,12 @@ export class GameResultRepository extends BaseRepository<GameRun> {
       INNER JOIN game."GameProfile" gp ON gp.id = grp."gameProfileId"
       INNER JOIN auth."User" u ON u.id = gp."userId"
       LEFT JOIN game."Achievement" a ON a.id = gp."equippedAchievementId"
+      LEFT JOIN game."SeasonTeamMember" stm ON stm."gameProfileId" = grp."gameProfileId" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', grp."joinedAt")
+      LEFT JOIN game."SeasonTeam" st ON st.id = stm."teamId"
       WHERE grp."runId" = ?
-      ORDER BY grp."joinedAt" ASC
+      ORDER BY 
+        CASE WHEN st."leaderId" = grp."gameProfileId" THEN 0 ELSE 1 END ASC,
+        grp."joinedAt" ASC
     `;
     const rows = await this.execute(sql, [runId]);
     return rows || [];
@@ -342,17 +346,19 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           SELECT
             st."id"   AS team_id,
             st."name" AS team_name,
+            st."leaderId" AS leader_id,
             array_agg(stm."gameProfileId" ORDER BY stm."gameProfileId") AS member_set
           FROM game."SeasonTeam" st
           JOIN game."SeasonTeamMember" stm
             ON stm."teamId" = st."id" AND date_trunc('month', stm."seasonMonth") = date_trunc('month', st."seasonMonth")
           WHERE date_trunc('month', st."seasonMonth") = date_trunc('month', ?::date)
-          GROUP BY st."id", st."name"
+          GROUP BY st."id", st."name", st."leaderId"
         ),
         matched_runs AS (
           SELECT
             tm.team_id,
             tm.team_name,
+            tm.leader_id,
             rm.run_id,
             rm.total_time,
             rm.completed_at,
@@ -364,6 +370,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           SELECT DISTINCT ON (team_id)
             team_id,
             team_name,
+            leader_id,
             run_id,
             total_time,
             completed_at,
@@ -376,6 +383,7 @@ export class GameResultRepository extends BaseRepository<GameRun> {
           COALESCE(NULLIF(TRIM(b.team_name), ''), b.lobby_name) AS "lobbyName",
           b.total_time AS "totalTimeSec",
           b.completed_at AS "completedAt",
+          b.leader_id AS "leaderId",
           (SELECT COUNT(*)::int FROM game."GameRunPlayer" grp WHERE grp."runId" = b.run_id) AS "totalPlayers"
         FROM best_run_per_team b
         ORDER BY b.total_time ASC, b.completed_at ASC

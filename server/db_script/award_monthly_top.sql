@@ -1,5 +1,7 @@
+DROP FUNCTION IF EXISTS game.award_monthly_top(DATE);
+
 CREATE OR REPLACE FUNCTION game.award_monthly_top(p_month DATE DEFAULT NULL)
-RETURNS TABLE(rank INT, team_id TEXT, "runId" TEXT, members TEXT[])
+RETURNS TABLE(rank INT, "teamId" TEXT, "runId" TEXT, members TEXT[])
 AS $$
 DECLARE
   v_month DATE := COALESCE(p_month, date_trunc('month', NOW() - interval '1 month')::date);

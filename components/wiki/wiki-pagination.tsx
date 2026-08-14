@@ -9,6 +9,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useI18n } from "@/lib/i18/i18n-context";
 import { buildWikiPaginationHref } from "./wiki-pagination-url";
 
 interface Props {
@@ -25,6 +26,8 @@ function range(from: number, to: number): number[] {
 }
 
 export function WikiPagination({ page, totalPages, basePath, extraParams }: Props) {
+  const { t } = useI18n();
+
   if (totalPages <= 1) return null;
 
   let pages: (number | "ellipsis")[] = [];
@@ -53,7 +56,9 @@ export function WikiPagination({ page, totalPages, basePath, extraParams }: Prop
             }
             aria-disabled={prevDisabled}
             className={prevDisabled ? "pointer-events-none opacity-40" : ""}
-          />
+          >
+            {t("pagination.previous")}
+          </PaginationPrevious>
         </PaginationItem>
         {pages.map((p, i) =>
           p === "ellipsis" ? (
@@ -80,7 +85,9 @@ export function WikiPagination({ page, totalPages, basePath, extraParams }: Prop
             }
             aria-disabled={nextDisabled}
             className={nextDisabled ? "pointer-events-none opacity-40" : ""}
-          />
+          >
+            {t("pagination.next")}
+          </PaginationNext>
         </PaginationItem>
       </PaginationContent>
     </Pagination>

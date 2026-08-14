@@ -1,4 +1,5 @@
 import * as React from "react"
+import Link from "next/link"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -37,15 +38,19 @@ PaginationItem.displayName = "PaginationItem"
 type PaginationLinkProps = {
   isActive?: boolean
 } & Pick<ButtonProps, "size"> &
-  React.ComponentProps<"a">
+  Omit<React.ComponentProps<typeof Link>, "href"> & {
+    href?: string
+  }
 
 const PaginationLink = ({
   className,
   isActive,
   size = "icon",
+  href = "#",
   ...props
 }: PaginationLinkProps) => (
-  <a
+  <Link
+    href={href}
     aria-current={isActive ? "page" : undefined}
     className={cn(
       buttonVariants({

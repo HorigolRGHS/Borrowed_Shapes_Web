@@ -747,14 +747,18 @@ export default function AccountManagementPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-2 text-sm pt-0">
-                  <div className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "flex justify-between border-b border-amber-500/20 pb-2" : "flex justify-between border-b border-red-500/20 pb-2"}>
-                    <span className="text-muted-foreground">{t("admin.account.detail.banned_at") || "Banned At"}:</span>
-                    <span className="text-foreground">{selectedUser.bannedAt ? new Date(selectedUser.bannedAt).toLocaleString() : "N/A"}</span>
-                  </div>
-                  <div className={selectedUser.banReason === 'auth.unverified_email_ban_reason' ? "flex justify-between border-b border-amber-500/20 pb-2" : "flex justify-between border-b border-red-500/20 pb-2"}>
-                    <span className="text-muted-foreground">{t("admin.account.detail.expiration_date") || "Expiration Date"}:</span>
-                    <span className="text-foreground">{selectedUser.banExpiresAt ? new Date(selectedUser.banExpiresAt).toLocaleDateString() : t("admin.account.detail.permanent") || "Permanent"}</span>
-                  </div>
+                  {selectedUser.banReason !== 'auth.unverified_email_ban_reason' && (
+                    <>
+                      <div className="flex justify-between border-b border-red-500/20 pb-2">
+                        <span className="text-muted-foreground">{t("admin.account.detail.banned_at") || "Banned At"}:</span>
+                        <span className="text-foreground">{selectedUser.bannedAt ? new Date(selectedUser.bannedAt).toLocaleString() : "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-red-500/20 pb-2">
+                        <span className="text-muted-foreground">{t("admin.account.detail.expiration_date") || "Expiration Date"}:</span>
+                        <span className="text-foreground">{selectedUser.banExpiresAt ? new Date(selectedUser.banExpiresAt).toLocaleDateString() : t("admin.account.detail.permanent") || "Permanent"}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="pt-2">
                     <span className="text-muted-foreground block mb-1">
                       {selectedUser.banReason === 'auth.unverified_email_ban_reason' 
@@ -843,7 +847,7 @@ export default function AccountManagementPage() {
                       className="w-full justify-start"
                       onClick={() => setUnbanModalOpen(true)}
                     >
-                      <ShieldCheck className="mr-2 h-4 w-4" /> {t("admin.account.actions.unban_account")}
+                      <ShieldCheck className="mr-2 h-4 w-4" /> {selectedUser.banReason === 'auth.unverified_email_ban_reason' ? (t("admin.account.actions.verify_account") || "Manual Verify") : (t("admin.account.actions.unban_account") || "Unban Account")}
                     </Button>
                   ) : !selectedUser?.deletedAt ? (
                     <Button

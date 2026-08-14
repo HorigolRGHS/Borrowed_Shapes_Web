@@ -59,7 +59,9 @@ export async function ensureAccountActive(
 
     throw new ForbiddenException({
       code: 'ACCOUNT_BANNED',
-      message: 'Your account has been banned.',
+      message: user.banReason === 'auth.unverified_email_ban_reason' 
+        ? 'Unverified email. Please check your inbox to verify your account.' 
+        : 'Your account has been banned.',
       ban: {
         reason: user.banReason ?? null,
         bannedAt: user.bannedAt ? user.bannedAt.toISOString() : null,

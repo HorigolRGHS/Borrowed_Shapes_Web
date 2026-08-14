@@ -155,19 +155,21 @@ export default function LoginPage() {
                   </div>
                 </>
               ) : (
-            <>
-              <p className="text-sm text-foreground mb-2">
-                {t("auth.status.deleted_description") || "This account can no longer access the system."}
-              </p>
-              {statusError.deleted?.deletedAt && (
-                <div className="border-t border-destructive/10 pt-3">
-                  <span className="text-sm font-semibold text-destructive mb-1 block">
-                    {t("auth.status.deleted_at") || "Deleted At"}:
-                  </span>
-                  <p className="text-sm font-mono text-foreground">
-                    {new Date(statusError.deleted.deletedAt).toLocaleString()}
+                <>
+                  <p className="text-sm text-foreground mb-2">
+                    {t("auth.status.deleted_description") || "This account can no longer access the system."}
                   </p>
-                </div>
+                  {statusError.deleted?.deletedAt && (
+                    <div className="border-t border-destructive/10 pt-3">
+                      <span className="text-sm font-semibold text-destructive mb-1 block">
+                        {t("auth.status.deleted_at") || "Deleted At"}:
+                      </span>
+                      <p className="text-sm font-mono text-foreground">
+                        {new Date(statusError.deleted.deletedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

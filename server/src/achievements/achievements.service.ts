@@ -39,14 +39,16 @@ export function getEffectiveExpiresAt(
     const date = new Date(seasonMonth);
     const year = date.getUTCFullYear();
     const month = date.getUTCMonth();
-    return new Date(Date.UTC(year, month + 2, 0, 23, 59, 59, 999));
+    // Expires at 23:59:59 Vietnam time (UTC+7) = 16:59:59 UTC
+    return new Date(Date.UTC(year, month + 2, 0, 16, 59, 59, 999));
   }
 
   if (!expiresAt) return null;
   const date = new Date(expiresAt);
   const year = date.getUTCFullYear();
   const month = date.getUTCMonth();
-  return new Date(Date.UTC(year, month + 2, 0, 23, 59, 59, 999));
+  // Expires at 23:59:59 Vietnam time (UTC+7) = 16:59:59 UTC
+  return new Date(Date.UTC(year, month + 2, 0, 16, 59, 59, 999));
 }
 
 @Injectable()
@@ -141,6 +143,13 @@ export class AchievementService {
       ...dto,
       id: dto.id || randomUUID(),
       seasonMonth: dto.seasonMonth ? `${dto.seasonMonth}-01` : null,
+      expiresAt: dto.seasonMonth
+        ? (() => {
+            const [year, month] = dto.seasonMonth.split('-').map(Number);
+            // End of next month at 23:59:59 Vietnam time (UTC+7) = 16:59:59 UTC
+            return new Date(Date.UTC(year, month + 1, 0, 16, 59, 59, 999));
+          })()
+        : undefined,
     });
 
     await this.auditService.recordInCurrentUnitOfWork({
@@ -183,6 +192,13 @@ export class AchievementService {
     this.achievementRepository.assign(achievement, {
       ...updateData,
       seasonMonth: dto.seasonMonth ? `${dto.seasonMonth}-01` : null,
+      expiresAt: dto.seasonMonth
+        ? (() => {
+            const [year, month] = dto.seasonMonth.split('-').map(Number);
+            // End of next month at 23:59:59 Vietnam time (UTC+7) = 16:59:59 UTC
+            return new Date(Date.UTC(year, month + 1, 0, 16, 59, 59, 999));
+          })()
+        : undefined,
     });
 
     await this.auditService.recordInCurrentUnitOfWork({

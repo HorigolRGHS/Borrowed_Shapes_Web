@@ -195,7 +195,7 @@ export function PlayHistoryDetailModal({
     ? detail.sessions.filter((s) => s.result === "WIN").length
     : 0;
   const failedSessions = detail
-    ? detail.sessions.filter((s) => s.result !== "WIN" && s.result).length
+    ? detail.sessions.filter((s) => s.result === "LOSE").length
     : 0;
   const successRate = detail && detail.sessions.length > 0
     ? Math.round((completedSessions / TOTAL_LEVELS) * 100)

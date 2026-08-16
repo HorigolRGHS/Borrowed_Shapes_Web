@@ -204,12 +204,14 @@ export function PlayHistoryDetailModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[720px] max-h-[92vh] p-0 overflow-hidden bg-background dark:bg-[#0a0a14] border-border dark:border-white/10 text-foreground dark:text-white">
-        {/* Green top bar for completed, amber for incomplete */}
+        {/* Green top bar for completed, rose for abandoned, amber for in progress */}
         <div
           className={`absolute inset-x-0 top-0 h-[3px] ${
             detail?.isCompleted
               ? "bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-500"
-              : "bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500"
+              : detail?.completedAt
+                ? "bg-gradient-to-r from-rose-500 via-red-500 to-amber-500"
+                : "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400"
           }`}
         />
 
@@ -256,10 +258,20 @@ export function PlayHistoryDetailModal({
                   </span>
                 </InfoCard>
                 <InfoCard label={t("profile.play_history_tab.detail.status")}>
-                  <span className={detail.isCompleted ? "text-emerald-400" : "text-amber-400"}>
+                  <span
+                    className={
+                      detail.isCompleted
+                        ? "text-emerald-400 font-semibold"
+                        : detail.completedAt
+                          ? "text-rose-400 font-semibold"
+                          : "text-amber-400 font-semibold"
+                    }
+                  >
                     {detail.isCompleted
-                      ? t("profile.play_history_tab.status_completed")
-                      : t("profile.play_history_tab.status_incomplete")}
+                      ? t("gameResults.status_completed")
+                      : detail.completedAt
+                        ? t("gameResults.status_abandoned")
+                        : t("gameResults.status_in_progress")}
                   </span>
                 </InfoCard>
               </div>
@@ -349,6 +361,7 @@ export function PlayHistoryDetailModal({
                 <div className="space-y-2">
                   {sortedSessions.map((session) => {
                     const isWin = session.result === "WIN";
+                    const isLoss = session.result === "LOSE";
                     const isAbandoned = session.result === "ABANDONED" || session.status === "ABANDONED";
                     const activePlayers = session.players
                       ? session.players.filter((p) => !p.isAbsent).length
@@ -363,9 +376,11 @@ export function PlayHistoryDetailModal({
                         className={`flex items-center gap-4 rounded-xl border px-4 py-3 transition-colors ${
                           isWin
                             ? "border-emerald-500/20 bg-emerald-500/5"
-                            : isAbandoned
-                              ? "border-amber-500/20 bg-amber-500/5"
-                              : "border-border dark:border-white/10 bg-card/20 dark:bg-white/[0.02]"
+                            : isLoss
+                              ? "border-rose-500/20 bg-rose-500/5"
+                              : isAbandoned
+                                ? "border-amber-500/20 bg-amber-500/5"
+                                : "border-border dark:border-white/10 bg-card/20 dark:bg-white/[0.02]"
                         }`}
                       >
                         {/* Level number */}
@@ -373,9 +388,11 @@ export function PlayHistoryDetailModal({
                           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
                             isWin
                               ? "bg-emerald-500/20 text-emerald-400"
-                              : isAbandoned
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-white/10 text-muted-foreground dark:text-gray-400"
+                              : isLoss
+                                ? "bg-rose-500/20 text-rose-400"
+                                : isAbandoned
+                                  ? "bg-amber-500/20 text-amber-400"
+                                  : "bg-white/10 text-muted-foreground dark:text-gray-400"
                           }`}
                         >
                           {session.levelOrder}
@@ -392,26 +409,30 @@ export function PlayHistoryDetailModal({
                           </div>
                           <div className="flex items-center gap-3 mt-0.5 text-xs">
                             {/* Result */}
-                            <span className="flex items-center gap-1">
-                              {isWin ? (
+                            {session.result === "WIN" ? (
+                              <span className="flex items-center gap-1">
                                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                              ) : isAbandoned ? (
-                                <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
-                              ) : (
-                                <XCircle className="h-3.5 w-3.5 text-rose-400" />
-                              )}
-                              <span className={
-                                isWin ? "text-emerald-400 font-semibold"
-                                  : isAbandoned ? "text-amber-400 font-semibold"
-                                    : "text-rose-400 font-semibold"
-                              }>
-                                {isWin
-                                  ? t("profile.play_history_tab.detail.result_win")
-                                  : isAbandoned
-                                    ? t("profile.play_history_tab.detail.result_abandoned")
-                                    : t("profile.play_history_tab.detail.result_loss")}
+                                <span className="text-emerald-400 font-semibold">
+                                  {t("profile.play_history_tab.detail.result_win")}
+                                </span>
                               </span>
-                            </span>
+                            ) : session.result === "LOSE" ? (
+                              <span className="flex items-center gap-1">
+                                <XCircle className="h-3.5 w-3.5 text-rose-400" />
+                                <span className="text-rose-400 font-semibold">
+                                  {t("profile.play_history_tab.detail.result_loss")}
+                                </span>
+                              </span>
+                            ) : session.result === "ABANDONED" || session.status === "ABANDONED" ? (
+                              <span className="flex items-center gap-1">
+                                <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+                                <span className="text-amber-400 font-semibold">
+                                  {t("profile.play_history_tab.detail.result_abandoned")}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground font-mono">—</span>
+                            )}
 
                             {/* Duration */}
                             <span className="flex items-center gap-1 text-muted-foreground dark:text-gray-500">

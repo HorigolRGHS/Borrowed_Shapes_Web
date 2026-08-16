@@ -225,13 +225,61 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     return profileRows && profileRows.length > 0 ? profileRows[0] : null;
   }
 
-  async countPlayerRuns(gameProfileId: string): Promise<number> {
+  private buildPlayerHistoryConditions(
+    gameProfileId: string,
+    query?: ListGameResultsQueryDto,
+  ): { conditions: string[]; params: any[] } {
+    const conditions: string[] = ['grp."gameProfileId" = ?'];
+    const params: any[] = [gameProfileId];
+
+    if (query) {
+      if (query.isAbandoned) {
+        conditions.push('gr."isCompleted" = false');
+        conditions.push(
+          `(gr."completedAt" IS NOT NULL OR gr."startedAt" < NOW() - INTERVAL '12 hours' OR EXISTS (SELECT 1 FROM game."GameSession" gs WHERE gs."runId" = gr.id AND gs.id = (SELECT gs2.id FROM game."GameSession" gs2 INNER JOIN game."Level" l2 ON l2.id = gs2."levelId" WHERE gs2."runId" = gr.id ORDER BY l2."order" DESC, gs2."startedAt" DESC LIMIT 1) AND (gs.status IN ('ABANDONED', 'FINISHED') OR gs."endedAt" IS NOT NULL)))`,
+        );
+      } else if (query.isCompleted !== undefined) {
+        conditions.push('gr."isCompleted" = ?');
+        params.push(query.isCompleted);
+        if (query.isCompleted === false) {
+          conditions.push('gr."completedAt" IS NULL');
+          conditions.push("gr.\"startedAt\" >= NOW() - INTERVAL '12 hours'");
+          conditions.push(
+            `NOT EXISTS (SELECT 1 FROM game."GameSession" gs WHERE gs."runId" = gr.id AND gs.id = (SELECT gs2.id FROM game."GameSession" gs2 INNER JOIN game."Level" l2 ON l2.id = gs2."levelId" WHERE gs2."runId" = gr.id ORDER BY l2."order" DESC, gs2."startedAt" DESC LIMIT 1) AND (gs.status IN ('ABANDONED', 'FINISHED') OR gs."endedAt" IS NOT NULL))`,
+          );
+        }
+      }
+
+      if (query.search) {
+        conditions.push('(gr."lobbyName" ILIKE ? OR gr."lobbyCode" ILIKE ?)');
+        const pattern = `%${query.search}%`;
+        params.push(pattern, pattern);
+      }
+
+      if (query.isPrivate !== undefined) {
+        conditions.push('gr."isPrivate" = ?');
+        params.push(query.isPrivate);
+      }
+    }
+
+    return { conditions, params };
+  }
+
+  async countPlayerRuns(
+    gameProfileId: string,
+    query?: ListGameResultsQueryDto,
+  ): Promise<number> {
+    const { conditions, params } = this.buildPlayerHistoryConditions(
+      gameProfileId,
+      query,
+    );
     const countSql = `
       SELECT COUNT(*) as count
       FROM game."GameRunPlayer" grp
-      WHERE grp."gameProfileId" = ?
+      INNER JOIN game."GameRun" gr ON gr.id = grp."runId"
+      WHERE ${conditions.join(' AND ')}
     `;
-    const countResult = await this.execute(countSql, [gameProfileId]);
+    const countResult = await this.execute(countSql, params);
     return Number(countResult[0]?.count || 0);
   }
 
@@ -242,6 +290,11 @@ export class GameResultRepository extends BaseRepository<GameRun> {
     const limit = clamp(query.limit ?? 10, 1, 50);
     const page = clamp(query.page ?? 1, 1, Number.MAX_SAFE_INTEGER);
     const offset = (page - 1) * limit;
+
+    const { conditions, params } = this.buildPlayerHistoryConditions(
+      gameProfileId,
+      query,
+    );
 
     const sortBy = query.sortBy ?? 'startedAt';
     const order = query.order ?? 'desc';
@@ -258,11 +311,12 @@ export class GameResultRepository extends BaseRepository<GameRun> {
         grp."isHost"
       FROM game."GameRun" gr
       INNER JOIN game."GameRunPlayer" grp ON grp."runId" = gr.id
-      WHERE grp."gameProfileId" = ?
+      WHERE ${conditions.join(' AND ')}
       ORDER BY ${sortColumn} ${order}, gr.id DESC
       LIMIT ? OFFSET ?
     `;
-    const rows = await this.execute(dataSql, [gameProfileId, limit, offset]);
+    const dataParams = [...params, limit, offset];
+    const rows = await this.execute(dataSql, dataParams);
     return rows || [];
   }
 

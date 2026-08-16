@@ -2,7 +2,6 @@ import {
   IsEnum,
   IsOptional,
   IsString,
-  IsUrl,
   IsDateString,
   MaxLength,
   IsNotEmpty,
@@ -53,4 +52,3 @@ export class UpdateAchievementDto {
   @IsDateString({}, { message: 'achievements.invalid_expires_at' })
   expiresAt?: string;
 }
-

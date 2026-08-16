@@ -195,7 +195,7 @@ export function PlayHistoryDetailModal({
     ? detail.sessions.filter((s) => s.result === "WIN").length
     : 0;
   const failedSessions = detail
-    ? detail.sessions.filter((s) => s.result !== "WIN" && s.result).length
+    ? detail.sessions.filter((s) => s.result === "LOSE").length
     : 0;
   const successRate = detail && detail.sessions.length > 0
     ? Math.round((completedSessions / TOTAL_LEVELS) * 100)
@@ -363,12 +363,6 @@ export function PlayHistoryDetailModal({
                     const isWin = session.result === "WIN";
                     const isLoss = session.result === "LOSE";
                     const isAbandoned = session.result === "ABANDONED" || session.status === "ABANDONED";
-                    const activePlayers = session.players
-                      ? session.players.filter((p) => !p.isAbsent).length
-                      : 0;
-                    const leftPlayers = session.players
-                      ? session.players.filter((p) => p.isAbsent).length
-                      : 0;
 
                     return (
                       <div
@@ -439,19 +433,6 @@ export function PlayHistoryDetailModal({
                               <Clock className="h-3 w-3" />
                               {formatTime(session.completionTimeSec)}
                             </span>
-
-                            {/* Active players */}
-                            {session.players && session.players.length > 0 && (
-                              <span className="flex items-center gap-1 text-muted-foreground dark:text-gray-500">
-                                <Users className="h-3 w-3" />
-                                {t("profile.play_history_tab.detail.active_players").replace("{count}", String(activePlayers))}
-                                {leftPlayers > 0 && (
-                                  <span className="text-rose-400">
-                                    · {t("profile.play_history_tab.detail.players_left").replace("{count}", String(leftPlayers))}
-                                  </span>
-                                )}
-                              </span>
-                            )}
                           </div>
                         </div>
 

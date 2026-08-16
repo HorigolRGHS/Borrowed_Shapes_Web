@@ -352,6 +352,9 @@ export class PlayerHistoryRunDto {
   @ApiProperty({ type: [GameResultPlayerDto] })
   players!: GameResultPlayerDto[];
 
+  @ApiPropertyOptional({ type: [GameResultSessionDto] })
+  sessions?: GameResultSessionDto[];
+
   @ApiProperty({ description: 'Role of the player in this run' })
   playerRole!: 'HOST' | 'PLAYER';
 }

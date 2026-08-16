@@ -1032,7 +1032,7 @@ export class AccountService {
         .getEntityManager()
         .count(ForumComment, { isDeleted: false }),
       this.accountRepository.getEntityManager().count(GameRun, {}),
-      this.accountRepository.getEntityManager().count(GameSession, {}),
+      this.accountRepository.getEntityManager().count(GameSession, { levelId: { $ne: 'lobby' } }),
       this.accountRepository
         .getEntityManager()
         .count(GameRun, { isCompleted: true }),

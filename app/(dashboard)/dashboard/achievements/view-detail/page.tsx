@@ -379,29 +379,24 @@ export default function AchievementViewDetailPage() {
   const getEndOfMonthDateTime = (yearMonth: string) => {
     if (!yearMonth) return "";
     const [year, month] = yearMonth.split("-").map(Number);
-    const lastDay = new Date(year, month, 0);
+    // End of NEXT month: August (month=8) → September 30
+    const lastDay = new Date(year, month + 1, 0);
     lastDay.setHours(23, 59, 0, 0);
-    const offset = lastDay.getTimezoneOffset();
-    const localDate = new Date(lastDay.getTime() - offset * 60000);
-    return localDate.toISOString().slice(0, 16);
+    // Format directly as local datetime string for datetime-local input
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${lastDay.getFullYear()}-${pad(lastDay.getMonth() + 1)}-${pad(lastDay.getDate())}T${pad(lastDay.getHours())}:${pad(lastDay.getMinutes())}`;
   };
 
-  const buildPayload = () => ({
-    ...formData,
-    seasonMonth:
-      formData.type === "SEASONAL" && formData.seasonMonth
-        ? formData.seasonMonth
-        : null,
-    expiresAt:
-      formData.type === "SEASONAL" && formData.seasonMonth
-        ? (() => {
-          const [year, month] = formData.seasonMonth.split("-").map(Number);
-          const lastDay = new Date(year, month, 0);
-          lastDay.setHours(23, 59, 59, 999);
-          return lastDay.toISOString();
-        })()
-        : null,
-  });
+  const buildPayload = () => {
+    const { expiresAt: _expiresAt, ...rest } = formData;
+    return {
+      ...rest,
+      seasonMonth:
+        formData.type === "SEASONAL" && formData.seasonMonth
+          ? formData.seasonMonth
+          : null,
+    };
+  };
 
   const openEditModal = () => {
     if (!achievement) return;
@@ -413,7 +408,7 @@ export default function AchievementViewDetailPage() {
       type: achievement.type,
       seasonMonth: achievement.seasonMonth
         ? achievement.seasonMonth.slice(0, 7) : "",
-      expiresAt: formatDateTimeLocal(achievement.expiresAt),
+      expiresAt: "",
     });
     setShowEditModal(true);
   };
@@ -942,7 +937,7 @@ export default function AchievementViewDetailPage() {
                   <MonthPicker
                     value={formData.seasonMonth}
                     onChange={(val) => {
-                      handleFieldChange("seasonMonth", val, { expiresAt: getEndOfMonthDateTime(val) });
+                    handleFieldChange("seasonMonth", val, { expiresAt: getEndOfMonthDateTime(val) });
                     }}
                     onBlur={() => handleFieldBlur("seasonMonth")}
                     className={formTouched.seasonMonth && formErrors.seasonMonth ? "border-rose-500 focus-visible:ring-rose-500" : ""}
@@ -961,8 +956,8 @@ export default function AchievementViewDetailPage() {
                       disabled
                       ref={expiresRef}
                       type="datetime-local"
-                      value={formData.expiresAt}
-                      onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                      value={formData.seasonMonth ? getEndOfMonthDateTime(formData.seasonMonth) : ""}
+                      readOnly
                     />
                   </div>
                 )}

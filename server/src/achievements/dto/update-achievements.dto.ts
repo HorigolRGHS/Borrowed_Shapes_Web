@@ -2,6 +2,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsDateString,
   MaxLength,
   IsNotEmpty,
   Matches,
@@ -46,4 +47,8 @@ export class UpdateAchievementDto {
   @IsString({ message: 'achievements.season_month_must_be_string' })
   seasonMonth?: string;
 
+  @ApiPropertyOptional({ example: '2026-12-31T23:59:59.000Z' })
+  @IsOptional()
+  @IsDateString({}, { message: 'achievements.invalid_expires_at' })
+  expiresAt?: string;
 }

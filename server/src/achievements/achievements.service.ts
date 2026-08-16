@@ -149,7 +149,9 @@ export class AchievementService {
             // End of next month at 23:59:59 Vietnam time (UTC+7) = 16:59:59 UTC
             return new Date(Date.UTC(year, month + 1, 0, 16, 59, 59, 999));
           })()
-        : undefined,
+        : dto.expiresAt
+          ? new Date(dto.expiresAt)
+          : undefined,
     });
 
     await this.auditService.recordInCurrentUnitOfWork({
@@ -198,7 +200,9 @@ export class AchievementService {
             // End of next month at 23:59:59 Vietnam time (UTC+7) = 16:59:59 UTC
             return new Date(Date.UTC(year, month + 1, 0, 16, 59, 59, 999));
           })()
-        : undefined,
+        : dto.expiresAt
+          ? new Date(dto.expiresAt)
+          : undefined,
     });
 
     await this.auditService.recordInCurrentUnitOfWork({

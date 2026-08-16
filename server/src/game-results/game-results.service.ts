@@ -208,7 +208,7 @@ export class GameResultService {
     };
 
     const total =
-      await this.gameResultRepository.countPlayerRuns(gameProfileId);
+      await this.gameResultRepository.countPlayerRuns(gameProfileId, query);
     const rows = await this.gameResultRepository.findRunHistoryForPlayer(
       gameProfileId,
       query,
@@ -217,6 +217,32 @@ export class GameResultService {
     const items: PlayerHistoryRunDto[] = [];
     for (const row of rows || []) {
       const players = await this.getRunPlayers(row.id);
+      const sessions = await this.getRunSessions(row.id);
+
+      let derivedCompletedAt = row.completedAt ?? undefined;
+      let derivedIsCompleted = row.isCompleted;
+
+      if (!row.isCompleted && !row.completedAt) {
+        const lastSession = sessions[sessions.length - 1];
+        if (
+          lastSession &&
+          (lastSession.status === 'ABANDONED' ||
+            lastSession.status === 'FINISHED' ||
+            lastSession.endedAt)
+        ) {
+          derivedCompletedAt = lastSession.endedAt || lastSession.startedAt;
+        } else {
+          const startedAtDate = new Date(row.startedAt);
+          const hoursElapsed =
+            (new Date().getTime() - startedAtDate.getTime()) / (1000 * 60 * 60);
+          if (hoursElapsed > 12) {
+            derivedCompletedAt = new Date(
+              startedAtDate.getTime() + 2 * 60 * 60 * 1000,
+            );
+          }
+        }
+      }
+
       items.push({
         id: row.id,
         lobbyCode: row.lobbyCode ?? undefined,
@@ -224,11 +250,12 @@ export class GameResultService {
         isPrivate: row.isPrivate,
         totalLevels: row.totalLevels,
         totalSessions: row.totalLevels + 1,
-        isCompleted: row.isCompleted,
+        isCompleted: derivedIsCompleted,
         totalTimeSec: row.totalTimeSec ?? undefined,
         startedAt: row.startedAt,
-        completedAt: row.completedAt ?? undefined,
+        completedAt: derivedCompletedAt,
         players,
+        sessions,
         playerRole: row.isHost ? 'HOST' : 'PLAYER',
       });
     }

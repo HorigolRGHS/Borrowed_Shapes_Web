@@ -35,6 +35,18 @@ interface GameResultPlayer {
   joinedAt: string;
 }
 
+interface GameResultSession {
+  id: string;
+  levelId: string;
+  levelName: string;
+  levelOrder: number;
+  status: string;
+  result?: string;
+  completionTimeSec?: number;
+  startedAt: string;
+  endedAt?: string;
+}
+
 interface GameResult {
   id: string;
   lobbyCode?: string;
@@ -47,6 +59,7 @@ interface GameResult {
   startedAt: string;
   completedAt?: string;
   players: GameResultPlayer[];
+  sessions?: GameResultSession[];
 }
 
 type SortMode = "newest" | "oldest" | "fastest";
@@ -307,7 +320,18 @@ export function PlayHistory() {
 
                   {/* Levels */}
                   <div className="text-sm text-muted-foreground dark:text-gray-400">
-                    {run.totalLevels} levels
+                    {run.sessions && run.sessions.length > 0 && !run.isCompleted ? (
+                      <span>
+                        {(() => {
+                          const latest = run.sessions[run.sessions.length - 1];
+                          return latest.levelOrder === 0
+                            ? (t("gameResults.lobby_label") !== "gameResults.lobby_label" ? t("gameResults.lobby_label") : "Lobby")
+                            : `${t("gameResults.level_label") !== "gameResults.level_label" ? t("gameResults.level_label") : "Level"} ${latest.levelOrder}`;
+                        })()}
+                      </span>
+                    ) : (
+                      <span>{run.totalLevels} levels</span>
+                    )}
                   </div>
 
                   {/* Status */}
@@ -317,12 +341,16 @@ export function PlayHistory() {
                       className={`text-[11px] uppercase tracking-wider px-2.5 py-0.5 rounded-md font-semibold ${
                         run.isCompleted
                           ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
-                          : "border-amber-500/40 text-amber-400 bg-amber-500/10"
+                          : run.completedAt
+                            ? "border-rose-500/40 text-rose-400 bg-rose-500/10"
+                            : "border-amber-500/40 text-amber-400 bg-amber-500/10"
                       }`}
                     >
                       {run.isCompleted
-                        ? t("profile.play_history_tab.status_completed")
-                        : t("profile.play_history_tab.status_incomplete")}
+                        ? t("gameResults.status_completed")
+                        : run.completedAt
+                          ? t("gameResults.status_abandoned")
+                          : t("gameResults.status_in_progress")}
                     </Badge>
                   </div>
 

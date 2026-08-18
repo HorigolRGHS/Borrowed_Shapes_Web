@@ -288,7 +288,8 @@
     "leaderboard_success": "Lấy bảng xếp hạng thành công",
     "delete_success": "Xóa kết quả game thành công",
     "not_found": "Không tìm thấy kết quả game",
-    "player_not_found": "Không tìm thấy người chơi"
+    "player_not_found": "Không tìm thấy người chơi",
+    "cannot_delete_in_progress": "Không thể xóa lượt chơi đang trong trạng thái đang chơi"
   },
   "downloads": {
     "list_versions_success": "Lấy danh sách phiên bản game thành công",

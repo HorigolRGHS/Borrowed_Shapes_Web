@@ -1344,6 +1344,13 @@
     "of": "of",
     "empty": "No records found"
   },
+  "game_results": {
+    "cannot_delete_in_progress": "Cannot delete a game run that is in progress",
+    "delete_success": "Game run deleted successfully",
+    "delete_failed": "Failed to delete game run",
+    "not_found": "Game result not found",
+    "player_not_found": "Player not found"
+  },
   "gameResults": {
     "management_title": "Game Results Management",
     "management_subtitle": "Manage game runs, sessions and leaderboards",

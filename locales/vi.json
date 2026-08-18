@@ -1347,6 +1347,13 @@
     "of": "trên",
     "empty": "Không có dữ liệu"
   },
+  "game_results": {
+    "cannot_delete_in_progress": "Không thể xóa lượt chơi đang trong trạng thái đang chơi",
+    "delete_success": "Xóa lượt chơi thành công",
+    "delete_failed": "Xóa lượt chơi thất bại",
+    "not_found": "Không tìm thấy kết quả trò chơi",
+    "player_not_found": "Không tìm thấy người chơi"
+  },
   "gameResults": {
     "management_title": "Quản lý kết quả trò chơi",
     "management_subtitle": "Quản lý lượt chơi, phiên và bảng xếp hạng",

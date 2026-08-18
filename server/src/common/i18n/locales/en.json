@@ -288,7 +288,8 @@
     "leaderboard_success": "Leaderboard retrieved successfully",
     "delete_success": "Game result deleted successfully",
     "not_found": "Game result not found",
-    "player_not_found": "Player not found"
+    "player_not_found": "Player not found",
+    "cannot_delete_in_progress": "Cannot delete a game run that is in progress"
   },
   "downloads": {
     "list_versions_success": "Game versions retrieved successfully",

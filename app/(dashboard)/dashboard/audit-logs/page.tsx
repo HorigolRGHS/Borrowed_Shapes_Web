@@ -428,13 +428,9 @@ export default function SystemAuditLogsPage() {
                   <div className="text-xs text-muted-foreground">{t("admin.auditLogs.timestamp") || "Time"}</div>
                   <div className="font-semibold">{new Date(selectedLog.timestamp).toLocaleString()}</div>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <div className="text-xs text-muted-foreground">{t("admin.auditLogs.actor") || "Actor"}</div>
                   <div className="font-semibold">{selectedLog.actor ? selectedLog.actor.displayName : (t("admin.auditLogs.systemActor") || "System")}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">IP</div>
-                  <div className="font-semibold">{selectedLog.ipAddress || "-"}</div>
                 </div>
                 <div className="col-span-2">
                   <div className="text-xs text-muted-foreground">{t("admin.auditLogs.entityName") || "Entity"}</div>
@@ -443,6 +439,10 @@ export default function SystemAuditLogsPage() {
                 <div className="col-span-2">
                   <div className="text-xs text-muted-foreground">{t("admin.auditLogs.entityId") || "Entity ID"}</div>
                   <div className="font-mono text-sm break-all">{selectedLog.entityId}</div>
+                </div>
+                <div className="col-span-2 md:col-span-4">
+                  <div className="text-xs text-muted-foreground">IP</div>
+                  <div className="font-semibold break-all">{selectedLog.ipAddress || "-"}</div>
                 </div>
               </div>
 

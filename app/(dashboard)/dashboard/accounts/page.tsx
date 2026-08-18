@@ -874,7 +874,7 @@ export default function AccountManagementPage() {
                   )}
 
 
-                  {selectedUser?.deletedAt && (
+                  {false && selectedUser?.deletedAt && (
                     <Button
                       variant="outline"
                       className="w-full justify-start text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-600"

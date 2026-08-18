@@ -66,6 +66,8 @@ export class AccountRepository extends BaseRepository<User> {
       } else if (status === AccountFilterStatus.DELETED) {
         qb.andWhere({ deletedAt: { $ne: null } });
       }
+    } else {
+      qb.andWhere({ deletedAt: null });
     }
 
     if (sortBy === AccountSortBy.ROLE) {

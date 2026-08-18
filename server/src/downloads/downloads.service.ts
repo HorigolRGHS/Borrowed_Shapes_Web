@@ -196,10 +196,10 @@ export class DownloadsService {
         });
 
         if (previousActive?.id !== target.id) {
-          // Set all to false
+          // Set currently active to false
           await this.fileAssetRepository.txNativeUpdate(
             em,
-            {},
+            { isActive: true },
             { isActive: false },
           );
 

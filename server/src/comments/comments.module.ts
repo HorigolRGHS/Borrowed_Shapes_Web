@@ -7,6 +7,7 @@ import { ForumCommentVote } from '../entities/ForumCommentVote';
 import { AuthModule } from '../auth/auth.module';
 import { ForumModule } from '../forums/forums.module';
 import { AuditModule } from '../audit/audit.module';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 
 import {
   ForumCommentRepository,
@@ -23,6 +24,7 @@ import {
   controllers: [CommentsController],
   providers: [
     CommentsService,
+    RateLimitGuard,
     ForumCommentRepository,
     ForumCommentVoteRepository,
   ],
@@ -33,3 +35,4 @@ import {
   ],
 })
 export class CommentsModule {}
+

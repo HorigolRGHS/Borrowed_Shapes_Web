@@ -26,6 +26,8 @@ import { Public } from '../auth/decorators/public.decorator';
 import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { getClientIp } from '../common/utils/client-ip.util';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
+import { RateLimit } from '../common/decorators/rate-limit.decorator';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -33,7 +35,8 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RateLimitGuard)
+  @RateLimit('CREATE_COMMENT', 10, 60)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a comment or reply under a thread' })
   async create(

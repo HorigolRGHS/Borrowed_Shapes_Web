@@ -89,6 +89,8 @@
     "otp_sent_desc_1": "We've sent a 6-digit code to ",
     "otp_sent_desc_2": ". Please enter it below.",
     "reset_password_desc": "Enter your new password to complete the reset.",
+    "request_failed": "Request failed",
+    "reset_password_failed": "Reset password failed",
     "copy": "Copy",
     "copy_success": "Copied!",
     "ban": {
@@ -131,6 +133,7 @@
     "theme_toggle_label": "Toggle theme",
     "site_brand": "Borrowed Shapes Wiki",
     "game_results": "Game Results",
+    "deleting": "Deleting...",
     "cancel": "Cancel"
   },
   "validation": {
@@ -959,6 +962,9 @@
         "expiration_date": "Expiration Date",
         "permanent": "Permanent",
         "no_reason": "No reason provided",
+        "unverified_details": "Verification Status",
+        "pending_since": "Pending Verification Since",
+        "status_reason": "Status",
         "profile_summary": "Profile Summary",
         "action_panel": "Actions",
         "game_profile": "Game Profile",

@@ -5,6 +5,7 @@
     "internal_server_error": "Lỗi máy chủ nội bộ",
     "invalid_json_payload": "Dữ liệu JSON không hợp lệ",
     "forbidden": "Bạn không có quyền truy cập vào tài nguyên này",
+    "rate_limit_exceeded": "Vượt quá tần suất yêu cầu. Vui lòng thử lại sau.",
     "cancel": "Hủy"
   },
   "auth": {
@@ -88,7 +89,11 @@
     "display_name_max_20": "Tên hiển thị không được quá 20 ký tự",
     "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối",
     "min_length_3": "Phải có ít nhất 3 ký tự",
-    "max_length_20": "Không được vượt quá 20 ký tự"
+    "max_length_20": "Không được vượt quá 20 ký tự",
+    "invalid_string": "Phải là chuỗi ký tự",
+    "required": "Trường này là bắt buộc",
+    "min_length_4": "Phải có ít nhất 4 ký tự",
+    "max_length_12": "Không được vượt quá 12 ký tự"
   },
   "achievements": {
     "list_success": "Lấy danh sách thành tựu thành công",
@@ -136,7 +141,11 @@
     "file_size_invalid": "Dung lượng file không hợp lệ",
     "mime_type_required": "MIME type là bắt buộc",
     "mime_type_invalid": "MIME type không hợp lệ",
-    "old_url_must_be_string": "URL huy hiệu cũ phải là chuỗi ký tự"
+    "old_url_must_be_string": "URL huy hiệu cũ phải là chuỗi ký tự",
+    "showcase_success": "Lấy danh sách thành tựu trưng bày thành công",
+    "file_path_required": "Đường dẫn file (R2 key) là bắt buộc",
+    "file_path_must_be_string": "Đường dẫn file phải là chuỗi ký tự",
+    "mime_type_must_be_string": "Loại MIME phải là chuỗi ký tự"
   },
   "wiki": {
     "list_success": "Lấy danh sách wiki thành công",
@@ -204,7 +213,12 @@
     "invalid_status": "Trạng thái bài viết không hợp lệ",
     "vote_value_invalid": "Giá trị bình chọn phải là 1 hoặc -1",
     "invalid_sort_field": "Trường sort phải là một trong: score, createdAt, updatedAt",
-    "invalid_sort_order": "Sort order phải là asc hoặc desc"
+    "invalid_sort_order": "Sort order phải là asc hoặc desc",
+    "thread_id_invalid": "ID bài viết phải là UUID hợp lệ",
+    "category_id_invalid": "ID danh mục phải là UUID hợp lệ",
+    "thread_image_upload_url_created": "Tạo liên kết upload ảnh bài viết thành công",
+    "unauthenticated": "Bạn phải đăng nhập để thực hiện hành động này",
+    "image_too_large": "Ảnh vượt quá giới hạn 5MB"
   },
   "comments": {
     "thread_not_found": "Không tìm thấy chủ đề",
@@ -215,7 +229,12 @@
     "forbidden_edit": "Bạn không có quyền chỉnh sửa bình luận này",
     "cannot_edit_deleted": "Không thể chỉnh sửa bình luận đã bị xóa",
     "forbidden_delete": "Bạn không có quyền xóa bình luận này",
-    "invalid_user": "Người dùng không hợp lệ"
+    "invalid_user": "Người dùng không hợp lệ",
+    "create_success": "Tạo bình luận thành công",
+    "list_success": "Lấy danh sách bình luận thành công",
+    "update_success": "Cập nhật bình luận thành công",
+    "delete_success": "Xóa bình luận thành công",
+    "vote_success": "Bình chọn bình luận thành công"
   },
   "reports": {
     "cannot_report_self": "Bạn không thể tố cáo chính mình",
@@ -228,7 +247,15 @@
     "file_too_large": "Dung lượng tệp bằng chứng vượt quá giới hạn",
     "user_not_found": "Không tìm thấy người dùng bị tố cáo",
     "thread_not_found": "Không tìm thấy chủ đề bị tố cáo",
-    "comment_not_found": "Không tìm thấy bình luận bị tố cáo"
+    "comment_not_found": "Không tìm thấy bình luận bị tố cáo",
+    "upload_url_created": "Tạo liên kết upload bằng chứng tố cáo thành công",
+    "create_success": "Gửi tố cáo thành công",
+    "my_list_success": "Lấy danh sách tố cáo của bạn thành công",
+    "stats_success": "Lấy thống kê tố cáo thành công",
+    "admin_list_success": "Lấy danh sách tố cáo thành công",
+    "details_success": "Lấy chi tiết tố cáo thành công",
+    "resolve_success": "Xử lý tố cáo thành công",
+    "reject_success": "Từ chối tố cáo thành công"
   },
   "category": {
     "list_success": "Lấy danh sách danh mục thành công",
@@ -245,7 +272,9 @@
     "slug_vi_required": "Slug tiếng Việt là bắt buộc",
     "slug_conflict": "Slug tiếng Anh đã tồn tại",
     "slug_vi_conflict": "Slug tiếng Việt đã tồn tại",
-    "forbidden": "Bạn không có quyền thực hiện hành động này"
+    "forbidden": "Bạn không có quyền thực hiện hành động này",
+    "image_upload_url_created": "Tạo liên kết upload biểu tượng danh mục thành công",
+    "image_too_large": "Biểu tượng danh mục vượt quá giới hạn 5MB"
   },
   "announcements": {
     "list_success": "Lấy danh sách thông báo thành công",
@@ -289,7 +318,9 @@
     "delete_success": "Xóa kết quả game thành công",
     "not_found": "Không tìm thấy kết quả game",
     "player_not_found": "Không tìm thấy người chơi",
-    "cannot_delete_in_progress": "Không thể xóa lượt chơi đang trong trạng thái đang chơi"
+    "cannot_delete_in_progress": "Không thể xóa lượt chơi đang trong trạng thái đang chơi",
+    "seasons_success": "Lấy danh sách mùa giải thành công",
+    "stats_success": "Lấy thống kê người chơi thành công"
   },
   "downloads": {
     "list_versions_success": "Lấy danh sách phiên bản game thành công",
@@ -306,7 +337,12 @@
     "file_path_required": "Đường dẫn file (R2 key) là bắt buộc",
     "mime_type_required": "Loại MIME là bắt buộc",
     "mime_type_invalid": "Loại MIME không được phép; sử dụng application/octet-stream, application/x-msdownload, hoặc application/zip",
-    "invalid_file_name": "Tên file chứa ký tự không hợp lệ hoặc path traversal"
+    "invalid_file_name": "Tên file chứa ký tự không hợp lệ hoặc path traversal",
+    "active_version_success": "Lấy phiên bản phát hành thành công",
+    "set_active_success": "Cập nhật phiên bản phát hành thành công",
+    "delete_success": "Xóa phiên bản game thành công",
+    "invalid_file_path": "Đường dẫn file chứa ký tự không hợp lệ hoặc path traversal",
+    "cannot_delete_active_version": "Không thể xóa phiên bản đang phát hành"
   },
   "account": {
     "profile_updated": "Cập nhật hồ sơ thành công",
@@ -332,6 +368,37 @@
         "current_version": "Phiên bản đang phát hành",
         "new_version": "Phiên bản mới sẽ phát hành"
       }
+    },
+    "account": {
+      "users_listed": "Lấy danh sách người dùng thành công",
+      "user_details": "Lấy chi tiết người dùng thành công",
+      "user_audit_logs": "Lấy lịch sử hoạt động người dùng thành công",
+      "profile_updated": "Cập nhật hồ sơ người dùng thành công",
+      "role_updated": "Cập nhật vai trò người dùng thành công",
+      "user_banned": "Cấm người dùng thành công",
+      "user_unbanned": "Bỏ cấm người dùng thành công",
+      "user_deleted": "Xóa người dùng thành công",
+      "messages": {
+        "restore_success": "Khôi phục tài khoản thành công"
+      },
+      "role": {
+        "self_demote_blocked": "Bạn không thể tự hạ quyền quản trị viên của chính mình",
+        "last_admin_blocked": "Không thể hạ quyền của quản trị viên cuối cùng trong hệ thống",
+        "validation": {
+          "invalid_role": "Vai trò không hợp lệ"
+        }
+      },
+      "validation": {
+        "ban_reason_required": "Lý do cấm là bắt buộc",
+        "ban_reason_too_long": "Lý do cấm không được vượt quá 500 ký tự",
+        "ban_expiration_invalid": "Ngày hết hạn cấm phải là định dạng ISO hợp lệ"
+      }
+    },
+    "auditLogs": {
+      "system_audit_logs": "Lấy lịch sử hoạt động hệ thống thành công"
+    },
+    "dashboard": {
+      "statistics_loaded": "Lấy số liệu thống kê bảng điều khiển thành công"
     }
   },
   "download": {
@@ -377,5 +444,18 @@
         "a": "Bạn có thể dùng tính năng report trên website nếu có, hoặc gửi đường dẫn/nội dung cần kiểm tra qua kênh liên hệ chính thức."
       }
     ]
+  },
+  "profile": {
+    "edit": {
+      "validation": {
+        "avatar_too_large": "Kích thước ảnh đại diện vượt quá giới hạn 5MB",
+        "avatar_invalid_type": "Ảnh đại diện phải là định dạng JPEG, PNG, hoặc WebP",
+        "avatar_too_small": "Kích thước file phải lớn hơn 0",
+        "display_name_too_short": "Tên hiển thị phải có ít nhất 2 ký tự",
+        "display_name_too_long": "Tên hiển thị không được quá 50 ký tự",
+        "display_name_invalid": "Tên hiển thị chỉ cho phép chữ cái, số, khoảng trắng, gạch dưới và gạch nối",
+        "display_name_required": "Tên hiển thị không được để trống"
+      }
+    }
   }
 }

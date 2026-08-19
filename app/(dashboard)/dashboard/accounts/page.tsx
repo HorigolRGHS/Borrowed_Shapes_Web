@@ -1164,25 +1164,37 @@ export default function AccountManagementPage() {
             <div className="mt-4">
               {auditLoading ? <div className="py-8 text-center text-muted-foreground">{t("common.loading") || "Loading..."}</div> : auditLogs.length === 0 ? <div className="py-8 text-center text-muted-foreground">{t("admin.account.empty.no_audit_logs")}</div> : (
                 <div className="space-y-4">
-                  {auditLogs.map(log => (
-                    <div key={log.id} className="border border-border p-4 rounded-md text-sm space-y-2 bg-card">
-                      <div className="flex justify-between font-semibold">
-                        <span className="text-primary">{log.actionType}</span>
-                        <span className="text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</span>
-                      </div>
-                      <div className="text-muted-foreground text-xs font-mono break-all">By User ID: {log.userId || 'System'} | IP: {log.ipAddress || 'Unknown'}</div>
-                      <div className="grid grid-cols-2 gap-4 mt-2">
-                        <div className="bg-red-500/10 border border-red-500/20 p-2 rounded">
-                          <div className="font-medium text-red-500 mb-1">Old Value</div>
-                          <pre className="text-xs whitespace-pre-wrap break-all text-foreground">{JSON.stringify(log.oldValue, null, 2)}</pre>
+                  {auditLogs.map(log => {
+                    const isRateLimit = log.entityName === 'RateLimitLog' || log.actionType?.startsWith('RATE_LIMIT_') || log.actionType?.includes('RATE_LIMIT');
+                    return (
+                      <div key={log.id} className="border border-border p-4 rounded-md text-sm space-y-2 bg-card">
+                        <div className="flex justify-between font-semibold items-center">
+                          <div className="flex items-center gap-2">
+                            <span className={isRateLimit ? "text-amber-500 font-bold" : "text-primary"}>
+                              {log.actionType}
+                            </span>
+                            {isRateLimit && (
+                              <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-[10px] px-1.5 py-0">
+                                Rate Limit
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</span>
                         </div>
-                        <div className="bg-green-500/10 border border-green-500/20 p-2 rounded">
-                          <div className="font-medium text-green-500 mb-1">New Value</div>
-                          <pre className="text-xs whitespace-pre-wrap break-all text-foreground">{JSON.stringify(log.newValue, null, 2)}</pre>
+                        <div className="text-muted-foreground text-xs font-mono break-all">By User ID: {log.userId || 'System'} | IP: {log.ipAddress || 'Unknown'}</div>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          <div className="bg-red-500/10 border border-red-500/20 p-2 rounded">
+                            <div className="font-medium text-red-500 mb-1">Old Value</div>
+                            <pre className="text-xs whitespace-pre-wrap break-all text-foreground">{JSON.stringify(log.oldValue, null, 2)}</pre>
+                          </div>
+                          <div className="bg-green-500/10 border border-green-500/20 p-2 rounded">
+                            <div className="font-medium text-green-500 mb-1">New Value</div>
+                            <pre className="text-xs whitespace-pre-wrap break-all text-foreground">{JSON.stringify(log.newValue, null, 2)}</pre>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

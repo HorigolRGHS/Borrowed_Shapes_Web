@@ -27,7 +27,7 @@ export default async function WikiListPage({
   let data: WikiPublicListResponse | undefined;
   let errorMessage: string | null = null;
   try {
-    data = await fetchWikiList({ page, limit: 20, q, category });
+    data = await fetchWikiList({ page, limit: 21, q, category });
   } catch (err) {
     errorMessage = getApiErrorMessage(err as ApiError, "load_failed");
   }

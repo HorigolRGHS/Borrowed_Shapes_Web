@@ -77,6 +77,12 @@ importers:
       diff:
         specifier: ^9.0.0
         version: 9.0.0
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
+      hast-util-sanitize:
+        specifier: ^5.0.2
+        version: 5.0.2
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.8
@@ -4793,11 +4799,6 @@ snapshots:
     dependencies:
       ckeditor5: 41.4.2
       lodash-es: 4.17.21
-    transitivePeerDependencies:
-      - bufferutil
-      - canvas
-      - supports-color
-      - utf-8-validate
 
   '@ckeditor/ckeditor5-html-support@48.2.0':
     dependencies:
@@ -4867,11 +4868,6 @@ snapshots:
   '@ckeditor/ckeditor5-language@41.4.2':
     dependencies:
       ckeditor5: 41.4.2
-    transitivePeerDependencies:
-      - bufferutil
-      - canvas
-      - supports-color
-      - utf-8-validate
 
   '@ckeditor/ckeditor5-language@48.2.0':
     dependencies:

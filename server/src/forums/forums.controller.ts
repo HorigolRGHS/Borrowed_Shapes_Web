@@ -38,6 +38,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
+import { RateLimit } from '../common/decorators/rate-limit.decorator';
 
 @ApiTags('Forum')
 @Controller('forums')
@@ -97,6 +99,8 @@ export class ForumController {
   }
 
   @Post()
+  @UseGuards(RateLimitGuard)
+  @RateLimit('CREATE_THREAD', 5, 60)
   @ApiOperation({
     summary: 'Create a forum thread',
   })
@@ -184,6 +188,8 @@ export class ForumController {
   }
 
   @Post('upload')
+  @UseGuards(RateLimitGuard)
+  @RateLimit('UPLOAD_THREAD_IMAGE', 10, 60)
   @ApiOperation({
     summary: 'Create presigned upload URL for forum thread image',
   })

@@ -10,6 +10,7 @@ import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 import { AuditModule } from '../audit/audit.module';
 import { CategoryModule } from '../categories/categories.module';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 
 import {
   ForumThreadRepository,
@@ -30,7 +31,13 @@ import {
     CategoryModule,
   ],
   controllers: [ForumController],
-  providers: [ForumService, ForumThreadRepository, ForumThreadVoteRepository],
+  providers: [
+    ForumService,
+    RateLimitGuard,
+    ForumThreadRepository,
+    ForumThreadVoteRepository,
+  ],
   exports: [ForumService, ForumThreadRepository, ForumThreadVoteRepository],
 })
 export class ForumModule {}
+

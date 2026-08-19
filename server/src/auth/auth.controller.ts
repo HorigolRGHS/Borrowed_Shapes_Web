@@ -156,6 +156,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(AuthRateLimitGuard)
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: ForgotPasswordRequestDto })
@@ -172,6 +173,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(AuthRateLimitGuard)
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: ResetPasswordRequestDto })

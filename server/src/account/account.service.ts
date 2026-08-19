@@ -516,24 +516,52 @@ export class AccountService {
       page,
       limit,
     );
+    const [rateLimitLogs] = await this.auditService.getAdminUserRateLimitLogs(
+      id,
+      1,
+      limit,
+    );
+
+    const auditItems = logs.map((log: any) => ({
+      id: String(log.id),
+      userId: log.userId?.id || null,
+      actionType: log.actionType,
+      entityName: log.entityName,
+      entityId: log.entityId,
+      oldValue: log.oldValue,
+      newValue: log.newValue,
+      timestamp: log.timestamp,
+      ipAddress: log.ipAddress,
+    }));
+
+    const rateLimitItems = rateLimitLogs.map((rl: any) => ({
+      id: `rl-${rl.id}`,
+      userId: rl.userId?.id || null,
+      actionType: rl.actionType,
+      entityName: 'RateLimitLog',
+      entityId: String(rl.id),
+      oldValue: null,
+      newValue: {
+        actionType: rl.actionType,
+        ipAddress: rl.ipAddress,
+        triggeredAt: rl.createdAt,
+      },
+      timestamp: rl.createdAt,
+      ipAddress: rl.ipAddress,
+    }));
+
+    const combined = [...auditItems, ...rateLimitItems].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
 
     return {
-      items: logs.map((log: any) => ({
-        id: log.id,
-        userId: log.userId?.id || null,
-        actionType: log.actionType,
-        entityName: log.entityName,
-        entityId: log.entityId,
-        oldValue: log.oldValue,
-        newValue: log.newValue,
-        timestamp: log.timestamp,
-        ipAddress: log.ipAddress,
-      })),
+      items: combined.slice(0, limit),
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: total + rateLimitLogs.length,
+        totalPages: Math.ceil((total + rateLimitLogs.length) / limit),
       },
     };
   }

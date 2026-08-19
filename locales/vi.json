@@ -89,6 +89,8 @@
     "otp_sent_desc_1": "Chúng tôi đã gửi mã 6 chữ số đến ",
     "otp_sent_desc_2": ". Vui lòng nhập mã vào bên dưới.",
     "reset_password_desc": "Nhập mật khẩu mới của bạn để hoàn tất.",
+    "request_failed": "Yêu cầu thất bại",
+    "reset_password_failed": "Đặt lại mật khẩu thất bại",
     "copy": "Sao chép",
     "copy_success": "Đã sao chép!",
     "ban": {
@@ -131,6 +133,7 @@
     "theme_toggle_label": "Đổi giao diện",
     "site_brand": "Từ điển Borrowed Shapes",
     "game_results": "Kết quả trò chơi",
+    "deleting": "Đang xóa...",
     "cancel": "Hủy"
   },
   "validation": {
@@ -1445,6 +1448,7 @@
     "session_status_abandoned": "Bỏ cuộc",
     "session_result_win": "Thắng",
     "session_result_lose": "Thua",
+    "session_result_loss": "Thua",
     "session_result_abandoned": "Bỏ cuộc",
     "session_result_none": "—",
     "level_names": {

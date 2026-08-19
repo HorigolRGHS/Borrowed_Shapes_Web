@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuditService } from './audit.service';
 import { AuditLogRepository } from './repositories/audit-log.repository';
+import { RateLimitLogRepository } from './repositories/rate-limit-log.repository';
 import { AuditSanitizer } from './audit.sanitizer';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { AuditActionType } from '../entities/AuditActionType';
@@ -8,6 +9,7 @@ import { AuditActionType } from '../entities/AuditActionType';
 describe('AuditService', () => {
   let service: AuditService;
   let repository: jest.Mocked<AuditLogRepository>;
+  let rateLimitLogRepository: jest.Mocked<RateLimitLogRepository>;
   let sanitizer: jest.Mocked<AuditSanitizer>;
 
   beforeEach(async () => {
@@ -20,6 +22,18 @@ describe('AuditService', () => {
             createAndFlush: jest.fn(),
             persistInCurrentUoW: jest.fn(),
             persistInTransaction: jest.fn(),
+            getAdminUserAuditLogs: jest.fn(),
+            getSystemAuditLogs: jest.fn(),
+          },
+        },
+        {
+          provide: RateLimitLogRepository,
+          useValue: {
+            persistAndFlush: jest.fn(),
+            getEntityManager: jest.fn().mockReturnValue({
+              getReference: jest.fn((entity, id) => ({ id })),
+            }),
+            createQueryBuilder: jest.fn(),
           },
         },
         {
@@ -33,6 +47,7 @@ describe('AuditService', () => {
 
     service = module.get<AuditService>(AuditService);
     repository = module.get(AuditLogRepository);
+    rateLimitLogRepository = module.get(RateLimitLogRepository);
     sanitizer = module.get(AuditSanitizer);
   });
 
@@ -70,6 +85,16 @@ describe('AuditService', () => {
     );
   });
 
+  it('recordRateLimit should persist and flush RateLimitLog', async () => {
+    const params = {
+      userId: 'user-1',
+      ipAddress: '127.0.0.1',
+      actionType: 'RATE_LIMIT_LOGIN',
+    };
+    await service.recordRateLimit(params);
+    expect(rateLimitLogRepository.persistAndFlush).toHaveBeenCalled();
+  });
+
   it('should call sanitizer if newValue or oldValue is provided', async () => {
     const params = {
       actionType: AuditActionType.UPDATE,
@@ -83,3 +108,4 @@ describe('AuditService', () => {
     expect(sanitizer.sanitize).toHaveBeenCalledWith(params.newValue);
   });
 });
+

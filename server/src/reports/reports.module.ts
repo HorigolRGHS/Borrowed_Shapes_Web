@@ -14,6 +14,7 @@ import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 import { EmailModule } from '../email/email.module';
 import { AuditModule } from '../audit/audit.module';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 
 import { ReportRepository } from './repositories/reports.repository';
 
@@ -35,7 +36,8 @@ import { ReportRepository } from './repositories/reports.repository';
     AuditModule,
   ],
   controllers: [ReportsController],
-  providers: [ReportsService, ReportRepository],
+  providers: [ReportsService, RateLimitGuard, ReportRepository],
   exports: [ReportsService, ReportRepository],
 })
 export class ReportsModule {}
+

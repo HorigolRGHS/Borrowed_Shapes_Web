@@ -27,6 +27,8 @@ import { ApiResponseDto, okResponse } from '../common/dto/api-response.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ReportStatus } from '../entities/ReportStatus';
 import { getClientIp } from '../common/utils/client-ip.util';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
+import { RateLimit } from '../common/decorators/rate-limit.decorator';
 
 @ApiTags('Reports')
 @Controller('reports')
@@ -35,6 +37,8 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Post('upload')
+  @UseGuards(RateLimitGuard)
+  @RateLimit('UPLOAD_REPORT_MEDIA', 10, 60)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request a presigned URL to upload evidence media' })
   async uploadMedia(
@@ -50,6 +54,8 @@ export class ReportsController {
   }
 
   @Post()
+  @UseGuards(RateLimitGuard)
+  @RateLimit('CREATE_REPORT', 5, 60)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Submit a report against a user, thread, or comment',

@@ -20,7 +20,7 @@ export default async function WikiSearchPage({
   let data: WikiPublicListResponse | undefined;
   let errorMessage: string | null = null;
   try {
-    data = await searchWiki(q, page, 20);
+    data = await searchWiki(q, page, 21);
   } catch (err) {
     errorMessage = getApiErrorMessage(err as ApiError, "Search failed");
   }

@@ -1,5 +1,6 @@
 import { AuditModule } from './audit.module';
 import { AuditLogRepository } from './repositories/audit-log.repository';
+import { RateLimitLogRepository } from './repositories/rate-limit-log.repository';
 import { AuditService } from './audit.service';
 import { AuthModule } from '../auth/auth.module';
 describe('AuditModule Architecture Verification', () => {
@@ -12,12 +13,13 @@ describe('AuditModule Architecture Verification', () => {
     expect(repoProviders.length).toBe(1);
   });
 
-  it('AuditModule should export AuditLogRepository and AuditService', () => {
+  it('AuditModule should export AuditLogRepository, RateLimitLogRepository, and AuditService', () => {
     const exportsArr = Reflect.getMetadata('exports', AuditModule) || [];
     const exportedTokens = exportsArr.map((e: any) =>
       e && e.provide ? e.provide : e,
     );
     expect(exportedTokens).toContain(AuditLogRepository);
+    expect(exportedTokens).toContain(RateLimitLogRepository);
     expect(exportedTokens).toContain(AuditService);
   });
 

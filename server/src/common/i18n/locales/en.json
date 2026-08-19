@@ -5,6 +5,7 @@
     "internal_server_error": "Internal server error",
     "invalid_json_payload": "Invalid JSON payload",
     "forbidden": "You do not have permission to access this resource",
+    "rate_limit_exceeded": "Rate limit exceeded. Please try again later.",
     "cancel": "Cancel"
   },
   "auth": {
@@ -88,7 +89,11 @@
     "display_name_max_20": "Display name must not exceed 20 characters",
     "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens",
     "min_length_3": "Must be at least 3 characters",
-    "max_length_20": "Must not exceed 20 characters"
+    "max_length_20": "Must not exceed 20 characters",
+    "invalid_string": "Must be a string",
+    "required": "This field is required",
+    "min_length_4": "Must be at least 4 characters",
+    "max_length_12": "Must not exceed 12 characters"
   },
   "achievements": {
     "list_success": "Achievements retrieved successfully",
@@ -136,7 +141,11 @@
     "file_size_invalid": "File size is invalid",
     "mime_type_required": "MIME type is required",
     "mime_type_invalid": "MIME type is invalid",
-    "old_url_must_be_string": "Old badge URL must be a string"
+    "old_url_must_be_string": "Old badge URL must be a string",
+    "showcase_success": "Showcased achievements retrieved successfully",
+    "file_path_required": "File path (R2 key) is required",
+    "file_path_must_be_string": "File path must be a string",
+    "mime_type_must_be_string": "MIME type must be a string"
   },
   "wiki": {
     "list_success": "Wiki list retrieved",
@@ -204,7 +213,12 @@
     "invalid_status": "Invalid thread status",
     "vote_value_invalid": "Vote value must be 1 or -1",
     "invalid_sort_field": "Sort field must be one of: score, createdAt, updatedAt",
-    "invalid_sort_order": "Sort order must be either asc or desc"
+    "invalid_sort_order": "Sort order must be either asc or desc",
+    "thread_id_invalid": "Thread ID must be a valid UUID",
+    "category_id_invalid": "Category ID must be a valid UUID",
+    "thread_image_upload_url_created": "Thread image upload URL created successfully",
+    "unauthenticated": "You must be logged in to perform this action",
+    "image_too_large": "Image exceeds the 5MB limit"
   },
   "comments": {
     "thread_not_found": "Thread not found",
@@ -215,7 +229,12 @@
     "forbidden_edit": "You do not have permission to edit this comment",
     "cannot_edit_deleted": "Cannot edit a deleted comment",
     "forbidden_delete": "You do not have permission to delete this comment",
-    "invalid_user": "Invalid user"
+    "invalid_user": "Invalid user",
+    "create_success": "Comment created successfully",
+    "list_success": "Comments retrieved successfully",
+    "update_success": "Comment updated successfully",
+    "delete_success": "Comment deleted successfully",
+    "vote_success": "Comment vote recorded successfully"
   },
   "reports": {
     "cannot_report_self": "You cannot report yourself",
@@ -228,7 +247,15 @@
     "file_too_large": "Evidence file size exceeds limit",
     "user_not_found": "Reported user not found",
     "thread_not_found": "Reported thread not found",
-    "comment_not_found": "Reported comment not found"
+    "comment_not_found": "Reported comment not found",
+    "upload_url_created": "Report evidence upload URL created successfully",
+    "create_success": "Report submitted successfully",
+    "my_list_success": "Your submitted reports retrieved successfully",
+    "stats_success": "Report statistics retrieved successfully",
+    "admin_list_success": "Reports list retrieved successfully",
+    "details_success": "Report details retrieved successfully",
+    "resolve_success": "Report resolved successfully",
+    "reject_success": "Report rejected successfully"
   },
   "category": {
     "list_success": "Categories retrieved successfully",
@@ -245,7 +272,9 @@
     "slug_vi_required": "Vietnamese slug is required",
     "slug_conflict": "English slug already exists",
     "slug_vi_conflict": "Vietnamese slug already exists",
-    "forbidden": "You don't have permission to perform this action"
+    "forbidden": "You don't have permission to perform this action",
+    "image_upload_url_created": "Category icon upload URL created successfully",
+    "image_too_large": "Category icon exceeds the 5MB limit"
   },
   "announcements": {
     "list_success": "Announcements retrieved successfully",
@@ -289,7 +318,9 @@
     "delete_success": "Game result deleted successfully",
     "not_found": "Game result not found",
     "player_not_found": "Player not found",
-    "cannot_delete_in_progress": "Cannot delete a game run that is in progress"
+    "cannot_delete_in_progress": "Cannot delete a game run that is in progress",
+    "seasons_success": "Game seasons retrieved successfully",
+    "stats_success": "Player game stats retrieved successfully"
   },
   "downloads": {
     "list_versions_success": "Game versions retrieved successfully",
@@ -306,7 +337,12 @@
     "file_path_required": "File path (R2 key) is required",
     "mime_type_required": "MIME type is required",
     "mime_type_invalid": "MIME type not allowed; use application/octet-stream, application/x-msdownload, or application/zip",
-    "invalid_file_name": "File name contains invalid characters or path traversal"
+    "invalid_file_name": "File name contains invalid characters or path traversal",
+    "active_version_success": "Active game version retrieved successfully",
+    "set_active_success": "Active download version updated successfully",
+    "delete_success": "Game version deleted successfully",
+    "invalid_file_path": "File path contains invalid characters or path traversal",
+    "cannot_delete_active_version": "Cannot delete the active download version"
   },
   "account": {
     "profile_updated": "Profile updated successfully",
@@ -332,6 +368,37 @@
         "current_version": "Current active version",
         "new_version": "New active version"
       }
+    },
+    "account": {
+      "users_listed": "Users retrieved successfully",
+      "user_details": "User details retrieved successfully",
+      "user_audit_logs": "User audit logs retrieved successfully",
+      "profile_updated": "User profile updated successfully",
+      "role_updated": "User role updated successfully",
+      "user_banned": "User banned successfully",
+      "user_unbanned": "User unbanned successfully",
+      "user_deleted": "User deleted successfully",
+      "messages": {
+        "restore_success": "User restored successfully"
+      },
+      "role": {
+        "self_demote_blocked": "You cannot revoke your own admin privileges",
+        "last_admin_blocked": "Cannot revoke privileges of the last active admin",
+        "validation": {
+          "invalid_role": "Invalid role"
+        }
+      },
+      "validation": {
+        "ban_reason_required": "Ban reason is required",
+        "ban_reason_too_long": "Ban reason must be at most 500 characters",
+        "ban_expiration_invalid": "Ban expiration date must be a valid ISO date"
+      }
+    },
+    "auditLogs": {
+      "system_audit_logs": "System audit logs retrieved successfully"
+    },
+    "dashboard": {
+      "statistics_loaded": "Dashboard statistics loaded successfully"
     }
   },
   "download": {
@@ -377,5 +444,18 @@
         "a": "Use the report feature on the website if available, or send the relevant link/content through the official contact channel."
       }
     ]
+  },
+  "profile": {
+    "edit": {
+      "validation": {
+        "avatar_too_large": "Avatar file size exceeds the 5MB limit",
+        "avatar_invalid_type": "Avatar must be JPEG, PNG, or WebP",
+        "avatar_too_small": "File size must be greater than 0",
+        "display_name_too_short": "Display name must be at least 2 characters",
+        "display_name_too_long": "Display name must not exceed 50 characters",
+        "display_name_invalid": "Display name can only contain letters, numbers, spaces, underscores, and hyphens",
+        "display_name_required": "Display name cannot be empty"
+      }
+    }
   }
 }

@@ -69,7 +69,7 @@ export async function fetchAdminWikiById(id: string): Promise<WikiDetail> {
 export async function searchWiki(
   q: string,
   page = 1,
-  limit = 20,
+  limit = 21,
 ): Promise<WikiPublicListResponse> {
   const res = await bffFetchJson<WikiPublicListResponse>("GET", "/api/wiki/search", {
     params: { q, page, limit },

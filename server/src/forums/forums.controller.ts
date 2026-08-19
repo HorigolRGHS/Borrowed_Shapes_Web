@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
   Headers,

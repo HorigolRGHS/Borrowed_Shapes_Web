@@ -21,6 +21,8 @@ import {
   Crown,
 } from "lucide-react";
 
+import { AvatarWithFrame } from "@/components/ui/avatar-with-frame";
+
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
@@ -29,6 +31,7 @@ interface GameResultSessionPlayer {
   gameProfileId: string;
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
   isAbsent: boolean;
   leftAt?: string;
 }
@@ -50,6 +53,7 @@ interface GameResultPlayer {
   gameProfileId: string;
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
   isHost: boolean;
   joinedAt: string;
 }
@@ -75,28 +79,9 @@ export interface GameResultDetail {
 
 const TOTAL_LEVELS = 5;
 
-const AVATAR_COLORS = [
-  "bg-orange-500",
-  "bg-emerald-500",
-  "bg-sky-500",
-  "bg-violet-500",
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-teal-500",
-  "bg-indigo-500",
-];
-
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
 
 function formatTime(totalSec?: number): string {
   if (!totalSec) return "—";
@@ -329,27 +314,25 @@ export function PlayHistoryDetailModal({
                   {t("profile.play_history_tab.detail.team_members")} · {t("profile.play_history_tab.detail.players_count").replace("{count}", String(detail.players.length))}
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {detail.players.map((player) => {
-                    const avatarBg = getAvatarColor(player.displayName);
-                    return (
-                      <div
-                        key={player.gameProfileId}
-                        className="flex items-center gap-2 rounded-full border border-border dark:border-white/10 bg-card/30 dark:bg-white/5 pl-1 pr-3 py-1"
-                      >
-                        <div
-                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarBg}`}
-                        >
-                          {player.displayName.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm font-medium text-foreground dark:text-white">
-                          {player.displayName}
-                        </span>
-                        {player.isHost && (
-                          <Crown className="h-3.5 w-3.5 text-amber-400" />
-                        )}
-                      </div>
-                    );
-                  })}
+                  {detail.players.map((player) => (
+                    <div
+                      key={player.gameProfileId}
+                      className="flex items-center gap-2 rounded-full border border-border dark:border-white/10 bg-card/30 dark:bg-white/5 pl-1.5 pr-3 py-1.5"
+                    >
+                      <AvatarWithFrame
+                        displayName={player.displayName}
+                        avatarUrl={player.avatarUrl}
+                        badgeImageUrl={player.badgeImageUrl}
+                        size="sm"
+                      />
+                      <span className="text-sm font-medium text-foreground dark:text-white">
+                        {player.displayName}
+                      </span>
+                      {player.isHost && (
+                        <Crown className="h-3.5 w-3.5 text-amber-400" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 

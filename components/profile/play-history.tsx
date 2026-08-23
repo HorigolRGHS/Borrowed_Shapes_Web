@@ -31,6 +31,7 @@ interface GameResultPlayer {
   gameProfileId: string;
   displayName: string;
   avatarUrl?: string;
+  badgeImageUrl?: string;
   isHost: boolean;
   joinedAt: string;
 }
